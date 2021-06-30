@@ -1,0 +1,56 @@
+version: '3.1'
+
+services:
+  postgres:
+    container_name: postgres
+    image: postgres
+    restart: always
+    ports:
+      - '5437:5432'
+    volumes:
+      - pg-data:/data/postgres
+    env_file:
+      - .env.docker-dev
+    networks:
+      - postgres
+
+  pgadmin:
+    links:
+      - postgres:postgres
+    container_name: pgadmin
+    image: dpage/pgadmin4
+    ports:
+      - '8080:80'
+    volumes:
+      - pg-data:/root/.pgadmin
+    env_file:
+      - .env.docker-dev
+    networks:
+      - postgres
+
+  redis:
+    image: 'redis:alpine'
+    ports:
+      - '6379:6379'
+    networks:
+      - redis
+
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    ports:
+      - '8081:8081'
+    depends_on:
+      - redis
+    networks:
+      - redis
+
+volumes:
+  pg-data:
+
+networks:
+  postgres:
+    driver: bridge
+  redis:
+    driver: bridge
