@@ -10,6 +10,7 @@ import configuration, {
   TypeOrmConfigService,
   validationSchema,
 } from './config';
+import { NearService } from './near/near.service';
 
 @Module({
   imports: [
@@ -26,6 +27,6 @@ import configuration, {
     NotificationsModule,
   ],
   controllers: [AppController],
-  providers: [],
+  providers: [NearService],
 })
 export class AppModule {}

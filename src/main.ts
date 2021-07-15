@@ -4,6 +4,7 @@ import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { config as awsConfig } from 'aws-sdk';
+import { NearService } from './near/near.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -35,6 +36,8 @@ async function bootstrap() {
     secretAccessKey: configService.get('AWS_SECRET_ACCESS_KEY'),
     region: configService.get('AWS_REGION'),
   });
+
+  await app.get(NearService).init();
 
   const port = configService.get('port');
 
