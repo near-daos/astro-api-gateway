@@ -1,10 +1,10 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiExcludeEndpoint } from '@nestjs/swagger';
-import { NearService } from './near/near.service';
+import { DaoService } from './daos/dao.service';
 
 @Controller()
 export class AppController {
-  constructor(private readonly nearService: NearService) {}
+  constructor(private readonly daoService: DaoService) {}
 
   @ApiExcludeEndpoint()
   @Get()
@@ -15,6 +15,6 @@ export class AppController {
   @ApiExcludeEndpoint()
   @Get('/daos')
   async daos(): Promise<any[]> {
-    return await this.nearService.getDaoList()
+    return await this.daoService.findAll()
   }
 }

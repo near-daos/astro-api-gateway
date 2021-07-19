@@ -37,6 +37,7 @@
     "firebase-admin": "^9.10.0",
     "near-api-js": "^0.42.0",
     "pg": "^8.6.0",
+    "promise-batcher": "^1.1.0",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^6.6.6",

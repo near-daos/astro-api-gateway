@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmOptionsFactory, TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { Dao } from 'src/daos/entities/dao.entity';
+import { Proposal } from 'src/proposals/entities/proposal.entity';
 
 import { Token } from '../notifications';
 
@@ -15,7 +17,7 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
       username: this.configService.get('database.user'),
       password: this.configService.get('database.password'),
       database: this.configService.get('database.name'),
-      entities: [Token],
+      entities: [Token, Dao, Proposal],
       synchronize: true,
       migrationsTableName: 'migration_table',
       migrations: ['migration/*.js'],

@@ -11,6 +11,8 @@ import configuration, {
   validationSchema,
 } from './config';
 import { NearService } from './near/near.service';
+import { DaoModule } from './daos/dao.module';
+import { AggregatorService } from './aggregator/aggregator.service';
 
 @Module({
   imports: [
@@ -25,8 +27,9 @@ import { NearService } from './near/near.service';
     }),
     ScheduleModule.forRoot(),
     NotificationsModule,
+    DaoModule
   ],
   controllers: [AppController],
-  providers: [NearService],
+  providers: [NearService, AggregatorService],
 })
 export class AppModule {}

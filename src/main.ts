@@ -5,6 +5,7 @@ import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { config as awsConfig } from 'aws-sdk';
 import { NearService } from './near/near.service';
+import { AggregatorService } from './aggregator/aggregator.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -38,6 +39,8 @@ async function bootstrap() {
   });
 
   await app.get(NearService).init();
+
+  await app.get(AggregatorService).aggregate();
 
   const port = configService.get('port');
 
