@@ -12,3 +12,16 @@ export const formatTimestamp = (timestamp: number): string => {
 
   return (dDisplay + hDisplay + mDisplay + sDisplay).replace(/,\s*$/, '');
 };
+
+export const convertDuration = (duration: number): Date => {
+  const utcSeconds = duration / 1e9;
+  const epoch = new Date(0);
+
+  epoch.setUTCSeconds(utcSeconds);
+
+  return epoch;
+};
+
+export const buildProposalId = (daoId, proposalId): string => {
+  return `${daoId}-${proposalId}`;
+}

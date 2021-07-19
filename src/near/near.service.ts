@@ -14,6 +14,7 @@ import { formatTimestamp } from '../utils';
 import { Batcher } from "promise-batcher";
 import { isNotNull } from 'src/utils/guards';
 import { CreateDaoDto } from 'src/daos/dto/dao.dto';
+import { CreateProposalDto } from 'src/proposals/dto/proposal.dto';
 
 @Injectable()
 export class NearService {
@@ -41,9 +42,13 @@ export class NearService {
 
     this.contractPool = new ContractPool(account);
   }
+  
+  public async getDaoIds(): Promise<string[]> {
+    return await this.factoryContract.get_dao_list();
+  }
 
-  public async getDaoList(): Promise<any[]> {
-    const list: string[] = await this.factoryContract.get_dao_list();
+  public async getDaoList(daoIds: string[]): Promise<any[]> {
+    const list: string[] = daoIds || await this.factoryContract.get_dao_list();
 
     //TODO: Improve batching
     const batcher = new Batcher({
@@ -67,7 +72,7 @@ export class NearService {
       this.getVotePeriod(daoId),
       this.getNumProposals(daoId),
       this.getCouncil(daoId),
-    ]).catch(() => null);
+    ]).catch(() => null); //TODO: handle properly
 
     if (isNotNull(daoDetails)) {
       return {
@@ -122,5 +127,35 @@ export class NearService {
 
   private async getCouncil(contractId: string): Promise<string[]> {
     return this.contractPool.get(contractId).get_council();
+  }
+
+  public async getProposals(
+    contractId: string,
+    offset = 0,
+    limit = 50,
+  ): Promise<CreateProposalDto[]> {
+    try {
+      const numProposals = await this.getNumProposals(contractId);
+      const newOffset = numProposals - (offset + limit);
+      const newLimit = newOffset < 0 ? limit + newOffset : limit;
+      const fromIndex = Math.max(newOffset, 0);
+
+      console.log('info: ', {
+        from_index: fromIndex,
+        limit: newLimit,
+      });
+
+      const proposals = await this.contractPool.get(contractId).get_proposals({
+        from_index: fromIndex,
+        limit: newLimit,
+      });
+
+      return proposals.map((proposal, index) => ({ ...proposal, id: fromIndex + index, daoId: contractId }));
+    } catch (err) {
+      console.log(err);
+
+      //TODO: handle properly
+      return [];
+    }
   }
 }

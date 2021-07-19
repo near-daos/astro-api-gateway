@@ -13,6 +13,7 @@ import configuration, {
 import { NearService } from './near/near.service';
 import { DaoModule } from './daos/dao.module';
 import { AggregatorService } from './aggregator/aggregator.service';
+import { ProposalModule } from './proposals/proposal.module';
 
 @Module({
   imports: [
@@ -27,7 +28,8 @@ import { AggregatorService } from './aggregator/aggregator.service';
     }),
     ScheduleModule.forRoot(),
     NotificationsModule,
-    DaoModule
+    DaoModule,
+    ProposalModule
   ],
   controllers: [AppController],
   providers: [NearService, AggregatorService],

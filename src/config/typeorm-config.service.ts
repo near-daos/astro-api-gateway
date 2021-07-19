@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { TypeOrmOptionsFactory, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { Dao } from 'src/daos/entities/dao.entity';
 import { Proposal } from 'src/proposals/entities/proposal.entity';
+import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 
 import { Token } from '../notifications';
 
@@ -24,6 +25,7 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
       cli: {
         migrationsDir: 'migration',
       },
+      namingStrategy: new SnakeNamingStrategy()
     };
   }
 }
