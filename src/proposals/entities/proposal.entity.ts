@@ -1,8 +1,8 @@
 import { Exclude } from 'class-transformer';
 import { Dao } from 'src/daos/entities/dao.entity';
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryColumn, UpdateDateColumn } from 'typeorm';
-import { ProposalStatus } from '../dto/proposal-status.dto';
-import { ProposalType } from '../dto/proposal-type.dto';
+import { ProposalStatus } from '../types/proposal-status';
+import { ProposalType } from '../types/proposal-type';
 
 export type ProposalKind =
   | {
@@ -51,7 +51,7 @@ export class Proposal {
 
   //TODO: type
   @Column({ type: "simple-json" })
-  kind: {};
+  kind: ProposalKind;
 
   @Column({ type: 'timestamptz' })
   votePeriodEnd: Date;

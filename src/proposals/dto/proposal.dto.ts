@@ -1,5 +1,5 @@
-import { ProposalStatus } from "./proposal-status.dto";
-import { ProposalType } from "./proposal-type.dto";
+import { ProposalStatus } from "../types/proposal-status";
+import { ProposalType } from "../types/proposal-type";
 
 export type CreateProposalKindDto =
   | {

@@ -4,7 +4,8 @@ import { Dao } from 'src/daos/entities/dao.entity';
 import { buildProposalId, convertDuration } from 'src/utils';
 import { Repository } from 'typeorm';
 import { CreateProposalDto } from './dto/proposal.dto';
-import { Proposal } from './entities/proposal.entity';
+import { Proposal, ProposalKind } from './entities/proposal.entity';
+import camelcaseKeys from 'camelcase-keys';
 
 @Injectable()
 export class ProposalService {
@@ -42,7 +43,7 @@ export class ProposalService {
     proposal.voteNo = vote_no;
     proposal.voteYes = vote_yes;
     proposal.votePeriodEnd = convertDuration(vote_period_end);
-    proposal.kind = kind;
+    proposal.kind = camelcaseKeys(kind, { deep: true } ) as ProposalKind;
     proposal.votes = votes;
 
     return this.proposalRepository.save(proposal);
