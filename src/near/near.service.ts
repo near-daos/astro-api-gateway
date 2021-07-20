@@ -5,7 +5,7 @@ import {
   Account
 } from 'near-api-js';
 import { InMemoryKeyStore } from 'near-api-js/lib/key_stores';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Decimal from 'decimal.js';
 import { yoktoNear } from './constants';
@@ -17,6 +17,8 @@ import PromisePool from '@supercharge/promise-pool';
 
 @Injectable()
 export class NearService {
+  private readonly logger = new Logger(NearService.name);
+
   private factoryContract!: Contract & any;
 
   private near!: Near;
@@ -54,7 +56,7 @@ export class NearService {
 
     //TODO: handle properly
     if (errors && errors.length) {
-      console.log(errors);
+      this.logger.error(errors);
     }
 
     return daos;
@@ -71,11 +73,6 @@ export class NearService {
       const newLimit = newOffset < 0 ? limit + newOffset : limit;
       const fromIndex = Math.max(newOffset, 0);
 
-      console.log('info: ', {
-        from_index: fromIndex,
-        limit: newLimit,
-      });
-
       const proposals = await this.getContract(contractId).get_proposals({
         from_index: fromIndex,
         limit: newLimit,
@@ -83,7 +80,7 @@ export class NearService {
 
       return proposals.map((proposal, index) => ({ ...proposal, id: fromIndex + index, daoId: contractId }));
     } catch (err) {
-      console.log(err);
+      this.logger.error(err);
 
       //TODO: handle properly
       return [];

@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { DaoService } from "src/daos/dao.service";
 import { NearService } from "src/near/near.service";
 import { ProposalService } from "src/proposals/proposal.service";
@@ -7,6 +7,8 @@ import PromisePool from '@supercharge/promise-pool';
 
 @Injectable()
 export class AggregatorService {
+  private readonly logger = new Logger(AggregatorService.name);
+
   constructor(
     private readonly nearService: NearService,
     private readonly daoService: DaoService,
@@ -14,23 +16,22 @@ export class AggregatorService {
   ) { }
 
   public async aggregate(): Promise<void> {
-    //TODO: Add generic logger
-    console.log('Aggregating DAOs...');
+    this.logger.log('Aggregating DAOs...');
     const daoIds = await this.nearService.getDaoIds();
     const daos = await this.nearService.getDaoList(daoIds);
 
-    console.log('Persisting aggregated DAOs...');
+    this.logger.log('Persisting aggregated DAOs...');
     await Promise.all(daos.filter(dao => isNotNull(dao)).map(dao => this.daoService.create(dao)));
-    console.log('Finished DAO aggregation.');
+    this.logger.log('Finished DAO aggregation.');
 
-    console.log('Aggregating Proposals...');
+    this.logger.log('Aggregating Proposals...');
     const { results: proposalsByDao, errors } = await PromisePool
       .withConcurrency(5)
       .for(daoIds)
       .process(async daoId => (await this.nearService.getProposals(daoId)))
 
-    console.log('Persisting aggregated Proposals...');
+    this.logger.log('Persisting aggregated Proposals...');
     await Promise.all(proposalsByDao.map(proposals => proposals.map(proposal => this.proposalService.create(proposal))));
-    console.log('Finished Proposals aggregation.');
+    this.logger.log('Finished Proposals aggregation.');
   }
 }
