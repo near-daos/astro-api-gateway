@@ -11,10 +11,9 @@ import Decimal from 'decimal.js';
 import { yoktoNear } from './constants';
 import { AccountView } from 'near-api-js/lib/providers/provider';
 import { formatTimestamp } from '../utils';
-import { Batcher } from "promise-batcher";
-import { isNotNull } from 'src/utils/guards';
 import { CreateDaoDto } from 'src/daos/dto/dao.dto';
 import { CreateProposalDto } from 'src/proposals/dto/proposal.dto';
+import PromisePool from '@supercharge/promise-pool';
 
 @Injectable()
 export class NearService {
@@ -40,7 +39,7 @@ export class NearService {
       changeMethods: ['create'],
     });
   }
-  
+
   public async getDaoIds(): Promise<string[]> {
     return await this.factoryContract.get_dao_list();
   }
@@ -48,14 +47,15 @@ export class NearService {
   public async getDaoList(daoIds: string[]): Promise<any[]> {
     const list: string[] = daoIds || await this.factoryContract.get_dao_list();
 
-    //TODO: Improve batching
-    const batcher = new Batcher({
-      batchingFunction: (daoIds: string[]) => (Promise.all(daoIds.map(daoId => this.getDaoById(daoId)))),
-      maxBatchSize: 5,
-      queuingDelay: 500
-    });
+    const { results: daos, errors } = await PromisePool
+      .withConcurrency(5)
+      .for(list)
+      .process(async daoId => (await this.getDaoById(daoId)))
 
-    const daos = await Promise.all(list.map((daoId: string) => batcher.getResult(daoId)));
+    //TODO: handle properly
+    if (errors && errors.length) {
+      console.log(errors);
+    }
 
     return daos;
   }
@@ -91,29 +91,32 @@ export class NearService {
   }
 
   private async getDaoById(daoId: string): Promise<CreateDaoDto | null> {
-    const daoDetails = await Promise.all([
-      this.getDaoAmount(daoId),
-      this.getBond(daoId),
-      this.getPurpose(daoId),
-      this.getVotePeriod(daoId),
-      this.getNumProposals(daoId),
-      this.getCouncil(daoId),
-    ]).catch(() => null); //TODO: handle properly
-
-    if (isNotNull(daoDetails)) {
-      return {
-        id: daoId,
-        amount: daoDetails[0],
-        bond: daoDetails[1],
-        purpose: daoDetails[2],
-        votePeriod: daoDetails[3],
-        numberOfProposals: daoDetails[4],
-        numberOfMembers: daoDetails[5].length,
-        members: daoDetails[5],
-      };
+    const daoEnricher = {
+      amount: this.getDaoAmount(daoId),
+      bond: this.getBond(daoId),
+      purpose: this.getPurpose(daoId),
+      votePeriod: this.getVotePeriod(daoId),
+      numberOfProposals: this.getNumProposals(daoId),
+      members: this.getCouncil(daoId),
     }
 
-    return null;
+    const dao = new CreateDaoDto();
+
+    const { errors } = await PromisePool
+      .withConcurrency(3)
+      .for(Object.keys(daoEnricher))
+      .process(async detailKey => {
+        dao[detailKey] = await daoEnricher[detailKey];
+
+        return dao[detailKey];
+      })
+
+    //TODO: handle errors properly
+    if (errors && errors.length) {
+      return null;
+    }
+
+    return { ...dao, numberOfMembers: dao.members.length, id: daoId };
   }
 
   private async getDaoState(contractId: string): Promise<AccountView> {

@@ -3,6 +3,7 @@ import { DaoService } from "src/daos/dao.service";
 import { NearService } from "src/near/near.service";
 import { ProposalService } from "src/proposals/proposal.service";
 import { isNotNull } from "src/utils/guards";
+import PromisePool from '@supercharge/promise-pool';
 
 @Injectable()
 export class AggregatorService {
@@ -23,7 +24,10 @@ export class AggregatorService {
     console.log('Finished DAO aggregation.');
 
     console.log('Aggregating Proposals...');
-    const proposalsByDao = await Promise.all(daoIds.map(daoId => this.nearService.getProposals(daoId)));
+    const { results: proposalsByDao, errors } = await PromisePool
+      .withConcurrency(5)
+      .for(daoIds)
+      .process(async daoId => (await this.nearService.getProposals(daoId)))
 
     console.log('Persisting aggregated Proposals...');
     await Promise.all(proposalsByDao.map(proposals => proposals.map(proposal => this.proposalService.create(proposal))));
