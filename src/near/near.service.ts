@@ -34,9 +34,11 @@ export class NearService {
       ...this.configService.get('near'),
     });
 
-    this.account = await this.near.account('sputnik');
+    const { contractName } = this.configService.get('near');
 
-    this.factoryContract = new Contract(this.account, this.configService.get('near').contractName, {
+    this.account = await this.near.account(contractName);
+
+    this.factoryContract = new Contract(this.account, contractName, {
       viewMethods: ['get_dao_list'],
       changeMethods: ['create'],
     });
@@ -49,9 +51,19 @@ export class NearService {
   public async getDaoList(daoIds: string[]): Promise<any[]> {
     const list: string[] = daoIds || await this.factoryContract.get_dao_list();
 
-    const { results: daos, errors } = await PromisePool
+    const errors = [];
+    const { results: daos } = await PromisePool
       .withConcurrency(5)
       .for(list)
+      .handleError(async (error) => {
+        if ('type' in error && 'AccountDoesNotExist' == error['type']) {
+          errors.push(error);
+
+          return;
+        }
+
+        throw error;
+      })
       .process(async daoId => (await this.getDaoById(daoId)))
 
     //TODO: handle properly
@@ -62,18 +74,41 @@ export class NearService {
     return daos;
   }
 
-  public async getProposals(
+  public async getProposals(daoIds: string[]): Promise<any[]> {
+    const ids: string[] = daoIds || await this.factoryContract.getDaoIds();
+
+    const errors = [];
+    const { results: proposals } = await PromisePool
+      .withConcurrency(5)
+      .for(ids)
+      .handleError(async (error) => {
+        if ('type' in error && 'AccountDoesNotExist' == error['type']) {
+          errors.push(error);
+
+          return;
+        }
+
+        throw error;
+      })
+      .process(async daoId => (await this.getProposalsByDao(daoId)));
+
+    return proposals;
+  }
+
+  public async getProposalsByDao(
     contractId: string,
     offset = 0,
     limit = 50,
   ): Promise<CreateProposalDto[]> {
     try {
-      const numProposals = await this.getNumProposals(contractId);
+      const contract = this.getContract(contractId);
+
+      const numProposals = await contract.get_num_proposals();
       const newOffset = numProposals - (offset + limit);
       const newLimit = newOffset < 0 ? limit + newOffset : limit;
       const fromIndex = Math.max(newOffset, 0);
 
-      const proposals = await this.getContract(contractId).get_proposals({
+      const proposals = await contract.get_proposals({
         from_index: fromIndex,
         limit: newLimit,
       });
@@ -88,27 +123,46 @@ export class NearService {
   }
 
   private async getDaoById(daoId: string): Promise<CreateDaoDto | null> {
+    const contract = this.getContract(daoId);
+
+    const getDaoAmount = async (): Promise<string> => {
+      const account = await this.near.account(daoId);
+      const state = await account.state();
+      const amountYokto = new Decimal(state.amount);
+  
+      return amountYokto.div(yoktoNear).toFixed(2);
+    }
+
     const daoEnricher = {
-      amount: this.getDaoAmount(daoId),
-      bond: this.getBond(daoId),
-      purpose: this.getPurpose(daoId),
-      votePeriod: this.getVotePeriod(daoId),
-      numberOfProposals: this.getNumProposals(daoId),
-      members: this.getCouncil(daoId),
+      amount: getDaoAmount,
+      bond: async (): Promise<string> => (new Decimal((await contract.get_bond()).toString()).div(yoktoNear).toString()),
+      purpose: async (): Promise<string> => (contract.get_purpose()),
+      votePeriod: async (): Promise<string> => (formatTimestamp(await contract.get_vote_period())),
+      numberOfProposals: async (): Promise<number> => (contract.get_num_proposals()),
+      members: async (): Promise<string[]> => (contract.get_council()),
     }
 
     const dao = new CreateDaoDto();
 
-    const { errors } = await PromisePool
+    const errors = []
+    const { } = await PromisePool
       .withConcurrency(3)
       .for(Object.keys(daoEnricher))
+      .handleError(async (error) => {
+        if ('type' in error && 'AccountDoesNotExist' == error['type']) {
+          errors.push(error);
+
+          return;
+        }
+
+        throw error;
+      })
       .process(async detailKey => {
-        dao[detailKey] = await daoEnricher[detailKey];
+        dao[detailKey] = await daoEnricher[detailKey](daoId);
 
         return dao[detailKey];
       })
 
-    //TODO: handle errors properly
     if (errors && errors.length) {
       return null;
     }
@@ -116,43 +170,6 @@ export class NearService {
     return { ...dao, numberOfMembers: dao.members.length, id: daoId };
   }
 
-  private async getDaoState(contractId: string): Promise<AccountView> {
-    const account = await this.near.account(contractId);
-
-    return account.state();
-  }
-
-  private async getDaoAmount(contractId: string): Promise<string> {
-    const state = await this.getDaoState(contractId);
-    const amountYokto = new Decimal(state.amount);
-
-    return amountYokto.div(yoktoNear).toFixed(2);
-  }
-
-  private async getBond(contractId: string): Promise<string> {
-    const bond = await this.getContract(contractId).get_bond();
-
-    return new Decimal(bond.toString()).div(yoktoNear).toString();
-  }
-
-  private async getVotePeriod(contractId: string): Promise<string> {
-    const votePeriod = await this.getContract(contractId).get_vote_period();
-
-    return formatTimestamp(votePeriod);
-  }
-
-  private async getNumProposals(contractId: string): Promise<number> {
-    return this.getContract(contractId).get_num_proposals();
-  }
-
-  private async getPurpose(contractId: string): Promise<string> {
-    return this.getContract(contractId).get_purpose();
-  }
-
-  private async getCouncil(contractId: string): Promise<string[]> {
-    return this.getContract(contractId).get_council();
-  }
-  
   private getContract(contractId: string): Contract & any {
     return new Contract(this.account, contractId, {
       viewMethods: [

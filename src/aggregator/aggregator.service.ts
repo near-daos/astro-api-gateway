@@ -25,10 +25,7 @@ export class AggregatorService {
     this.logger.log('Finished DAO aggregation.');
 
     this.logger.log('Aggregating Proposals...');
-    const { results: proposalsByDao, errors } = await PromisePool
-      .withConcurrency(5)
-      .for(daoIds)
-      .process(async daoId => (await this.nearService.getProposals(daoId)))
+    const proposalsByDao = await this.nearService.getProposals(daoIds);
 
     this.logger.log('Persisting aggregated Proposals...');
     await Promise.all(proposalsByDao.map(proposals => proposals.map(proposal => this.proposalService.create(proposal))));
