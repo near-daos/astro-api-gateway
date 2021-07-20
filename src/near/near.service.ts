@@ -1,7 +1,8 @@
 import {
   connect,
   Contract,
-  Near
+  Near,
+  Account
 } from 'near-api-js';
 import { InMemoryKeyStore } from 'near-api-js/lib/key_stores';
 import { Injectable } from '@nestjs/common';
@@ -9,7 +10,6 @@ import { ConfigService } from '@nestjs/config';
 import Decimal from 'decimal.js';
 import { yoktoNear } from './constants';
 import { AccountView } from 'near-api-js/lib/providers/provider';
-import { ContractPool } from './contract-pool';
 import { formatTimestamp } from '../utils';
 import { Batcher } from "promise-batcher";
 import { isNotNull } from 'src/utils/guards';
@@ -22,7 +22,7 @@ export class NearService {
 
   private near!: Near;
 
-  private contractPool!: ContractPool;
+  private account!: Account;
 
   constructor(private readonly configService: ConfigService) { }
 
@@ -33,14 +33,12 @@ export class NearService {
       ...this.configService.get('near'),
     });
 
-    const account = await this.near.account('sputnik');
+    this.account = await this.near.account('sputnik');
 
-    this.factoryContract = new Contract(account, this.configService.get('near').contractName, {
+    this.factoryContract = new Contract(this.account, this.configService.get('near').contractName, {
       viewMethods: ['get_dao_list'],
       changeMethods: ['create'],
     });
-
-    this.contractPool = new ContractPool(account);
   }
   
   public async getDaoIds(): Promise<string[]> {
@@ -52,9 +50,7 @@ export class NearService {
 
     //TODO: Improve batching
     const batcher = new Batcher({
-      batchingFunction: (daoIds: string[]) => {
-        return Promise.all(daoIds.map(daoId => this.getDaoById(daoId)))
-      },
+      batchingFunction: (daoIds: string[]) => (Promise.all(daoIds.map(daoId => this.getDaoById(daoId)))),
       maxBatchSize: 5,
       queuingDelay: 500
     });
@@ -62,6 +58,36 @@ export class NearService {
     const daos = await Promise.all(list.map((daoId: string) => batcher.getResult(daoId)));
 
     return daos;
+  }
+
+  public async getProposals(
+    contractId: string,
+    offset = 0,
+    limit = 50,
+  ): Promise<CreateProposalDto[]> {
+    try {
+      const numProposals = await this.getNumProposals(contractId);
+      const newOffset = numProposals - (offset + limit);
+      const newLimit = newOffset < 0 ? limit + newOffset : limit;
+      const fromIndex = Math.max(newOffset, 0);
+
+      console.log('info: ', {
+        from_index: fromIndex,
+        limit: newLimit,
+      });
+
+      const proposals = await this.getContract(contractId).get_proposals({
+        from_index: fromIndex,
+        limit: newLimit,
+      });
+
+      return proposals.map((proposal, index) => ({ ...proposal, id: fromIndex + index, daoId: contractId }));
+    } catch (err) {
+      console.log(err);
+
+      //TODO: handle properly
+      return [];
+    }
   }
 
   private async getDaoById(daoId: string): Promise<CreateDaoDto | null> {
@@ -104,58 +130,41 @@ export class NearService {
   }
 
   private async getBond(contractId: string): Promise<string> {
-    const bond = await this.contractPool.get(contractId).get_bond();
+    const bond = await this.getContract(contractId).get_bond();
 
     return new Decimal(bond.toString()).div(yoktoNear).toString();
   }
 
   private async getVotePeriod(contractId: string): Promise<string> {
-    const votePeriod = await this.contractPool
-      .get(contractId)
-      .get_vote_period();
+    const votePeriod = await this.getContract(contractId).get_vote_period();
 
     return formatTimestamp(votePeriod);
   }
 
   private async getNumProposals(contractId: string): Promise<number> {
-    return this.contractPool.get(contractId).get_num_proposals();
+    return this.getContract(contractId).get_num_proposals();
   }
 
   private async getPurpose(contractId: string): Promise<string> {
-    return this.contractPool.get(contractId).get_purpose();
+    return this.getContract(contractId).get_purpose();
   }
 
   private async getCouncil(contractId: string): Promise<string[]> {
-    return this.contractPool.get(contractId).get_council();
+    return this.getContract(contractId).get_council();
   }
-
-  public async getProposals(
-    contractId: string,
-    offset = 0,
-    limit = 50,
-  ): Promise<CreateProposalDto[]> {
-    try {
-      const numProposals = await this.getNumProposals(contractId);
-      const newOffset = numProposals - (offset + limit);
-      const newLimit = newOffset < 0 ? limit + newOffset : limit;
-      const fromIndex = Math.max(newOffset, 0);
-
-      console.log('info: ', {
-        from_index: fromIndex,
-        limit: newLimit,
-      });
-
-      const proposals = await this.contractPool.get(contractId).get_proposals({
-        from_index: fromIndex,
-        limit: newLimit,
-      });
-
-      return proposals.map((proposal, index) => ({ ...proposal, id: fromIndex + index, daoId: contractId }));
-    } catch (err) {
-      console.log(err);
-
-      //TODO: handle properly
-      return [];
-    }
+  
+  private getContract(contractId: string): Contract & any {
+    return new Contract(this.account, contractId, {
+      viewMethods: [
+        'get_council',
+        'get_bond',
+        'get_proposal',
+        'get_num_proposals',
+        'get_proposals',
+        'get_vote_period',
+        'get_purpose',
+      ],
+      changeMethods: ['vote', 'add_proposal', 'finalize'],
+    });
   }
 }

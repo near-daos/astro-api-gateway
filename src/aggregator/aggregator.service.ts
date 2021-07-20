@@ -14,22 +14,19 @@ export class AggregatorService {
 
   public async aggregate(): Promise<void> {
     //TODO: Add generic logger
-    console.log('Aggregating NEAR API DAO...');
+    console.log('Aggregating DAOs...');
     const daoIds = await this.nearService.getDaoIds();
-
     const daos = await this.nearService.getDaoList(daoIds);
 
-    console.log('Persisting aggregated data...');
+    console.log('Persisting aggregated DAOs...');
     await Promise.all(daos.filter(dao => isNotNull(dao)).map(dao => this.daoService.create(dao)));
-
     console.log('Finished DAO aggregation.');
 
-    console.log('Aggregating NEAR API Proposals...');
+    console.log('Aggregating Proposals...');
+    const proposalsByDao = await Promise.all(daoIds.map(daoId => this.nearService.getProposals(daoId)));
 
-    const proposalsByDao = await Promise.all(daoIds.splice(0, 5).map(daoId => this.nearService.getProposals(daoId)));
-
-    await Promise.all(proposalsByDao.map(proposals => proposals.map(proposal => this.proposalService.create(proposal))))
-
+    console.log('Persisting aggregated Proposals...');
+    await Promise.all(proposalsByDao.map(proposals => proposals.map(proposal => this.proposalService.create(proposal))));
     console.log('Finished Proposals aggregation.');
   }
 }
