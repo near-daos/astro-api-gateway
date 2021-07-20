@@ -51,19 +51,9 @@ export class NearService {
   public async getDaoList(daoIds: string[]): Promise<any[]> {
     const list: string[] = daoIds || await this.factoryContract.get_dao_list();
 
-    const errors = [];
-    const { results: daos } = await PromisePool
+    const { results: daos, errors } = await PromisePool
       .withConcurrency(5)
       .for(list)
-      .handleError(async (error) => {
-        if ('type' in error && 'AccountDoesNotExist' == error['type']) {
-          errors.push(error);
-
-          return;
-        }
-
-        throw error;
-      })
       .process(async daoId => (await this.getDaoById(daoId)))
 
     //TODO: handle properly
@@ -77,19 +67,9 @@ export class NearService {
   public async getProposals(daoIds: string[]): Promise<any[]> {
     const ids: string[] = daoIds || await this.factoryContract.getDaoIds();
 
-    const errors = [];
-    const { results: proposals } = await PromisePool
+    const { results: proposals, errors } = await PromisePool
       .withConcurrency(5)
       .for(ids)
-      .handleError(async (error) => {
-        if ('type' in error && 'AccountDoesNotExist' == error['type']) {
-          errors.push(error);
-
-          return;
-        }
-
-        throw error;
-      })
       .process(async daoId => (await this.getProposalsByDao(daoId)));
 
     return proposals;
@@ -144,19 +124,9 @@ export class NearService {
 
     const dao = new CreateDaoDto();
 
-    const errors = []
-    const { } = await PromisePool
+    const { errors } = await PromisePool
       .withConcurrency(3)
       .for(Object.keys(daoEnricher))
-      .handleError(async (error) => {
-        if ('type' in error && 'AccountDoesNotExist' == error['type']) {
-          errors.push(error);
-
-          return;
-        }
-
-        throw error;
-      })
       .process(async detailKey => {
         dao[detailKey] = await daoEnricher[detailKey](daoId);
 
