@@ -10,7 +10,7 @@ import configuration, {
   TypeOrmConfigService,
   validationSchema,
 } from './config';
-import { NearService } from './near/near.service';
+import { SputnikDaoService } from './sputnikdao/sputnik.service';
 import { DaoModule } from './daos/dao.module';
 import { AggregatorService } from './aggregator/aggregator.service';
 import { ProposalModule } from './proposals/proposal.module';
@@ -32,6 +32,6 @@ import { ProposalModule } from './proposals/proposal.module';
     ProposalModule
   ],
   controllers: [AppController],
-  providers: [NearService, AggregatorService],
+  providers: [SputnikDaoService, AggregatorService],
 })
 export class AppModule {}

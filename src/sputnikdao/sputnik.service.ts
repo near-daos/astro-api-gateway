@@ -9,15 +9,14 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Decimal from 'decimal.js';
 import { yoktoNear } from './constants';
-import { AccountView } from 'near-api-js/lib/providers/provider';
 import { formatTimestamp } from '../utils';
 import { CreateDaoDto } from 'src/daos/dto/dao.dto';
 import { CreateProposalDto } from 'src/proposals/dto/proposal.dto';
 import PromisePool from '@supercharge/promise-pool';
 
 @Injectable()
-export class NearService {
-  private readonly logger = new Logger(NearService.name);
+export class SputnikDaoService {
+  private readonly logger = new Logger(SputnikDaoService.name);
 
   private factoryContract!: Contract & any;
 
@@ -64,7 +63,7 @@ export class NearService {
     return daos;
   }
 
-  public async getProposals(daoIds: string[]): Promise<any[]> {
+  public async getProposals(daoIds: string[]): Promise<CreateProposalDto[]> {
     const ids: string[] = daoIds || await this.factoryContract.getDaoIds();
 
     const { results: proposals, errors } = await PromisePool
@@ -72,7 +71,7 @@ export class NearService {
       .for(ids)
       .process(async daoId => (await this.getProposalsByDao(daoId)));
 
-    return proposals;
+    return proposals.reduce((acc, prop) => acc.concat(prop), []);
   }
 
   public async getProposalsByDao(

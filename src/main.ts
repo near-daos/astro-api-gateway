@@ -4,7 +4,7 @@ import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { config as awsConfig } from 'aws-sdk';
-import { NearService } from './near/near.service';
+import { SputnikDaoService } from './sputnikdao/sputnik.service';
 import { AggregatorService } from './aggregator/aggregator.service';
 
 async function bootstrap() {
@@ -38,7 +38,7 @@ async function bootstrap() {
     region: configService.get('AWS_REGION'),
   });
 
-  await app.get(NearService).init();
+  await app.get(SputnikDaoService).init();
 
   await app.get(AggregatorService).aggregate();
 
