@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Dao } from 'src/daos/entities/dao.entity';
 import { buildProposalId, convertDuration } from 'src/utils';
-import { Repository } from 'typeorm';
+import { FindManyOptions, Repository } from 'typeorm';
 import { CreateProposalDto } from './dto/proposal.dto';
 import { Proposal, ProposalKind } from './entities/proposal.entity';
 import camelcaseKeys from 'camelcase-keys';
@@ -49,8 +49,8 @@ export class ProposalService {
     return this.proposalRepository.save(proposal);
   }
 
-  async findAll(): Promise<Proposal[]> {
-    return this.proposalRepository.find();
+  async find(options: FindManyOptions): Promise<Proposal[]> {
+    return this.proposalRepository.find(options);
   }
 
   findOne(id: string): Promise<Proposal> {
