@@ -12,6 +12,10 @@ async function bootstrap() {
   app.enableCors();
   app.setGlobalPrefix("/api/v1");
 
+  if (process.env.NODE_ENV === 'development') {
+    (app as any).httpAdapter.instance.set('json spaces', 2);
+  }
+
   const config = new DocumentBuilder()
     .setTitle('Sputnik v1 API')
     .setDescription('The Sputnik v1 API description')
