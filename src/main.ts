@@ -26,6 +26,9 @@ async function bootstrap() {
       transform: true,
       disableErrorMessages: false,
       validationError: { target: false },
+      transformOptions: {
+        enableImplicitConversion: true
+      }
     }),
   );
 

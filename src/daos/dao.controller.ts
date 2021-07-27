@@ -1,13 +1,12 @@
 import { 
   BadRequestException,
   Controller,
-  DefaultValuePipe,
   Get,
   Param,
-  ParseIntPipe,
   Query
 } from '@nestjs/common';
 import { ApiExcludeEndpoint } from '@nestjs/swagger';
+import { FindOneParams, PagingQuery } from 'src/common';
 import { DaoService } from './dao.service';
 import { Dao } from './entities/dao.entity';
 
@@ -19,16 +18,13 @@ export class DaoController {
 
   @ApiExcludeEndpoint()
   @Get('/daos')
-  async daos(
-    @Query('offset', new DefaultValuePipe(0), ParseIntPipe) offset: number,
-    @Query('limit', new DefaultValuePipe(50), ParseIntPipe) limit: number
-  ): Promise<any[]> {
+  async daos(@Query() { limit, offset }: PagingQuery): Promise<any[]> {
     return await this.daoService.find({ take: limit, skip: offset })
   }
 
   @ApiExcludeEndpoint()
   @Get('/daos/:id')
-  async daoById(@Param('id') id: string): Promise<Dao> {
+  async daoById(@Param() { id }: FindOneParams): Promise<Dao> {
     const dao: Dao = await this.daoService.findOne(id);
 
     if (!dao) {
