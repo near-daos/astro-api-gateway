@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindManyOptions, Repository } from 'typeorm';
 import { CreateDaoDto } from './dto/dao.dto';
 import { Dao } from './entities/dao.entity';
 
@@ -26,8 +26,8 @@ export class DaoService {
     return this.daoRepository.save(dao);
   }
 
-  async findAll(): Promise<Dao[]> {
-    return this.daoRepository.find();
+  async find(options: FindManyOptions): Promise<Dao[]> {
+    return this.daoRepository.find(options);
   }
 
   findOne(id: string): Promise<Dao> {
