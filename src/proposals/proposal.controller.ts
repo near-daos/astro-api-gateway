@@ -18,8 +18,8 @@ export class ProposalController {
 
   @ApiExcludeEndpoint()
   @Get('/proposals')
-  async proposals(@Query() { limit, offset }: PagingQuery): Promise<any[]> {
-    return await this.proposalService.find({ take: limit, skip: offset })
+  async proposals(@Query() query: PagingQuery): Promise<Proposal[]> {
+    return await this.proposalService.find(query);
   }
 
   @ApiExcludeEndpoint()

@@ -14,6 +14,7 @@ import { SputnikDaoService } from './sputnikdao/sputnik.service';
 import { DaoModule } from './daos/dao.module';
 import { AggregatorService } from './aggregator/aggregator.service';
 import { ProposalModule } from './proposals/proposal.module';
+import { SearchModule } from './search/search.module';
 
 @Module({
   imports: [
@@ -29,7 +30,8 @@ import { ProposalModule } from './proposals/proposal.module';
     ScheduleModule.forRoot(),
     NotificationsModule,
     DaoModule,
-    ProposalModule
+    ProposalModule,
+    SearchModule
   ],
   controllers: [AppController],
   providers: [SputnikDaoService, AggregatorService],

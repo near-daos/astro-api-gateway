@@ -2,10 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Dao } from 'src/daos/entities/dao.entity';
 import { buildProposalId, convertDuration } from 'src/utils';
-import { FindManyOptions, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { CreateProposalDto } from './dto/proposal.dto';
 import { Proposal, ProposalKind } from './entities/proposal.entity';
 import camelcaseKeys from 'camelcase-keys';
+import { PagingQuery, SearchQuery } from 'src/common';
 
 @Injectable()
 export class ProposalService {
@@ -49,15 +50,20 @@ export class ProposalService {
     return this.proposalRepository.save(proposal);
   }
 
-  async find(options: FindManyOptions): Promise<Proposal[]> {
-    return this.proposalRepository.find(options);
+  async find({ offset, limit }: PagingQuery): Promise<Proposal[]> {
+    return this.proposalRepository.find({ skip: offset, take: limit });
   }
 
   findOne(id: string): Promise<Proposal> {
     return this.proposalRepository.findOne(id);
   }
 
-  async remove(id: string): Promise<void> {
-    await this.proposalRepository.delete(id);
+  async findByQuery({ query, offset, limit }: SearchQuery): Promise<Proposal[]> {
+    return this.proposalRepository
+      .createQueryBuilder('proposal')
+      .where("proposal.id like :id", { id: `%${query}%` })
+      .skip(offset)
+      .take(limit)
+      .getMany();
   }
 }

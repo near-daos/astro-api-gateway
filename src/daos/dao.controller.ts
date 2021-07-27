@@ -18,8 +18,8 @@ export class DaoController {
 
   @ApiExcludeEndpoint()
   @Get('/daos')
-  async daos(@Query() { limit, offset }: PagingQuery): Promise<any[]> {
-    return await this.daoService.find({ take: limit, skip: offset })
+  async daos(@Query() query: PagingQuery): Promise<Dao[]> {
+    return await this.daoService.find(query);
   }
 
   @ApiExcludeEndpoint()
