@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { CacheModule, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
@@ -7,8 +7,9 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { NotificationsModule } from './notifications/notifications.module';
 
 import configuration, {
+  CacheConfigService,
   TypeOrmConfigService,
-  validationSchema,
+  validationSchema
 } from './config';
 import { SputnikDaoService } from './sputnikdao/sputnik.service';
 import { DaoModule } from './daos/dao.module';
@@ -26,6 +27,9 @@ import { SearchModule } from './search/search.module';
     }),
     TypeOrmModule.forRootAsync({
       useClass: TypeOrmConfigService,
+    }),
+    CacheModule.registerAsync({
+      useClass: CacheConfigService,
     }),
     ScheduleModule.forRoot(),
     NotificationsModule,

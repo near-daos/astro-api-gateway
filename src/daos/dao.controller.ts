@@ -1,9 +1,11 @@
 import { 
   BadRequestException,
+  CacheInterceptor,
   Controller,
   Get,
   Param,
-  Query
+  Query,
+  UseInterceptors
 } from '@nestjs/common';
 import { ApiExcludeEndpoint } from '@nestjs/swagger';
 import { FindOneParams, PagingQuery } from 'src/common';
@@ -11,6 +13,7 @@ import { DaoService } from './dao.service';
 import { Dao } from './entities/dao.entity';
 
 @Controller()
+@UseInterceptors(CacheInterceptor)
 export class DaoController {
   constructor(
     private readonly daoService: DaoService
