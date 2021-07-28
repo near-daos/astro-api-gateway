@@ -8,7 +8,7 @@ import { InMemoryKeyStore } from 'near-api-js/lib/key_stores';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Decimal from 'decimal.js';
-import { yoktoNear } from './constants';
+import { PROPOSAL_REQUEST_CHUNK_SIZE, yoktoNear } from './constants';
 import { formatTimestamp } from '../utils';
 import { CreateDaoDto } from 'src/daos/dto/dao.dto';
 import { CreateProposalDto } from 'src/proposals/dto/proposal.dto';
@@ -74,25 +74,22 @@ export class SputnikDaoService {
     return proposals.reduce((acc, prop) => acc.concat(prop), []);
   }
 
-  public async getProposalsByDao(
-    contractId: string,
-    offset = 0,
-    limit = 50,
-  ): Promise<CreateProposalDto[]> {
+  public async getProposalsByDao(contractId: string): Promise<CreateProposalDto[]> {
     try {
       const contract = this.getContract(contractId);
 
       const numProposals = await contract.get_num_proposals();
-      const newOffset = numProposals - (offset + limit);
-      const newLimit = newOffset < 0 ? limit + newOffset : limit;
-      const fromIndex = Math.max(newOffset, 0);
 
-      const proposals = await contract.get_proposals({
-        from_index: fromIndex,
-        limit: newLimit,
-      });
+      const chunkSize = PROPOSAL_REQUEST_CHUNK_SIZE;
+      const chunkCount = (numProposals - numProposals % chunkSize) / chunkSize + 1;
+      const { results, errors } = await PromisePool
+        .withConcurrency(1)
+        .for([ ...Array(chunkCount).keys() ])
+        .process(async (offset) => (await contract.get_proposals({ from_index: offset * chunkSize, limit: chunkSize })));
 
-      return proposals.map((proposal, index) => ({ ...proposal, id: fromIndex + index, daoId: contractId }));
+      return results
+        .reduce((acc: CreateProposalDto[], prop: CreateProposalDto[]) => acc.concat(prop), [])
+        .map((proposal: CreateProposalDto, index: number) => ({ ...proposal, id: index, daoId: contractId }));
     } catch (err) {
       this.logger.error(err);
 

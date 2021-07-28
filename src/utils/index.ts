@@ -22,6 +22,6 @@ export const convertDuration = (duration: number): Date => {
   return epoch;
 };
 
-export const buildProposalId = (daoId, proposalId): string => {
+export const buildProposalId = (daoId: string, proposalId: number): string => {
   return `${daoId}-${proposalId}`;
 }

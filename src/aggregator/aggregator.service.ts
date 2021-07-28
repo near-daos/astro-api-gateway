@@ -15,16 +15,18 @@ export class AggregatorService {
   ) { }
 
   public async aggregate(): Promise<void> {
-    this.logger.log('Aggregating DAOs...');
+    this.logger.log('Collecting DAO IDs...');
     const daoIds = await this.sputnikDaoService.getDaoIds();
-    const daos = await this.sputnikDaoService.getDaoList(daoIds);
+
+    this.logger.log('Aggregating data...');
+    const [ daos, proposals ] = await Promise.all([
+      this.sputnikDaoService.getDaoList(daoIds),
+      this.sputnikDaoService.getProposals(daoIds)
+    ])
 
     this.logger.log('Persisting aggregated DAOs...');
     await Promise.all(daos.filter(dao => isNotNull(dao)).map(dao => this.daoService.create(dao)));
     this.logger.log('Finished DAO aggregation.');
-
-    this.logger.log('Aggregating Proposals...');
-    const proposals = await this.sputnikDaoService.getProposals(daoIds);
 
     this.logger.log('Persisting aggregated Proposals...');
     await Promise.all(proposals.map(proposal => this.proposalService.create(proposal)));
