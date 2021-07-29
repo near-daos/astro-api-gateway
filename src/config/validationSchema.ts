@@ -14,11 +14,6 @@ export default Joi.object({
   DATABASE_RUN_MIGRATIONS: Joi.bool().required(),
   ORM_MIGRATIONS_DIR: Joi.string(),
 
-  AWS_S3_BUCKET_NAME: Joi.string().required(),
-  AWS_ACCESS_KEY_ID: Joi.string().required(),
-  AWS_SECRET_ACCESS_KEY: Joi.string().required(),
-  AWS_REGION: Joi.string().required(),
-
   FIREBASE_PROJECT_ID: Joi.string().required(),
   FIREBASE_CLIENT_EMAIL: Joi.string().required(),
   FIREBASE_PRIVATE_KEY: Joi.string().required(),
