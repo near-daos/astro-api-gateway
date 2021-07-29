@@ -11,8 +11,8 @@ export default Joi.object({
   DATABASE_NAME: Joi.string().required(),
   DATABASE_HOST: Joi.string().hostname().required(),
   DATABASE_PORT: Joi.number().required(),
-  DATABASE_RUN_MIGRATIONS: Joi.bool().required(),
-  ORM_MIGRATIONS_DIR: Joi.string(),
+  // DATABASE_RUN_MIGRATIONS: Joi.bool().required(),
+  // ORM_MIGRATIONS_DIR: Joi.string(),
 
   FIREBASE_PROJECT_ID: Joi.string().required(),
   FIREBASE_CLIENT_EMAIL: Joi.string().required(),
