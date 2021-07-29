@@ -1,0 +1,118 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "sputnik-v1-api.fullname" . }}
+  labels:
+    {{- include "sputnik-v1-api.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "sputnik-v1-api.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "sputnik-v1-api.selectorLabels" . | nindent 8 }}
+    spec:
+    {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      serviceAccountName: {{ include "sputnik-v1-api.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}/{{ .Values.image.name }}:{{ .Chart.AppVersion | default .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.container.internalPort }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: "{{ .Values.container.livenessProbe.path }}"
+              port: {{ .Values.container.livenessProbe.port }}
+              scheme: HTTP
+            initialDelaySeconds: {{ .Values.container.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.container.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.container.livenessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.container.livenessProbe.successThreshold }}
+            failureThreshold: {{ .Values.container.livenessProbe.failureThreshold }}
+          readinessProbe:
+            httpGet:
+              path: "{{ .Values.container.readinessProbe.path }}"
+              port: {{ .Values.container.readinessProbe.port }}
+              scheme: HTTP
+            initialDelaySeconds: {{ .Values.container.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.container.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.container.readinessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.container.readinessProbe.successThreshold }}
+            failureThreshold: {{ .Values.container.readinessProbe.failureThreshold }}
+          envFrom:
+          - configMapRef:
+              name: sputnik-v1-api-configmap
+          - configMapRef:
+              name: {{ .Release.Name }}-version
+          env:
+          - name: DATABASE_HOST
+            valueFrom:
+              secretKeyRef:
+                name: db-secret
+                key: DATABASE_HOST
+          - name: DATABASE_NAME
+            valueFrom:
+              secretKeyRef:
+                name: db-secret
+                key: DATABASE_NAME
+          - name: DATABASE_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: db-secret
+                key: DATABASE_PASSWORD
+          - name: DATABASE_PORT
+            valueFrom:
+              secretKeyRef:
+                name: db-secret
+                key: DATABASE_PORT
+          - name: DATABASE_USER
+            valueFrom:
+              secretKeyRef:
+                name: db-secret
+                key: DATABASE_USER
+          - name: REDIS_URL
+            valueFrom:
+              secretKeyRef:
+                name: redis-secret
+                key: REDIS_URL
+          - name: FIREBASE_PROJECT_ID
+            valueFrom:
+              secretKeyRef:
+                name: firebase-secret
+                key: FIREBASE_PROJECT_ID
+          - name: FIREBASE_CLIENT_EMAIL
+            valueFrom:
+              secretKeyRef:
+                name: firebase-secret
+                key: FIREBASE_CLIENT_EMAIL
+          - name: FIREBASE_PRIVATE_KEY
+            valueFrom:
+              secretKeyRef:
+                name: firebase-secret
+                key: FIREBASE_PRIVATE_KEY
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}

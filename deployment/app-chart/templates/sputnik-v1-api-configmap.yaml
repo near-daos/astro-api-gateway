@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sputnik-v1-api-configmap
+data:
+  NODE_ENV: "production"
+  PORT: "3000"
