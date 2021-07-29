@@ -7,8 +7,6 @@ export class CacheConfigService implements CacheOptionsFactory {
     return {
       store: redisStore,
       url: process.env.REDIS_URL,
-      auth_pass: process.env.REDIS_PASSWORD,
-      db: process.env.REDIS_HTTP_CACHE_DB,
       ttl: parseInt(process.env.REDIS_HTTP_CACHE_TTL)
     };
   }
