@@ -7,10 +7,12 @@ import {
   Query,
   UseInterceptors
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { FindOneParams, PagingQuery } from 'src/common';
 import { Proposal } from './entities/proposal.entity';
 import { ProposalService } from './proposal.service';
 
+@ApiTags('Proposals')
 @Controller()
 @UseInterceptors(CacheInterceptor)
 export class ProposalController {

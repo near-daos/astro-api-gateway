@@ -7,10 +7,12 @@ import {
   Query,
   UseInterceptors
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { FindOneParams, PagingQuery } from 'src/common';
 import { DaoService } from './dao.service';
 import { Dao } from './entities/dao.entity';
 
+@ApiTags('DAO')
 @Controller()
 @UseInterceptors(CacheInterceptor)
 export class DaoController {
