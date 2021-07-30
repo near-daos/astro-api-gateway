@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
 import { Dao } from 'src/daos/entities/dao.entity';
 import {
@@ -86,6 +86,7 @@ export class Proposal {
   @Column("simple-json")
   votes: {}
 
+  @ApiHideProperty()
   @Exclude()
   @CreateDateColumn({
     type: 'timestamptz',
@@ -93,6 +94,7 @@ export class Proposal {
   })
   createdAt: Date;
 
+  @ApiHideProperty()
   @Exclude()
   @UpdateDateColumn({
     type: 'timestamptz',

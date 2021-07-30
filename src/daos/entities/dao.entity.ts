@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
 import {
   Column,
@@ -43,6 +43,7 @@ export class Dao {
   @Column()
   numberOfMembers: number;
 
+  @ApiHideProperty()
   @Exclude()
   @CreateDateColumn({
     type: 'timestamptz',
@@ -50,6 +51,7 @@ export class Dao {
   })
   createdAt: Date;
 
+  @ApiHideProperty()
   @Exclude()
   @UpdateDateColumn({
     type: 'timestamptz',
