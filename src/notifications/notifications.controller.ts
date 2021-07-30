@@ -1,5 +1,5 @@
 import { Controller, Post, Body, Param, Delete } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
 import { NotificationsService } from './notifications.service';
 
 import { TokenDto } from './dto/token.dto';
@@ -9,11 +9,13 @@ import { TokenDto } from './dto/token.dto';
 export class NotificationsController {
   constructor(private readonly notificationsService: NotificationsService) {}
 
+  @ApiExcludeEndpoint()
   @Post('/send-token')
   create(@Body() addTokenDto: TokenDto): Promise<void> {
     return this.notificationsService.addToken(addTokenDto);
   }
 
+  @ApiExcludeEndpoint()
   @Delete('/delete-token:id')
   remove(@Param() { token }: TokenDto): Promise<void> {
     return this.notificationsService.removeToken(token);
