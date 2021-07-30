@@ -18,7 +18,7 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('Sputnik v1 API')
-    .setDescription('The Sputnik v1 API description')
+    .setDescription('Sputnik v1 API Backend Server')
     .setVersion('1.0')
     .build();
 
