@@ -32,10 +32,10 @@ import { SearchModule } from './search/search.module';
       useClass: CacheConfigService,
     }),
     ScheduleModule.forRoot(),
-    NotificationsModule,
     DaoModule,
     ProposalModule,
-    SearchModule
+    SearchModule,
+    NotificationsModule
   ],
   controllers: [AppController],
   providers: [SputnikDaoService, AggregatorService],
