@@ -22,8 +22,6 @@ pipelines:
     feature/*:
       - step:
           name: Build and Test
-          caches:
-            - docker
           script:
             - docker build -t sputnik-v1-api .
           
