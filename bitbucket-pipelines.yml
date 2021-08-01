@@ -2,32 +2,34 @@ image: node:14.16.0
 
 pipelines:
   default:
-    - parallel:
-        - step:
-            name: Build and Test
-            caches:
-              - node
-            script:
-              - npm install
-              # - npm test
-        # - step:
-        #     name: Code linting
-        #     script:
-        #       - npm install eslint
-        #       - npx eslint .
-        #     caches:
-        #       - node
+    - step:
+        name: Build and Test
+        caches:
+          - node
+        script:
+          - npm install
+          - npm test
+    - step:
+        name: Code linting
+        script:
+          - npm install eslint
+          - npx eslint .
+        caches:
+          - node
 
   branches:
     feature/*:
       - step:
-          name: Build and Test
+          name: Build Docker
+          services:
+            - docker
           script:
             - docker build -t sputnik-v1-api .
-          
 
       - step:
-          name: Publish Docker 
+          name: Publish Docker
+          services:
+            - docker
           script: 
             - pipe: atlassian/aws-ecr-push-image:1.2.2
               variables:
