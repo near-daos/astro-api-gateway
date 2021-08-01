@@ -25,7 +25,7 @@ pipelines:
           caches:
             - docker
           script:
-            - docker build -t sputnik-v1-api -t sputnik-v1-api:${BITBUCKET_TAG} .
+            - docker build -t sputnik-v1-api:latest -t sputnik-v1-api:${BITBUCKET_TAG} .
 
       - step:
           name: Publish Docker
