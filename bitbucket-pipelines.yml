@@ -33,4 +33,8 @@ pipelines:
           script: 
             - pipe: atlassian/aws-ecr-push-image:1.2.2
               variables:
+                AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+                AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+                AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
                 IMAGE_NAME: sputnik-v1-api
+                TAGS: '${BITBUCKET_TAG} latest'
