@@ -25,7 +25,7 @@ pipelines:
           caches:
             - docker
           script:
-            - docker build -t sputnik-v1-api:latest -t sputnik-v1-api:${BITBUCKET_TAG} .
+            - docker build -t sputnik-v1-api:latest .
 
       - step:
           name: Publish Docker
@@ -40,7 +40,7 @@ pipelines:
                 AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
                 AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
                 IMAGE_NAME: sputnik-v1-api
-                TAGS: '${BITBUCKET_TAG} latest'
+                TAGS: 'latest'
 
       - step:
           name: Deploy Helm
