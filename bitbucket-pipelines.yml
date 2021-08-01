@@ -9,9 +9,9 @@ definitions:
         script:
           - npm install
           - npm test
-        script:
-          - npm install eslint
-          - npx eslint .
+        # script:
+        #   - npm install eslint
+        #   - npx eslint .
 
 pipelines:
 
