@@ -29,8 +29,8 @@ pipelines:
             - >-
               docker build 
               -t $APP_NAME:latest
-              -t $APP_NAME:$BITBUCKET_BRANCH-latest
-              -t $APP_NAME:$BITBUCKET_BRANCH-$BITBUCKET_COMMIT
+              -t $APP_NAME:develop-latest
+              -t $APP_NAME:develop-$BITBUCKET_COMMIT
               .
             - pipe: atlassian/aws-ecr-push-image:1.4.2
               variables:
@@ -40,8 +40,8 @@ pipelines:
                 IMAGE_NAME: $APP_NAME
                 TAGS: >-
                   latest
-                  $BITBUCKET_BRANCH-latest
-                  $BITBUCKET_BRANCH-$BITBUCKET_COMMIT
+                  develop-latest
+                  develop-$BITBUCKET_COMMIT
 
       - step:
           name: Helm - Build and Deploy
@@ -51,7 +51,7 @@ pipelines:
             - helm lint $CHART_FOLDER
             - >-
               helm template $APP_NAME $CHART_FOLDER 
-              --set image.tag=$BITBUCKET_BRANCH-$BITBUCKET_COMMIT
+              --set image.tag=develop-$BITBUCKET_COMMIT
               > $APP_NAME-manifest.yml
 
             - pipe: atlassian/aws-eks-kubectl-run:1.4.2
