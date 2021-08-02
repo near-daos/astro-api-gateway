@@ -41,9 +41,7 @@ pipelines:
           script:
             - echo $AWS_ACCESS_KEY_ID
             - echo $AWS_DEFAULT_REGION
-            - curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm
-            - chmod 700 get_helm.sh
-            - ./get_helm.sh
+            - curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
             - helm version
             - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin 398077236708.dkr.ecr.eu-central-1.amazonaws.com
             - export CHART_FOLDER=deployment/app-chart
