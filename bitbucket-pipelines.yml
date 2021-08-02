@@ -1,5 +1,9 @@
 image: node:14.16.0
 
+services:
+  aws:
+    image: amazon/aws-cli
+
 definitions: 
   steps:
     - step: &build-test
@@ -17,41 +21,51 @@ pipelines:
 
   branches:
     feature/*:
-      - step: *build-test
-      - step:
-          name: Build Docker
-          services:
-            - docker
-          caches:
-            - docker
-          script:
-            - docker build -t sputnik-v1-api:latest .
+      # - step: *build-test
+
+      # - step:
+      #     name: Docker - Build and Publish
+      #     services:
+      #       - docker
+      #     caches:
+      #       - docker
+      #     script:
+      #       - docker build -t sputnik-v1-api:latest .
+      #       - pipe: atlassian/aws-ecr-push-image:1.4.2
+      #         variables:
+      #           AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+      #           AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+      #           AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
+      #           IMAGE_NAME: sputnik-v1-api
+      #           TAGS: 'latest'
 
       - step:
-          name: Publish Docker
+          name: Helm - Build and Publish
+          image: helm:3.6.3
           services:
-            - docker
-          caches:
-            - docker
-          script: 
-            - pipe: atlassian/aws-ecr-push-image:1.2.2
-              variables:
-                AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
-                AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
-                AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
-                IMAGE_NAME: sputnik-v1-api
-                TAGS: 'latest'
-
-      - step:
-          name: Deploy Helm
+            - aws
           script:
-            - pipe: docker://myspace/bitbucket-k8-helm-pipe:latest
-              variables:
-                BUILD_HELM: 'yes'
-                AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
-                AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
-                AWS_REGION: $AWS_DEFAULT_REGION
-                EKS_CLUSTER: sputnik-eks
-                VERSION: $BITBUCKET_BUILD_NUMBER
-                PROJECT: sputnik-v1-api
-                NAMESPACE: sputnik
+            - echo $AWS_ACCESS_KEY_ID
+            - echo $AWS_DEFAULT_REGION
+            - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin 398077236708.dkr.ecr.eu-central-1.amazonaws.com
+            - export CHART_FOLDER=deployment/app-chart
+            - helm lint $CHART_FOLDER
+            - helm template $CHART_FOLDER
+            - helm template $CHART_FOLDER > sputnik-v1-api-manifest.yml
+            
+
+      # - step:
+      #     name: Helm - Build and Publish
+      #     services:
+      #       - aws
+      #     script:
+      #       - pipe: docker://myspace/bitbucket-k8-helm-pipe:latest
+      #         variables:
+      #           BUILD_HELM: 'yes'
+      #           AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+      #           AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+      #           AWS_REGION: $AWS_DEFAULT_REGION
+      #           EKS_CLUSTER: sputnik-eks
+      #           VERSION: $BITBUCKET_BUILD_NUMBER
+      #           PROJECT: sputnik-v1-api
+      #           NAMESPACE: sputnik
