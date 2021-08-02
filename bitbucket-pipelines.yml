@@ -62,8 +62,9 @@ pipelines:
                 CLUSTER_NAME: 'sputnik-eks'
                 KUBECTL_COMMAND: 'apply'
                 RESOURCE_PATH: '$APP_NAME-manifest.yml'
-                KUBECTL_ARGS:
+                KUBECTL_APPLY_ARGS:
                   - "-n sputnik"
+                  - "-f"
 
       # - step:
       #     name: AWS Auth
