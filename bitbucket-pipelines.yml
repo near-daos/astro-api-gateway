@@ -40,7 +40,7 @@ pipelines:
 
       - step:
           name: Helm - Build and Publish
-          image: helm:3.6.3
+          image: alpine/helm:3.6.3
           services:
             - aws
           script:
