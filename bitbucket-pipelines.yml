@@ -62,6 +62,5 @@ pipelines:
                 CLUSTER_NAME: $EKS_CLUSTER_NAME
                 KUBECTL_COMMAND: 'apply'
                 RESOURCE_PATH: '$APP_NAME-manifest.yml'
-                KUBECTL_APPLY_ARGS:
+                KUBECTL_ARGS:
                   - "-n $DEPLOYMENT_NAMESPACE"
-                  - "-f"
