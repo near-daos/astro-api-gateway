@@ -9,14 +9,17 @@ definitions:
         script:
           - npm install
           - npm test
-        # script:
-        #   - npm install eslint
-        #   - npx eslint .
+        script:
+          - npm install eslint
+          - npx eslint . || true
 
 pipelines:
+  pull-requests:
+    '**':
+      - step: *build-test
 
   branches:
-    feature/*:
+    develop:
       - step: *build-test
 
       - step:
