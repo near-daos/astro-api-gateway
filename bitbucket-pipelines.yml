@@ -1,9 +1,6 @@
 image: node:14.16.0
 
 definitions:
-  services:
-    aws:
-      image: amazon/aws-cli
   steps:
     - step: &build-test
         name: Build and test
@@ -40,12 +37,14 @@ pipelines:
 
       - step:
           name: Helm - Build and Publish
-          image: alpine/helm:3.6.3
-          services:
-            - aws
+          image: amazon/aws-cli
           script:
             - echo $AWS_ACCESS_KEY_ID
             - echo $AWS_DEFAULT_REGION
+            - curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm
+            - chmod 700 get_helm.sh
+            - ./get_helm.sh
+            - helm version
             - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin 398077236708.dkr.ecr.eu-central-1.amazonaws.com
             - export CHART_FOLDER=deployment/app-chart
             - helm lint $CHART_FOLDER
