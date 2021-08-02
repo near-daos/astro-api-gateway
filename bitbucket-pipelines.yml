@@ -47,13 +47,13 @@ pipelines:
       #       - $APP_NAME-manifest.yml
 
       - step:
-        name: Helm - Build and Deploy
-        script:
-          image: alpine/helm:3.6.3
+          name: Helm - Build and Deploy
+          image: alpine/helm:3.6.3          
           script:
             - export CHART_FOLDER=deployment/app-chart
             - helm lint $CHART_FOLDER
             - helm template $APP_NAME $CHART_FOLDER > $APP_NAME-manifest.yml
+
             - pipe: atlassian/aws-eks-kubectl-run:1.4.2
               variables:
                 AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
