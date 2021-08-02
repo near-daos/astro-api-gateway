@@ -26,14 +26,22 @@ pipelines:
           caches:
             - docker
           script:
-            - docker build -t $APP_NAME:latest .
+            - >-
+              docker build 
+              -t $APP_NAME:latest
+              -t $APP_NAME:$BITBUCKET_BRANCH-latest
+              -t $APP_NAME:$BITBUCKET_BRANCH-$BITBUCKET_COMMIT
+              .
             - pipe: atlassian/aws-ecr-push-image:1.4.2
               variables:
                 AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
                 AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
                 AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
                 IMAGE_NAME: $APP_NAME
-                TAGS: 'latest'
+                TAGS: >-
+                  latest
+                  $BITBUCKET_BRANCH-latest
+                  $BITBUCKET_BRANCH-$BITBUCKET_COMMIT
 
       - step:
           name: Helm - Build and Deploy
@@ -41,7 +49,10 @@ pipelines:
           script:
             - export CHART_FOLDER=deployment/app-chart
             - helm lint $CHART_FOLDER
-            - helm template $APP_NAME $CHART_FOLDER > $APP_NAME-manifest.yml
+            - >-
+              helm template $APP_NAME $CHART_FOLDER 
+              --set image.tag=$BITBUCKET_BRANCH-$BITBUCKET_COMMIT
+              > $APP_NAME-manifest.yml
 
             - pipe: atlassian/aws-eks-kubectl-run:1.4.2
               variables:
@@ -52,5 +63,5 @@ pipelines:
                 KUBECTL_COMMAND: 'apply'
                 RESOURCE_PATH: '$APP_NAME-manifest.yml'
                 KUBECTL_APPLY_ARGS:
-                  - "-n sputnik"
+                  - "-n $DEPLOYMENT_NAMESPACE"
                   - "-f"
