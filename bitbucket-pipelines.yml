@@ -17,34 +17,23 @@ pipelines:
 
   branches:
     feature/*:
-      # - step: *build-test
+      - step: *build-test
 
-      # - step:
-      #     name: Docker - Build and Publish
-      #     services:
-      #       - docker
-      #     caches:
-      #       - docker
-      #     script:
-      #       - docker build -t $APP_NAME:latest .
-      #       - pipe: atlassian/aws-ecr-push-image:1.4.2
-      #         variables:
-      #           AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
-      #           AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
-      #           AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
-      #           IMAGE_NAME: $APP_NAME
-      #           TAGS: 'latest'
-
-      # - step:
-      #     name: Helm - Build
-      #     image: alpine/helm:3.6.3
-      #     script:
-            # - export CHART_FOLDER=deployment/app-chart
-            # - helm lint $CHART_FOLDER
-            # - helm template $CHART_FOLDER
-            # - helm template $CHART_FOLDER > $APP_NAME-manifest.yml
-      #     artifacts:
-      #       - $APP_NAME-manifest.yml
+      - step:
+          name: Docker - Build and Publish
+          services:
+            - docker
+          caches:
+            - docker
+          script:
+            - docker build -t $APP_NAME:latest .
+            - pipe: atlassian/aws-ecr-push-image:1.4.2
+              variables:
+                AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+                AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+                AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
+                IMAGE_NAME: $APP_NAME
+                TAGS: 'latest'
 
       - step:
           name: Helm - Build and Deploy
@@ -59,53 +48,9 @@ pipelines:
                 AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
                 AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
                 AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
-                CLUSTER_NAME: 'sputnik-eks'
+                CLUSTER_NAME: $EKS_CLUSTER_NAME
                 KUBECTL_COMMAND: 'apply'
                 RESOURCE_PATH: '$APP_NAME-manifest.yml'
                 KUBECTL_APPLY_ARGS:
                   - "-n sputnik"
                   - "-f"
-
-      # - step:
-      #     name: AWS Auth
-      #     image: amazon/aws-cli
-      #     script:
-      #       - echo $AWS_ACCESS_KEY_ID
-      #       - echo $AWS_DEFAULT_REGION
-      #       - aws ecr get-login-password --region $AWS_DEFAULT_REGION | base64 > ecr_pass
-      #       - aws aks 
-      #     artifacts:
-      #       - ecr_pass
-            
-      # - step:
-      #     name: Helm - Build and Publish
-      #     script:
-      #       - export CHART_FOLDER=deployment/app-chart
-      #       - helm lint $CHART_FOLDER
-      #       - helm template $CHART_FOLDER
-      #       - helm template $CHART_FOLDER > $APP_NAME-manifest.yml
-      #       - cat ecr_pass | docker login --username AWS --password-stdin $AWS_ECR_URL
-      #       - helm chart save $CHART_FOLDER $AWS_ECR_URL/$APP_NAME-chart:$BITBUCKET_BUILD_NUMBER
-      #       - helm chart push $AWS_ECR_URL/$APP_NAME-chart:$BITBUCKET_BUILD_NUMBER
-
-      # - step:
-      #     name: Helm - Deploy
-      #     script:
-      #       - aws aks 
-            
-
-      # - step:
-      #     name: Helm - Build and Publish
-      #     services:
-      #       - aws
-      #     script:
-      #       - pipe: docker://myspace/bitbucket-k8-helm-pipe:latest
-      #         variables:
-      #           BUILD_HELM: 'yes'
-      #           AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
-      #           AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
-      #           AWS_REGION: $AWS_DEFAULT_REGION
-      #           EKS_CLUSTER: sputnik-eks
-      #           VERSION: $BITBUCKET_BUILD_NUMBER
-      #           PROJECT: sputnik-v1-api
-      #           NAMESPACE: sputnik
