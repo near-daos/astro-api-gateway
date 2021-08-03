@@ -90,5 +90,5 @@ export const getNearConfig = (env: NEAR_ENV): NearConfig => {
 };
 
 export default registerAs('near', () => getNearConfig(
-  (process.env.REACT_APP_NEAR_ENV as NEAR_ENV) || 'development',
+  (process.env.NEAR_ENV as NEAR_ENV) || 'development',
 ));

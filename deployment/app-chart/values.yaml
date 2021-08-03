@@ -110,4 +110,4 @@ version:
   branch: develop
 
 environment:
-
+  near_env: development
