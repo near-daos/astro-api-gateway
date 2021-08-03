@@ -26,7 +26,6 @@ definitions:
         script:
           - source environment.sh
           - >-
-            echo $DOCKER_ENV_TAG
             docker build
             -t $APP_NAME:latest
             -t $APP_NAME:develop-latest
@@ -77,7 +76,6 @@ pipelines:
           script:
             - >-
               echo export DOCKER_ENV_TAG=develop-$BITBUCKET_COMMIT >> environment.sh
-              echo export NEAR_ENV=development >> environment.sh
 
       - step: *build-test
 
@@ -98,7 +96,6 @@ pipelines:
           script:
             - >-
               echo export DOCKER_ENV_TAG=develop-$BITBUCKET_COMMIT >> environment.sh
-              echo export NEAR_ENV=development >> environment.sh
 
       - step: *build-test
 
