@@ -7,7 +7,6 @@ import {
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
-  ApiQuery,
   ApiResponse,
   ApiTags
 } from '@nestjs/swagger';
@@ -21,7 +20,6 @@ import { SearchService } from './search.service';
 export class SearchController {
   constructor(private readonly searchService: SearchService) { }
 
-  @ApiQuery({ name: 'query', required: true, type: SearchQuery })
   @ApiResponse({ 
     status: 200, 
     description: 'Search results: dao/proposals combined', 
