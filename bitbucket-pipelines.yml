@@ -72,11 +72,12 @@ pipelines:
   custom:
     feature:
       - step:
-         <<: *set-environment
-        script:
-          - >-
-            echo export DOCKER_ENV_TAG=develop-$BITBUCKET_COMMIT >> environment.sh
-            echo export NEAR_ENV=development >> environment.sh
+          <<: *set-environment
+
+          script:
+            - >-
+              echo export DOCKER_ENV_TAG=develop-$BITBUCKET_COMMIT >> environment.sh
+              echo export NEAR_ENV=development >> environment.sh
 
       - step: *build-test
 
@@ -92,11 +93,12 @@ pipelines:
   branches:
     develop:
       - step:
-         <<: *set-environment
-        script:
-          - >-
-            echo export DOCKER_ENV_TAG=develop-$BITBUCKET_COMMIT >> environment.sh
-            echo export NEAR_ENV=development >> environment.sh
+          <<: *set-environment
+
+          script:
+            - >-
+              echo export DOCKER_ENV_TAG=develop-$BITBUCKET_COMMIT >> environment.sh
+              echo export NEAR_ENV=development >> environment.sh
 
       - step: *build-test
 
