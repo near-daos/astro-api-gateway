@@ -1,0 +1,105 @@
+image: node:14.16.0
+
+definitions:
+  steps:
+    - step: &set-environment
+        name: Set Environment
+        artifacts:
+          - environment.sh
+
+    - step: &build-test
+        name: Build and test
+        caches:
+          - node
+        script:
+          - npm install
+          - npm test
+          - npm install eslint
+          - npx eslint . || true
+    
+    - step: &docker-build-publish
+        name: Docker - Build and Publish
+        services:
+          - docker
+        caches:
+          - docker
+        script:
+          - source environment.sh
+          - >-
+            docker build
+            -t $APP_NAME:latest
+            -t $APP_NAME:develop-latest
+            -t $APP_NAME:$DOCKER_ENV_TAG
+            .
+
+          - pipe: atlassian/aws-ecr-push-image:1.4.2
+            variables:
+              AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+              AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+              AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
+              IMAGE_NAME: $APP_NAME
+              TAGS: >-
+                latest
+                develop-latest
+                $DOCKER_ENV_TAG
+                
+    - step: &helm-build-deploy
+        name: Helm - Build and Deploy
+        image: alpine/helm:3.6.3
+        script:
+          - source environment.sh
+          - export CHART_FOLDER=deployment/app-chart
+          - helm lint $CHART_FOLDER
+          - >-
+            helm template $APP_NAME $CHART_FOLDER
+            --set image.tag=$DOCKER_ENV_TAG
+            --set environment.near_env=$NEAR_ENV
+            > $APP_NAME-manifest.yml
+
+          - pipe: atlassian/aws-eks-kubectl-run:1.4.2
+            variables:
+              AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+              AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+              AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
+              CLUSTER_NAME: $EKS_CLUSTER_NAME
+              KUBECTL_COMMAND: 'apply'
+              RESOURCE_PATH: '$APP_NAME-manifest.yml'
+              KUBECTL_ARGS:
+                - "--namespace=$DEPLOYMENT_NAMESPACE"
+
+pipelines:
+  custom:
+    feature:
+      - step:
+          <<: *set-environment
+
+          script:
+            - >-
+              echo export DOCKER_ENV_TAG=develop-$BITBUCKET_COMMIT >> environment.sh
+
+      - step: *build-test
+
+      - step: *docker-build-publish
+          
+      - step: *helm-build-deploy
+        deployment: Development
+
+  pull-requests:
+    '**':
+      - step: *build-test
+
+  branches:
+    develop:
+      - step:
+          <<: *set-environment
+
+          script:
+            - >-
+              echo export DOCKER_ENV_TAG=develop-$BITBUCKET_COMMIT >> environment.sh
+
+      - step: *build-test
+
+      - step: *docker-build-publish
+          
+      - step: *helm-build-deploy
+        deployment: Development

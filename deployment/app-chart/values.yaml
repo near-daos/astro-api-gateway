@@ -1,0 +1,113 @@
+# Default values for sputnik-v1-api.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: 398077236708.dkr.ecr.eu-central-1.amazonaws.com
+  tag: latest
+  name: sputnik-v1-api
+  pullPolicy: Always
+
+imagePullSecrets: [ ]
+nameOverride: ""
+fullnameOverride: ""
+
+container:
+  # Specifies the internal container port
+  internalPort: 3000
+  # Specifies the endpoint for liveness checks
+  livenessProbe:
+    failureThreshold: 10
+    initialDelaySeconds: 90
+    periodSeconds: 60
+    successThreshold: 1
+    timeoutSeconds: 60
+    port: 3000
+    path: /api/v1
+  readinessProbe:
+    failureThreshold: 10
+    initialDelaySeconds: 20
+    periodSeconds: 60
+    successThreshold: 1
+    timeoutSeconds: 60
+    port: 3000
+    path: /api/v1
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: false
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name:
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: LoadBalancer
+  port: 80
+  targetPort: 3000
+
+ingress:
+  enabled: false
+  annotations: #{}
+    kubernetes.io/ingress.class: nginx
+    kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: sputnik-v1-api-dev
+      paths:
+        - /
+  tls:
+   - secretName: sputnik-v1-api-tls
+     hosts:
+       - sputnik-v1-api-dev
+dns:
+  domainName: ".westus2.dipd.sbp.eyclienthub.com"
+
+certificate:
+  enabled: false
+  name: cert
+  tls: true
+  issuerRef:
+    name: letsencrypt-prod
+    kind: Issuer
+  # commonName: ".westus2.dipd.sbp.eyclienthub.com"
+  dnsNames:
+    - sputnik-v1-api-dev
+
+# resources:
+#   # We usually recommend not to specify default resources and to leave this as a conscious
+#   # choice for the user. This also increases chances charts run on environments with little
+#   # resources, such as Minikube. If you do want to specify resources, uncomment the following
+#   # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+#   limits:
+#     cpu: 1000m
+#     memory: 3G
+#   requests:
+#     cpu: 500m
+#     memory: 2G
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+version:
+  commit: latest
+  branch: develop
+
+environment:
+  near_env: development

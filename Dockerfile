@@ -19,7 +19,7 @@ COPY . .
 RUN npm run build
 
 # remove development dependencies
-RUN npm prune --production
+# RUN npm prune --production
 
 # run node prune
 RUN /usr/local/bin/node-prune
@@ -42,4 +42,5 @@ WORKDIR /usr/src/app
 COPY --from=development /usr/src/app/dist ./dist
 COPY --from=development /usr/src/app/node_modules ./node_modules
 
+EXPOSE 3000
 CMD ["node", "dist/main"]

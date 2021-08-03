@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import { credential, initializeApp, app } from 'firebase-admin';
+import { app } from 'firebase-admin';
 import { Repository } from 'typeorm';
 import { TokenDto } from './dto/token.dto';
 import { Token } from './entities/token.entity';
@@ -15,13 +15,7 @@ export class NotificationsService {
     @InjectRepository(Token)
     private readonly tokenRepository: Repository<Token>,
   ) {
-    this.firebaseApp = initializeApp({
-      credential: credential.cert({
-        projectId: configService.get('firebase.projectId'),
-        privateKey: configService.get('firebase.privateKey'),
-        clientEmail: configService.get('firebase.clientEmail'),
-      }),
-    });
+    this.firebaseApp = configService.get('firebase')
   }
 
   async sendNotification(

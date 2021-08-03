@@ -29,18 +29,22 @@
     "@nestjs/schedule": "^0.4.3",
     "@nestjs/swagger": "^4.8.2",
     "@nestjs/typeorm": "^7.1.5",
+    "@supercharge/promise-pool": "^1.7.0",
     "aws-sdk": "^2.937.0",
     "cache-manager": "^3.4.4",
     "cache-manager-redis-store": "^2.0.0",
+    "camelcase-keys": "^7.0.0",
     "class-transformer": "^0.4.0",
     "class-validator": "^0.13.1",
     "firebase-admin": "^9.10.0",
+    "near-api-js": "^0.42.0",
     "pg": "^8.6.0",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^6.6.6",
     "swagger-ui-express": "^4.1.6",
-    "typeorm": "^0.2.34"
+    "typeorm": "^0.2.34",
+    "typeorm-naming-strategies": "^2.0.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^7.6.0",

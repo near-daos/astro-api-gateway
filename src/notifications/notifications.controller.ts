@@ -1,5 +1,5 @@
 import { Controller, Post, Body, Param, Delete } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBadRequestResponse, ApiNotFoundResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { NotificationsService } from './notifications.service';
 
 import { TokenDto } from './dto/token.dto';
@@ -9,12 +9,26 @@ import { TokenDto } from './dto/token.dto';
 export class NotificationsController {
   constructor(private readonly notificationsService: NotificationsService) {}
 
-  @Post('/send-token')
+  @ApiResponse({
+    status: 201,
+    description: 'Created'
+  })
+  @ApiBadRequestResponse({
+    description: 'token should not be empty / token must be a string'
+  })
+  @Post('/token')
   create(@Body() addTokenDto: TokenDto): Promise<void> {
     return this.notificationsService.addToken(addTokenDto);
   }
 
-  @Delete('/delete-token:id')
+  @ApiResponse({
+    status: 200,
+    description: 'OK'
+  })
+  @ApiNotFoundResponse({
+    description: 'Token with id not found'
+  })
+  @Delete('/token/:token')
   remove(@Param() { token }: TokenDto): Promise<void> {
     return this.notificationsService.removeToken(token);
   }
