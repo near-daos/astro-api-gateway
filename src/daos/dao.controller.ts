@@ -10,7 +10,6 @@ import {
 import {
   ApiBadRequestResponse,
   ApiParam,
-  ApiQuery,
   ApiResponse,
   ApiTags
 } from '@nestjs/swagger';
@@ -26,10 +25,6 @@ export class DaoController {
     private readonly daoService: DaoService
   ) { }
 
-  @ApiQuery({ 
-    name: 'query', 
-    type: PagingQuery 
-  })
   @ApiResponse({ 
     status: 200, 
     description: 'List of aggregated Sputnik DAOs', 

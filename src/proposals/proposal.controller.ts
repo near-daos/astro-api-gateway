@@ -10,7 +10,6 @@ import {
 import {
   ApiBadRequestResponse,
   ApiParam,
-  ApiQuery,
   ApiResponse,
   ApiTags
 } from '@nestjs/swagger';
@@ -26,10 +25,6 @@ export class ProposalController {
     private readonly proposalService: ProposalService
   ) { }
 
-  @ApiQuery({ 
-    name: 'query', 
-    type: PagingQuery 
-  })
   @ApiResponse({ 
     status: 200, 
     description: 'List of aggregated Sputnik DAO Proposals', 
