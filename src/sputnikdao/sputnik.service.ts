@@ -13,6 +13,8 @@ import { formatTimestamp } from '../utils';
 import { CreateDaoDto } from 'src/daos/dto/dao.dto';
 import { CreateProposalDto } from 'src/proposals/dto/proposal.dto';
 import PromisePool from '@supercharge/promise-pool';
+import { NearService } from 'src/near/near.service';
+import { Account as NearAccount } from 'src/near/entities/account.entity';
 
 @Injectable()
 export class SputnikDaoService {
@@ -24,7 +26,10 @@ export class SputnikDaoService {
 
   private account!: Account;
 
-  constructor(private readonly configService: ConfigService) { }
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly nearService: NearService
+  ) { }
 
   //TODO: move to async useFactory provider!!!
   public async init(): Promise<void> {
@@ -47,8 +52,16 @@ export class SputnikDaoService {
     return await this.factoryContract.get_dao_list();
   }
 
-  public async getDaoList(daoIds: string[]): Promise<any[]> {
+  public async getDaoList(daoIds: string[]): Promise<CreateDaoDto[]> {
     const list: string[] = daoIds || await this.factoryContract.get_dao_list();
+
+    const nearAccounts: NearAccount[] = await this.nearService.findAccountsByContractName(this.account.accountId);
+
+    const daoTxHashes = (await this.nearService
+      .findReceiptsByReceiptIds(nearAccounts.map(({ createdByReceiptId }) =>
+        (createdByReceiptId))))
+      .reduce((acc, { receiverAccountId, originatedFromTransactionHash }) =>
+        ({ ...acc, [receiverAccountId]: originatedFromTransactionHash }), {});
 
     const { results: daos, errors } = await PromisePool
       .withConcurrency(5)
@@ -60,7 +73,7 @@ export class SputnikDaoService {
       this.logger.error(errors);
     }
 
-    return daos;
+    return daos.map(dao => ({ ...dao, txHash: daoTxHashes[dao.id] }));
   }
 
   public async getProposals(daoIds: string[]): Promise<CreateProposalDto[]> {

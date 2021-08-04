@@ -23,6 +23,7 @@ export class DaoService {
     dao.members = daoDto.members;
     dao.numberOfMembers = daoDto.numberOfMembers;
     dao.numberOfProposals = daoDto.numberOfProposals;
+    dao.txHash = daoDto.txHash;
 
     return this.daoRepository.save(dao);
   }

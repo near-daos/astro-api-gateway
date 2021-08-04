@@ -7,4 +7,5 @@ export class CreateDaoDto {
   members: string[];
   numberOfProposals: number;
   numberOfMembers: number;
+  txHash: string;
 }

@@ -23,31 +23,39 @@ export class NearService {
     private readonly transactionActionRepository: Repository<TransactionAction>,
   ) { }
 
-  async findAccountByAccountId(accountId: String): Promise<Account[]> {
+  /**
+   * Using parent contract name to retrieve child information since
+   * child accounts are built based on parent contract name domain
+   * see: 
+   *    genesis.sputnik-v1.testnet 
+   * is built on top of 
+   *    sputnik-v1.testnet account
+   */
+  async findAccountsByContractName(contractName: String): Promise<Account[]> {
     return this.accountRepository
       .createQueryBuilder('account')
-      .where("account.account_id like :id", { id: `%${accountId}%` })
+      .where("account.account_id like :id", { id: `%${contractName}%` })
       .getMany();
   }
 
-  async findReceiptByReceiptId(receiptId: String): Promise<Receipt> {
+  async findReceiptsByReceiptIds(receiptIds: String[]): Promise<Receipt[]> {
     return this.receiptRepository
       .createQueryBuilder('receipt')
-      .where("receipt.receipt_id like :id", { id: `%${receiptId}%` })
-      .getOne();
-  }
-
-  async findTransactionsByReceiverAccountId(receiverAccountId: String): Promise<Transaction[]> {
-    return this.transactionRepository
-      .createQueryBuilder('transaction')
-      .where("transaction.receiver_account_id like :id", { id: `%${receiverAccountId}%` })
+      .where("receipt.receipt_id = ANY(ARRAY[:...ids])", { ids: receiptIds })
       .getMany();
   }
 
-  async findTransactionActionByHash(txHash: String): Promise<TransactionAction> {
+  async findTransactionsByReceiverAccountIds(receiverAccountIds: String[]): Promise<Transaction[]> {
+    return this.transactionRepository
+      .createQueryBuilder('transaction')
+      .where("transaction.receiver_account_id = ANY(ARRAY[:...ids])", { ids: receiverAccountIds })
+      .getMany();
+  }
+
+  async findTransactionActionsByHashes(txHashes: String[]): Promise<TransactionAction[]> {
     return this.transactionActionRepository
       .createQueryBuilder('transaction_action')
-      .where("transaction_action.transaction_hash like :hash", { hash: `%${txHash}%` })
-      .getOne();
+      .where("transaction_action.transaction_hash ANY(ARRAY[:...hashes])", { hashes: txHashes })
+      .getMany();
   }
 }

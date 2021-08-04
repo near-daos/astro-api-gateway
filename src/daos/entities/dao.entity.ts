@@ -43,6 +43,10 @@ export class Dao {
   @Column()
   numberOfMembers: number;
 
+  @ApiProperty()
+  @Column({ nullable: true })
+  txHash: string;
+
   @ApiHideProperty()
   @Exclude()
   @CreateDateColumn({
