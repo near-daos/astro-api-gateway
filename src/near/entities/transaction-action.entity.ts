@@ -21,5 +21,5 @@ export class TransactionAction {
   actionKind: string;
 
   @Column({ type: "simple-json" })
-  args: string;
+  args: { };
 }

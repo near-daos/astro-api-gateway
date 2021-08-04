@@ -85,6 +85,10 @@ export class Proposal {
   @ApiProperty()
   @Column("simple-json")
   votes: {}
+  
+  @ApiProperty()
+  @Column({ nullable: true })
+  txHash: string;
 
   @ApiHideProperty()
   @Exclude()

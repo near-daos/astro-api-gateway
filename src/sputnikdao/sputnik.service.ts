@@ -79,12 +79,23 @@ export class SputnikDaoService {
   public async getProposals(daoIds: string[]): Promise<CreateProposalDto[]> {
     const ids: string[] = daoIds || await this.factoryContract.getDaoIds();
 
+    const transactionsByAccountId = (await this.nearService.findTransactionsByReceiverAccountIds(ids))
+      .filter(({ transactionAction }) => (transactionAction.args as any).method_name == 'add_proposal')
+      .reduce((acc, cur) =>
+        ({ ...acc, [cur.receiverAccountId]: [ ...(acc[cur.receiverAccountId] || []), cur ] }), {});
+
     const { results: proposals, errors } = await PromisePool
       .withConcurrency(5)
       .for(ids)
       .process(async daoId => (await this.getProposalsByDao(daoId)));
 
-    return proposals.reduce((acc, prop) => acc.concat(prop), []);
+    const proposalsFlat = proposals.reduce((acc, prop) => acc.concat(prop), []);
+
+    return proposalsFlat
+      .map(proposal => ({
+        ...proposal,
+        txHash: transactionsByAccountId[proposal.daoId][proposal.id].transactionHash
+      }));
   }
 
   public async getProposalsByDao(contractId: string): Promise<CreateProposalDto[]> {

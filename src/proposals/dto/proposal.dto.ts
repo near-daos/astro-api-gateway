@@ -34,5 +34,6 @@ export class CreateProposalDto {
   vote_no: number;
   votes: {
     [key: string]: 'Yes' | 'No';
-  }
+  };
+  txHash: string;
 }

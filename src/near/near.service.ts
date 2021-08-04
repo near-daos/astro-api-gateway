@@ -48,7 +48,9 @@ export class NearService {
   async findTransactionsByReceiverAccountIds(receiverAccountIds: String[]): Promise<Transaction[]> {
     return this.transactionRepository
       .createQueryBuilder('transaction')
+      .leftJoinAndSelect('transaction.transactionAction', 'transaction_actions')
       .where("transaction.receiver_account_id = ANY(ARRAY[:...ids])", { ids: receiverAccountIds })
+      .orderBy('transaction.block_timestamp', 'ASC')
       .getMany();
   }
 
