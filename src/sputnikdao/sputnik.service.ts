@@ -14,7 +14,6 @@ import { CreateDaoDto } from 'src/daos/dto/dao.dto';
 import { CreateProposalDto } from 'src/proposals/dto/proposal.dto';
 import PromisePool from '@supercharge/promise-pool';
 import { NearService } from 'src/near/near.service';
-import { Account as NearAccount } from 'src/near/entities/account.entity';
 
 @Injectable()
 export class SputnikDaoService {
@@ -55,13 +54,9 @@ export class SputnikDaoService {
   public async getDaoList(daoIds: string[]): Promise<CreateDaoDto[]> {
     const list: string[] = daoIds || await this.factoryContract.get_dao_list();
 
-    const nearAccounts: NearAccount[] = await this.nearService.findAccountsByContractName(this.account.accountId);
-
-    const daoTxHashes = (await this.nearService
-      .findReceiptsByReceiptIds(nearAccounts.map(({ createdByReceiptId }) =>
-        (createdByReceiptId))))
-      .reduce((acc, { receiverAccountId, originatedFromTransactionHash }) =>
-        ({ ...acc, [receiverAccountId]: originatedFromTransactionHash }), {});
+    const daoTxHashes = (await this.nearService.findAccountsByContractName(this.account.accountId))
+      .reduce((acc, { accountId, receipt }) =>
+        ({ ...acc, [accountId]: receipt.originatedFromTransactionHash }), {});
 
     const { results: daos, errors } = await PromisePool
       .withConcurrency(5)
