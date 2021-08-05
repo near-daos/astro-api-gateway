@@ -56,52 +56,14 @@ spec:
               name: sputnik-v1-api-configmap
           - configMapRef:
               name: {{ .Release.Name }}-version
-          env:
-          - name: DATABASE_HOST
-            valueFrom:
-              secretKeyRef:
-                name: db-secret
-                key: DATABASE_HOST
-          - name: DATABASE_NAME
-            valueFrom:
-              secretKeyRef:
-                name: db-secret
-                key: DATABASE_NAME
-          - name: DATABASE_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: db-secret
-                key: DATABASE_PASSWORD
-          - name: DATABASE_PORT
-            valueFrom:
-              secretKeyRef:
-                name: db-secret
-                key: DATABASE_PORT
-          - name: DATABASE_USER
-            valueFrom:
-              secretKeyRef:
-                name: db-secret
-                key: DATABASE_USER
-          - name: REDIS_URL
-            valueFrom:
-              secretKeyRef:
-                name: redis-secret
-                key: REDIS_URL
-          - name: FIREBASE_PROJECT_ID
-            valueFrom:
-              secretKeyRef:
-                name: firebase-secret
-                key: FIREBASE_PROJECT_ID
-          - name: FIREBASE_CLIENT_EMAIL
-            valueFrom:
-              secretKeyRef:
-                name: firebase-secret
-                key: FIREBASE_CLIENT_EMAIL
-          - name: FIREBASE_PRIVATE_KEY
-            valueFrom:
-              secretKeyRef:
-                name: firebase-secret
-                key: FIREBASE_PRIVATE_KEY
+          - secretRef:
+              name: db-secret
+          - secretRef:
+              name: near-indexer-db-secret
+          - secretRef:
+              name: redis-secret
+          - secretRef:
+              name: firebase-secret
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
