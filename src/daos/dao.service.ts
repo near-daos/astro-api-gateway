@@ -13,18 +13,7 @@ export class DaoService {
   ) { }
 
   create(daoDto: CreateDaoDto): Promise<Dao> {
-    const dao = new Dao();
-
-    dao.id = daoDto.id;
-    dao.amount = daoDto.amount;
-    dao.bond = daoDto.bond;
-    dao.purpose = daoDto.purpose;
-    dao.votePeriod = daoDto.votePeriod;
-    dao.members = daoDto.members;
-    dao.numberOfMembers = daoDto.numberOfMembers;
-    dao.numberOfProposals = daoDto.numberOfProposals;
-
-    return this.daoRepository.save(dao);
+    return this.daoRepository.save(daoDto);
   }
 
   async find({ offset, limit }: PagingQuery): Promise<Dao[]> {

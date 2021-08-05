@@ -47,7 +47,7 @@ export class SputnikDaoService {
     return await this.factoryContract.get_dao_list();
   }
 
-  public async getDaoList(daoIds: string[]): Promise<any[]> {
+  public async getDaoList(daoIds: string[]): Promise<CreateDaoDto[]> {
     const list: string[] = daoIds || await this.factoryContract.get_dao_list();
 
     const { results: daos, errors } = await PromisePool
@@ -115,7 +115,7 @@ export class SputnikDaoService {
       purpose: async (): Promise<string> => (contract.get_purpose()),
       votePeriod: async (): Promise<string> => (formatTimestamp(await contract.get_vote_period())),
       numberOfProposals: async (): Promise<number> => (contract.get_num_proposals()),
-      members: async (): Promise<string[]> => (contract.get_council()),
+      council: async (): Promise<string[]> => (contract.get_council()),
     }
 
     const dao = new CreateDaoDto();
@@ -133,7 +133,7 @@ export class SputnikDaoService {
       return null;
     }
 
-    return { ...dao, numberOfMembers: dao.members.length, id: daoId };
+    return { ...dao, councilSeats: dao.council.length, id: daoId };
   }
 
   private getContract(contractId: string): Contract & any {

@@ -16,6 +16,8 @@ import { DaoModule } from './daos/dao.module';
 import { AggregatorService } from './aggregator/aggregator.service';
 import { ProposalModule } from './proposals/proposal.module';
 import { SearchModule } from './search/search.module';
+import { NearModule } from './near/near.module';
+import { NEAR_INDEXER_DB_CONNECTION } from './common/constants';
 
 @Module({
   imports: [
@@ -28,6 +30,10 @@ import { SearchModule } from './search/search.module';
     TypeOrmModule.forRootAsync({
       useClass: TypeOrmConfigService,
     }),
+    TypeOrmModule.forRootAsync({
+      name: NEAR_INDEXER_DB_CONNECTION,
+      useClass: TypeOrmConfigService,
+    }),
     CacheModule.registerAsync({
       useClass: CacheConfigService,
     }),
@@ -35,7 +41,8 @@ import { SearchModule } from './search/search.module';
     DaoModule,
     ProposalModule,
     SearchModule,
-    NotificationsModule
+    NotificationsModule,
+    NearModule
   ],
   controllers: [AppController],
   providers: [SputnikDaoService, AggregatorService],
