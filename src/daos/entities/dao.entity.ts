@@ -32,12 +32,16 @@ export class Dao {
   votePeriod: string;
 
   @ApiProperty()
-  @Column("text", { array: true })
-  members: string[];
+  @Column("text", { array: true, nullable: true })
+  council: string[];
 
   @ApiProperty()
   @Column()
   numberOfProposals: number;
+
+  @ApiProperty()
+  @Column({ nullable: true })
+  councilSeats: number;
 
   @ApiProperty()
   @Column()

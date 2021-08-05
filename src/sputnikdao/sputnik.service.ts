@@ -13,7 +13,6 @@ import { formatTimestamp } from '../utils';
 import { CreateDaoDto } from 'src/daos/dto/dao.dto';
 import { CreateProposalDto } from 'src/proposals/dto/proposal.dto';
 import PromisePool from '@supercharge/promise-pool';
-import { NearService } from 'src/near/near.service';
 
 @Injectable()
 export class SputnikDaoService {
@@ -25,10 +24,7 @@ export class SputnikDaoService {
 
   private account!: Account;
 
-  constructor(
-    private readonly configService: ConfigService,
-    private readonly nearService: NearService
-  ) { }
+  constructor(private readonly configService: ConfigService) { }
 
   //TODO: move to async useFactory provider!!!
   public async init(): Promise<void> {
@@ -54,10 +50,6 @@ export class SputnikDaoService {
   public async getDaoList(daoIds: string[]): Promise<CreateDaoDto[]> {
     const list: string[] = daoIds || await this.factoryContract.get_dao_list();
 
-    const daoTxHashes = (await this.nearService.findAccountsByContractName(this.account.accountId))
-      .reduce((acc, { accountId, receipt }) =>
-        ({ ...acc, [accountId]: receipt.originatedFromTransactionHash }), {});
-
     const { results: daos, errors } = await PromisePool
       .withConcurrency(5)
       .for(list)
@@ -68,29 +60,18 @@ export class SputnikDaoService {
       this.logger.error(errors);
     }
 
-    return daos.map(dao => ({ ...dao, txHash: daoTxHashes[dao.id] }));
+    return daos;
   }
 
   public async getProposals(daoIds: string[]): Promise<CreateProposalDto[]> {
     const ids: string[] = daoIds || await this.factoryContract.getDaoIds();
-
-    const transactionsByAccountId = (await this.nearService.findTransactionsByReceiverAccountIds(ids))
-      .filter(({ transactionAction }) => (transactionAction.args as any).method_name == 'add_proposal')
-      .reduce((acc, cur) =>
-        ({ ...acc, [cur.receiverAccountId]: [ ...(acc[cur.receiverAccountId] || []), cur ] }), {});
 
     const { results: proposals, errors } = await PromisePool
       .withConcurrency(5)
       .for(ids)
       .process(async daoId => (await this.getProposalsByDao(daoId)));
 
-    const proposalsFlat = proposals.reduce((acc, prop) => acc.concat(prop), []);
-
-    return proposalsFlat
-      .map(proposal => ({
-        ...proposal,
-        txHash: transactionsByAccountId[proposal.daoId][proposal.id].transactionHash
-      }));
+    return proposals.reduce((acc, prop) => acc.concat(prop), []);
   }
 
   public async getProposalsByDao(contractId: string): Promise<CreateProposalDto[]> {
@@ -134,7 +115,7 @@ export class SputnikDaoService {
       purpose: async (): Promise<string> => (contract.get_purpose()),
       votePeriod: async (): Promise<string> => (formatTimestamp(await contract.get_vote_period())),
       numberOfProposals: async (): Promise<number> => (contract.get_num_proposals()),
-      members: async (): Promise<string[]> => (contract.get_council()),
+      council: async (): Promise<string[]> => (contract.get_council()),
     }
 
     const dao = new CreateDaoDto();
@@ -152,7 +133,7 @@ export class SputnikDaoService {
       return null;
     }
 
-    return { ...dao, numberOfMembers: dao.members.length, id: daoId };
+    return { ...dao, councilSeats: dao.council.length, id: daoId };
   }
 
   private getContract(contractId: string): Contract & any {

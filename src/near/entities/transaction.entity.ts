@@ -21,5 +21,8 @@ export class Transaction {
   receiverAccountId: string;
 
   @Column()
+  signerAccountId: string;
+
+  @Column()
   blockTimestamp: number;
 }

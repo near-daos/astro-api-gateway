@@ -4,8 +4,9 @@ export class CreateDaoDto {
   bond: string;
   purpose: string;
   votePeriod: string;
-  members: string[];
+  council: string[];
   numberOfProposals: number;
+  councilSeats: number;
   numberOfMembers: number;
   txHash: string;
 }
