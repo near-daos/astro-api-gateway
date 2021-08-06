@@ -33,12 +33,12 @@ export class AggregatorService {
     const daoIds = await this.sputnikDaoService.getDaoIds();
 
     this.logger.log('Checking data relevance...')
-    const [ { transactionHash }, { transactionHash: nearTransactionHash } ] = await Promise.all([
+    const [ tx, nearTx ] = await Promise.all([
       this.transactionService.lastTransaction(),
       this.nearService.lastTransaction(daoIds)
     ]);
 
-    if (transactionHash === nearTransactionHash) {
+    if (tx && nearTx && tx.transactionHash === nearTx.transactionHash) {
       return this.logger.log('Data is up to date. Skipping data aggregation.');
     }
 
