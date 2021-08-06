@@ -15,7 +15,7 @@ export class TransactionService {
     return this.transactionRepository.save(transaction);
   }
 
-  count(): Promise<Number> {
-    return this.transactionRepository.count();
+  lastTransaction(): Promise<Transaction> {
+    return this.transactionRepository.findOne({ order: { blockTimestamp: 'DESC' } });
   }
 }

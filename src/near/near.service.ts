@@ -40,11 +40,12 @@ export class NearService {
       .getMany();
   }
 
-  async transactionCount(receiverAccountIds: String[]): Promise<Number> {
+  async lastTransaction(receiverAccountIds: String[]): Promise<Transaction> {
     return this.transactionRepository
       .createQueryBuilder('transaction')
       .leftJoinAndSelect('transaction.transactionAction', 'transaction_actions')
       .where("transaction.receiver_account_id = ANY(ARRAY[:...ids])", { ids: receiverAccountIds })
-      .getCount()
+      .orderBy('transaction.block_timestamp', 'DESC')
+      .getOne()
   }
 }
