@@ -59,6 +59,8 @@ spec:
           - secretRef:
               name: db-secret
           - secretRef:
+              name: near-indexer-db-secret
+          - secretRef:
               name: redis-secret
           - secretRef:
               name: firebase-secret
