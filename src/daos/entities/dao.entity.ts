@@ -44,7 +44,7 @@ export class Dao {
   councilSeats: number;
 
   @ApiProperty()
-  @Column()
+  @Column({ nullable: true })
   numberOfMembers: number;
 
   @ApiProperty()

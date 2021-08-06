@@ -4,11 +4,13 @@ import { SputnikDaoService } from "src/sputnikdao/sputnik.service";
 import { ProposalService } from "src/proposals/proposal.service";
 import { isNotNull } from "src/utils/guards";
 import { NearService } from "src/near/near.service";
+import { TransactionService } from "src/transactions/transaction.service";
 import { ConfigService } from "@nestjs/config";
 import { Transaction } from "src/near/entities/transaction.entity";
 import { CreateDaoDto } from "src/daos/dto/dao.dto";
 import { Account } from "src/near/entities/account.entity";
 import { CreateProposalDto } from "src/proposals/dto/proposal.dto";
+import { Cron, CronExpression } from "@nestjs/schedule";
 
 @Injectable()
 export class AggregatorService {
@@ -19,12 +21,26 @@ export class AggregatorService {
     private readonly sputnikDaoService: SputnikDaoService,
     private readonly daoService: DaoService,
     private readonly proposalService: ProposalService,
-    private readonly nearService: NearService
+    private readonly nearService: NearService,
+    private readonly transactionService: TransactionService
   ) { }
 
+  @Cron(CronExpression.EVERY_10_SECONDS)
   public async aggregate(): Promise<void> {
+    this.logger.log('Scheduling Data Aggregation...');
+
     this.logger.log('Collecting DAO IDs...');
     const daoIds = await this.sputnikDaoService.getDaoIds();
+
+    this.logger.log('Checking data relevance...')
+    const [ { transactionHash }, { transactionHash: nearTransactionHash } ] = await Promise.all([
+      this.transactionService.lastTransaction(),
+      this.nearService.lastTransaction(daoIds)
+    ]);
+
+    if (transactionHash === nearTransactionHash) {
+      return this.logger.log('Data is up to date. Skipping data aggregation.');
+    }
 
     const { contractName } = this.configService.get('near');
 
@@ -48,6 +64,9 @@ export class AggregatorService {
     this.logger.log('Persisting aggregated Proposals...');
     await Promise.all(enrichedProposals.map(proposal => this.proposalService.create(proposal)));
     this.logger.log('Finished Proposals aggregation.');
+
+    this.logger.log('Persisting aggregated Transactions...');
+    await Promise.all(transactions.map(transaction => this.transactionService.create(transaction)));
   }
 
   private enrichDaos(daos: CreateDaoDto[], accounts: Account[], transactions: Transaction[]): CreateDaoDto[] {
