@@ -12,7 +12,7 @@ import { Account } from "src/near/entities/account.entity";
 import { CreateProposalDto } from "src/proposals/dto/proposal.dto";
 import { Cron, CronExpression } from "@nestjs/schedule";
 import { buildDaoId, buildProposalId } from "src/utils";
-import { Message } from "src/events/types/message.event";
+import { DaoUpdateMessage } from "src/events/messages/dao-update.message";
 import { EventService } from "src/events/events.service";
 
 @Injectable()
@@ -63,12 +63,6 @@ export class AggregatorService {
         accId === contractName && (action.args as any).method_name === 'create')
       .map(({ transactionAction: action }) => (buildDaoId((action.args as any).args_json.name, contractName)));
 
-    if (accountDaoIds.length) {
-      this.logger.log(`DAOs updated: ${accountDaoIds.join(',')}`)
-
-      await this.eventService.send(new Message(JSON.stringify(accountDaoIds)));
-    }
-
     //TODO: Re-work this for cases when proposal is created - there is no 'id' in transaction action payload
     const proposalTransactions = transactions
       .filter(({ receiverAccountId }) => receiverAccountId !== contractName)
@@ -84,7 +78,7 @@ export class AggregatorService {
     if (proposalTransactions.length) {
       this.logger.log(`Proposals updated for DAOs: ${proposalDaoIds.join(',')}`);
       
-      await this.eventService.send(new Message(JSON.stringify(proposalDaoIds)));
+      await this.eventService.sendDaoUpdates(new DaoUpdateMessage(proposalDaoIds));
     }
 
     this.logger.log('Aggregating data...');

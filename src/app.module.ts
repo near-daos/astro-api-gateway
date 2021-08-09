@@ -8,7 +8,7 @@ import configuration, {
   validationSchema
 } from './config';
 import { DaoModule } from './daos/dao.module';
-import { NotificationsApiModule } from './notifications/notifications-api.module';
+import { SubscriptionModule } from './subscriptions/subscription.module';
 import { ProposalModule } from './proposals/proposal.module';
 import { SearchModule } from './search/search.module';
 import { TransactionModule } from './transactions/transaction.module';
@@ -31,7 +31,7 @@ import { TransactionModule } from './transactions/transaction.module';
     ProposalModule,
     SearchModule,
     TransactionModule,
-    NotificationsApiModule
+    SubscriptionModule
   ],
   controllers: [AppController]
 })
