@@ -3,9 +3,10 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import configuration, { TypeOrmConfigService, validationSchema } from '../config';
-import { Token } from './entities/token.entity';
+import { Subscription } from 'src/subscriptions/entities/subscription.entity';
 import { NotificationsController } from './notifications.controller';
-import { NotificationsService } from './notifications.service';
+import { SubscriptionModule } from 'src/subscriptions/subscription.module';
+import { NotificationService } from './notifications.service';
 
 @Module({
   imports: [
@@ -18,10 +19,10 @@ import { NotificationsService } from './notifications.service';
     TypeOrmModule.forRootAsync({
       useClass: TypeOrmConfigService,
     }),
-    TypeOrmModule.forFeature([Token])
+    TypeOrmModule.forFeature([Subscription]),
+    SubscriptionModule
   ],
   controllers: [NotificationsController],
-  providers: [NotificationsService],
-  exports: [NotificationsService],
+  providers: [NotificationService]
 })
 export class NotificationsModule {}

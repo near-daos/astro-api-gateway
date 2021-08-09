@@ -29,3 +29,7 @@ export const buildProposalId = (daoId: string, proposalId: number): string => {
 export const buildDaoId = (name: string, contractName: string): string => {
   return `${name}.${contractName}`;
 }
+
+export const buildSubscriptionId = (daoId: string, accountId: string): string => {
+  return `${daoId}-${accountId}`;
+}

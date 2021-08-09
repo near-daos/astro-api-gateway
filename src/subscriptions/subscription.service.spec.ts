@@ -1,11 +1,11 @@
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Token } from './entities/token.entity';
-import { NotificationsService } from './notifications.service';
+import { Subscription } from './entities/subscription.entity';
+import { SubscriptionService } from './subscription.service';
 
-describe('NotificationsService', () => {
-  let service: NotificationsService;
+describe('SubscriptionService', () => {
+  let service: SubscriptionService;
 
   beforeEach(async () => {
     const mockRepository = jest.fn(() => ({
@@ -17,16 +17,16 @@ describe('NotificationsService', () => {
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        NotificationsService, {
+        SubscriptionService, {
           provide: ConfigService,
           useValue: {
             get: jest.fn((key: string) => (null))
           }
         },
-        { provide: getRepositoryToken(Token), useClass: mockRepository }],
+        { provide: getRepositoryToken(Subscription), useClass: mockRepository }],
     }).compile();
 
-    service = module.get<NotificationsService>(NotificationsService);
+    service = module.get<SubscriptionService>(SubscriptionService);
   });
 
   it('should be defined', () => {

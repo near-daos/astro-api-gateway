@@ -1,10 +1,10 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import {
   EVENT_SERVICE,
-  EVENT_MESSAGE_PATTERN
+  EVENT_DAO_UPDATE_MESSAGE_PATTERN
 } from 'src/common/constants';
 import { ClientProxy } from '@nestjs/microservices';
-import { Message } from '../events/types/message.event';
+import { DaoUpdateMessage } from './messages/dao-update.message';
 
 @Injectable()
 export class EventService {
@@ -14,12 +14,13 @@ export class EventService {
     @Inject(EVENT_SERVICE) private readonly client: ClientProxy
   ) { }
 
-  async send(message: Message): Promise<void> {
+  async sendDaoUpdates(message: DaoUpdateMessage): Promise<void> {
     try {
-      this.client.emit<any>(EVENT_MESSAGE_PATTERN, message);
+      this.client.emit<any>(EVENT_DAO_UPDATE_MESSAGE_PATTERN, message);
     } catch (error) {
-      this.logger.error('An error occurred while sending event message.');
       this.logger.error(error);
+
+      return Promise.reject(error);
     }
   }
 }

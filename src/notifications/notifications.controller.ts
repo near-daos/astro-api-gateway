@@ -1,18 +1,20 @@
 import { Controller, Logger } from '@nestjs/common';
 import { EventPattern } from '@nestjs/microservices';
 
-import { EVENT_MESSAGE_PATTERN } from 'src/common/constants';
+import { EVENT_DAO_UPDATE_MESSAGE_PATTERN } from 'src/common/constants';
+import { NotificationService } from './notifications.service';
 
 @Controller()
 export class NotificationsController {
   private readonly logger = new Logger(NotificationsController.name);
 
-  constructor() {}
+  constructor(private readonly notificationService: NotificationService) {}
 
-  @EventPattern(EVENT_MESSAGE_PATTERN)
-  async handleMessagePrinted(data: Record<string, unknown>) {
-    this.logger.log(`Received message: ${data.text}`);
+  @EventPattern(EVENT_DAO_UPDATE_MESSAGE_PATTERN)
+  async handleDaoUpdates(data: Record<string, string[]>) {
+    const { daoIds } = data;
+    this.logger.log(`Received DAO updates: ${daoIds}`);
 
-    //TODO: Handle NEAR Sputnik update events - notify subscribers on DAO/Proposal changes
+    await Promise.all(daoIds.map(daoId => this.notificationService.notifyDaoSubscribers(daoId)));
   }
 }
