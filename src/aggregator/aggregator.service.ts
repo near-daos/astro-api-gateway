@@ -12,6 +12,8 @@ import { Account } from "src/near/entities/account.entity";
 import { CreateProposalDto } from "src/proposals/dto/proposal.dto";
 import { Cron, CronExpression } from "@nestjs/schedule";
 import { buildDaoId, buildProposalId } from "src/utils";
+import { Message } from "src/events/types/message.event";
+import { EventService } from "src/events/events.service";
 
 @Injectable()
 export class AggregatorService {
@@ -23,7 +25,8 @@ export class AggregatorService {
     private readonly daoService: DaoService,
     private readonly proposalService: ProposalService,
     private readonly nearService: NearService,
-    private readonly transactionService: TransactionService
+    private readonly transactionService: TransactionService,
+    private readonly eventService: EventService
   ) { }
 
   @Cron(CronExpression.EVERY_10_SECONDS)
@@ -62,7 +65,8 @@ export class AggregatorService {
 
     if (accountDaoIds.length) {
       this.logger.log(`DAOs updated: ${accountDaoIds.join(',')}`)
-      //TODO: Notify about DAO updates
+
+      await this.eventService.send(new Message(JSON.stringify(accountDaoIds)));
     }
 
     //TODO: Re-work this for cases when proposal is created - there is no 'id' in transaction action payload
@@ -79,7 +83,8 @@ export class AggregatorService {
 
     if (proposalTransactions.length) {
       this.logger.log(`Proposals updated for DAOs: ${proposalDaoIds.join(',')}`);
-      //TODO: Notify about Proposal updates
+      
+      await this.eventService.send(new Message(JSON.stringify(proposalDaoIds)));
     }
 
     this.logger.log('Aggregating data...');

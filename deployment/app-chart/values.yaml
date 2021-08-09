@@ -17,6 +17,9 @@ fullnameOverride: ""
 aggregatorNameOverride: "sputnik-v1-aggregator"
 aggregatorFullnameOverride: "sputnik-v1-aggregator"
 
+notifierNameOverride: "sputnik-v1-notifier"
+notifierFullnameOverride: "sputnik-v1-notifier"
+
 container:
   # Specifies the internal container port
   internalPort: 3000
