@@ -11,6 +11,9 @@ import { CreateDaoDto } from "src/daos/dto/dao.dto";
 import { Account } from "src/near/entities/account.entity";
 import { CreateProposalDto } from "src/proposals/dto/proposal.dto";
 import { Cron, CronExpression } from "@nestjs/schedule";
+import { buildDaoId, buildProposalId } from "src/utils";
+import { Message } from "src/events/types/message.event";
+import { EventService } from "src/events/events.service";
 
 @Injectable()
 export class AggregatorService {
@@ -22,35 +25,72 @@ export class AggregatorService {
     private readonly daoService: DaoService,
     private readonly proposalService: ProposalService,
     private readonly nearService: NearService,
-    private readonly transactionService: TransactionService
+    private readonly transactionService: TransactionService,
+    private readonly eventService: EventService
   ) { }
 
   @Cron(CronExpression.EVERY_10_SECONDS)
   public async aggregate(): Promise<void> {
+    const { contractName } = this.configService.get('near');
+
     this.logger.log('Scheduling Data Aggregation...');
 
     this.logger.log('Collecting DAO IDs...');
     const daoIds = await this.sputnikDaoService.getDaoIds();
 
     this.logger.log('Checking data relevance...')
-    const [ tx, nearTx ] = await Promise.all([
+
+    let [ tx, nearTx ] = await Promise.all([
       this.transactionService.lastTransaction(),
-      this.nearService.lastTransaction(daoIds)
+      this.nearService.lastTransaction([ ...daoIds, contractName ])
     ]);
 
     if (tx && nearTx && tx.transactionHash === nearTx.transactionHash) {
       return this.logger.log('Data is up to date. Skipping data aggregation.');
     }
-
-    const { contractName } = this.configService.get('near');
+    
+    const { blockTimestamp } = tx || {};
 
     const accounts: Account[] = await this.nearService.findAccountsByContractName(contractName);
-    const transactions: Transaction[] = await this.nearService.findTransactionsByReceiverAccountIds(daoIds);
+    const transactions: Transaction[] = 
+      await this.nearService.findTransactionsByReceiverAccountIds([ ...daoIds, contractName ], blockTimestamp);
+
+    //TODO: Receive fresh transactions here!!!
+    //TODO: calc diff to get updated data only!!!
+
+    const accountDaoIds = transactions
+      .filter(({ receiverAccountId: accId, transactionAction: action }) =>
+        accId === contractName && (action.args as any).method_name === 'create')
+      .map(({ transactionAction: action }) => (buildDaoId((action.args as any).args_json.name, contractName)));
+
+    if (accountDaoIds.length) {
+      this.logger.log(`DAOs updated: ${accountDaoIds.join(',')}`)
+
+      await this.eventService.send(new Message(JSON.stringify(accountDaoIds)));
+    }
+
+    //TODO: Re-work this for cases when proposal is created - there is no 'id' in transaction action payload
+    const proposalTransactions = transactions
+      .filter(({ receiverAccountId }) => receiverAccountId !== contractName)
+      .map(({ receiverAccountId, transactionAction: action }) =>
+      ({
+        receiverAccountId,
+        function: (action.args as any).method_name,
+        id: buildProposalId(receiverAccountId, (action.args as any).args_json.id)
+      }));
+
+    const proposalDaoIds = [ ...new Set(proposalTransactions.map(({ receiverAccountId }) => (receiverAccountId))) ];
+
+    if (proposalTransactions.length) {
+      this.logger.log(`Proposals updated for DAOs: ${proposalDaoIds.join(',')}`);
+      
+      await this.eventService.send(new Message(JSON.stringify(proposalDaoIds)));
+    }
 
     this.logger.log('Aggregating data...');
-    const [ daos, proposals ] = await Promise.all([
-      this.sputnikDaoService.getDaoList(daoIds),
-      this.sputnikDaoService.getProposals(daoIds)
+    const [daos, proposals] = await Promise.all([
+      this.sputnikDaoService.getDaoList(accountDaoIds),
+      this.sputnikDaoService.getProposals(proposalDaoIds)
     ])
 
     const enrichedDaos = this.enrichDaos(daos, accounts, transactions);
@@ -89,9 +129,26 @@ export class AggregatorService {
       .reduce((acc, cur) =>
         ({ ...acc, [cur.receiverAccountId]: [ ...(acc[cur.receiverAccountId ] || []), cur] }), {});
 
-    return proposals.map(proposal => ({
-      ...proposal,
-      txHash: transactionsByAccountId[proposal.daoId][proposal.id].transactionHash
-    }))
+    return proposals.map(proposal => {
+      const { daoId, description, target, kind } = proposal;
+      if (!transactionsByAccountId[daoId]) {
+        return proposal;
+      }
+
+      const txHash = transactionsByAccountId[proposal.daoId]
+        .filter(tx => {
+          const {
+            description: txDescription,
+            kind: txKind,
+            target: txTarget
+          } = tx.transactionAction.args.args_json.proposal;
+          return description === txDescription
+            && kind.type === txKind.type
+            && target === txTarget
+        })
+        .map(({ transactionHash }) => (transactionHash))[0];
+
+      return txHash ? { ...proposal, txHash } : proposal;
+    });
   }
 }

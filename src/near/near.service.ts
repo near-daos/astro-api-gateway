@@ -31,13 +31,18 @@ export class NearService {
       .getMany();
   }
 
-  async findTransactionsByReceiverAccountIds(receiverAccountIds: String[]): Promise<Transaction[]> {
-    return this.transactionRepository
+  async findTransactionsByReceiverAccountIds(receiverAccountIds: String[], fromBlockTimestamp?: Number): Promise<Transaction[]> {
+    let queryBuilder = this.transactionRepository
       .createQueryBuilder('transaction')
       .leftJoinAndSelect('transaction.transactionAction', 'transaction_actions')
       .where("transaction.receiver_account_id = ANY(ARRAY[:...ids])", { ids: receiverAccountIds })
-      .orderBy('transaction.block_timestamp', 'ASC')
-      .getMany();
+      .orderBy('transaction.block_timestamp', 'ASC');
+
+    queryBuilder = fromBlockTimestamp
+      ? queryBuilder.andWhere("transaction.block_timestamp > :from", { from: fromBlockTimestamp })
+      : queryBuilder;
+
+    return queryBuilder.getMany();
   }
 
   async lastTransaction(receiverAccountIds: String[]): Promise<Transaction> {

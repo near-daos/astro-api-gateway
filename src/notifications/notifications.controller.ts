@@ -1,35 +1,18 @@
-import { Controller, Post, Body, Param, Delete } from '@nestjs/common';
-import { ApiBadRequestResponse, ApiNotFoundResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { NotificationsService } from './notifications.service';
+import { Controller, Logger } from '@nestjs/common';
+import { EventPattern } from '@nestjs/microservices';
 
-import { TokenDto } from './dto/token.dto';
+import { EVENT_MESSAGE_PATTERN } from 'src/common/constants';
 
-@ApiTags('Notifications')
-@Controller('notifications')
+@Controller()
 export class NotificationsController {
-  constructor(private readonly notificationsService: NotificationsService) {}
+  private readonly logger = new Logger(NotificationsController.name);
 
-  @ApiResponse({
-    status: 201,
-    description: 'Created'
-  })
-  @ApiBadRequestResponse({
-    description: 'token should not be empty / token must be a string'
-  })
-  @Post('/token')
-  create(@Body() addTokenDto: TokenDto): Promise<void> {
-    return this.notificationsService.addToken(addTokenDto);
-  }
+  constructor() {}
 
-  @ApiResponse({
-    status: 200,
-    description: 'OK'
-  })
-  @ApiNotFoundResponse({
-    description: 'Token with id not found'
-  })
-  @Delete('/token/:token')
-  remove(@Param() { token }: TokenDto): Promise<void> {
-    return this.notificationsService.removeToken(token);
+  @EventPattern(EVENT_MESSAGE_PATTERN)
+  async handleMessagePrinted(data: Record<string, unknown>) {
+    this.logger.log(`Received message: ${data.text}`);
+
+    //TODO: Handle NEAR Sputnik update events - notify subscribers on DAO/Proposal changes
   }
 }

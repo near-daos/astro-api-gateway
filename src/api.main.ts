@@ -1,7 +1,6 @@
 import { NestFactory, Reflector } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
-import { config as awsConfig } from 'aws-sdk';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppService } from './app-service';
@@ -39,12 +38,6 @@ export default class Api implements AppService {
     app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
 
     const configService = app.get(ConfigService);
-
-    awsConfig.update({
-      accessKeyId: configService.get('AWS_ACCESS_KEY_ID'),
-      secretAccessKey: configService.get('AWS_SECRET_ACCESS_KEY'),
-      region: configService.get('AWS_REGION'),
-    });
 
     const port = configService.get('port');
 
