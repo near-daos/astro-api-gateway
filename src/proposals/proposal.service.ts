@@ -64,6 +64,10 @@ export class ProposalService {
     return this.proposalRepository
       .createQueryBuilder('proposal')
       .where("proposal.id like :id", { id: `%${query}%` })
+      .orWhere("proposal.target like :target", { target: `%${query}%` })
+      .orWhere("proposal.proposer like :proposer", { proposer: `%${query}%` })
+      .orWhere("proposal.description like :description", { description: `%${query}%` })
+      .orWhere("proposal.votes like :vote", { vote: `%${query}%`})
       .skip(offset)
       .take(limit)
       .getMany();
