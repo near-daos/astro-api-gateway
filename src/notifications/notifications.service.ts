@@ -40,8 +40,16 @@ export class NotificationService {
     this.logger.log('Sending notifications...');
 
     try {
-      await this.firebaseApp.messaging().sendAll(messages);
-    } catch(error) {
+      const response = await this.firebaseApp.messaging().sendAll(messages);
+
+      const errors = response.responses
+        .filter(({ success }) => !success)
+        .map(({ error }) => error);
+
+      if (errors.length) {
+        errors.map(error => this.logger.error(error));
+      }
+    } catch (error) {
       return Promise.reject(error);
     }
   }
