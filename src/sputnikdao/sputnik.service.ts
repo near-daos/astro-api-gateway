@@ -90,11 +90,10 @@ export class SputnikDaoService {
       return results
         .reduce((acc: CreateProposalDto[], prop: CreateProposalDto[]) => acc.concat(prop), [])
         .map((proposal: CreateProposalDto, index: number) => ({ ...proposal, id: index, daoId: contractId }));
-    } catch (err) {
-      this.logger.error(err);
+    } catch (error) {
+      this.logger.error(error);
 
-      //TODO: handle properly
-      return [];
+      return Promise.reject(error); 
     }
   }
 
