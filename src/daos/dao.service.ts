@@ -28,6 +28,8 @@ export class DaoService {
     return this.daoRepository
       .createQueryBuilder('dao')
       .where("dao.id like :id", { id: `%${query}%` })
+      .orWhere("dao.purpose like :purpose", { purpose: `%${query}%` })
+      .orWhere("array_to_string(dao.council, ',') like :council", { council: `%${query}%`})
       .skip(offset)
       .take(limit)
       .getMany();

@@ -16,7 +16,7 @@ export class SubscriptionService {
     private readonly subscriptionRepository: Repository<Subscription>
   ) { }
 
-  async create(addSubscriptionDto: SubscriptionDto): Promise<void> {
+  async create(addSubscriptionDto: SubscriptionDto): Promise<Subscription> {
     const {
       accountId,
       daoId,
@@ -33,7 +33,7 @@ export class SubscriptionService {
     subscription.accountId = accountId;
     subscription.token = token;
 
-    this.subscriptionRepository.save(subscription);
+    return this.subscriptionRepository.save(subscription);
   }
 
   async remove(id: string): Promise<void> {
