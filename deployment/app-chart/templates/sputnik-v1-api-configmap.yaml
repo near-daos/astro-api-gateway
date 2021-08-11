@@ -6,3 +6,4 @@ data:
   NODE_ENV: "production"
   PORT: "3000"
   NEAR_ENV: {{ .Values.environment.near_env | default "development" | quote }}
+  REDIS_HTTP_CACHE_TTL: 60
