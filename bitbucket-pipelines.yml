@@ -68,22 +68,6 @@ definitions:
                 - "--namespace=$DEPLOYMENT_NAMESPACE"
 
 pipelines:
-  custom:
-    feature:
-      - step:
-          <<: *set-environment
-
-          script:
-            - >-
-              echo export DOCKER_ENV_TAG=develop-$BITBUCKET_COMMIT >> environment.sh
-
-      - step: *build-test
-
-      - step: *docker-build-publish
-          
-      - step: *helm-build-deploy
-        deployment: Development
-
   pull-requests:
     '**':
       - step: *build-test
@@ -103,3 +87,34 @@ pipelines:
           
       - step: *helm-build-deploy
         deployment: Development
+    
+    staging:
+      - step:
+          <<: *set-environment
+
+          script:
+            - >-
+              echo export DOCKER_ENV_TAG=staging-$BITBUCKET_COMMIT >> environment.sh
+
+      - step: *build-test
+
+      - step: *docker-build-publish
+          
+      - step: *helm-build-deploy
+        deployment: Staging
+
+  tags:
+    '*':
+      - step:
+          <<: *set-environment
+
+          script:
+            - >-
+              echo export DOCKER_ENV_TAG=$BITBUCKET_TAG >> environment.sh
+
+      - step: *build-test
+
+      - step: *docker-build-publish
+          
+      - step: *helm-build-deploy
+        deployment: Production
