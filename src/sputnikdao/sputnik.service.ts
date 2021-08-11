@@ -53,12 +53,7 @@ export class SputnikDaoService {
     const { results: daos, errors } = await PromisePool
       .withConcurrency(5)
       .for(list)
-      .process(async daoId => (await this.getDaoById(daoId)))
-
-    //TODO: handle properly
-    if (errors && errors.length) {
-      this.logger.error(errors);
-    }
+      .process(async daoId => (await this.getDaoById(daoId)));
 
     return daos;
   }
@@ -129,7 +124,9 @@ export class SputnikDaoService {
       })
 
     if (errors && errors.length) {
-      return null;
+      errors.map(error => this.logger.error(error));
+
+      return Promise.reject(`Unable to enrich DAO with id ${daoId}`);
     }
 
     return { ...dao, councilSeats: dao.council.length, id: daoId };
