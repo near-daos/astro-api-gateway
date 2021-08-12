@@ -1,5 +1,5 @@
 import { NestFactory, Reflector } from '@nestjs/core';
-import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
+import { ClassSerializerInterceptor } from '@nestjs/common';
 import { AppService } from './app-service';
 import { Transport } from '@nestjs/microservices';
 import { EVENT_QUEUE_NAME } from './common/constants';
@@ -17,17 +17,6 @@ export default class Notifier implements AppService {
         },
       },
     });
-
-    app.useGlobalPipes(
-      new ValidationPipe({
-        transform: true,
-        disableErrorMessages: false,
-        validationError: { target: false },
-        transformOptions: {
-          enableImplicitConversion: true
-        }
-      }),
-    );
 
     app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
 

@@ -1,24 +1,18 @@
 import { NestFactory, Reflector } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
-import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
+import { ClassSerializerInterceptor } from '@nestjs/common';
 import { AggregatorService } from './aggregator/aggregator.service';
 import { AggregatorModule } from './aggregator/aggregator.module';
 import { AppService } from './app-service';
+import { Transport } from '@nestjs/microservices';
 
 export default class Aggregator implements AppService {
   async bootstrap(): Promise<void> {
-    const app = await NestFactory.create(AggregatorModule);
-    app.setGlobalPrefix("/api/v1");
-
-    app.useGlobalPipes(
-      new ValidationPipe({
-        transform: true,
-        disableErrorMessages: false,
-        validationError: { target: false },
-        transformOptions: {
-          enableImplicitConversion: true
-        }
-      }),
+    const app = await NestFactory.createMicroservice(
+      AggregatorModule,
+      {
+        transport: Transport.TCP,
+      }
     );
 
     app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));

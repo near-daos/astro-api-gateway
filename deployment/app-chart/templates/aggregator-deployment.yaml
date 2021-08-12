@@ -31,26 +31,27 @@ spec:
             - name: http
               containerPort: {{ .Values.container.internalPort }}
               protocol: TCP
-          livenessProbe:
-            httpGet:
-              path: "{{ .Values.container.livenessProbe.path }}"
-              port: {{ .Values.container.livenessProbe.port }}
-              scheme: HTTP
-            initialDelaySeconds: {{ .Values.container.livenessProbe.initialDelaySeconds }}
-            periodSeconds: {{ .Values.container.livenessProbe.periodSeconds }}
-            timeoutSeconds: {{ .Values.container.livenessProbe.timeoutSeconds }}
-            successThreshold: {{ .Values.container.livenessProbe.successThreshold }}
-            failureThreshold: {{ .Values.container.livenessProbe.failureThreshold }}
-          readinessProbe:
-            httpGet:
-              path: "{{ .Values.container.readinessProbe.path }}"
-              port: {{ .Values.container.readinessProbe.port }}
-              scheme: HTTP
-            initialDelaySeconds: {{ .Values.container.readinessProbe.initialDelaySeconds }}
-            periodSeconds: {{ .Values.container.readinessProbe.periodSeconds }}
-            timeoutSeconds: {{ .Values.container.readinessProbe.timeoutSeconds }}
-            successThreshold: {{ .Values.container.readinessProbe.successThreshold }}
-            failureThreshold: {{ .Values.container.readinessProbe.failureThreshold }}
+          # TODO: Since we moved to TCP for aggregator microservice - need to use another apprroach for liveness probe
+          # livenessProbe:
+          #   httpGet:
+          #     path: "{{ .Values.container.livenessProbe.path }}"
+          #     port: {{ .Values.container.livenessProbe.port }}
+          #     scheme: HTTP
+          #   initialDelaySeconds: {{ .Values.container.livenessProbe.initialDelaySeconds }}
+          #   periodSeconds: {{ .Values.container.livenessProbe.periodSeconds }}
+          #   timeoutSeconds: {{ .Values.container.livenessProbe.timeoutSeconds }}
+          #   successThreshold: {{ .Values.container.livenessProbe.successThreshold }}
+          #   failureThreshold: {{ .Values.container.livenessProbe.failureThreshold }}
+          # readinessProbe:
+          #   httpGet:
+          #     path: "{{ .Values.container.readinessProbe.path }}"
+          #     port: {{ .Values.container.readinessProbe.port }}
+          #     scheme: HTTP
+          #   initialDelaySeconds: {{ .Values.container.readinessProbe.initialDelaySeconds }}
+          #   periodSeconds: {{ .Values.container.readinessProbe.periodSeconds }}
+          #   timeoutSeconds: {{ .Values.container.readinessProbe.timeoutSeconds }}
+          #   successThreshold: {{ .Values.container.readinessProbe.successThreshold }}
+          #   failureThreshold: {{ .Values.container.readinessProbe.failureThreshold }}
           envFrom:
           - configMapRef:
               name: sputnik-v1-aggregator-configmap
