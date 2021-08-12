@@ -1,94 +1,34 @@
-import { registerAs } from "@nestjs/config";
+import { ConfigService } from "@nestjs/config";
+import { Account, connect, Contract, Near } from "near-api-js";
+import { InMemoryKeyStore } from "near-api-js/lib/key_stores";
+import { NEAR_PROVIDER } from "src/common/constants";
 
-const CONTRACT_NAME = 'sputnik-v1.testnet';
+export type NearProvider = {
+  near: Near,
+  account: Account,
+  factoryContract: Contract & any
+}
 
-export type NEAR_ENV =
-  | 'production'
-  | 'development'
-  | 'local'
-  | 'test'
-  | 'mainnet'
-  | 'betanet'
-  | 'testnet'
-  | 'ci'
-  | 'ci-betanet';
+export const nearProvider = {
+  provide: NEAR_PROVIDER,
+  inject: [ConfigService],
+  useFactory: async (configService: ConfigService) => {
+    const config = configService.get('near');
 
-export type NearConfig = {
-  walletFormat?: string;
-  networkId: string;
-  nodeUrl: string;
-  contractName: string;
-  masterAccount?: string;
-  walletUrl?: string;
-  helperUrl?: string;
-  explorerUrl?: string;
-  keyPath?: string;
-};
+    const { contractName } = config;
 
-export const getNearConfig = (env: NEAR_ENV): NearConfig => {
-  switch (env) {
-    case 'production':
-    case 'mainnet':
-      return {
-        walletFormat: '.near',
-        networkId: 'mainnet',
-        nodeUrl: 'https://rpc.mainnet.near.org',
-        contractName: 'sputnikdao.near',
-        walletUrl: 'https://wallet.near.org',
-        helperUrl: 'https://helper.mainnet.near.org',
-        explorerUrl: 'https://explorer.mainnet.near.org',
-      };
-    case 'development':
-    case 'testnet':
-      return {
-        walletFormat: '.testnet',
-        networkId: 'testnet',
-        nodeUrl: 'https://rpc.testnet.near.org',
-        contractName: CONTRACT_NAME,
-        walletUrl: 'https://wallet.testnet.near.org',
-        helperUrl: 'https://helper.testnet.near.org',
-        explorerUrl: 'https://explorer.testnet.near.org',
-      };
-    case 'betanet':
-      return {
-        walletFormat: '.betanet',
-        networkId: 'betanet',
-        nodeUrl: 'https://rpc.betanet.near.org',
-        contractName: CONTRACT_NAME,
-        walletUrl: 'https://wallet.betanet.near.org',
-        helperUrl: 'https://helper.betanet.near.org',
-        explorerUrl: 'https://explorer.betanet.near.org',
-      };
-    case 'local':
-      return {
-        networkId: 'local',
-        nodeUrl: 'http://localhost:3030',
-        keyPath: `${process.env.HOME}/.near/validator_key.json`,
-        walletUrl: 'http://localhost:4000/wallet',
-        contractName: CONTRACT_NAME,
-      };
-    case 'test':
-    case 'ci':
-      return {
-        networkId: 'shared-test',
-        nodeUrl: 'https://rpc.ci-testnet.near.org',
-        contractName: CONTRACT_NAME,
-        masterAccount: 'test.near',
-      };
-    case 'ci-betanet':
-      return {
-        networkId: 'shared-test-staging',
-        nodeUrl: 'https://rpc.ci-betanet.near.org',
-        contractName: CONTRACT_NAME,
-        masterAccount: 'test.near',
-      };
-    default:
-      throw Error(
-        `Unconfigured environment '${env}'. Can be configured in src/config.ts.`,
-      );
+    const near = await connect({
+      deps: { keyStore: new InMemoryKeyStore() },
+      ...config,
+    });
+
+    const account = await near.account(contractName);
+
+    const factoryContract = new Contract(account, contractName, {
+      viewMethods: ['get_dao_list'],
+      changeMethods: ['create'],
+    });
+
+    return { near, account, factoryContract };
   }
 };
-
-export default registerAs('near', () => getNearConfig(
-  (process.env.NEAR_ENV as NEAR_ENV) || 'development',
-));

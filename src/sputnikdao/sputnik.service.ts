@@ -1,70 +1,40 @@
-import {
-  connect,
-  Contract,
-  Near,
-  Account
-} from 'near-api-js';
-import { InMemoryKeyStore } from 'near-api-js/lib/key_stores';
-import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Contract } from 'near-api-js';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import Decimal from 'decimal.js';
 import { PROPOSAL_REQUEST_CHUNK_SIZE, yoktoNear } from './constants';
 import { formatTimestamp } from '../utils';
 import { CreateDaoDto } from 'src/daos/dto/dao.dto';
 import { CreateProposalDto } from 'src/proposals/dto/proposal.dto';
 import PromisePool from '@supercharge/promise-pool';
+import { NearProvider } from 'src/config/near';
+import { NEAR_PROVIDER } from 'src/common/constants';
 
 @Injectable()
 export class SputnikDaoService {
   private readonly logger = new Logger(SputnikDaoService.name);
 
-  private factoryContract!: Contract & any;
-
-  private near!: Near;
-
-  private account!: Account;
-
-  constructor(private readonly configService: ConfigService) { }
-
-  //TODO: move to async useFactory provider!!!
-  public async init(): Promise<void> {
-    this.near = await connect({
-      deps: { keyStore: new InMemoryKeyStore() },
-      ...this.configService.get('near'),
-    });
-
-    const { contractName } = this.configService.get('near');
-
-    this.account = await this.near.account(contractName);
-
-    this.factoryContract = new Contract(this.account, contractName, {
-      viewMethods: ['get_dao_list'],
-      changeMethods: ['create'],
-    });
-  }
+  constructor(
+    @Inject(NEAR_PROVIDER)
+    private nearProvider: NearProvider
+  ) { }
 
   public async getDaoIds(): Promise<string[]> {
-    return await this.factoryContract.get_dao_list();
+    return await this.nearProvider.factoryContract.get_dao_list();
   }
 
   public async getDaoList(daoIds: string[]): Promise<CreateDaoDto[]> {
-    const list: string[] = daoIds || await this.factoryContract.get_dao_list();
+    const list: string[] = daoIds || await this.nearProvider.factoryContract.get_dao_list();
 
     const { results: daos, errors } = await PromisePool
       .withConcurrency(5)
       .for(list)
-      .process(async daoId => (await this.getDaoById(daoId)))
-
-    //TODO: handle properly
-    if (errors && errors.length) {
-      this.logger.error(errors);
-    }
+      .process(async daoId => (await this.getDaoById(daoId)));
 
     return daos;
   }
 
   public async getProposals(daoIds: string[]): Promise<CreateProposalDto[]> {
-    const ids: string[] = daoIds || await this.factoryContract.getDaoIds();
+    const ids: string[] = daoIds || await this.nearProvider.factoryContract.getDaoIds();
 
     const { results: proposals, errors } = await PromisePool
       .withConcurrency(5)
@@ -101,7 +71,7 @@ export class SputnikDaoService {
     const contract = this.getContract(daoId);
 
     const getDaoAmount = async (): Promise<string> => {
-      const account = await this.near.account(daoId);
+      const account = await this.nearProvider.near.account(daoId);
       const state = await account.state();
       const amountYokto = new Decimal(state.amount);
   
@@ -129,14 +99,16 @@ export class SputnikDaoService {
       })
 
     if (errors && errors.length) {
-      return null;
+      errors.map(error => this.logger.error(error));
+
+      return Promise.reject(`Unable to enrich DAO with id ${daoId}`);
     }
 
     return { ...dao, councilSeats: dao.council.length, id: daoId };
   }
 
   private getContract(contractId: string): Contract & any {
-    return new Contract(this.account, contractId, {
+    return new Contract(this.nearProvider.account, contractId, {
       viewMethods: [
         'get_council',
         'get_bond',

@@ -58,13 +58,21 @@ export class AggregatorService {
     //TODO: Receive fresh transactions here!!!
     //TODO: calc diff to get updated data only!!!
 
-    const accountDaoIds = transactions
-      .filter(({ receiverAccountId: accId, transactionAction: action }) =>
-        accId === contractName && (action.args as any).method_name === 'create')
-      .map(({ transactionAction: action }) => (buildDaoId((action.args as any).args_json.name, contractName)));
+    const accountDaoIds = [
+      ...new Set(transactions
+        //TODO: Q1: args_json is absent? - needs clarification
+        .filter(({ transactionAction: action }) => 
+          (action.args as any).args_json && (action.args as any).args_json.name)
+        .filter(({ receiverAccountId: accId, transactionAction: action }) =>
+          accId === contractName
+          && (action.args as any).method_name === 'create')
+        .map(({ transactionAction: action }) =>
+          (buildDaoId((action.args as any).args_json.name, contractName))))
+    ];
 
     //TODO: Re-work this for cases when proposal is created - there is no 'id' in transaction action payload
     const proposalTransactions = transactions
+      .filter(({ transactionAction: action }) => (action.args as any).args_json)
       .filter(({ receiverAccountId }) => receiverAccountId !== contractName)
       .map(({ receiverAccountId, transactionAction: action }) =>
       ({
@@ -88,12 +96,17 @@ export class AggregatorService {
     ])
 
     const enrichedDaos = this.enrichDaos(daos, accounts, transactions);
+    const enrichedDaoIds = enrichedDaos.map(({ id }) => id);
 
     this.logger.log('Persisting aggregated DAOs...');
     await Promise.all(enrichedDaos.filter(dao => isNotNull(dao)).map(dao => this.daoService.create(dao)));
     this.logger.log('Finished DAO aggregation.');
 
-    const enrichedProposals = this.enrichProposals(proposals, transactions);
+    //Q2: Proposals with the absent DAO references?
+    //Filtering proposals for unavailable DAOs
+    const filteredProposals = proposals.filter(({ daoId }) => enrichedDaoIds.includes(daoId));
+
+    const enrichedProposals = this.enrichProposals(filteredProposals, transactions);
 
     this.logger.log('Persisting aggregated Proposals...');
     await Promise.all(enrichedProposals.map(proposal => this.proposalService.create(proposal)));
@@ -130,6 +143,7 @@ export class AggregatorService {
       }
 
       const txHash = transactionsByAccountId[proposal.daoId]
+        .filter(tx => tx.transactionAction.args.args_json)
         .filter(tx => {
           const {
             description: txDescription,
