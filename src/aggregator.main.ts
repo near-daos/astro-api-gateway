@@ -1,7 +1,6 @@
 import { NestFactory, Reflector } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
-import { SputnikDaoService } from './sputnikdao/sputnik.service';
 import { AggregatorService } from './aggregator/aggregator.service';
 import { AggregatorModule } from './aggregator/aggregator.module';
 import { AppService } from './app-service';
@@ -25,8 +24,6 @@ export default class Aggregator implements AppService {
     app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
 
     const configService = app.get(ConfigService);
-
-    await app.get(SputnikDaoService).init();
 
     await app.get(AggregatorService).aggregate();
 
