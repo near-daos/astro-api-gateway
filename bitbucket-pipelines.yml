@@ -53,7 +53,6 @@ definitions:
           - >-
             helm template $APP_NAME $CHART_FOLDER
             --set image.tag=$DOCKER_ENV_TAG
-            --set environment.near_env=$NEAR_ENV
             > $APP_NAME-manifest.yml
 
           - pipe: atlassian/aws-eks-kubectl-run:1.4.2

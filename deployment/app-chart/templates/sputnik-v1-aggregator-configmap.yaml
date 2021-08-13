@@ -3,7 +3,5 @@ kind: ConfigMap
 metadata:
   name: sputnik-v1-aggregator-configmap
 data:
-  NODE_ENV: "production"
   PORT: "3000"
-  NEAR_ENV: {{ .Values.environment.near_env | default "development" | quote }}
   NEST_APP_TYPE: aggregator

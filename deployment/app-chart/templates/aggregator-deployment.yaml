@@ -54,6 +54,8 @@ spec:
           #   failureThreshold: {{ .Values.container.readinessProbe.failureThreshold }}
           envFrom:
           - configMapRef:
+              name: sputnik-v1-configmap
+          - configMapRef:
               name: sputnik-v1-aggregator-configmap
           - configMapRef:
               name: {{ .Release.Name }}-version
