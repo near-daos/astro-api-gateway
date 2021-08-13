@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { NEAR_INDEXER_DB_CONNECTION } from 'src/common/constants';
+import { AccessKey } from './entities/access-key.entity';
 import { Account } from './entities/account.entity';
 import { Receipt } from './entities/receipt.entity';
 import { TransactionAction } from './entities/transaction-action.entity';
@@ -11,6 +12,7 @@ import { NearService } from './near.service';
   imports: [
     TypeOrmModule.forFeature([
       Account,
+      AccessKey,
       Receipt,
       Transaction,
       TransactionAction

@@ -1,7 +1,9 @@
 import { registerAs } from '@nestjs/config';
 import { Dao } from 'src/daos/entities/dao.entity';
-import { TransactionAction } from 'src/near/entities/transaction-action.entity';
-import { Transaction } from 'src/near/entities/transaction.entity';
+import {
+  TransactionAction,
+  Transaction
+} from 'src/near';
 import { Subscription } from 'src/subscriptions/entities/subscription.entity';
 import { Proposal } from 'src/proposals/entities/proposal.entity';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';

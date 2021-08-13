@@ -4,10 +4,12 @@ import {
   Body,
   Param,
   Delete,
-  BadRequestException
+  BadRequestException,
+  UseGuards
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiParam,
   ApiResponse,
@@ -16,12 +18,14 @@ import {
 
 import { SubscriptionService } from './subscription.service';
 import { SubscriptionDto } from './dto/subscription.dto';
-import { DeleteOneParams } from 'src/common';
+import { AccountAccessGuard, DeleteOneParams } from 'src/common';
 import { Subscription } from './entities/subscription.entity';
 import { DB_FOREIGN_KEY_VIOLATION } from 'src/common/constants';
+import { SubscriptionDeleteDto } from './dto/subscription-delete.dto';
 
 @ApiTags('Subscriptions')
 @Controller('subscriptions')
+@UseGuards(AccountAccessGuard)
 export class NotificationsApiController {
   constructor(private readonly subscriptionService: SubscriptionService) {}
 
@@ -31,6 +35,9 @@ export class NotificationsApiController {
   })
   @ApiBadRequestResponse({
     description: 'No DAO with id <daoId> found.'
+  })
+  @ApiForbiddenResponse({
+    description: 'Account <accountId> identity is invalid - public key'
   })
   @Post('/')
   async create(@Body() addSubscriptionDto: SubscriptionDto): Promise<Subscription> {
@@ -55,8 +62,14 @@ export class NotificationsApiController {
   @ApiNotFoundResponse({
     description: 'Subscription with id <id> not found'
   })
+  @ApiForbiddenResponse({
+    description: 'Account <accountId> identity is invalid - public key'
+  })
   @Delete('/:id')
-  remove(@Param() { id }: DeleteOneParams): Promise<void> {
+  remove(
+    @Param() { id }: DeleteOneParams,
+    @Body() subscriptionDeleteDto: SubscriptionDeleteDto
+  ): Promise<void> {
     return this.subscriptionService.remove(id);
   }
 }
