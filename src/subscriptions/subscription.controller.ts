@@ -37,7 +37,7 @@ export class NotificationsApiController {
     description: 'No DAO with id <daoId> found.'
   })
   @ApiForbiddenResponse({
-    description: 'Account <accountId> identity is invalid - public key'
+    description: 'Account <accountId> identity is invalid - public key / bad signature/public key size / Invalid signature'
   })
   @Post('/')
   async create(@Body() addSubscriptionDto: SubscriptionDto): Promise<Subscription> {
@@ -63,7 +63,7 @@ export class NotificationsApiController {
     description: 'Subscription with id <id> not found'
   })
   @ApiForbiddenResponse({
-    description: 'Account <accountId> identity is invalid - public key'
+    description: 'Account <accountId> identity is invalid - public key / bad signature/public key size / Invalid signature'
   })
   @Delete('/:id')
   remove(

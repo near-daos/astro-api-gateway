@@ -12,4 +12,9 @@ export class SubscriptionDeleteDto {
   @IsString()
   @IsNotEmpty()
   publicKey: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  signature: string;
 }

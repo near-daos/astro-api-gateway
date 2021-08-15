@@ -21,5 +21,10 @@ export class SubscriptionDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
+  signature: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
   token: string;
 }

@@ -2,7 +2,6 @@ import { registerAs } from '@nestjs/config';
 import { NEAR_INDEXER_DB_CONNECTION } from 'src/common/constants';
 import {
   Account,
-  AccessKey,
   Receipt,
   Transaction,
   TransactionAction
@@ -18,7 +17,6 @@ export default registerAs(`db_${NEAR_INDEXER_DB_CONNECTION}`, () => ({
   password: process.env.NEAR_INDEXER_DATABASE_PASSWORD,
   entities: [
     Account,
-    AccessKey,
     Receipt,
     Transaction,
     TransactionAction
