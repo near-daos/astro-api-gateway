@@ -7,7 +7,7 @@ import {
 } from "@nestjs/common";
 import tweetnacl from "tweetnacl";
 import { PublicKey } from "near-api-js/lib/utils";
-import { SubscriptionDto } from "src/subscriptions/dto/subscription.dto";
+import { AccountBearer } from "../dto/AccountBearer";
 import { Near } from "near-api-js";
 import { NEAR_PROVIDER } from "../constants";
 
@@ -21,7 +21,7 @@ export class AccountAccessGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest();
 
-    const { accountId, publicKey, signature } = req.body as SubscriptionDto;
+    const { accountId, publicKey, signature } = req.body as AccountBearer;
 
     const account = await this.near.account(accountId);
     const accessKeys = await account.getAccessKeys();
