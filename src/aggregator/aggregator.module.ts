@@ -12,6 +12,7 @@ import { AggregatorService } from './aggregator.service';
 import { AppController } from 'src/app.controller';
 import { EventModule } from 'src/events/events.module';
 import { nearProvider } from 'src/config/near';
+import { nearSputnikProvider } from 'src/config/sputnik';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { nearProvider } from 'src/config/near';
   controllers: [AppController],
   providers: [
     nearProvider,
+    nearSputnikProvider,
     SputnikDaoService,
     AggregatorService
   ],

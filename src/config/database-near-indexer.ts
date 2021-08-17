@@ -1,9 +1,11 @@
 import { registerAs } from '@nestjs/config';
 import { NEAR_INDEXER_DB_CONNECTION } from 'src/common/constants';
-import { Account } from 'src/near/entities/account.entity';
-import { Receipt } from 'src/near/entities/receipt.entity';
-import { TransactionAction } from 'src/near/entities/transaction-action.entity';
-import { Transaction } from 'src/near/entities/transaction.entity';
+import {
+  Account,
+  Receipt,
+  Transaction,
+  TransactionAction
+} from 'src/near/index';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 
 export default registerAs(`db_${NEAR_INDEXER_DB_CONNECTION}`, () => ({

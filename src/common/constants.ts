@@ -4,6 +4,7 @@ export const NEST_APP_NOTIFIER = 'notifier';
 export const NEST_APP_API = 'api';
 
 export const NEAR_PROVIDER = 'NEAR_PROVIDER';
+export const NEAR_SPUTNIK_PROVIDER = 'NEAR_SPUTNIK_PROVIDER';
 
 export const EVENT_SERVICE = 'EVENT_SERVICE';
 export const EVENT_QUEUE_NAME = 'sputnik-events';

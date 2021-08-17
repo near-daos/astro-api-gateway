@@ -1,13 +1,11 @@
 import { ConfigService } from "@nestjs/config";
-import { Account, connect, Contract, Near } from "near-api-js";
-import { InMemoryKeyStore } from "near-api-js/lib/key_stores";
-import { NEAR_PROVIDER } from "src/common/constants";
+import { connect } from "near-api-js";
+import { UnencryptedFileSystemKeyStore } from "near-api-js/lib/key_stores";
+import path from "path";
+import os from "os";
 
-export type NearProvider = {
-  near: Near,
-  account: Account,
-  factoryContract: Contract & any
-}
+import { NEAR_PROVIDER } from "src/common/constants";
+import { CREDENTIALS_DIR } from "src/sputnikdao/constants";
 
 export const nearProvider = {
   provide: NEAR_PROVIDER,
@@ -15,20 +13,15 @@ export const nearProvider = {
   useFactory: async (configService: ConfigService) => {
     const config = configService.get('near');
 
-    const { contractName } = config;
+    const keyDir = path.join(os.homedir(), CREDENTIALS_DIR);
 
     const near = await connect({
-      deps: { keyStore: new InMemoryKeyStore() },
+      deps: { 
+        keyStore: new UnencryptedFileSystemKeyStore(keyDir)
+      },
       ...config,
     });
 
-    const account = await near.account(contractName);
-
-    const factoryContract = new Contract(account, contractName, {
-      viewMethods: ['get_dao_list'],
-      changeMethods: ['create'],
-    });
-
-    return { near, account, factoryContract };
+    return near;
   }
 };

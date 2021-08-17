@@ -2,8 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { NEAR_INDEXER_DB_CONNECTION } from 'src/common/constants';
 import { Repository } from 'typeorm';
-import { Account } from './entities/account.entity';
-import { Transaction } from './entities/transaction.entity';
+import { Account, Transaction } from '.';
 
 @Injectable()
 export class NearService {

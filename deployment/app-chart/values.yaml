@@ -114,6 +114,3 @@ affinity: {}
 version:
   commit: latest
   branch: develop
-
-environment:
-  near_env: development
