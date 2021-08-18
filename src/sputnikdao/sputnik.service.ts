@@ -3,8 +3,8 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import Decimal from 'decimal.js';
 import { PROPOSAL_REQUEST_CHUNK_SIZE, yoktoNear } from './constants';
 import { formatTimestamp } from '../utils';
-import { CreateDaoDto } from 'src/daos/dto/dao.dto';
-import { CreateProposalDto } from 'src/proposals/dto/proposal.dto';
+import { DaoDto } from 'src/daos/dto/dao.dto';
+import { ProposalDto } from 'src/proposals/dto/proposal.dto';
 import PromisePool from '@supercharge/promise-pool';
 import { NearSputnikProvider } from 'src/config/sputnik';
 import { NEAR_SPUTNIK_PROVIDER } from 'src/common/constants';
@@ -34,7 +34,7 @@ export class SputnikDaoService {
     return await this.factoryContract.get_dao_list();
   }
 
-  public async getDaoList(daoIds: string[]): Promise<CreateDaoDto[]> {
+  public async getDaoList(daoIds: string[]): Promise<DaoDto[]> {
     const list: string[] = daoIds || await this.factoryContract.get_dao_list();
 
     const { results: daos, errors } = await PromisePool
@@ -45,7 +45,7 @@ export class SputnikDaoService {
     return daos;
   }
 
-  public async getProposals(daoIds: string[]): Promise<CreateProposalDto[]> {
+  public async getProposals(daoIds: string[]): Promise<ProposalDto[]> {
     const ids: string[] = daoIds || await this.factoryContract.getDaoIds();
 
     const { results: proposals, errors } = await PromisePool
@@ -56,7 +56,7 @@ export class SputnikDaoService {
     return proposals.reduce((acc, prop) => acc.concat(prop), []);
   }
 
-  public async getProposalsByDao(contractId: string): Promise<CreateProposalDto[]> {
+  public async getProposalsByDao(contractId: string): Promise<ProposalDto[]> {
     try {
       const contract = this.getContract(contractId);
 
@@ -70,8 +70,8 @@ export class SputnikDaoService {
         .process(async (offset) => (await contract.get_proposals({ from_index: offset * chunkSize, limit: chunkSize })));
 
       return results
-        .reduce((acc: CreateProposalDto[], prop: CreateProposalDto[]) => acc.concat(prop), [])
-        .map((proposal: CreateProposalDto, index: number) => ({ ...proposal, id: index, daoId: contractId }));
+        .reduce((acc: ProposalDto[], prop: ProposalDto[]) => acc.concat(prop), [])
+        .map((proposal: ProposalDto, index: number) => ({ ...proposal, id: index, daoId: contractId }));
     } catch (error) {
       this.logger.error(error);
 
@@ -79,7 +79,7 @@ export class SputnikDaoService {
     }
   }
 
-  private async getDaoById(daoId: string): Promise<CreateDaoDto | null> {
+  private async getDaoById(daoId: string): Promise<DaoDto | null> {
     const contract = this.getContract(daoId);
 
     const getDaoAmount = async (): Promise<string> => {
@@ -99,7 +99,7 @@ export class SputnikDaoService {
       council: async (): Promise<string[]> => (contract.get_council()),
     }
 
-    const dao = new CreateDaoDto();
+    const dao = new DaoDto();
 
     const { errors } = await PromisePool
       .withConcurrency(3)

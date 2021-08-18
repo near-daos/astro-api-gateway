@@ -30,6 +30,6 @@ export const nearSputnikProvider = {
       changeMethods: ['create'],
     });
 
-    return { account, factoryContract };
+    return { account, factoryContract, near };
   }
 };

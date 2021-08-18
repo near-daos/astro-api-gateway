@@ -30,19 +30,20 @@ export class AccountAccessGuard implements CanActivate {
       throw new ForbiddenException(`Account ${accountId} identity is invalid - public key`);
     }
 
+    let isValid = false;
     try {
-      const isValid = tweetnacl.sign.detached.verify(
+      isValid = tweetnacl.sign.detached.verify(
         Buffer.from(publicKey),
         Buffer.from(signature, 'base64'),
         PublicKey.fromString(publicKey).data);
-
-      if (!isValid) {
-        throw new ForbiddenException('Invalid signature');
-      }
     } catch (error) {
       throw new ForbiddenException(error.message);
     }
 
-    return false;
+    if (!isValid) {
+      throw new ForbiddenException('Invalid signature');
+    }
+
+    return isValid;
   }
 }

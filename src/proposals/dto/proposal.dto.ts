@@ -1,7 +1,7 @@
 import { ProposalStatus } from "../types/proposal-status";
 import { ProposalType } from "../types/proposal-type";
 
-export type CreateProposalKindDto =
+export type ProposalKindDto =
   | {
       type: ProposalType.Payout;
       amount: string;
@@ -21,14 +21,14 @@ export type CreateProposalKindDto =
       purpose: string;
     };
 
-export class CreateProposalDto {
+export class ProposalDto {
   id: number;
   daoId: string;
   target: string;
   proposer: string;
   description: string;
   status: ProposalStatus;
-  kind: CreateProposalKindDto;
+  kind: ProposalKindDto;
   vote_period_end: number;
   vote_yes: number;
   vote_no: number;

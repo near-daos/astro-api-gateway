@@ -1,27 +1,46 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PagingQuery, SearchQuery } from 'src/common';
+import { Account, Receipt } from 'src/near';
+import { NearService } from 'src/near/near.service';
+import { ExecutionOutcomeStatus } from 'src/near/types/execution-outcome-status';
 import { Repository } from 'typeorm';
-import { CreateDaoDto } from './dto/dao.dto';
+import { DaoDto } from './dto/dao.dto';
 import { Dao } from './entities/dao.entity';
+import { DaoStatus } from './types/dao-status';
 
 @Injectable()
 export class DaoService {
   constructor(
     @InjectRepository(Dao)
     private readonly daoRepository: Repository<Dao>,
+    private readonly configService: ConfigService,
+    private readonly nearService: NearService
   ) { }
-
-  create(daoDto: CreateDaoDto): Promise<Dao> {
+  
+  create(daoDto: DaoDto): Promise<Dao> {
     return this.daoRepository.save(daoDto);
   }
 
   async find({ offset, limit }: PagingQuery): Promise<Dao[]> {
-    return this.daoRepository.find({ skip: offset, take: limit });
+    return this.daoRepository.find({
+      where: [
+        { status: null },
+        { status: DaoStatus.Success }
+      ],
+      skip: offset,
+      take: limit
+    });
   }
 
-  findOne(id: string): Promise<Dao> {
-    return this.daoRepository.findOne(id);
+  async findOne(id: string): Promise<Dao> {
+    return this.daoRepository.findOne(id, {
+      where: [
+        { id, status: null },
+        { id, status: DaoStatus.Success }
+      ],
+    });
   }
 
   async findByQuery({ query, offset, limit }: SearchQuery): Promise<Dao[]> {
@@ -33,5 +52,33 @@ export class DaoService {
       .skip(offset)
       .take(limit)
       .getMany();
+  }
+
+  async processTransactionCallback(transactionHash: string): Promise<any> {
+    const { contractName } = this.configService.get('near')
+
+    const receipt: Receipt = await this.nearService
+      .findReceiptByTransactionHashAndPredecessor(transactionHash, contractName);
+
+    const {
+      receiptId,
+      originatedFromTransactionHash,
+      originatedFromTransaction
+    } = receipt || {};
+    if (!originatedFromTransaction || originatedFromTransaction.status !== ExecutionOutcomeStatus.SuccessReceiptId) {
+      return;
+    }
+
+    const account: Account = await this.nearService.findAccountByReceiptId(receiptId);
+    if (!account) {
+      return;
+    }
+
+    // Assuming that Dao has been created successfully - changing status to DaoStatus.Success
+    return this.daoRepository.save({
+      id: account.accountId,
+      status: DaoStatus.Success,
+      txHash: originatedFromTransactionHash
+    });
   }
 }
