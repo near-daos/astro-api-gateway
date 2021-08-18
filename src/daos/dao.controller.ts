@@ -29,7 +29,6 @@ import { DaoGuard } from 'src/common/guards/dao.guard';
 
 @ApiTags('DAO')
 @Controller('/daos')
-@UseInterceptors(CacheInterceptor)
 export class DaoController {
   constructor(
     private readonly daoService: DaoService
@@ -57,6 +56,7 @@ export class DaoController {
   @ApiBadRequestResponse({ 
     description: 'limit/offset must be a number conforming to the specified constraints' 
   })
+  @UseInterceptors(CacheInterceptor)
   @Get('/')
   async daos(@Query() query: PagingQuery): Promise<Dao[]> {
     return await this.daoService.find(query);
@@ -72,6 +72,7 @@ export class DaoController {
     type: Dao 
   })
   @ApiBadRequestResponse({ description: 'Invalid Dao ID' })
+  @UseInterceptors(CacheInterceptor)
   @Get('/:id')
   async daoById(@Param() { id }: FindOneParams): Promise<Dao> {
     const dao: Dao = await this.daoService.findOne(id);
