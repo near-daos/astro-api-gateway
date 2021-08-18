@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Dao } from 'src/daos/entities/dao.entity';
 import { buildProposalId, convertDuration } from 'src/utils';
 import { Repository } from 'typeorm';
-import { CreateProposalDto } from './dto/proposal.dto';
+import { ProposalDto } from './dto/proposal.dto';
 import { Proposal, ProposalKind } from './entities/proposal.entity';
 import camelcaseKeys from 'camelcase-keys';
 import { PagingQuery, SearchQuery } from 'src/common';
@@ -15,7 +15,7 @@ export class ProposalService {
     private readonly proposalRepository: Repository<Proposal>,
   ) { }
 
-  create(proposalDto: CreateProposalDto): Promise<Proposal> {
+  create(proposalDto: ProposalDto): Promise<Proposal> {
     const {
       id,
       daoId,

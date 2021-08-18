@@ -7,12 +7,13 @@ import { NearService } from "src/near/near.service";
 import { TransactionService } from "src/transactions/transaction.service";
 import { ConfigService } from "@nestjs/config";
 import { Transaction, Account } from "src/near";
-import { CreateDaoDto } from "src/daos/dto/dao.dto";
-import { CreateProposalDto } from "src/proposals/dto/proposal.dto";
+import { DaoDto } from "src/daos/dto/dao.dto";
+import { ProposalDto } from "src/proposals/dto/proposal.dto";
 import { Cron, CronExpression } from "@nestjs/schedule";
 import { buildDaoId, buildProposalId } from "src/utils";
 import { DaoUpdateMessage } from "src/events/messages/dao-update.message";
 import { EventService } from "src/events/events.service";
+import { DaoStatus } from "src/daos/types/dao-status";
 
 @Injectable()
 export class AggregatorService {
@@ -115,7 +116,7 @@ export class AggregatorService {
     await Promise.all(transactions.map(transaction => this.transactionService.create(transaction)));
   }
 
-  private enrichDaos(daos: CreateDaoDto[], accounts: Account[], transactions: Transaction[]): CreateDaoDto[] {
+  private enrichDaos(daos: DaoDto[], accounts: Account[], transactions: Transaction[]): DaoDto[] {
     const daoTxHashes = accounts.reduce((acc, { accountId, receipt }) =>
       ({ ...acc, [accountId]: receipt.originatedFromTransactionHash }), {});
 
@@ -125,11 +126,12 @@ export class AggregatorService {
     return daos.map(dao => ({
       ...dao,
       txHash: daoTxHashes[dao.id],
-      numberOfMembers: (new Set(signersByAccountId[dao.id])).size
+      numberOfMembers: (new Set(signersByAccountId[dao.id])).size,
+      status: DaoStatus.Success
     }));
   }
 
-  private enrichProposals(proposals: CreateProposalDto[], transactions: Transaction[]): CreateProposalDto[] {
+  private enrichProposals(proposals: ProposalDto[], transactions: Transaction[]): ProposalDto[] {
     const transactionsByAccountId = transactions
       .filter(({ transactionAction }) => (transactionAction.args as any).method_name == 'add_proposal')
       .reduce((acc, cur) =>

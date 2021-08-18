@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { NEAR_INDEXER_DB_CONNECTION } from 'src/common/constants';
 import { Repository } from 'typeorm';
 import { Account, Transaction } from '.';
+import { Receipt } from './entities/receipt.entity';
 
 @Injectable()
 export class NearService {
@@ -12,6 +13,9 @@ export class NearService {
 
     @InjectRepository(Transaction, NEAR_INDEXER_DB_CONNECTION)
     private readonly transactionRepository: Repository<Transaction>,
+
+    @InjectRepository(Receipt, NEAR_INDEXER_DB_CONNECTION)
+    private readonly receiptRepository: Repository<Receipt>,
   ) { }
 
   /**
@@ -50,6 +54,27 @@ export class NearService {
       .leftJoinAndSelect('transaction.transactionAction', 'transaction_actions')
       .where("transaction.receiver_account_id = ANY(ARRAY[:...ids])", { ids: receiverAccountIds })
       .orderBy('transaction.block_timestamp', 'DESC')
+      .getOne()
+  }
+
+  async findTransaction(transactionHash: string): Promise<Transaction> {
+    return this.transactionRepository.findOne(transactionHash);
+  }
+
+  async findReceiptByTransactionHashAndPredecessor(transactionHash: string, predecessorAccountId: string): Promise<Receipt> {
+    //TODO: Revise a possibility of multiple receipts with the query below
+    return this.receiptRepository
+      .createQueryBuilder('receipt')
+      .leftJoinAndSelect('receipt.originatedFromTransaction', 'transactions')
+      .where('receipt.originated_from_transaction_hash = :transactionHash', { transactionHash })
+      .andWhere('receipt.predecessor_account_id like :id', { id: `%${predecessorAccountId}%` })
+      .getOne();
+  }
+
+  async findAccountByReceiptId(receiptId: string): Promise<Account> {
+    return this.accountRepository
+      .createQueryBuilder('account')
+      .where('account.created_by_receipt_id = :receiptId', { receiptId })
       .getOne()
   }
 }

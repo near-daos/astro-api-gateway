@@ -7,6 +7,7 @@ import {
   PrimaryColumn,
   UpdateDateColumn
 } from 'typeorm';
+import { DaoStatus } from '../types/dao-status';
 
 @Entity()
 export class Dao {
@@ -50,6 +51,20 @@ export class Dao {
   @ApiProperty()
   @Column({ nullable: true })
   txHash: string;
+
+  @Column({ nullable: true })
+  link: string;
+
+  @Column({ nullable: true })
+  description: string;
+
+  @ApiProperty()
+  @Column({
+    type: "enum",
+    enum: DaoStatus,
+    nullable: true
+  })
+  status: DaoStatus;
 
   @ApiHideProperty()
   @Exclude()
