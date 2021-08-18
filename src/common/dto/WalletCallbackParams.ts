@@ -20,12 +20,14 @@ export class WalletCallbackParams {
   @ApiPropertyOptional({
     description: 'Callback Error Code'
   })
+  @IsOptional()
   @IsString()
   errorCode: string;
 
   @ApiPropertyOptional({
     description: 'Callback Error Message'
   })
+  @IsOptional()
   @IsString()
   errorMessage: string;
 }
