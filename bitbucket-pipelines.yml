@@ -83,9 +83,10 @@ pipelines:
       - step: *build-test
 
       - step: *docker-build-publish
-          
-      - step: *helm-build-deploy
-        deployment: Development
+
+      - step:
+          <<: *helm-build-deploy
+          deployment: Development
     
     staging:
       - step:
@@ -99,8 +100,9 @@ pipelines:
 
       - step: *docker-build-publish
           
-      - step: *helm-build-deploy
-        deployment: Staging
+      - step:
+          <<: *helm-build-deploy
+          deployment: Staging
 
   tags:
     '*':
@@ -115,5 +117,6 @@ pipelines:
 
       - step: *docker-build-publish
           
-      - step: *helm-build-deploy
-        deployment: Production
+      - step:
+          <<: *helm-build-deploy
+          deployment: Production
