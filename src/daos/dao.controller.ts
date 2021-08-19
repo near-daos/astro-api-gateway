@@ -24,7 +24,6 @@ import { DaoService } from './dao.service';
 import { DaoDto } from './dto/dao.dto';
 import { Dao } from './entities/dao.entity';
 import { WalletCallbackParams } from 'src/common/dto/WalletCallbackParams';
-import { DaoStatus } from './types/dao-status';
 import { DaoGuard } from 'src/common/guards/dao.guard';
 
 @ApiTags('DAO')
@@ -44,7 +43,7 @@ export class DaoController {
   @UseGuards(AccountAccessGuard, DaoGuard)
   @Post('/')
   async create(@Body() createDaoDto: DaoDto): Promise<Dao> {
-    return await this.daoService.create({ ...createDaoDto, status: DaoStatus.Pending });
+    return await this.daoService.createDraft(createDaoDto);
   }
 
   @ApiResponse({ 

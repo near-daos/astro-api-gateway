@@ -20,14 +20,15 @@ export class DaoGuard implements CanActivate {
     const req = context.switchToHttp().getRequest();
 
     const { id } = req.body as DaoDto;
+    const { factoryContract } = this.nearSputnikProvider;
 
-    const daos = await this.nearSputnikProvider.factoryContract.get_dao_list();
+    const daos = await factoryContract.get_dao_list();
 
     const alreadyExists = daos.includes(id);
     if (alreadyExists) {
       throw new ForbiddenException(`DAO ${id} already exists`);
     }
 
-    return alreadyExists;
+    return true;
   }
 }

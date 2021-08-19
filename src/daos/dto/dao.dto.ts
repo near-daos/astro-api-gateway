@@ -35,9 +35,9 @@ export class DaoDto extends AccountBearer {
   @IsNotEmpty()
   council: string[];
 
-  numberOfProposals: number;
+  numberOfProposals: number = 0;
   councilSeats: number;
-  numberOfMembers: number;
+  numberOfMembers: number = 0;
   txHash: string;
 
   @ApiProperty()
