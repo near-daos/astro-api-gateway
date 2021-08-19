@@ -1,5 +1,4 @@
 import { 
-  CacheInterceptor, 
   Controller, 
   Get, 
   Query, 
@@ -10,13 +9,13 @@ import {
   ApiResponse,
   ApiTags
 } from '@nestjs/swagger';
-import { SearchQuery } from 'src/common';
+import { HttpCacheInterceptor, SearchQuery } from 'src/common';
 import { SearchResultDto } from './dto/search-result.dto';
 import { SearchService } from './search.service';
 
 @ApiTags('Search')
 @Controller()
-@UseInterceptors(CacheInterceptor)
+@UseInterceptors(HttpCacheInterceptor)
 export class SearchController {
   constructor(private readonly searchService: SearchService) { }
 

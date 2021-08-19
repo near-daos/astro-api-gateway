@@ -11,6 +11,7 @@ import { SubscriptionModule } from './subscriptions/subscription.module';
 import { ProposalModule } from './proposals/proposal.module';
 import { SearchModule } from './search/search.module';
 import { TransactionModule } from './transactions/transaction.module';
+import { HttpCacheModule } from './cache/cache.module';
 
 @Module({
   imports: [
@@ -27,7 +28,8 @@ import { TransactionModule } from './transactions/transaction.module';
     ProposalModule,
     SearchModule,
     TransactionModule,
-    SubscriptionModule
+    SubscriptionModule,
+    HttpCacheModule
   ],
   controllers: [AppController]
 })

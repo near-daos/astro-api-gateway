@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import { app } from 'firebase-admin';
+import { app, messaging } from 'firebase-admin';
 import { Repository } from 'typeorm';
 import { Subscription } from 'src/subscriptions/entities/subscription.entity';
 
@@ -19,7 +19,7 @@ export class NotificationService {
     this.firebaseApp = configService.get('firebase')
   }
 
-  async notifyDaoSubscribers(daoId: string): Promise<string> {
+  async notifyDaoSubscribers(daoId: string): Promise<messaging.BatchResponse> {
     const subscriptions = await this.subscriptionRepository
       .createQueryBuilder('subscription')
       .where("subscription.dao_id = :daoId", { daoId})
@@ -49,6 +49,8 @@ export class NotificationService {
       if (errors.length) {
         errors.map(error => this.logger.error(error));
       }
+
+      return response;
     } catch (error) {
       return Promise.reject(error);
     }

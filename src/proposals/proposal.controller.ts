@@ -1,6 +1,5 @@
 import {
   BadRequestException,
-  CacheInterceptor,
   Controller,
   Get,
   Param,
@@ -13,13 +12,17 @@ import {
   ApiResponse,
   ApiTags
 } from '@nestjs/swagger';
-import { FindOneParams, PagingQuery } from 'src/common';
+import {
+  FindOneParams,
+  HttpCacheInterceptor,
+  PagingQuery
+} from 'src/common';
 import { Proposal } from './entities/proposal.entity';
 import { ProposalService } from './proposal.service';
 
 @ApiTags('Proposals')
 @Controller()
-@UseInterceptors(CacheInterceptor)
+@UseInterceptors(HttpCacheInterceptor)
 export class ProposalController {
   constructor(
     private readonly proposalService: ProposalService
