@@ -1,7 +1,6 @@
 import { 
   BadRequestException,
   Body,
-  CacheInterceptor,
   Controller,
   Get,
   Param,
@@ -19,12 +18,16 @@ import {
   ApiTags
 } from '@nestjs/swagger';
 import { Response } from 'express';
-import { AccountAccessGuard, FindOneParams, PagingQuery } from 'src/common';
+import {
+  AccountAccessGuard,
+  FindOneParams,
+  HttpCacheInterceptor,
+  PagingQuery
+} from 'src/common';
 import { DaoService } from './dao.service';
 import { DaoDto } from './dto/dao.dto';
 import { Dao } from './entities/dao.entity';
 import { WalletCallbackParams } from 'src/common/dto/WalletCallbackParams';
-import { DaoStatus } from './types/dao-status';
 import { DaoGuard } from 'src/common/guards/dao.guard';
 
 @ApiTags('DAO')
@@ -44,7 +47,7 @@ export class DaoController {
   @UseGuards(AccountAccessGuard, DaoGuard)
   @Post('/')
   async create(@Body() createDaoDto: DaoDto): Promise<Dao> {
-    return await this.daoService.create({ ...createDaoDto, status: DaoStatus.Pending });
+    return await this.daoService.createDraft(createDaoDto);
   }
 
   @ApiResponse({ 
@@ -56,7 +59,7 @@ export class DaoController {
   @ApiBadRequestResponse({ 
     description: 'limit/offset must be a number conforming to the specified constraints' 
   })
-  @UseInterceptors(CacheInterceptor)
+  @UseInterceptors(HttpCacheInterceptor)
   @Get('/')
   async daos(@Query() query: PagingQuery): Promise<Dao[]> {
     return await this.daoService.find(query);
@@ -72,7 +75,7 @@ export class DaoController {
     type: Dao 
   })
   @ApiBadRequestResponse({ description: 'Invalid Dao ID' })
-  @UseInterceptors(CacheInterceptor)
+  @UseInterceptors(HttpCacheInterceptor)
   @Get('/:id')
   async daoById(@Param() { id }: FindOneParams): Promise<Dao> {
     const dao: Dao = await this.daoService.findOne(id);

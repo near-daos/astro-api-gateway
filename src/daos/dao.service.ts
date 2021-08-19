@@ -18,8 +18,16 @@ export class DaoService {
     private readonly configService: ConfigService,
     private readonly nearService: NearService
   ) { }
+
+  async createDraft(daoDto: DaoDto): Promise<Dao> {
+    return this.create({
+      ...daoDto,
+      councilSeats: daoDto.council ? daoDto.council.length : 0, 
+      status: DaoStatus.Pending
+    })
+  }
   
-  create(daoDto: DaoDto): Promise<Dao> {
+  async create(daoDto: DaoDto): Promise<Dao> {
     return this.daoRepository.save(daoDto);
   }
 

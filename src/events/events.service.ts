@@ -1,10 +1,11 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import {
   EVENT_SERVICE,
-  EVENT_DAO_UPDATE_MESSAGE_PATTERN
+  EVENT_CLEAR_HTTP_CACHE_MESSAGE_PATTERN
 } from 'src/common/constants';
 import { ClientProxy } from '@nestjs/microservices';
 import { DaoUpdateMessage } from './messages/dao-update.message';
+import { BaseMessage } from './messages/base.event';
 
 @Injectable()
 export class EventService {
@@ -14,9 +15,24 @@ export class EventService {
     @Inject(EVENT_SERVICE) private readonly client: ClientProxy
   ) { }
 
-  async sendDaoUpdates(message: DaoUpdateMessage): Promise<void> {
+  async handleDaoUpdates(daoIds: string[]): Promise<any> {
+    return Promise.all([
+      this.sendDaoUpdates(daoIds),
+      this.sendClearCacheEvent()
+    ])
+  }
+
+  private async sendDaoUpdates(daoIds: string[]): Promise<void> {
+    return this.sendEvent(new DaoUpdateMessage(daoIds));
+  }
+
+  private async sendClearCacheEvent(): Promise<void> {
+    return this.sendEvent(new BaseMessage(EVENT_CLEAR_HTTP_CACHE_MESSAGE_PATTERN, {}));
+  }
+
+  private async sendEvent({ pattern, data }: BaseMessage): Promise<void> {
     try {
-      this.client.emit<any>(EVENT_DAO_UPDATE_MESSAGE_PATTERN, message);
+      this.client.emit<any>(pattern, data);
     } catch (error) {
       this.logger.error(error);
 

@@ -85,8 +85,7 @@ export class AggregatorService {
 
     if (proposalTransactions.length) {
       this.logger.log(`Proposals updated for DAOs: ${proposalDaoIds.join(',')}`);
-      
-      await this.eventService.sendDaoUpdates(new DaoUpdateMessage(proposalDaoIds));
+      await this.eventService.handleDaoUpdates(proposalDaoIds);
     }
 
     this.logger.log('Aggregating data...');

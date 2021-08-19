@@ -1,7 +1,8 @@
-export class DaoUpdateMessage {
-  daoIds: string[];
+import { EVENT_DAO_UPDATE_MESSAGE_PATTERN } from "src/common/constants";
+import { BaseMessage } from "./base.event";
 
+export class DaoUpdateMessage extends BaseMessage {
   constructor(daoIds: string[]) {
-    this.daoIds = daoIds;
+    super(EVENT_DAO_UPDATE_MESSAGE_PATTERN, { daoIds });
   }
 }

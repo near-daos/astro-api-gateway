@@ -5,7 +5,6 @@ import path from "path";
 import os from "os";
 
 import { NEAR_PROVIDER } from "src/common/constants";
-import { CREDENTIALS_DIR } from "src/sputnikdao/constants";
 
 export const nearProvider = {
   provide: NEAR_PROVIDER,
@@ -13,7 +12,7 @@ export const nearProvider = {
   useFactory: async (configService: ConfigService) => {
     const config = configService.get('near');
 
-    const keyDir = path.join(os.homedir(), CREDENTIALS_DIR);
+    const keyDir = path.join(os.homedir(), process.env.NEAR_CREDENTIALS_DIR || ".near-credentials");
 
     const near = await connect({
       deps: { 

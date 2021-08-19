@@ -1,9 +1,8 @@
-import { CacheModule, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import configuration, {
-  CacheConfigService,
   TypeOrmConfigService,
   validationSchema
 } from './config';
@@ -12,6 +11,7 @@ import { SubscriptionModule } from './subscriptions/subscription.module';
 import { ProposalModule } from './proposals/proposal.module';
 import { SearchModule } from './search/search.module';
 import { TransactionModule } from './transactions/transaction.module';
+import { HttpCacheModule } from './cache/cache.module';
 
 @Module({
   imports: [
@@ -24,14 +24,12 @@ import { TransactionModule } from './transactions/transaction.module';
     TypeOrmModule.forRootAsync({
       useClass: TypeOrmConfigService,
     }),
-    CacheModule.registerAsync({
-      useClass: CacheConfigService,
-    }),
     DaoModule,
     ProposalModule,
     SearchModule,
     TransactionModule,
-    SubscriptionModule
+    SubscriptionModule,
+    HttpCacheModule
   ],
   controllers: [AppController]
 })
