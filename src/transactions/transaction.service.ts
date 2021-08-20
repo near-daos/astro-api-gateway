@@ -18,4 +18,8 @@ export class TransactionService {
   lastTransaction(): Promise<Transaction> {
     return this.transactionRepository.findOne({ order: { blockTimestamp: 'DESC' } });
   }
+
+  count(): Promise<number> {
+    return this.transactionRepository.count();
+  }
 }
