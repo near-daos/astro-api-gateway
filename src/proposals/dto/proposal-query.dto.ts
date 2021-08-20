@@ -5,10 +5,10 @@ import { PagingQuery } from 'src/common';
 export class ProposalQuery extends PagingQuery {
   @ApiProperty({
     description: 'Dao ID',
-    default: null,
+    default: undefined,
     required: false,
   })
   @IsString()
   @IsOptional()
-  daoId? = null;
+  daoId?: string;
 }
