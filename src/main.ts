@@ -2,7 +2,7 @@ import { AppService } from './app-service';
 import {
   NEST_APP_AGGREGATOR,
   NEST_APP_API,
-  NEST_APP_NOTIFIER
+  NEST_APP_NOTIFIER,
 } from './common/constants';
 import Aggregator from './aggregator.main';
 import Notifier from './notifier.main';
