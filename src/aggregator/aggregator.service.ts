@@ -11,7 +11,6 @@ import { DaoDto } from "src/daos/dto/dao.dto";
 import { ProposalDto } from "src/proposals/dto/proposal.dto";
 import { Cron, CronExpression } from "@nestjs/schedule";
 import { buildDaoId, buildProposalId } from "src/utils";
-import { DaoUpdateMessage } from "src/events/messages/dao-update.message";
 import { EventService } from "src/events/events.service";
 import { DaoStatus } from "src/daos/types/dao-status";
 
@@ -40,12 +39,14 @@ export class AggregatorService {
 
     this.logger.log('Checking data relevance...')
 
+    const aggregatedTxCount = await this.transactionService.count();
+
     let [ tx, nearTx ] = await Promise.all([
       this.transactionService.lastTransaction(),
       this.nearService.lastTransaction([ ...daoIds, contractName ])
     ]);
 
-    if (tx && nearTx && tx.transactionHash === nearTx.transactionHash) {
+    if (aggregatedTxCount && tx && nearTx && tx.transactionHash === nearTx.transactionHash) {
       return this.logger.log('Data is up to date. Skipping data aggregation.');
     }
     
@@ -55,37 +56,39 @@ export class AggregatorService {
     const transactions: Transaction[] = 
       await this.nearService.findTransactionsByReceiverAccountIds([ ...daoIds, contractName ], blockTimestamp);
 
-    //TODO: Receive fresh transactions here!!!
-    //TODO: calc diff to get updated data only!!!
+    let accountDaoIds = daoIds;
+    let proposalDaoIds = daoIds;
 
-    const accountDaoIds = [
-      ...new Set(transactions
-        //TODO: Q1: args_json is absent? - needs clarification
-        .filter(({ transactionAction: action }) => 
-          (action.args as any).args_json && (action.args as any).args_json.name)
-        .filter(({ receiverAccountId: accId, transactionAction: action }) =>
-          accId === contractName
-          && (action.args as any).method_name === 'create')
-        .map(({ transactionAction: action }) =>
-          (buildDaoId((action.args as any).args_json.name, contractName))))
-    ];
+    if (aggregatedTxCount) {
+      accountDaoIds = [
+        ...new Set(transactions
+          //TODO: Q1: args_json is absent? - needs clarification
+          .filter(({ transactionAction: action }) => 
+            (action.args as any).args_json && (action.args as any).args_json.name)
+          .filter(({ receiverAccountId: accId, transactionAction: action }) =>
+            accId === contractName
+            && (action.args as any).method_name === 'create')
+          .map(({ transactionAction: action }) =>
+            (buildDaoId((action.args as any).args_json.name, contractName))))
+      ];
 
     //TODO: Re-work this for cases when proposal is created - there is no 'id' in transaction action payload
-    const proposalTransactions = transactions
-      .filter(({ transactionAction: action }) => (action.args as any).args_json)
-      .filter(({ receiverAccountId }) => receiverAccountId !== contractName)
-      .map(({ receiverAccountId, transactionAction: action }) =>
-      ({
-        receiverAccountId,
-        function: (action.args as any).method_name,
-        id: buildProposalId(receiverAccountId, (action.args as any).args_json.id)
-      }));
+      const proposalTransactions = transactions
+        .filter(({ transactionAction: action }) => (action.args as any).args_json)
+        .filter(({ receiverAccountId }) => receiverAccountId !== contractName)
+        .map(({ receiverAccountId, transactionAction: action }) =>
+        ({
+          receiverAccountId,
+          function: (action.args as any).method_name,
+          id: buildProposalId(receiverAccountId, (action.args as any).args_json.id)
+        }));
 
-    const proposalDaoIds = [ ...new Set(proposalTransactions.map(({ receiverAccountId }) => (receiverAccountId))) ];
+      proposalDaoIds = [ ...new Set(proposalTransactions.map(({ receiverAccountId }) => (receiverAccountId))) ];
 
-    if (proposalTransactions.length) {
-      this.logger.log(`Proposals updated for DAOs: ${proposalDaoIds.join(',')}`);
-      await this.eventService.handleDaoUpdates(proposalDaoIds);
+      if (proposalTransactions.length) {
+        this.logger.log(`Proposals updated for DAOs: ${proposalDaoIds.join(',')}`);
+        await this.eventService.handleDaoUpdates(proposalDaoIds);
+      }
     }
 
     this.logger.log('Aggregating data...');
