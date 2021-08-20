@@ -8,41 +8,40 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryColumn,
-  UpdateDateColumn
+  UpdateDateColumn,
 } from 'typeorm';
 import { ProposalStatus } from '../types/proposal-status';
 import { ProposalType } from '../types/proposal-type';
 
 export type ProposalKind =
   | {
-    type: ProposalType.Payout;
-    amount: string;
-  }
+      type: ProposalType.Payout;
+      amount: string;
+    }
   | {
-    type: ProposalType.ChangeVotePeriod;
-    votePeriod: string;
-  }
+      type: ProposalType.ChangeVotePeriod;
+      votePeriod: string;
+    }
   | {
-    type: ProposalType.NewCouncil;
-  }
+      type: ProposalType.NewCouncil;
+    }
   | {
-    type: ProposalType.RemoveCouncil;
-  }
+      type: ProposalType.RemoveCouncil;
+    }
   | {
-    type: ProposalType.ChangePurpose;
-    purpose: string;
-  };
+      type: ProposalType.ChangePurpose;
+      purpose: string;
+    };
 
 @Entity()
 export class Proposal {
-
   @ApiProperty()
   @PrimaryColumn({ type: 'text', unique: true })
   id: string;
 
   @ApiProperty()
-  @ManyToOne(_ => Dao)
-  @JoinColumn({ name: "dao_id" })
+  @ManyToOne((_) => Dao)
+  @JoinColumn({ name: 'dao_id' })
   dao: Dao;
 
   @ApiProperty()
@@ -59,15 +58,15 @@ export class Proposal {
 
   @ApiProperty()
   @Column({
-    type: "enum",
+    type: 'enum',
     enum: ProposalStatus,
-    default: ProposalStatus.Vote
+    default: ProposalStatus.Vote,
   })
   status: ProposalStatus;
 
   //TODO: type
   @ApiProperty()
-  @Column({ type: "simple-json" })
+  @Column({ type: 'simple-json' })
   kind: ProposalKind;
 
   @ApiProperty()
@@ -83,9 +82,9 @@ export class Proposal {
   voteNo: number;
 
   @ApiProperty()
-  @Column("simple-json")
-  votes: {}
-  
+  @Column('simple-json')
+  votes: Record<string, unknown>;
+
   @ApiProperty()
   @Column({ nullable: true })
   txHash: string;

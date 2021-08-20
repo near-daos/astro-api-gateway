@@ -6,14 +6,15 @@ import { Repository } from 'typeorm';
 import { ProposalDto } from './dto/proposal.dto';
 import { Proposal, ProposalKind } from './entities/proposal.entity';
 import camelcaseKeys from 'camelcase-keys';
-import { PagingQuery, SearchQuery } from 'src/common';
+import { SearchQuery } from 'src/common';
+import { ProposalQuery } from './dto/proposal-query.dto';
 
 @Injectable()
 export class ProposalService {
   constructor(
     @InjectRepository(Proposal)
     private readonly proposalRepository: Repository<Proposal>,
-  ) { }
+  ) {}
 
   create(proposalDto: ProposalDto): Promise<Proposal> {
     const {
@@ -28,7 +29,7 @@ export class ProposalService {
       vote_yes,
       vote_period_end,
       votes,
-      txHash
+      txHash,
     } = proposalDto;
 
     const proposalId = buildProposalId(daoId, id);
@@ -45,29 +46,43 @@ export class ProposalService {
     proposal.voteNo = vote_no;
     proposal.voteYes = vote_yes;
     proposal.votePeriodEnd = convertDuration(vote_period_end);
-    proposal.kind = camelcaseKeys(kind, { deep: true } ) as ProposalKind;
+    proposal.kind = camelcaseKeys(kind, { deep: true }) as ProposalKind;
     proposal.votes = votes;
     proposal.txHash = txHash;
 
     return this.proposalRepository.save(proposal);
   }
 
-  async find({ offset, limit }: PagingQuery): Promise<Proposal[]> {
-    return this.proposalRepository.find({ skip: offset, take: limit });
+  async find({ daoId, offset, limit }: ProposalQuery): Promise<Proposal[]> {
+    return this.proposalRepository.find({
+      skip: offset,
+      take: limit,
+      where: {
+        dao: {
+          id: daoId,
+        },
+      },
+    });
   }
 
   findOne(id: string): Promise<Proposal> {
     return this.proposalRepository.findOne(id);
   }
 
-  async findByQuery({ query, offset, limit }: SearchQuery): Promise<Proposal[]> {
+  async findByQuery({
+    query,
+    offset,
+    limit,
+  }: SearchQuery): Promise<Proposal[]> {
     return this.proposalRepository
       .createQueryBuilder('proposal')
-      .where("proposal.id like :id", { id: `%${query}%` })
-      .orWhere("proposal.target like :target", { target: `%${query}%` })
-      .orWhere("proposal.proposer like :proposer", { proposer: `%${query}%` })
-      .orWhere("proposal.description like :description", { description: `%${query}%` })
-      .orWhere("proposal.votes like :vote", { vote: `%${query}%`})
+      .where('proposal.id like :id', { id: `%${query}%` })
+      .orWhere('proposal.target like :target', { target: `%${query}%` })
+      .orWhere('proposal.proposer like :proposer', { proposer: `%${query}%` })
+      .orWhere('proposal.description like :description', {
+        description: `%${query}%`,
+      })
+      .orWhere('proposal.votes like :vote', { vote: `%${query}%` })
       .skip(offset)
       .take(limit)
       .getMany();
