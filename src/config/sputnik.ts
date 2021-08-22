@@ -1,24 +1,18 @@
-import { ConfigService } from "@nestjs/config";
-import { Account, Contract, Near } from "near-api-js";
+import { ConfigService } from '@nestjs/config';
+import { Account, Contract, Near } from 'near-api-js';
 
-import { NEAR_PROVIDER, NEAR_SPUTNIK_PROVIDER } from "src/common/constants";
+import { NEAR_PROVIDER, NEAR_SPUTNIK_PROVIDER } from 'src/common/constants';
 
 export type NearSputnikProvider = {
-  near: Near,
-  account: Account,
-  factoryContract: Contract & any
-}
+  near: Near;
+  account: Account;
+  factoryContract: Contract & any;
+};
 
 export const nearSputnikProvider = {
   provide: NEAR_SPUTNIK_PROVIDER,
-  inject: [
-    ConfigService,
-    NEAR_PROVIDER
-  ],
-  useFactory: async (
-    configService: ConfigService,
-    near: Near
-  ) => {
+  inject: [ConfigService, NEAR_PROVIDER],
+  useFactory: async (configService: ConfigService, near: Near) => {
     const config = configService.get('near');
 
     const { contractName } = config;
@@ -31,5 +25,5 @@ export const nearSputnikProvider = {
     });
 
     return { account, factoryContract, near };
-  }
+  },
 };

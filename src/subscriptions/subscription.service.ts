@@ -9,19 +9,14 @@ import { Subscription } from './entities/subscription.entity';
 
 @Injectable()
 export class SubscriptionService {
-
   constructor(
     private readonly configService: ConfigService,
     @InjectRepository(Subscription)
-    private readonly subscriptionRepository: Repository<Subscription>
-  ) { }
+    private readonly subscriptionRepository: Repository<Subscription>,
+  ) {}
 
   async create(addSubscriptionDto: SubscriptionDto): Promise<Subscription> {
-    const {
-      accountId,
-      daoId,
-      token
-    } = addSubscriptionDto;
+    const { accountId, daoId, token } = addSubscriptionDto;
 
     const subscriptionId = buildSubscriptionId(daoId, accountId);
     const subscription = new Subscription();

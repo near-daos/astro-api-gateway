@@ -16,22 +16,12 @@ import { NearService } from './near.service';
       name: NEAR_INDEXER_DB_CONNECTION,
       useClass: TypeOrmConfigService,
     }),
-    TypeOrmModule.forFeature([
-      Account,
-      Receipt,
-      Transaction,
-      TransactionAction
-    ], NEAR_INDEXER_DB_CONNECTION)
+    TypeOrmModule.forFeature(
+      [Account, Receipt, Transaction, TransactionAction],
+      NEAR_INDEXER_DB_CONNECTION,
+    ),
   ],
-  providers: [
-    NearService,
-    nearProvider,
-    nearSputnikProvider
-  ],
-  exports: [
-    NearService,
-    nearProvider,
-    nearSputnikProvider
-  ]
+  providers: [NearService, nearProvider, nearSputnikProvider],
+  exports: [NearService, nearProvider, nearSputnikProvider],
 })
 export class NearModule {}

@@ -14,12 +14,14 @@ import { EventService } from './events.service';
       validationSchema,
       envFilePath: ['.env.local', '.env'],
     }),
-    ClientsModule.registerAsync([{
-      name: EVENT_SERVICE,
-      useClass: RabbitMQConfigService
-    }]),
+    ClientsModule.registerAsync([
+      {
+        name: EVENT_SERVICE,
+        useClass: RabbitMQConfigService,
+      },
+    ]),
   ],
   providers: [EventService],
-  exports: [EventService]
+  exports: [EventService],
 })
-export class EventModule { }
+export class EventModule {}

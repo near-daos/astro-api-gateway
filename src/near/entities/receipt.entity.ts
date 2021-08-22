@@ -1,15 +1,8 @@
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  OneToOne,
-  PrimaryColumn
-} from 'typeorm';
+import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
 import { Transaction } from './transaction.entity';
 
 @Entity({ name: 'receipts' })
 export class Receipt {
-
   @PrimaryColumn()
   receiptId: string;
 
@@ -22,7 +15,7 @@ export class Receipt {
   @Column()
   originatedFromTransactionHash: string;
 
-  @OneToOne(_ => Transaction)
-  @JoinColumn({ name: "originated_from_transaction_hash" })
+  @OneToOne((_) => Transaction)
+  @JoinColumn({ name: 'originated_from_transaction_hash' })
   originatedFromTransaction: Transaction;
 }

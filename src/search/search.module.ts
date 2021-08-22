@@ -16,10 +16,10 @@ import { CacheConfigService } from 'src/config';
     TypeOrmModule.forFeature([Proposal]),
     TypeOrmModule.forFeature([Dao]),
     DaoModule,
-    ProposalModule
+    ProposalModule,
   ],
   providers: [SearchService],
   controllers: [SearchController],
-  exports: [SearchService]
+  exports: [SearchService],
 })
 export class SearchModule {}

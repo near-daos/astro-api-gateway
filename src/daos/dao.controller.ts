@@ -1,4 +1,4 @@
-import { 
+import {
   BadRequestException,
   Body,
   Controller,
@@ -8,21 +8,21 @@ import {
   Query,
   Res,
   UseGuards,
-  UseInterceptors
+  UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiForbiddenResponse,
   ApiParam,
   ApiResponse,
-  ApiTags
+  ApiTags,
 } from '@nestjs/swagger';
 import { Response } from 'express';
 import {
   AccountAccessGuard,
   FindOneParams,
   HttpCacheInterceptor,
-  PagingQuery
+  PagingQuery,
 } from 'src/common';
 import { DaoService } from './dao.service';
 import { DaoDto } from './dto/dao.dto';
@@ -33,16 +33,15 @@ import { DaoGuard } from 'src/common/guards/dao.guard';
 @ApiTags('DAO')
 @Controller('/daos')
 export class DaoController {
-  constructor(
-    private readonly daoService: DaoService
-  ) { }
+  constructor(private readonly daoService: DaoService) {}
 
   @ApiResponse({
     status: 201,
-    description: 'Created'
+    description: 'Created',
   })
   @ApiForbiddenResponse({
-    description: 'Account <accountId> identity is invalid - public key / bad signature/public key size / Invalid signature / DAO already exists'
+    description:
+      'Account <accountId> identity is invalid - public key / bad signature/public key size / Invalid signature / DAO already exists',
   })
   @UseGuards(AccountAccessGuard, DaoGuard)
   @Post('/')
@@ -50,14 +49,15 @@ export class DaoController {
     return await this.daoService.createDraft(createDaoDto);
   }
 
-  @ApiResponse({ 
-    status: 200, 
-    description: 'List of aggregated Sputnik DAOs', 
-    type: Dao, 
-    isArray: true 
+  @ApiResponse({
+    status: 200,
+    description: 'List of aggregated Sputnik DAOs',
+    type: Dao,
+    isArray: true,
   })
-  @ApiBadRequestResponse({ 
-    description: 'limit/offset must be a number conforming to the specified constraints' 
+  @ApiBadRequestResponse({
+    description:
+      'limit/offset must be a number conforming to the specified constraints',
   })
   @UseInterceptors(HttpCacheInterceptor)
   @Get('/')
@@ -67,12 +67,12 @@ export class DaoController {
 
   @ApiParam({
     name: 'id',
-    type: String
+    type: String,
   })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Sputnik DAO', 
-    type: Dao 
+  @ApiResponse({
+    status: 200,
+    description: 'Sputnik DAO',
+    type: Dao,
   })
   @ApiBadRequestResponse({ description: 'Invalid Dao ID' })
   @UseInterceptors(HttpCacheInterceptor)
@@ -81,7 +81,7 @@ export class DaoController {
     const dao: Dao = await this.daoService.findOne(id);
 
     if (!dao) {
-      throw new BadRequestException('Invalid Dao ID')
+      throw new BadRequestException('Invalid Dao ID');
     }
 
     return dao;
@@ -91,14 +91,10 @@ export class DaoController {
   @Get('/wallet/callback')
   async success(
     @Query() callback: WalletCallbackParams,
-    @Res() res: Response
+    @Res() res: Response,
   ): Promise<any> {
-    const {
-      transactionHashes,
-      redirectUrl,
-      errorCode,
-      errorMessage
-    } = callback;
+    const { transactionHashes, redirectUrl, errorCode, errorMessage } =
+      callback;
 
     if (errorCode) {
       //TODO: handle error callback - not so much info there
@@ -114,7 +110,7 @@ export class DaoController {
       await Promise.all(
         transactionHashes
           .split(',')
-          .map(hash => this.daoService.processTransactionCallback(hash))
+          .map((hash) => this.daoService.processTransactionCallback(hash)),
       );
     }
 

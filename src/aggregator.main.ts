@@ -8,14 +8,13 @@ import { Transport } from '@nestjs/microservices';
 
 export default class Aggregator implements AppService {
   async bootstrap(): Promise<void> {
-    const app = await NestFactory.createMicroservice(
-      AggregatorModule,
-      {
-        transport: Transport.TCP,
-      }
-    );
+    const app = await NestFactory.createMicroservice(AggregatorModule, {
+      transport: Transport.TCP,
+    });
 
-    app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
+    app.useGlobalInterceptors(
+      new ClassSerializerInterceptor(app.get(Reflector)),
+    );
 
     const configService = app.get(ConfigService);
 

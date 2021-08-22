@@ -5,7 +5,7 @@ import {
   Param,
   Delete,
   BadRequestException,
-  UseGuards
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -13,7 +13,7 @@ import {
   ApiNotFoundResponse,
   ApiParam,
   ApiResponse,
-  ApiTags
+  ApiTags,
 } from '@nestjs/swagger';
 
 import { SubscriptionService } from './subscription.service';
@@ -31,44 +31,51 @@ export class NotificationsApiController {
 
   @ApiResponse({
     status: 201,
-    description: 'Created'
+    description: 'Created',
   })
   @ApiBadRequestResponse({
-    description: 'No DAO with id <daoId> found.'
+    description: 'No DAO with id <daoId> found.',
   })
   @ApiForbiddenResponse({
-    description: 'Account <accountId> identity is invalid - public key / bad signature/public key size / Invalid signature'
+    description:
+      'Account <accountId> identity is invalid - public key / bad signature/public key size / Invalid signature',
   })
   @Post('/')
-  async create(@Body() addSubscriptionDto: SubscriptionDto): Promise<Subscription> {
-    return await this.subscriptionService.create(addSubscriptionDto)
-      .catch(error => {
-        if (error.code === DB_FOREIGN_KEY_VIOLATION) {
-          throw new BadRequestException(`No DAO with id ${addSubscriptionDto.daoId} found.`);
-        }
+  async create(
+    @Body() addSubscriptionDto: SubscriptionDto,
+  ): Promise<Subscription> {
+    try {
+      return await this.subscriptionService.create(addSubscriptionDto);
+    } catch (error) {
+      if (error.code === DB_FOREIGN_KEY_VIOLATION) {
+        throw new BadRequestException(
+          `No DAO with id ${addSubscriptionDto.daoId} found.`,
+        );
+      }
 
-        throw error;
-      });
+      throw error;
+    }
   }
 
   @ApiParam({
     name: 'id',
-    type: String
+    type: String,
   })
   @ApiResponse({
     status: 200,
-    description: 'OK'
+    description: 'OK',
   })
   @ApiNotFoundResponse({
-    description: 'Subscription with id <id> not found'
+    description: 'Subscription with id <id> not found',
   })
   @ApiForbiddenResponse({
-    description: 'Account <accountId> identity is invalid - public key / bad signature/public key size / Invalid signature'
+    description:
+      'Account <accountId> identity is invalid - public key / bad signature/public key size / Invalid signature',
   })
   @Delete('/:id')
   remove(
     @Param() { id }: DeleteOneParams,
-    @Body() subscriptionDeleteDto: SubscriptionDeleteDto
+    @Body() subscriptionDeleteDto: SubscriptionDeleteDto,
   ): Promise<void> {
     return this.subscriptionService.remove(id);
   }

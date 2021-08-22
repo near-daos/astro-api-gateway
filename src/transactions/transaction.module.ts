@@ -4,10 +4,8 @@ import { Transaction, TransactionAction } from 'src/near';
 import { TransactionService } from './transaction.service';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Transaction, TransactionAction])
-  ],
+  imports: [TypeOrmModule.forFeature([Transaction, TransactionAction])],
   providers: [TransactionService],
-  exports: [TransactionService]
+  exports: [TransactionService],
 })
 export class TransactionModule {}

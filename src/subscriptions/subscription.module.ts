@@ -6,10 +6,7 @@ import { NotificationsApiController } from './subscription.controller';
 import { SubscriptionService } from './subscription.service';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Subscription]),
-    NearModule
-  ],
+  imports: [TypeOrmModule.forFeature([Subscription]), NearModule],
   controllers: [NotificationsApiController],
   providers: [SubscriptionService],
   exports: [SubscriptionService],
