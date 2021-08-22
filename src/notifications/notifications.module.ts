@@ -2,7 +2,10 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import configuration, { TypeOrmConfigService, validationSchema } from '../config';
+import configuration, {
+  TypeOrmConfigService,
+  validationSchema,
+} from '../config';
 import { Subscription } from 'src/subscriptions/entities/subscription.entity';
 import { NotificationsController } from './notifications.controller';
 import { SubscriptionModule } from 'src/subscriptions/subscription.module';
@@ -20,9 +23,9 @@ import { NotificationService } from './notifications.service';
       useClass: TypeOrmConfigService,
     }),
     TypeOrmModule.forFeature([Subscription]),
-    SubscriptionModule
+    SubscriptionModule,
   ],
   controllers: [NotificationsController],
-  providers: [NotificationService]
+  providers: [NotificationService],
 })
 export class NotificationsModule {}

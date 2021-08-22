@@ -1,4 +1,4 @@
-import { registerAs } from "@nestjs/config";
+import { registerAs } from '@nestjs/config';
 
 const CONTRACT_NAME = 'sputnik-v1.testnet';
 
@@ -89,6 +89,6 @@ export const getNearConfig = (env: NEAR_ENV): NearConfig => {
   }
 };
 
-export default registerAs('near', () => getNearConfig(
-  (process.env.NEAR_ENV as NEAR_ENV) || 'development',
-));
+export default registerAs('near', () =>
+  getNearConfig((process.env.NEAR_ENV as NEAR_ENV) || 'development'),
+);

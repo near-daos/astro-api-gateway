@@ -10,16 +10,20 @@ export default class Notifier implements AppService {
     const app = await NestFactory.createMicroservice(NotificationsModule, {
       transport: Transport.RMQ,
       options: {
-        urls: [ process.env.RABBITMQ_URL ],
+        urls: [process.env.RABBITMQ_URL],
         queue: EVENT_QUEUE_NAME,
         queueOptions: {
-          durable: true
+          durable: true,
         },
       },
     });
 
-    app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
+    app.useGlobalInterceptors(
+      new ClassSerializerInterceptor(app.get(Reflector)),
+    );
 
-    await app.listen(() => console.log('Notifications Microservice is listening...'));
+    await app.listen(() =>
+      console.log('Notifications Microservice is listening...'),
+    );
   }
 }

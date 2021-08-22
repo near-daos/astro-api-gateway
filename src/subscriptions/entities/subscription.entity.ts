@@ -7,20 +7,19 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryColumn,
-  UpdateDateColumn
+  UpdateDateColumn,
 } from 'typeorm';
 import { Exclude } from 'class-transformer';
 
 @Entity()
 export class Subscription {
-
   @ApiProperty()
   @PrimaryColumn({ type: 'text', unique: true })
   id: string;
 
   @ApiProperty()
-  @ManyToOne(_ => Dao)
-  @JoinColumn({ name: "dao_id" })
+  @ManyToOne((_) => Dao)
+  @JoinColumn({ name: 'dao_id' })
   dao: Dao;
 
   @ApiProperty()
@@ -35,7 +34,7 @@ export class Subscription {
   @CreateDateColumn({
     type: 'timestamptz',
     default: () => 'CURRENT_TIMESTAMP',
-    nullable: true
+    nullable: true,
   })
   createdAt: Date;
 
@@ -44,7 +43,7 @@ export class Subscription {
   @UpdateDateColumn({
     type: 'timestamptz',
     default: () => 'CURRENT_TIMESTAMP',
-    nullable: true
+    nullable: true,
   })
   updatedAt: Date;
 }

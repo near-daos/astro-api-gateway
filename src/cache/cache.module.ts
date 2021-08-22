@@ -8,9 +8,9 @@ import { CacheController } from './controller/cache.controller';
   imports: [
     NestCacheModule.registerAsync({
       useClass: CacheConfigService,
-    })
+    }),
   ],
   controllers: [CacheController],
-  providers: [CacheService]
+  providers: [CacheService],
 })
-export class HttpCacheModule { }
+export class HttpCacheModule {}

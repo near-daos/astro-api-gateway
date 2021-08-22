@@ -16,26 +16,25 @@ export class NotificationService {
     @InjectRepository(Subscription)
     private readonly subscriptionRepository: Repository<Subscription>,
   ) {
-    this.firebaseApp = configService.get('firebase')
+    this.firebaseApp = configService.get('firebase');
   }
 
   async notifyDaoSubscribers(daoId: string): Promise<messaging.BatchResponse> {
     const subscriptions = await this.subscriptionRepository
       .createQueryBuilder('subscription')
-      .where("subscription.dao_id = :daoId", { daoId})
+      .where('subscription.dao_id = :daoId', { daoId })
       .getMany();
 
     if (!subscriptions.length) {
       return;
     }
 
-    const messages = subscriptions.map(({ token }) =>
-      ({
-        notification: {
-          title: `'${daoId}' update`
-        },
-        token
-      }));
+    const messages = subscriptions.map(({ token }) => ({
+      notification: {
+        title: `'${daoId}' update`,
+      },
+      token,
+    }));
 
     this.logger.log('Sending notifications...');
 
@@ -47,7 +46,7 @@ export class NotificationService {
         .map(({ error }) => error);
 
       if (errors.length) {
-        errors.map(error => this.logger.error(error));
+        errors.map((error) => this.logger.error(error));
       }
 
       return response;

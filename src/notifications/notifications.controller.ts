@@ -15,6 +15,10 @@ export class NotificationsController {
     const { daoIds } = data;
     this.logger.log(`Received DAO updates: ${daoIds}`);
 
-    await Promise.all(daoIds.map(daoId => this.notificationService.notifyDaoSubscribers(daoId)));
+    await Promise.all(
+      daoIds.map((daoId) =>
+        this.notificationService.notifyDaoSubscribers(daoId),
+      ),
+    );
   }
 }

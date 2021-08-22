@@ -4,7 +4,7 @@ import {
   Account,
   Receipt,
   Transaction,
-  TransactionAction
+  TransactionAction,
 } from 'src/near/index';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 
@@ -15,12 +15,7 @@ export default registerAs(`db_${NEAR_INDEXER_DB_CONNECTION}`, () => ({
   database: process.env.NEAR_INDEXER_DATABASE_NAME,
   username: process.env.NEAR_INDEXER_DATABASE_USERNAME,
   password: process.env.NEAR_INDEXER_DATABASE_PASSWORD,
-  entities: [
-    Account,
-    Receipt,
-    Transaction,
-    TransactionAction
-  ],
+  entities: [Account, Receipt, Transaction, TransactionAction],
   synchronize: false,
-  namingStrategy: new SnakeNamingStrategy()
+  namingStrategy: new SnakeNamingStrategy(),
 }));
