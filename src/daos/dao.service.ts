@@ -36,6 +36,9 @@ export class DaoService {
       where: [{ status: null }, { status: DaoStatus.Success }],
       skip: offset,
       take: limit,
+      order: {
+        createdAt: 'DESC',
+      },
     });
   }
 
