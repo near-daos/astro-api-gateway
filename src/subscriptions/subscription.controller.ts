@@ -26,7 +26,7 @@ import { SubscriptionDeleteDto } from './dto/subscription-delete.dto';
 @ApiTags('Subscriptions')
 @Controller('subscriptions')
 @UseGuards(AccountAccessGuard)
-export class NotificationsApiController {
+export class SubscriptionsController {
   constructor(private readonly subscriptionService: SubscriptionService) {}
 
   @ApiResponse({
@@ -34,7 +34,7 @@ export class NotificationsApiController {
     description: 'Created',
   })
   @ApiBadRequestResponse({
-    description: 'No DAO with id <daoId> found.',
+    description: `No DAO '<addSubscriptionDto.daoId>' and/or Account '<addSubscriptionDto.accountId>' found.`,
   })
   @ApiForbiddenResponse({
     description:
@@ -49,7 +49,7 @@ export class NotificationsApiController {
     } catch (error) {
       if (error.code === DB_FOREIGN_KEY_VIOLATION) {
         throw new BadRequestException(
-          `No DAO with id ${addSubscriptionDto.daoId} found.`,
+          `No DAO '${addSubscriptionDto.daoId}' and/or Account '${addSubscriptionDto.accountId}' found.`,
         );
       }
 

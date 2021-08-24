@@ -12,6 +12,7 @@ import { ProposalModule } from './proposals/proposal.module';
 import { SearchModule } from './search/search.module';
 import { TransactionModule } from './transactions/transaction.module';
 import { HttpCacheModule } from './cache/cache.module';
+import { AccountModule } from './account/account.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { HttpCacheModule } from './cache/cache.module';
     TransactionModule,
     SubscriptionModule,
     HttpCacheModule,
+    AccountModule,
   ],
   controllers: [AppController],
 })

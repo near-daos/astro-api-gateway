@@ -21,19 +21,23 @@ export class NotificationService {
 
   async notifyDaoSubscribers(daoId: string): Promise<messaging.BatchResponse> {
     const subscriptions = await this.subscriptionRepository
-      .createQueryBuilder('subscription')
-      .where('subscription.dao_id = :daoId', { daoId })
-      .getMany();
+      .find({
+        where: {
+          dao: {
+            id: daoId
+          }
+        }
+      })
 
     if (!subscriptions.length) {
       return;
     }
 
-    const messages = subscriptions.map(({ token }) => ({
+    const messages = subscriptions.map(({ account }) => ({
       notification: {
         title: `'${daoId}' update`,
       },
-      token,
+      token: account.token,
     }));
 
     this.logger.log('Sending notifications...');

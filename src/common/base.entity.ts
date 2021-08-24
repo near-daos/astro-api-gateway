@@ -1,15 +1,11 @@
 import { Exclude } from 'class-transformer';
 import {
-  PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
   Column,
 } from 'typeorm';
 
 export abstract class BaseEntity {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
   @Exclude()
   @Column({ type: 'boolean', default: false })
   isArchived: boolean;
