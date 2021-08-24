@@ -4,6 +4,7 @@ import { TransactionAction, Transaction } from 'src/near';
 import { Subscription } from 'src/subscriptions/entities/subscription.entity';
 import { Proposal } from 'src/proposals/entities/proposal.entity';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
+import { Account } from 'src/account/entities/Account.entity';
 
 export default registerAs('db_default', () => ({
   type: 'postgres',
@@ -12,7 +13,14 @@ export default registerAs('db_default', () => ({
   database: process.env.DATABASE_NAME,
   username: process.env.DATABASE_USERNAME,
   password: process.env.DATABASE_PASSWORD,
-  entities: [Subscription, Dao, Proposal, Transaction, TransactionAction],
+  entities: [
+    Subscription,
+    Dao,
+    Proposal,
+    Transaction,
+    TransactionAction,
+    Account
+  ],
   synchronize: true,
   migrationsTableName: 'migration_table',
   migrations: ['migration/*.js'],
