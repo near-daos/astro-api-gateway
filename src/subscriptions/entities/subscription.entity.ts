@@ -8,7 +8,7 @@ import {
   PrimaryColumn,
 } from 'typeorm';
 import { BaseEntity } from '../../common';
-import { Account } from '../../account/entities/Account.entity';
+import { Account } from '../../account/entities/account.entity';
 
 @Entity()
 export class Subscription extends BaseEntity {

@@ -10,6 +10,10 @@ import { Subscription } from 'src/subscriptions/entities/subscription.entity';
 import { NotificationsController } from './notifications.controller';
 import { SubscriptionModule } from 'src/subscriptions/subscription.module';
 import { NotificationService } from './notifications.service';
+import { AccountModule } from 'src/account/account.module';
+import { DaoModule } from 'src/daos/dao.module';
+import { Account } from 'src/account/entities/account.entity';
+import { Dao } from 'src/daos/entities/dao.entity';
 
 @Module({
   imports: [
@@ -22,8 +26,14 @@ import { NotificationService } from './notifications.service';
     TypeOrmModule.forRootAsync({
       useClass: TypeOrmConfigService,
     }),
-    TypeOrmModule.forFeature([Subscription]),
+    TypeOrmModule.forFeature([
+      Subscription,
+      Account,
+      Dao
+    ]),
     SubscriptionModule,
+    AccountModule,
+    DaoModule
   ],
   controllers: [NotificationsController],
   providers: [NotificationService],
