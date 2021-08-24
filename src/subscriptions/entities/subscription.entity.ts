@@ -7,8 +7,8 @@ import {
   ManyToOne,
   PrimaryColumn,
 } from 'typeorm';
-import { BaseEntity } from 'src/common';
-import { Account } from 'src/account/entities/Account.entity';
+import { BaseEntity } from '../../common';
+import { Account } from '../../account/entities/Account.entity';
 
 @Entity()
 export class Subscription extends BaseEntity {
