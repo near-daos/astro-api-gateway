@@ -139,9 +139,9 @@ export class AggregatorService {
 
     //Q2: Proposals with the absent DAO references?
     //Filtering proposals for unavailable DAOs
-    const filteredProposals = proposals.filter(({ daoId }) =>
-      enrichedDaoIds.includes(daoId),
-    );
+    const filteredProposals = !aggregatedTxCount
+      ? proposals.filter(({ daoId }) => enrichedDaoIds.includes(daoId))
+      : proposals;
 
     const enrichedProposals = this.enrichProposals(
       filteredProposals,
