@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Dao } from 'src/daos/entities/dao.entity';
 import { buildProposalId, convertDuration } from 'src/utils';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { ProposalDto } from './dto/proposal.dto';
 import { Proposal, ProposalKind } from './entities/proposal.entity';
 import camelcaseKeys from 'camelcase-keys';
@@ -36,6 +36,8 @@ export class ProposalService {
     const proposal = new Proposal();
 
     proposal.id = proposalId;
+    
+    proposal.daoId = daoId;
     const dao = { id: daoId } as Dao;
     proposal.dao = dao;
 
@@ -74,17 +76,16 @@ export class ProposalService {
     offset,
     limit,
   }: SearchQuery): Promise<Proposal[]> {
-    return this.proposalRepository
-      .createQueryBuilder('proposal')
-      .where('proposal.id like :id', { id: `%${query}%` })
-      .orWhere('proposal.target like :target', { target: `%${query}%` })
-      .orWhere('proposal.proposer like :proposer', { proposer: `%${query}%` })
-      .orWhere('proposal.description like :description', {
-        description: `%${query}%`,
-      })
-      .orWhere('proposal.votes like :vote', { vote: `%${query}%` })
-      .skip(offset)
-      .take(limit)
-      .getMany();
+    return this.proposalRepository.find({
+      skip: offset,
+      take: limit,
+      where: [
+        { id: Like(`%${query}%`) },
+        { target: Like(`%${query}%`) },
+        { proposer: Like(`%${query}%`) },
+        { description: Like(`%${query}%`) },
+        { votes: Like(`%${query}%`) },
+      ],
+    });
   }
 }
