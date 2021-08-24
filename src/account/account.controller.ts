@@ -17,7 +17,7 @@ import {
 import { AccountService } from './account.service';
 import { AccountDto } from './dto/account.dto';
 import { AccountAccessGuard, DeleteOneParams } from 'src/common';
-import { Account } from './entities/Account.entity';
+import { Account } from './entities/account.entity';
 import { AccountDeleteDto } from './dto/account-delete.dto';
 
 @ApiTags('Accounts')

@@ -4,7 +4,7 @@ import { TransactionAction, Transaction } from 'src/near';
 import { Subscription } from 'src/subscriptions/entities/subscription.entity';
 import { Proposal } from 'src/proposals/entities/proposal.entity';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
-import { Account } from 'src/account/entities/Account.entity';
+import { Account } from 'src/account/entities/account.entity';
 
 export default registerAs('db_default', () => ({
   type: 'postgres',
