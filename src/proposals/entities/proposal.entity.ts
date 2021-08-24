@@ -40,7 +40,7 @@ export class Proposal {
   id: string;
 
   @ApiProperty()
-  @Column({ nullable: true }) //TODO: should be removed while going into prod!!!
+  @Column()
   proposalId: number;
 
   @ApiProperty()
