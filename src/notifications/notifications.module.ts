@@ -12,7 +12,7 @@ import { SubscriptionModule } from 'src/subscriptions/subscription.module';
 import { NotificationService } from './notifications.service';
 import { AccountModule } from 'src/account/account.module';
 import { DaoModule } from 'src/daos/dao.module';
-import { Account } from 'src/account/entities/account.entity';
+import { Account } from 'src/account/entities/Account.entity';
 import { Dao } from 'src/daos/entities/dao.entity';
 
 @Module({
