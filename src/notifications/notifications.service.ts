@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { app, messaging } from 'firebase-admin';
 import { In, Repository } from 'typeorm';
 import { Subscription } from 'src/subscriptions/entities/subscription.entity';
-import { Account } from 'src/account/entities/account.entity';
+import { Account } from 'src/account/entities/Account.entity';
 import { Dao } from 'src/daos/entities/dao.entity';
 
 @Injectable()
