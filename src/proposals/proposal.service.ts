@@ -36,6 +36,7 @@ export class ProposalService {
     const proposal = new Proposal();
 
     proposal.id = proposalId;
+    proposal.proposalId = id;
     
     proposal.daoId = daoId;
     const dao = { id: daoId } as Dao;
