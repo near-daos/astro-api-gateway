@@ -1,12 +1,10 @@
 import { registerAs } from '@nestjs/config';
 import { Dao } from 'src/daos/entities/dao.entity';
-import {
-  TransactionAction,
-  Transaction
-} from 'src/near';
+import { TransactionAction, Transaction } from 'src/near';
 import { Subscription } from 'src/subscriptions/entities/subscription.entity';
 import { Proposal } from 'src/proposals/entities/proposal.entity';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
+import { Account } from 'src/account/entities/Account.entity';
 
 export default registerAs('db_default', () => ({
   type: 'postgres',
@@ -20,7 +18,8 @@ export default registerAs('db_default', () => ({
     Dao,
     Proposal,
     Transaction,
-    TransactionAction
+    TransactionAction,
+    Account
   ],
   synchronize: true,
   migrationsTableName: 'migration_table',
@@ -28,5 +27,5 @@ export default registerAs('db_default', () => ({
   cli: {
     migrationsDir: 'migration',
   },
-  namingStrategy: new SnakeNamingStrategy()
+  namingStrategy: new SnakeNamingStrategy(),
 }));

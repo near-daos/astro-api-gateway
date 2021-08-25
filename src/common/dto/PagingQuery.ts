@@ -5,7 +5,7 @@ export class PagingQuery {
   @ApiProperty({
     description: 'Query Offset',
     default: 0,
-    required: false
+    required: false,
   })
   @IsNumber()
   offset: number = 0;
@@ -13,7 +13,7 @@ export class PagingQuery {
   @ApiProperty({
     description: 'Query Limit',
     default: 50,
-    required: false
+    required: false,
   })
   @IsNumber()
   limit: number = 50;

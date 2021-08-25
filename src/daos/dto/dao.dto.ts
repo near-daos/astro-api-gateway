@@ -1,10 +1,9 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsArray, IsNotEmpty, IsString } from "class-validator";
-import { AccountBearer } from "src/common/dto/AccountBearer";
-import { DaoStatus } from "../types/dao-status";
+import { ApiProperty } from '@nestjs/swagger';
+import { IsArray, IsNotEmpty, IsString } from 'class-validator';
+import { AccountBearer } from 'src/common/dto/AccountBearer';
+import { DaoStatus } from '../types/dao-status';
 
 export class DaoDto extends AccountBearer {
-
   @ApiProperty()
   @IsString()
   @IsNotEmpty()

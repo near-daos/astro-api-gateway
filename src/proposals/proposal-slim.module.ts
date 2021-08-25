@@ -4,10 +4,8 @@ import { Proposal } from './entities/proposal.entity';
 import { ProposalService } from './proposal.service';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Proposal])
-  ],
+  imports: [TypeOrmModule.forFeature([Proposal])],
   providers: [ProposalService],
-  exports: [ProposalService]
+  exports: [ProposalService],
 })
 export class ProposalSlimModule {}

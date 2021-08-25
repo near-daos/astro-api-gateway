@@ -5,13 +5,12 @@ import {
   CreateDateColumn,
   Entity,
   PrimaryColumn,
-  UpdateDateColumn
+  UpdateDateColumn,
 } from 'typeorm';
 import { DaoStatus } from '../types/dao-status';
 
 @Entity()
 export class Dao {
-
   @ApiProperty()
   @PrimaryColumn({ type: 'text', unique: true })
   id: string;
@@ -33,7 +32,7 @@ export class Dao {
   votePeriod: string;
 
   @ApiProperty()
-  @Column("text", { array: true, nullable: true })
+  @Column('text', { array: true, nullable: true })
   council: string[];
 
   @ApiProperty()
@@ -60,9 +59,9 @@ export class Dao {
 
   @ApiProperty()
   @Column({
-    type: "enum",
+    type: 'enum',
     enum: DaoStatus,
-    nullable: true
+    nullable: true,
   })
   status: DaoStatus;
 

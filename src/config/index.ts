@@ -13,5 +13,5 @@ export default [
   database,
   firebase,
   nearConfig,
-  databaseNearIndexer
+  databaseNearIndexer,
 ];

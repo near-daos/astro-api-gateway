@@ -21,12 +21,9 @@ import { EventModule } from 'src/events/events.module';
     ProposalSlimModule,
     NearModule,
     TransactionModule,
-    EventModule
+    EventModule,
   ],
   controllers: [AppController],
-  providers: [
-    SputnikDaoService,
-    AggregatorService
-  ],
+  providers: [SputnikDaoService, AggregatorService],
 })
 export class AggregatorModule {}

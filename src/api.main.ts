@@ -11,15 +11,15 @@ export default class Api implements AppService {
   async bootstrap(): Promise<void> {
     const app = await NestFactory.create(AppModule);
     app.enableCors();
-    app.setGlobalPrefix("/api/v1");
+    app.setGlobalPrefix('/api/v1');
 
-    const microservice = app.connectMicroservice({
+    app.connectMicroservice({
       transport: Transport.RMQ,
       options: {
         urls: [process.env.RABBITMQ_URL],
         queue: EVENT_QUEUE_NAME,
         queueOptions: {
-          durable: true
+          durable: true,
         },
       },
     });
@@ -43,12 +43,14 @@ export default class Api implements AppService {
         disableErrorMessages: false,
         validationError: { target: false },
         transformOptions: {
-          enableImplicitConversion: true
-        }
+          enableImplicitConversion: true,
+        },
       }),
     );
 
-    app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
+    app.useGlobalInterceptors(
+      new ClassSerializerInterceptor(app.get(Reflector)),
+    );
 
     const configService = app.get(ConfigService);
 

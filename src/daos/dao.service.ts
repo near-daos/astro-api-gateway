@@ -16,29 +16,29 @@ export class DaoService {
     @InjectRepository(Dao)
     private readonly daoRepository: Repository<Dao>,
     private readonly configService: ConfigService,
-    private readonly nearService: NearService
-  ) { }
+    private readonly nearService: NearService,
+  ) {}
 
   async createDraft(daoDto: DaoDto): Promise<Dao> {
     return this.create({
       ...daoDto,
-      councilSeats: daoDto.council ? daoDto.council.length : 0, 
-      status: DaoStatus.Pending
-    })
+      councilSeats: daoDto.council ? daoDto.council.length : 0,
+      status: DaoStatus.Pending,
+    });
   }
-  
+
   async create(daoDto: DaoDto): Promise<Dao> {
     return this.daoRepository.save(daoDto);
   }
 
   async find({ offset, limit }: PagingQuery): Promise<Dao[]> {
     return this.daoRepository.find({
-      where: [
-        { status: null },
-        { status: DaoStatus.Success }
-      ],
+      where: [{ status: null }, { status: DaoStatus.Success }],
       skip: offset,
-      take: limit
+      take: limit,
+      order: {
+        createdAt: 'DESC',
+      },
     });
   }
 
@@ -46,7 +46,7 @@ export class DaoService {
     return this.daoRepository.findOne(id, {
       where: [
         { id, status: null },
-        { id, status: DaoStatus.Success }
+        { id, status: DaoStatus.Success },
       ],
     });
   }
@@ -54,30 +54,41 @@ export class DaoService {
   async findByQuery({ query, offset, limit }: SearchQuery): Promise<Dao[]> {
     return this.daoRepository
       .createQueryBuilder('dao')
-      .where("dao.id like :id", { id: `%${query}%` })
-      .orWhere("dao.purpose like :purpose", { purpose: `%${query}%` })
-      .orWhere("array_to_string(dao.council, ',') like :council", { council: `%${query}%`})
+      .where('dao.id like :id', { id: `%${query}%` })
+      .orWhere('dao.purpose like :purpose', { purpose: `%${query}%` })
+      .orWhere("array_to_string(dao.council, ',') like :council", {
+        council: `%${query}%`,
+      })
       .skip(offset)
       .take(limit)
       .getMany();
   }
 
   async processTransactionCallback(transactionHash: string): Promise<any> {
-    const { contractName } = this.configService.get('near')
+    const { contractName } = this.configService.get('near');
 
-    const receipt: Receipt = await this.nearService
-      .findReceiptByTransactionHashAndPredecessor(transactionHash, contractName);
+    const receipt: Receipt =
+      await this.nearService.findReceiptByTransactionHashAndPredecessor(
+        transactionHash,
+        contractName,
+      );
 
     const {
       receiptId,
       originatedFromTransactionHash,
-      originatedFromTransaction
+      originatedFromTransaction,
     } = receipt || {};
-    if (!originatedFromTransaction || originatedFromTransaction.status !== ExecutionOutcomeStatus.SuccessReceiptId) {
+    if (
+      !originatedFromTransaction ||
+      originatedFromTransaction.status !==
+        ExecutionOutcomeStatus.SuccessReceiptId
+    ) {
       return;
     }
 
-    const account: Account = await this.nearService.findAccountByReceiptId(receiptId);
+    const account: Account = await this.nearService.findAccountByReceiptId(
+      receiptId,
+    );
     if (!account) {
       return;
     }
@@ -86,7 +97,7 @@ export class DaoService {
     return this.daoRepository.save({
       id: account.accountId,
       status: DaoStatus.Success,
-      txHash: originatedFromTransactionHash
+      txHash: originatedFromTransactionHash,
     });
   }
 }

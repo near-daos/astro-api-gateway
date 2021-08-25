@@ -3,18 +3,18 @@ import {
   ExecutionContext,
   ForbiddenException,
   Inject,
-  Injectable
-} from "@nestjs/common";
-import { NEAR_SPUTNIK_PROVIDER } from "../constants";
-import { DaoDto } from "src/daos/dto/dao.dto";
-import { NearSputnikProvider } from "src/config/sputnik";
+  Injectable,
+} from '@nestjs/common';
+import { NEAR_SPUTNIK_PROVIDER } from '../constants';
+import { DaoDto } from 'src/daos/dto/dao.dto';
+import { NearSputnikProvider } from 'src/config/sputnik';
 
 @Injectable()
 export class DaoGuard implements CanActivate {
   constructor(
     @Inject(NEAR_SPUTNIK_PROVIDER)
-    private nearSputnikProvider: NearSputnikProvider
-  ) { }
+    private nearSputnikProvider: NearSputnikProvider,
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest();

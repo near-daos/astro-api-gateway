@@ -17,13 +17,15 @@ describe('SubscriptionService', () => {
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        SubscriptionService, {
+        SubscriptionService,
+        {
           provide: ConfigService,
           useValue: {
-            get: jest.fn((key: string) => (null))
-          }
+            get: jest.fn((key: string) => null),
+          },
         },
-        { provide: getRepositoryToken(Subscription), useClass: mockRepository }],
+        { provide: getRepositoryToken(Subscription), useClass: mockRepository },
+      ],
     }).compile();
 
     service = module.get<SubscriptionService>(SubscriptionService);

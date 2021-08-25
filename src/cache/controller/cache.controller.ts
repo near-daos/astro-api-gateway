@@ -1,5 +1,5 @@
 import { Controller, Logger } from '@nestjs/common';
-import { MessagePattern, Transport } from '@nestjs/microservices';
+import { EventPattern, Transport } from '@nestjs/microservices';
 
 import { EVENT_CLEAR_HTTP_CACHE_MESSAGE_PATTERN } from 'src/common/constants';
 import { CacheService } from 'src/cache/service/cache.service';
@@ -8,9 +8,9 @@ import { CacheService } from 'src/cache/service/cache.service';
 export class CacheController {
   private readonly logger = new Logger(CacheController.name);
 
-  constructor(private readonly cacheService: CacheService) { }
+  constructor(private readonly cacheService: CacheService) {}
 
-  @MessagePattern(EVENT_CLEAR_HTTP_CACHE_MESSAGE_PATTERN, Transport.RMQ)
+  @EventPattern(EVENT_CLEAR_HTTP_CACHE_MESSAGE_PATTERN, Transport.RMQ)
   async handleDaoUpdates(data: Record<string, string[]>) {
     this.logger.log(`Clearing cache on DAO update`);
 

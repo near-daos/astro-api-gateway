@@ -3,10 +3,9 @@ import { IsNotEmpty } from 'class-validator';
 import { PagingQuery } from './PagingQuery';
 
 export class SearchQuery extends PagingQuery {
-
   @ApiProperty({
     description: 'Search Query',
-    required: true
+    required: true,
   })
   @IsNotEmpty()
   query: string;

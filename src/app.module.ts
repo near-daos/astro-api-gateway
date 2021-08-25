@@ -4,7 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import configuration, {
   TypeOrmConfigService,
-  validationSchema
+  validationSchema,
 } from './config';
 import { DaoModule } from './daos/dao.module';
 import { SubscriptionModule } from './subscriptions/subscription.module';
@@ -12,6 +12,7 @@ import { ProposalModule } from './proposals/proposal.module';
 import { SearchModule } from './search/search.module';
 import { TransactionModule } from './transactions/transaction.module';
 import { HttpCacheModule } from './cache/cache.module';
+import { AccountModule } from './account/account.module';
 
 @Module({
   imports: [
@@ -29,8 +30,9 @@ import { HttpCacheModule } from './cache/cache.module';
     SearchModule,
     TransactionModule,
     SubscriptionModule,
-    HttpCacheModule
+    HttpCacheModule,
+    AccountModule,
   ],
-  controllers: [AppController]
+  controllers: [AppController],
 })
 export class AppModule {}

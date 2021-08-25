@@ -1,13 +1,8 @@
-import {
-  Column,
-  Entity,
-  PrimaryColumn
-} from 'typeorm';
+import { Column, Entity, PrimaryColumn } from 'typeorm';
 import { ActionKind } from '../types/action-kind';
 
 @Entity({ name: 'transaction_actions' })
 export class TransactionAction {
-
   @PrimaryColumn()
   transactionHash: string;
 
@@ -15,11 +10,11 @@ export class TransactionAction {
   indexInTransaction: number;
 
   @Column({
-    type: "enum",
-    enum: ActionKind
+    type: 'enum',
+    enum: ActionKind,
   })
   actionKind: string;
 
-  @Column({ type: "simple-json" })
-  args: { };
+  @Column({ type: 'simple-json' })
+  args: Record<string, unknown>;
 }

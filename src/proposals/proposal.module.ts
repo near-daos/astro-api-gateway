@@ -10,10 +10,10 @@ import { CacheConfigService } from 'src/config';
     CacheModule.registerAsync({
       useClass: CacheConfigService,
     }),
-    TypeOrmModule.forFeature([Proposal])
+    TypeOrmModule.forFeature([Proposal]),
   ],
   providers: [ProposalService],
   controllers: [ProposalController],
-  exports: [ProposalService]
+  exports: [ProposalService],
 })
 export class ProposalModule {}

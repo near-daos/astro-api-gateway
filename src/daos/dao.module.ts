@@ -12,10 +12,10 @@ import { NearModule } from 'src/near/near.module';
       useClass: CacheConfigService,
     }),
     TypeOrmModule.forFeature([Dao]),
-    NearModule
+    NearModule,
   ],
   providers: [DaoService],
   controllers: [DaoController],
-  exports: [DaoService]
+  exports: [DaoService],
 })
 export class DaoModule {}
