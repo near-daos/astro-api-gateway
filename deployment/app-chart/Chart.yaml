@@ -1,6 +1,6 @@
 apiVersion: v2
-name: sputnik-v1-api
-description: Helm chart for Sputnik V1 API
+name: sputnik-v2-api
+description: Helm chart for Sputnik V2 API
 type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.

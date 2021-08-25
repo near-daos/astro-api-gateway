@@ -1,6 +1,6 @@
 ## Description
 
-Sputnik v1 slim api server
+Sputnik v2 slim api server
 
 ## Installation
 

@@ -1,24 +1,24 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "sputnik-v1-aggregator.fullname" . }}
+  name: {{ include "sputnik-v2-aggregator.fullname" . }}
   labels:
-    {{- include "sputnik-v1-aggregator.labels" . | nindent 4 }}
+    {{- include "sputnik-v2-aggregator.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      {{- include "sputnik-v1-aggregator.selectorLabels" . | nindent 6 }}
+      {{- include "sputnik-v2-aggregator.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        {{- include "sputnik-v1-aggregator.selectorLabels" . | nindent 8 }}
+        {{- include "sputnik-v2-aggregator.selectorLabels" . | nindent 8 }}
     spec:
     {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
     {{- end }}
-      serviceAccountName: {{ include "sputnik-v1-aggregator.serviceAccountName" . }}
+      serviceAccountName: {{ include "sputnik-v2-aggregator.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
@@ -54,9 +54,9 @@ spec:
           #   failureThreshold: {{ .Values.container.readinessProbe.failureThreshold }}
           envFrom:
           - configMapRef:
-              name: sputnik-v1-configmap
+              name: sputnik-v2-configmap
           - configMapRef:
-              name: sputnik-v1-aggregator-configmap
+              name: sputnik-v2-aggregator-configmap
           - configMapRef:
               name: {{ .Release.Name }}-version
           - secretRef:

@@ -6,6 +6,6 @@ export class AppController {
   @ApiExcludeEndpoint()
   @Get()
   main(): string {
-    return 'Sputnik v1 API v1.0';
+    return 'Sputnik v2 API v1.0';
   }
 }

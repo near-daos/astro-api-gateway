@@ -512,7 +512,7 @@ metrics:
   serviceMonitor:
     enabled: true
     ## Specify a namespace if needed
-    namespace: sputnik
+    namespace: sputnik-v2
     # fallback to the prometheus default unless specified
     # interval: 10s
     ## Defaults to what's used if you follow CoreOS [Prometheus Install Instructions](https://github.com/bitnami/charts/tree/master/bitnami/prometheus-operator#tldr)

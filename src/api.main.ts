@@ -29,8 +29,8 @@ export default class Api implements AppService {
     }
 
     const config = new DocumentBuilder()
-      .setTitle('Sputnik v1 API')
-      .setDescription('Sputnik v1 API Backend Server')
+      .setTitle('Sputnik v2 API')
+      .setDescription('Sputnik v2 API Backend Server')
       .setVersion('1.0')
       .build();
 
