@@ -1,14 +1,12 @@
-import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
-import { Exclude } from 'class-transformer';
+import { ApiProperty } from '@nestjs/swagger';
+import { BaseEntity } from 'src/common';
 import { Dao } from 'src/daos/entities/dao.entity';
 import {
   Column,
-  CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
   PrimaryColumn,
-  UpdateDateColumn,
 } from 'typeorm';
 import { ProposalStatus } from '../types/proposal-status';
 import { ProposalType } from '../types/proposal-type';
@@ -34,7 +32,7 @@ export type ProposalKind =
     };
 
 @Entity()
-export class Proposal {
+export class Proposal extends BaseEntity {
   @ApiProperty()
   @PrimaryColumn({ type: 'text', unique: true })
   id: string;
@@ -97,19 +95,6 @@ export class Proposal {
   @Column({ nullable: true })
   txHash: string;
 
-  @ApiHideProperty()
-  @Exclude()
-  @CreateDateColumn({
-    type: 'timestamptz',
-    default: () => 'CURRENT_TIMESTAMP',
-  })
-  createdAt: Date;
-
-  @ApiHideProperty()
-  @Exclude()
-  @UpdateDateColumn({
-    type: 'timestamptz',
-    default: () => 'CURRENT_TIMESTAMP',
-  })
-  updatedAt: Date;
+  @Column({ type: 'bigint', nullable: true })
+  txTimestamp: number;
 }

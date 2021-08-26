@@ -1,16 +1,14 @@
-import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
-import { Exclude } from 'class-transformer';
+import { ApiProperty } from '@nestjs/swagger';
+import { BaseEntity } from 'src/common';
 import {
   Column,
-  CreateDateColumn,
   Entity,
   PrimaryColumn,
-  UpdateDateColumn,
 } from 'typeorm';
 import { DaoStatus } from '../types/dao-status';
 
 @Entity()
-export class Dao {
+export class Dao extends BaseEntity {
   @ApiProperty()
   @PrimaryColumn({ type: 'text', unique: true })
   id: string;
@@ -51,6 +49,9 @@ export class Dao {
   @Column({ nullable: true })
   txHash: string;
 
+  @Column({ type: 'bigint', nullable: true })
+  txTimestamp: number;
+
   @Column({ nullable: true })
   link: string;
 
@@ -64,20 +65,4 @@ export class Dao {
     nullable: true,
   })
   status: DaoStatus;
-
-  @ApiHideProperty()
-  @Exclude()
-  @CreateDateColumn({
-    type: 'timestamptz',
-    default: () => 'CURRENT_TIMESTAMP',
-  })
-  createdAt: Date;
-
-  @ApiHideProperty()
-  @Exclude()
-  @UpdateDateColumn({
-    type: 'timestamptz',
-    default: () => 'CURRENT_TIMESTAMP',
-  })
-  updatedAt: Date;
 }
