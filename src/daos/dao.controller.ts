@@ -22,13 +22,14 @@ import {
   AccountAccessGuard,
   FindOneParams,
   HttpCacheInterceptor,
-  PagingQuery,
 } from 'src/common';
 import { DaoService } from './dao.service';
 import { DaoDto } from './dto/dao.dto';
 import { Dao } from './entities/dao.entity';
 import { WalletCallbackParams } from 'src/common/dto/WalletCallbackParams';
 import { DaoGuard } from 'src/common/guards/dao.guard';
+import { SortPipe } from 'src/common/pipes/sort.pipe';
+import { DaoQuery } from './dto/dao-query.dto';
 
 @ApiTags('DAO')
 @Controller('/daos')
@@ -61,7 +62,7 @@ export class DaoController {
   })
   @UseInterceptors(HttpCacheInterceptor)
   @Get('/')
-  async daos(@Query() query: PagingQuery): Promise<Dao[]> {
+  async daos(@Query(new SortPipe()) query: DaoQuery): Promise<Dao[]> {
     return await this.daoService.find(query);
   }
 
