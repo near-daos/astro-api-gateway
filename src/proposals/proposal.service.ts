@@ -30,7 +30,9 @@ export class ProposalService {
       vote_period_end,
       votes,
       txHash,
+      txLastUpdateHash,
       txTimestamp,
+      txLastUpdateTimestamp,
     } = proposalDto;
 
     const proposalId = buildProposalId(daoId, id);
@@ -53,7 +55,9 @@ export class ProposalService {
     proposal.kind = camelcaseKeys(kind, { deep: true }) as ProposalKind;
     proposal.votes = votes;
     proposal.txHash = txHash;
+    proposal.txLastUpdateHash = txLastUpdateHash;
     proposal.txTimestamp = txTimestamp;
+    proposal.txLastUpdateTimestamp = txLastUpdateTimestamp;
 
     return this.proposalRepository.save(proposal);
   }

@@ -95,6 +95,13 @@ export class Proposal extends BaseEntity {
   @Column({ nullable: true })
   txHash: string;
 
+  @ApiProperty()
+  @Column({ nullable: true })
+  txLastUpdateHash: string;
+
   @Column({ type: 'bigint', nullable: true })
   txTimestamp: number;
+
+  @Column({ type: 'bigint', nullable: true })
+  txLastUpdateTimestamp: number;
 }

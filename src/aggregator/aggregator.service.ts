@@ -205,10 +205,6 @@ export class AggregatorService {
     transactions: Transaction[],
   ): ProposalDto[] {
     const transactionsByAccountId = transactions
-      .filter(
-        ({ transactionAction }) =>
-          (transactionAction.args as any).method_name == 'add_proposal',
-      )
       .reduce(
         (acc, cur) => ({
           ...acc,
@@ -218,13 +214,20 @@ export class AggregatorService {
       );
 
     return proposals.map((proposal) => {
-      const { daoId, description, target, kind } = proposal;
+      const { id, daoId, description, target, kind } = proposal;
       if (!transactionsByAccountId[daoId]) {
         return proposal;
       }
 
-      const txData = transactionsByAccountId[proposal.daoId]
-        .filter((tx) => tx.transactionAction.args.args_json)
+      const preFilteredTransactions = transactionsByAccountId[
+        proposal.daoId
+      ].filter((tx) => tx.transactionAction.args.args_json);
+
+      const txData = preFilteredTransactions
+        .filter(
+          ({ transactionAction }) =>
+            (transactionAction.args as any).method_name == 'add_proposal',
+        )
         .filter((tx) => {
           const {
             description: txDescription,
@@ -242,11 +245,32 @@ export class AggregatorService {
           txTimestamp,
         }))[0];
 
-      return {
+      const txUpdateData = preFilteredTransactions
+        .filter((tx) => tx.transactionAction.args.args_json.id === id)
+        .map(
+          ({
+            transactionHash: txHash,
+            blockTimestamp: txTimestamp,
+            transactionAction,
+          }) => ({
+            txHash,
+            txTimestamp,
+            methodName: transactionAction.args.method_name,
+          }),
+        )
+        ?.pop();
+
+      const prop = {
         ...proposal,
         txHash: txData?.txHash,
         txTimestamp: txData?.txTimestamp,
+        txLastUpdateHash: txUpdateData ? txUpdateData.txHash : txData?.txHash,
+        txLastUpdateTimestamp: txUpdateData
+          ? txUpdateData.txTimestamp
+          : txData?.txTimestamp,
       };
+
+      return prop;
     });
   }
 }

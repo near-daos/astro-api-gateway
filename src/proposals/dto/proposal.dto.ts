@@ -36,5 +36,7 @@ export class ProposalDto {
     [key: string]: 'Yes' | 'No';
   };
   txHash: string;
+  txLastUpdateHash: string;
   txTimestamp: number;
+  txLastUpdateTimestamp: number;
 }
