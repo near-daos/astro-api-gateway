@@ -13,6 +13,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { FindOneParams, HttpCacheInterceptor } from 'src/common';
+import { SortPipe } from 'src/common/pipes/sort.pipe';
 import { ProposalQuery } from './dto/proposal-query.dto';
 import { Proposal } from './entities/proposal.entity';
 import { ProposalService } from './proposal.service';
@@ -34,7 +35,9 @@ export class ProposalController {
       'limit/offset must be a number conforming to the specified constraints',
   })
   @Get('/proposals')
-  async proposals(@Query() query: ProposalQuery): Promise<Proposal[]> {
+  async proposals(
+    @Query(new SortPipe()) query: ProposalQuery,
+  ): Promise<Proposal[]> {
     return await this.proposalService.find(query);
   }
 

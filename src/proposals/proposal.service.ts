@@ -37,7 +37,7 @@ export class ProposalService {
 
     proposal.id = proposalId;
     proposal.proposalId = id;
-    
+
     proposal.daoId = daoId;
     const dao = { id: daoId } as Dao;
     proposal.dao = dao;
@@ -56,7 +56,12 @@ export class ProposalService {
     return this.proposalRepository.save(proposal);
   }
 
-  async find({ daoId, offset, limit }: ProposalQuery): Promise<Proposal[]> {
+  async find({
+    daoId,
+    offset,
+    limit,
+    order,
+  }: ProposalQuery): Promise<Proposal[]> {
     return this.proposalRepository.find({
       skip: offset,
       take: limit,
@@ -65,6 +70,7 @@ export class ProposalService {
           id: daoId,
         },
       },
+      order,
     });
   }
 
@@ -76,6 +82,7 @@ export class ProposalService {
     query,
     offset,
     limit,
+    order,
   }: SearchQuery): Promise<Proposal[]> {
     return this.proposalRepository.find({
       skip: offset,
@@ -87,6 +94,7 @@ export class ProposalService {
         { description: Like(`%${query}%`) },
         { votes: Like(`%${query}%`) },
       ],
+      order,
     });
   }
 }
