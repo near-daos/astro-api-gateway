@@ -38,6 +38,7 @@ export class DaoDto extends AccountBearer {
   councilSeats: number;
   numberOfMembers: number = 0;
   txHash: string;
+  txTimestamp: number;
 
   @ApiProperty()
   @IsString()
