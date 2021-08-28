@@ -22,9 +22,9 @@ export class NearService {
    * Using parent contract name to retrieve child information since
    * child accounts are built based on parent contract name domain
    * see: 
-   *    genesis.sputnik-v2.testnet 
+   *    genesis.sputnikv2.testnet 
    * is built on top of 
-   *    sputnik-v2.testnet account
+   *    sputnikv2.testnet account
    */
   async findAccountsByContractName(contractName: string): Promise<Account[]> {
     return this.accountRepository
