@@ -232,15 +232,18 @@ export class AggregatorService {
             (transactionAction.args as any).method_name == 'add_proposal',
         )
         .find((tx) => {
+          const { signerAccountId } = tx;
           const {
             description: txDescription,
             kind: txKind,
             target: txTarget,
+            proposer,
           } = (tx.transactionAction.args.args_json as any).proposal;
           return (
             description === txDescription &&
             kind.type === txKind.type &&
-            target === txTarget
+            target === txTarget &&
+            signerAccountId === proposer
           );
         });
 
