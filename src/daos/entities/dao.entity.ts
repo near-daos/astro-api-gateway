@@ -49,8 +49,15 @@ export class Dao extends BaseEntity {
   @Column({ nullable: true })
   transactionHash: string;
 
+  @ApiProperty()
+  @Column({ nullable: true })
+  updateTransactionHash: string;
+
   @Column({ type: 'bigint', nullable: true })
   createTimestamp: number;
+  
+  @Column({ type: 'bigint', nullable: true })
+  updateTimestamp: number;
 
   @Column({ nullable: true })
   link: string;

@@ -39,7 +39,9 @@ export class DaoDto extends AccountBearer {
   numberOfMembers: number = 0;
 
   transactionHash: string;
+  updateTransactionHash: string;
   createTimestamp: number;
+  updateTimestamp: number;
 
   @ApiProperty()
   @IsString()

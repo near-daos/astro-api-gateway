@@ -75,8 +75,7 @@ export class AggregatorService {
             //TODO: Q1: args_json is absent? - needs clarification
             .filter(
               ({ transactionAction: action }) =>
-                (action.args as any).args_json &&
-                (action.args as any).args_json.name,
+                action.args?.args_json && (action.args?.args_json as any)?.name,
             )
             .filter(
               ({ receiverAccountId: accId, transactionAction: action }) =>
@@ -191,26 +190,31 @@ export class AggregatorService {
       {},
     );
 
-    return daos.map((dao) => ({
-      ...dao,
-      transactionHash: daoTxDataMap[dao.id]?.transactionHash,
-      createTimestamp: daoTxDataMap[dao.id]?.createTimestamp,
-      numberOfMembers: new Set(signersByAccountId[dao.id]).size,
-      status: DaoStatus.Success,
-    }));
+    const transactionsByAccountId =
+      this.reduceTransactionsByAccountId(transactions);
+
+    return daos.map((dao) => {
+      const txData = daoTxDataMap[dao.id];
+      const txUpdateData = transactionsByAccountId[dao.id]?.pop();
+
+      return {
+        ...dao,
+        transactionHash: txData?.transactionHash,
+        createTimestamp: txData?.createTimestamp,
+        updateTransactionHash: (txUpdateData || txData)?.transactionHash,
+        updateTimestamp: (txUpdateData || txData)?.blockTimestamp,
+        numberOfMembers: new Set(signersByAccountId[dao.id]).size,
+        status: DaoStatus.Success,
+      };
+    });
   }
 
   private enrichProposals(
     proposals: ProposalDto[],
     transactions: Transaction[],
   ): ProposalDto[] {
-    const transactionsByAccountId = transactions.reduce(
-      (acc, cur) => ({
-        ...acc,
-        [cur.receiverAccountId]: [...(acc[cur.receiverAccountId] || []), cur],
-      }),
-      {},
-    );
+    const transactionsByAccountId =
+      this.reduceTransactionsByAccountId(transactions);
 
     return proposals.map((proposal) => {
       const { id, daoId, description, target, kind } = proposal;
@@ -227,51 +231,44 @@ export class AggregatorService {
           ({ transactionAction }) =>
             (transactionAction.args as any).method_name == 'add_proposal',
         )
-        .filter((tx) => {
+        .find((tx) => {
           const {
             description: txDescription,
             kind: txKind,
             target: txTarget,
-          } = tx.transactionAction.args.args_json.proposal;
+          } = (tx.transactionAction.args.args_json as any).proposal;
           return (
             description === txDescription &&
             kind.type === txKind.type &&
             target === txTarget
           );
-        })
-        .map(({ transactionHash, blockTimestamp: createTimestamp }) => ({
-          transactionHash,
-          createTimestamp,
-        }))[0];
+        });
 
       const txUpdateData = preFilteredTransactions
-        .filter((tx) => tx.transactionAction.args.args_json.id === id)
-        .map(
-          ({
-            transactionHash: updateTransactionHash,
-            blockTimestamp: updateTimestamp,
-            transactionAction,
-          }) => ({
-            updateTransactionHash,
-            updateTimestamp,
-            methodName: transactionAction.args.method_name,
-          }),
-        )
-        ?.pop();
+        .filter((tx) => (tx.transactionAction.args.args_json as any).id === id)
+        .pop();
 
       const prop = {
         ...proposal,
         transactionHash: txData?.transactionHash,
-        createTimestamp: txData?.createTimestamp,
-        updateTransactionHash: txUpdateData
-          ? txUpdateData.updateTransactionHash
-          : txData?.transactionHash,
-        updateTimestamp: txUpdateData
-          ? txUpdateData.updateTimestamp
-          : txData?.createTimestamp,
+        createTimestamp: txData?.blockTimestamp,
+        updateTransactionHash: (txUpdateData || txData)?.transactionHash,
+        updateTimestamp: (txUpdateData || txData)?.blockTimestamp,
       };
 
       return prop;
     });
+  }
+
+  private reduceTransactionsByAccountId(transactions: Transaction[]): {
+    [key: string]: Transaction[];
+  } {
+    return transactions.reduce(
+      (acc, cur) => ({
+        ...acc,
+        [cur.receiverAccountId]: [...(acc[cur.receiverAccountId] || []), cur],
+      }),
+      {},
+    );
   }
 }
