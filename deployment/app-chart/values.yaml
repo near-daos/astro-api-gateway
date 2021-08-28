@@ -1,4 +1,4 @@
-# Default values for sputnik-v1-api.
+# Default values for sputnik-v2-api.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
@@ -7,18 +7,18 @@ replicaCount: 1
 image:
   repository: 398077236708.dkr.ecr.eu-central-1.amazonaws.com
   tag: latest
-  name: sputnik-v1-api
+  name: sputnik-v2-api
   pullPolicy: Always
 
 imagePullSecrets: [ ]
 nameOverride: ""
 fullnameOverride: ""
 
-aggregatorNameOverride: "sputnik-v1-aggregator"
-aggregatorFullnameOverride: "sputnik-v1-aggregator"
+aggregatorNameOverride: "sputnik-v2-aggregator"
+aggregatorFullnameOverride: "sputnik-v2-aggregator"
 
-notifierNameOverride: "sputnik-v1-notifier"
-notifierFullnameOverride: "sputnik-v1-notifier"
+notifierNameOverride: "sputnik-v2-notifier"
+notifierFullnameOverride: "sputnik-v2-notifier"
 
 container:
   # Specifies the internal container port
@@ -72,13 +72,13 @@ ingress:
     kubernetes.io/ingress.class: nginx
     kubernetes.io/tls-acme: "true"
   hosts:
-    - host: sputnik-v1-api-dev
+    - host: sputnik-v2-api-dev
       paths:
         - /
   tls:
-   - secretName: sputnik-v1-api-tls
+   - secretName: sputnik-v2-api-tls
      hosts:
-       - sputnik-v1-api-dev
+       - sputnik-v2-api-dev
 dns:
   domainName: ".westus2.dipd.sbp.eyclienthub.com"
 
@@ -91,7 +91,7 @@ certificate:
     kind: Issuer
   # commonName: ".westus2.dipd.sbp.eyclienthub.com"
   dnsNames:
-    - sputnik-v1-api-dev
+    - sputnik-v2-api-dev
 
 # resources:
 #   # We usually recommend not to specify default resources and to leave this as a conscious

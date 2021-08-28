@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: sputnik-v1-api-configmap
+  name: sputnik-v2-api-configmap
 data:
   PORT: "3000"
   REDIS_HTTP_CACHE_TTL: "60"

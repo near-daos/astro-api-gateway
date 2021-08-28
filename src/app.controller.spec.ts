@@ -14,7 +14,7 @@ describe('AppController', () => {
 
   describe('root', () => {
     it('should return "Hello World!"', () => {
-      expect(appController.main()).toBe('Sputnik v1 API v1.0');
+      expect(appController.main()).toBe('Sputnik v2 API v1.0');
     });
   });
 });

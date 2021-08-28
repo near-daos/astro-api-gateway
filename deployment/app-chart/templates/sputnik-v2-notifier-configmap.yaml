@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: sputnik-v1-notifier-configmap
+  name: sputnik-v2-notifier-configmap
 data:
   PORT: "3000"
   NEST_APP_TYPE: notifier
