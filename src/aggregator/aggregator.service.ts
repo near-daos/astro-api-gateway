@@ -173,9 +173,9 @@ export class AggregatorService {
       (acc, { accountId, receipt }) => ({
         ...acc,
         [accountId]: {
-          txHash: receipt.originatedFromTransactionHash,
-          txTimestamp: receipt.includedInBlockTimestamp
-        }
+          transactionHash: receipt.originatedFromTransactionHash,
+          createTimestamp: receipt.includedInBlockTimestamp,
+        },
       }),
       {},
     );
@@ -193,8 +193,8 @@ export class AggregatorService {
 
     return daos.map((dao) => ({
       ...dao,
-      txHash: daoTxDataMap[dao.id]?.txHash,
-      txTimestamp: daoTxDataMap[dao.id]?.txTimestamp,
+      transactionHash: daoTxDataMap[dao.id]?.transactionHash,
+      createTimestamp: daoTxDataMap[dao.id]?.createTimestamp,
       numberOfMembers: new Set(signersByAccountId[dao.id]).size,
       status: DaoStatus.Success,
     }));
@@ -204,14 +204,13 @@ export class AggregatorService {
     proposals: ProposalDto[],
     transactions: Transaction[],
   ): ProposalDto[] {
-    const transactionsByAccountId = transactions
-      .reduce(
-        (acc, cur) => ({
-          ...acc,
-          [cur.receiverAccountId]: [...(acc[cur.receiverAccountId] || []), cur],
-        }),
-        {},
-      );
+    const transactionsByAccountId = transactions.reduce(
+      (acc, cur) => ({
+        ...acc,
+        [cur.receiverAccountId]: [...(acc[cur.receiverAccountId] || []), cur],
+      }),
+      {},
+    );
 
     return proposals.map((proposal) => {
       const { id, daoId, description, target, kind } = proposal;
@@ -240,21 +239,21 @@ export class AggregatorService {
             target === txTarget
           );
         })
-        .map(({ transactionHash: txHash, blockTimestamp: txTimestamp }) => ({
-          txHash,
-          txTimestamp,
+        .map(({ transactionHash, blockTimestamp: createTimestamp }) => ({
+          transactionHash,
+          createTimestamp,
         }))[0];
 
       const txUpdateData = preFilteredTransactions
         .filter((tx) => tx.transactionAction.args.args_json.id === id)
         .map(
           ({
-            transactionHash: txHash,
-            blockTimestamp: txTimestamp,
+            transactionHash: updateTransactionHash,
+            blockTimestamp: updateTimestamp,
             transactionAction,
           }) => ({
-            txHash,
-            txTimestamp,
+            updateTransactionHash,
+            updateTimestamp,
             methodName: transactionAction.args.method_name,
           }),
         )
@@ -262,12 +261,14 @@ export class AggregatorService {
 
       const prop = {
         ...proposal,
-        txHash: txData?.txHash,
-        txTimestamp: txData?.txTimestamp,
-        txLastUpdateHash: txUpdateData ? txUpdateData.txHash : txData?.txHash,
-        txLastUpdateTimestamp: txUpdateData
-          ? txUpdateData.txTimestamp
-          : txData?.txTimestamp,
+        transactionHash: txData?.transactionHash,
+        createTimestamp: txData?.createTimestamp,
+        updateTransactionHash: txUpdateData
+          ? txUpdateData.updateTransactionHash
+          : txData?.transactionHash,
+        updateTimestamp: txUpdateData
+          ? txUpdateData.updateTimestamp
+          : txData?.createTimestamp,
       };
 
       return prop;
