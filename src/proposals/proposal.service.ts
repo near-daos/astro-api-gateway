@@ -30,6 +30,7 @@ export class ProposalService {
       vote_period_end,
       votes,
       txHash,
+      txTimestamp,
     } = proposalDto;
 
     const proposalId = buildProposalId(daoId, id);
@@ -37,7 +38,7 @@ export class ProposalService {
 
     proposal.id = proposalId;
     proposal.proposalId = id;
-    
+
     proposal.daoId = daoId;
     const dao = { id: daoId } as Dao;
     proposal.dao = dao;
@@ -52,11 +53,17 @@ export class ProposalService {
     proposal.kind = camelcaseKeys(kind, { deep: true }) as ProposalKind;
     proposal.votes = votes;
     proposal.txHash = txHash;
+    proposal.txTimestamp = txTimestamp;
 
     return this.proposalRepository.save(proposal);
   }
 
-  async find({ daoId, offset, limit }: ProposalQuery): Promise<Proposal[]> {
+  async find({
+    daoId,
+    offset,
+    limit,
+    order,
+  }: ProposalQuery): Promise<Proposal[]> {
     return this.proposalRepository.find({
       skip: offset,
       take: limit,
@@ -65,6 +72,7 @@ export class ProposalService {
           id: daoId,
         },
       },
+      order,
     });
   }
 
@@ -76,6 +84,7 @@ export class ProposalService {
     query,
     offset,
     limit,
+    order,
   }: SearchQuery): Promise<Proposal[]> {
     return this.proposalRepository.find({
       skip: offset,
@@ -87,6 +96,7 @@ export class ProposalService {
         { description: Like(`%${query}%`) },
         { votes: Like(`%${query}%`) },
       ],
+      order,
     });
   }
 }

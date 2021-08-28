@@ -18,4 +18,7 @@ export class Receipt {
   @OneToOne((_) => Transaction)
   @JoinColumn({ name: 'originated_from_transaction_hash' })
   originatedFromTransaction: Transaction;
+
+  @Column({ type: 'bigint' })
+  includedInBlockTimestamp: number;
 }

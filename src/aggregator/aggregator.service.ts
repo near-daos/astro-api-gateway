@@ -169,10 +169,13 @@ export class AggregatorService {
     accounts: Account[],
     transactions: Transaction[],
   ): DaoDto[] {
-    const daoTxHashes = accounts.reduce(
+    const daoTxDataMap = accounts.reduce(
       (acc, { accountId, receipt }) => ({
         ...acc,
-        [accountId]: receipt.originatedFromTransactionHash,
+        [accountId]: {
+          txHash: receipt.originatedFromTransactionHash,
+          txTimestamp: receipt.includedInBlockTimestamp
+        }
       }),
       {},
     );
@@ -190,7 +193,8 @@ export class AggregatorService {
 
     return daos.map((dao) => ({
       ...dao,
-      txHash: daoTxHashes[dao.id],
+      txHash: daoTxDataMap[dao.id]?.txHash,
+      txTimestamp: daoTxDataMap[dao.id]?.txTimestamp,
       numberOfMembers: new Set(signersByAccountId[dao.id]).size,
       status: DaoStatus.Success,
     }));
@@ -219,7 +223,7 @@ export class AggregatorService {
         return proposal;
       }
 
-      const txHash = transactionsByAccountId[proposal.daoId]
+      const txData = transactionsByAccountId[proposal.daoId]
         .filter((tx) => tx.transactionAction.args.args_json)
         .filter((tx) => {
           const {
@@ -233,9 +237,16 @@ export class AggregatorService {
             target === txTarget
           );
         })
-        .map(({ transactionHash }) => transactionHash)[0];
+        .map(({ transactionHash: txHash, blockTimestamp: txTimestamp }) => ({
+          txHash,
+          txTimestamp,
+        }))[0];
 
-      return txHash ? { ...proposal, txHash } : proposal;
+      return {
+        ...proposal,
+        txHash: txData?.txHash,
+        txTimestamp: txData?.txTimestamp,
+      };
     });
   }
 }

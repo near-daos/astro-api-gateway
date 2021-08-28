@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import { PagingQuery, SearchQuery } from 'src/common';
+import { SearchQuery } from 'src/common';
 import { Account, Receipt } from 'src/near';
 import { NearService } from 'src/near/near.service';
 import { ExecutionOutcomeStatus } from 'src/near/types/execution-outcome-status';
 import { Repository } from 'typeorm';
+import { DaoQuery } from './dto/dao-query.dto';
 import { DaoDto } from './dto/dao.dto';
 import { Dao } from './entities/dao.entity';
 import { DaoStatus } from './types/dao-status';
@@ -31,14 +32,12 @@ export class DaoService {
     return this.daoRepository.save(daoDto);
   }
 
-  async find({ offset, limit }: PagingQuery): Promise<Dao[]> {
+  async find({ offset, limit, order }: DaoQuery): Promise<Dao[]> {
     return this.daoRepository.find({
       where: [{ status: null }, { status: DaoStatus.Success }],
       skip: offset,
       take: limit,
-      order: {
-        createdAt: 'DESC',
-      },
+      order,
     });
   }
 
