@@ -76,8 +76,8 @@ export class Proposal extends BaseEntity {
   kind: ProposalKind;
 
   @ApiProperty()
-  @Column({ type: 'timestamptz' })
-  votePeriodEnd: Date;
+  @Column({ type: 'bigint' })
+  votePeriodEnd: number;
 
   @ApiProperty()
   @Column()
