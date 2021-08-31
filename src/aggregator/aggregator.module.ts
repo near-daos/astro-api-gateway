@@ -10,6 +10,7 @@ import { SputnikDaoService } from 'src/sputnikdao/sputnik.service';
 import { AggregatorService } from './aggregator.service';
 import { AppController } from 'src/app.controller';
 import { EventModule } from 'src/events/events.module';
+import { GarbageCollectorService } from './garbage-collector.service';
 
 @Module({
   imports: [
@@ -24,6 +25,10 @@ import { EventModule } from 'src/events/events.module';
     EventModule,
   ],
   controllers: [AppController],
-  providers: [SputnikDaoService, AggregatorService],
+  providers: [
+    SputnikDaoService,
+    AggregatorService,
+    GarbageCollectorService,
+  ],
 })
 export class AggregatorModule {}

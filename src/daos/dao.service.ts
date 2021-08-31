@@ -5,7 +5,7 @@ import { SearchQuery } from 'src/common';
 import { Account, Receipt } from 'src/near';
 import { NearService } from 'src/near/near.service';
 import { ExecutionOutcomeStatus } from 'src/near/types/execution-outcome-status';
-import { Repository } from 'typeorm';
+import { DeleteResult, LessThanOrEqual, Repository } from 'typeorm';
 import { DaoQuery } from './dto/dao-query.dto';
 import { DaoDto } from './dto/dao.dto';
 import { Dao } from './entities/dao.entity';
@@ -97,6 +97,13 @@ export class DaoService {
       id: account.accountId,
       status: DaoStatus.Success,
       txHash: originatedFromTransactionHash,
+    });
+  }
+
+  async clearPendingDaos(dateBefore: Date): Promise<DeleteResult> {
+    return this.daoRepository.delete({
+      status: DaoStatus.Pending,
+      updatedAt: LessThanOrEqual(dateBefore),
     });
   }
 }
