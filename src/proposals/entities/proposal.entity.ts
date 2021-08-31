@@ -76,8 +76,8 @@ export class Proposal extends BaseEntity {
   kind: ProposalKind;
 
   @ApiProperty()
-  @Column({ type: 'timestamptz' })
-  votePeriodEnd: Date;
+  @Column({ type: 'bigint' })
+  votePeriodEnd: number;
 
   @ApiProperty()
   @Column()
@@ -93,8 +93,15 @@ export class Proposal extends BaseEntity {
 
   @ApiProperty()
   @Column({ nullable: true })
-  txHash: string;
+  transactionHash: string;
+
+  @ApiProperty()
+  @Column({ nullable: true })
+  updateTransactionHash: string;
 
   @Column({ type: 'bigint', nullable: true })
-  txTimestamp: number;
+  createTimestamp: number;
+
+  @Column({ type: 'bigint', nullable: true })
+  updateTimestamp: number;
 }

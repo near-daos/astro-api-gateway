@@ -35,6 +35,8 @@ export class ProposalDto {
   votes: {
     [key: string]: 'Yes' | 'No';
   };
-  txHash: string;
-  txTimestamp: number;
+  transactionHash: string;
+  updateTransactionHash: string;
+  createTimestamp: number;
+  updateTimestamp: number;
 }

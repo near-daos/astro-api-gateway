@@ -12,3 +12,6 @@ export const EVENT_DAO_UPDATE_MESSAGE_PATTERN = 'sputnik_dao_update_event';
 export const EVENT_CLEAR_HTTP_CACHE_MESSAGE_PATTERN = 'clear_http_cache_event';
 
 export const DB_FOREIGN_KEY_VIOLATION = '23503';
+
+// Clean pending DAOs after a week of inactivity
+export const DAO_PENDING_CLEAN_THRESHOLD_IN_MILLIS = 7 * 24 * 60 * 60 * 1000; 

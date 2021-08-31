@@ -1,3 +1,4 @@
+import { ApiHideProperty } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
 import {
   CreateDateColumn,
@@ -6,6 +7,7 @@ import {
 } from 'typeorm';
 
 export abstract class BaseEntity {
+  @ApiHideProperty()
   @Exclude()
   @Column({ type: 'boolean', default: false })
   isArchived: boolean;
@@ -16,6 +18,7 @@ export abstract class BaseEntity {
   })
   createdAt: Date;
 
+  @ApiHideProperty()
   @Exclude()
   @UpdateDateColumn({
     type: 'timestamptz',

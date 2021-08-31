@@ -97,20 +97,15 @@ export class SputnikDaoService {
     const getDaoAmount = async (): Promise<string> => {
       const account = await this.near.account(daoId);
       const state = await account.state();
-      const amountYokto = new Decimal(state.amount);
 
-      return amountYokto.div(yoktoNear).toFixed(2);
+      return state.amount;
     };
 
     const daoEnricher = {
-      amount: getDaoAmount,
-      bond: async (): Promise<string> =>
-        new Decimal((await contract.get_bond()).toString())
-          .div(yoktoNear)
-          .toString(),
+      amount: async (): Promise<string> => getDaoAmount(),
+      bond: async (): Promise<string> => contract.get_bond(),
       purpose: async (): Promise<string> => contract.get_purpose(),
-      votePeriod: async (): Promise<string> =>
-        formatTimestamp(await contract.get_vote_period()),
+      votePeriod: async (): Promise<string> => contract.get_vote_period(),
       numberOfProposals: async (): Promise<number> =>
         contract.get_num_proposals(),
       council: async (): Promise<string[]> => contract.get_council(),
