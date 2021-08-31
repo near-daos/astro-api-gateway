@@ -96,7 +96,7 @@ export class DaoService {
     return this.daoRepository.save({
       id: account.accountId,
       status: DaoStatus.Success,
-      txHash: originatedFromTransactionHash,
+      transactionHash: originatedFromTransactionHash,
     });
   }
 

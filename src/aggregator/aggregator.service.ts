@@ -75,8 +75,7 @@ export class AggregatorService {
             //TODO: Q1: args_json is absent? - needs clarification
             .filter(
               ({ transactionAction: action }) =>
-                (action.args as any).args_json &&
-                (action.args as any).args_json.name,
+                action.args?.args_json && (action.args?.args_json as any)?.name,
             )
             .filter(
               ({ receiverAccountId: accId, transactionAction: action }) =>
@@ -173,9 +172,9 @@ export class AggregatorService {
       (acc, { accountId, receipt }) => ({
         ...acc,
         [accountId]: {
-          txHash: receipt.originatedFromTransactionHash,
-          txTimestamp: receipt.includedInBlockTimestamp
-        }
+          transactionHash: receipt.originatedFromTransactionHash,
+          createTimestamp: receipt.includedInBlockTimestamp,
+        },
       }),
       {},
     );
@@ -191,62 +190,88 @@ export class AggregatorService {
       {},
     );
 
-    return daos.map((dao) => ({
-      ...dao,
-      txHash: daoTxDataMap[dao.id]?.txHash,
-      txTimestamp: daoTxDataMap[dao.id]?.txTimestamp,
-      numberOfMembers: new Set(signersByAccountId[dao.id]).size,
-      status: DaoStatus.Success,
-    }));
+    const transactionsByAccountId =
+      this.reduceTransactionsByAccountId(transactions);
+
+    return daos.map((dao) => {
+      const txData = daoTxDataMap[dao.id];
+      const txUpdateData = transactionsByAccountId[dao.id]?.pop();
+
+      return {
+        ...dao,
+        transactionHash: txData?.transactionHash,
+        createTimestamp: txData?.createTimestamp,
+        updateTransactionHash: (txUpdateData || txData)?.transactionHash,
+        updateTimestamp: (txUpdateData || txData)?.blockTimestamp,
+        numberOfMembers: new Set(signersByAccountId[dao.id]).size,
+        status: DaoStatus.Success,
+      };
+    });
   }
 
   private enrichProposals(
     proposals: ProposalDto[],
     transactions: Transaction[],
   ): ProposalDto[] {
-    const transactionsByAccountId = transactions
-      .filter(
-        ({ transactionAction }) =>
-          (transactionAction.args as any).method_name == 'add_proposal',
-      )
-      .reduce(
-        (acc, cur) => ({
-          ...acc,
-          [cur.receiverAccountId]: [...(acc[cur.receiverAccountId] || []), cur],
-        }),
-        {},
-      );
+    const transactionsByAccountId =
+      this.reduceTransactionsByAccountId(transactions);
 
     return proposals.map((proposal) => {
-      const { daoId, description, target, kind } = proposal;
+      const { id, daoId, description, target, kind } = proposal;
       if (!transactionsByAccountId[daoId]) {
         return proposal;
       }
 
-      const txData = transactionsByAccountId[proposal.daoId]
-        .filter((tx) => tx.transactionAction.args.args_json)
-        .filter((tx) => {
+      const preFilteredTransactions = transactionsByAccountId[
+        proposal.daoId
+      ].filter((tx) => tx.transactionAction.args.args_json);
+
+      const txData = preFilteredTransactions
+        .filter(
+          ({ transactionAction }) =>
+            (transactionAction.args as any).method_name == 'add_proposal',
+        )
+        .find((tx) => {
+          const { signerAccountId } = tx;
           const {
             description: txDescription,
             kind: txKind,
             target: txTarget,
-          } = tx.transactionAction.args.args_json.proposal;
+            proposer,
+          } = (tx.transactionAction.args.args_json as any).proposal;
           return (
             description === txDescription &&
             kind.type === txKind.type &&
-            target === txTarget
+            target === txTarget &&
+            signerAccountId === proposer
           );
-        })
-        .map(({ transactionHash: txHash, blockTimestamp: txTimestamp }) => ({
-          txHash,
-          txTimestamp,
-        }))[0];
+        });
 
-      return {
+      const txUpdateData = preFilteredTransactions
+        .filter((tx) => (tx.transactionAction.args.args_json as any).id === id)
+        .pop();
+
+      const prop = {
         ...proposal,
-        txHash: txData?.txHash,
-        txTimestamp: txData?.txTimestamp,
+        transactionHash: txData?.transactionHash,
+        createTimestamp: txData?.blockTimestamp,
+        updateTransactionHash: (txUpdateData || txData)?.transactionHash,
+        updateTimestamp: (txUpdateData || txData)?.blockTimestamp,
       };
+
+      return prop;
     });
+  }
+
+  private reduceTransactionsByAccountId(transactions: Transaction[]): {
+    [key: string]: Transaction[];
+  } {
+    return transactions.reduce(
+      (acc, cur) => ({
+        ...acc,
+        [cur.receiverAccountId]: [...(acc[cur.receiverAccountId] || []), cur],
+      }),
+      {},
+    );
   }
 }
