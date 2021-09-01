@@ -1,35 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { BaseEntity } from 'src/common';
 import { Dao } from 'src/daos/entities/dao.entity';
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  PrimaryColumn,
-} from 'typeorm';
+import { Vote } from 'src/sputnikdao/types/vote';
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
+import { ProposalKind } from '../dto/proposal-kind.dto';
 import { ProposalStatus } from '../types/proposal-status';
-import { ProposalType } from '../types/proposal-type';
-
-export type ProposalKind =
-  | {
-      type: ProposalType.Payout;
-      amount: string;
-    }
-  | {
-      type: ProposalType.ChangeVotePeriod;
-      votePeriod: string;
-    }
-  | {
-      type: ProposalType.NewCouncil;
-    }
-  | {
-      type: ProposalType.RemoveCouncil;
-    }
-  | {
-      type: ProposalType.ChangePurpose;
-      purpose: string;
-    };
 
 @Entity()
 export class Proposal extends BaseEntity {
@@ -52,10 +27,6 @@ export class Proposal extends BaseEntity {
 
   @ApiProperty()
   @Column()
-  target: string;
-
-  @ApiProperty()
-  @Column()
   proposer: string;
 
   @ApiProperty()
@@ -66,30 +37,25 @@ export class Proposal extends BaseEntity {
   @Column({
     type: 'enum',
     enum: ProposalStatus,
-    default: ProposalStatus.Vote,
+    default: ProposalStatus.InProgress,
   })
   status: ProposalStatus;
 
-  //TODO: type
   @ApiProperty()
   @Column({ type: 'simple-json' })
   kind: ProposalKind;
 
   @ApiProperty()
   @Column({ type: 'bigint' })
-  votePeriodEnd: number;
+  submissionTime: number;
 
   @ApiProperty()
-  @Column()
-  voteYes: number;
+  @Column({ type: 'simple-json' })
+  voteCounts: Record<string, number[]>;
 
   @ApiProperty()
-  @Column()
-  voteNo: number;
-
-  @ApiProperty()
-  @Column('simple-json')
-  votes: Record<string, unknown>;
+  @Column({ type: 'simple-json' })
+  votes: Record<string, Vote>;
 
   @ApiProperty()
   @Column({ nullable: true })

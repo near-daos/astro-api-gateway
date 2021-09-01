@@ -1,13 +1,14 @@
 export enum ProposalStatus {
-  // Vote for proposal has failed due (not enuough votes).
-  Fail = 'Fail',
-  // Given voting policy, the uncontested minimum of votes was acquired.
-  // Delaying the finalization of the proposal to check that there is no contenders (who would vote against).
-  Delay = 'Delay',
-  // Proposal has successfully passed.
-  Success = 'Success',
-  // Proposal was rejected by the vote.
-  Reject = 'Reject',
-  // Proposal is in active voting stage.
-  Vote = 'Vote',
+  InProgress = 'InProgress',
+  /// If quorum voted yes, this proposal is successfully approved.
+  Approved = 'Approved',
+  /// If quorum voted no, this proposal is rejected. Bond is returned.
+  Rejected = 'Rejected',
+  /// If quorum voted to remove (e.g. spam), this proposal is rejected and bond is not returned.
+  /// Interfaces shouldn't show removed proposals.
+  Removed = 'Removed',
+  /// Expired after period of time.
+  Expired = 'Expired',
+  /// If proposal was moved to Hub or somewhere else.
+  Moved = 'Moved',
 }
