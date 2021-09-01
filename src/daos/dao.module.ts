@@ -5,13 +5,14 @@ import { DaoService } from './dao.service';
 import { Dao } from './entities/dao.entity';
 import { CacheConfigService } from 'src/config';
 import { NearModule } from 'src/near/near.module';
+import { Policy } from './entities/policy.entity';
 
 @Module({
   imports: [
     CacheModule.registerAsync({
       useClass: CacheConfigService,
     }),
-    TypeOrmModule.forFeature([Dao]),
+    TypeOrmModule.forFeature([Dao, Policy]),
     NearModule,
   ],
   providers: [DaoService],

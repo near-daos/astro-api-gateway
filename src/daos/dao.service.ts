@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
+import camelcaseKeys from 'camelcase-keys';
 import { SearchQuery } from 'src/common';
 import { Account, Receipt } from 'src/near';
 import { NearService } from 'src/near/near.service';
@@ -9,6 +10,7 @@ import { DeleteResult, LessThanOrEqual, Repository } from 'typeorm';
 import { DaoQuery } from './dto/dao-query.dto';
 import { DaoDto } from './dto/dao.dto';
 import { Dao } from './entities/dao.entity';
+import { Policy } from './entities/policy.entity';
 import { DaoStatus } from './types/dao-status';
 
 @Injectable()
@@ -23,13 +25,63 @@ export class DaoService {
   async createDraft(daoDto: DaoDto): Promise<Dao> {
     return this.create({
       ...daoDto,
-      councilSeats: daoDto.council ? daoDto.council.length : 0,
       status: DaoStatus.Pending,
     });
   }
 
   async create(daoDto: DaoDto): Promise<Dao> {
-    return this.daoRepository.save(daoDto);
+    const {
+      id,
+      config,
+      totalSupply,
+      amount,
+      description,
+      lastBountyId,
+      lastProposalId,
+      link,
+      policy: policyDto,
+      status,
+      stakingContract,
+      transactionHash,
+      createTimestamp,
+      updateTransactionHash,
+      updateTimestamp
+    } = daoDto;
+
+    const {
+      metadata,
+      name,
+      purpose,
+    } = config;
+
+    const dao = new Dao();
+    dao.id = id;
+
+    dao.name = name;
+    dao.purpose = purpose;
+    dao.metadata = metadata;
+
+    dao.amount = amount;
+    dao.totalSupply = totalSupply;
+    dao.lastBountyId = lastBountyId;
+    dao.lastProposalId = lastProposalId;
+    dao.stakingContract = stakingContract;
+
+    dao.link = link;
+    dao.description = description;
+    dao.status = status;
+    
+    dao.transactionHash = transactionHash;
+    dao.createTimestamp = createTimestamp;
+
+    dao.updateTransactionHash = updateTransactionHash;
+    dao.updateTimestamp = updateTimestamp;
+    
+    const policy = camelcaseKeys(policyDto, { deep: true }) as Policy;
+    policy.daoId = id;
+    dao.policy = policy;
+
+    return this.daoRepository.save(dao);
   }
 
   async find({ offset, limit, order }: DaoQuery): Promise<Dao[]> {

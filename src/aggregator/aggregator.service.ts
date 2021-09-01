@@ -8,7 +8,7 @@ import { TransactionService } from 'src/transactions/transaction.service';
 import { ConfigService } from '@nestjs/config';
 import { Transaction, Account } from 'src/near';
 import { DaoDto } from 'src/daos/dto/dao.dto';
-import { ProposalDto } from 'src/proposals/dto/proposal.dto';
+import { castKind, ProposalDto } from 'src/proposals/dto/proposal.dto';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { buildDaoId, buildProposalId } from 'src/utils';
 import { EventService } from 'src/events/events.service';
@@ -217,7 +217,7 @@ export class AggregatorService {
       this.reduceTransactionsByAccountId(transactions);
 
     return proposals.map((proposal) => {
-      const { id, daoId, description, target, kind } = proposal;
+      const { id, daoId, description, kind, proposer } = proposal;
       if (!transactionsByAccountId[daoId]) {
         return proposal;
       }
@@ -233,16 +233,13 @@ export class AggregatorService {
         )
         .find((tx) => {
           const { signerAccountId } = tx;
-          const {
-            description: txDescription,
-            kind: txKind,
-            target: txTarget,
-            proposer,
-          } = (tx.transactionAction.args.args_json as any).proposal;
+
+          const { description: txDescription, kind: txKind } = (
+            tx.transactionAction.args.args_json as any
+          ).proposal || {};
           return (
             description === txDescription &&
-            kind.type === txKind.type &&
-            target === txTarget &&
+            kind.equals(castKind(txKind)) &&
             signerAccountId === proposer
           );
         });

@@ -31,8 +31,9 @@ export class NotificationService {
       return;
     }
 
+    //TODO: DAO council search
     const accounts = await this.accountRepository.find({
-      accountId: In(dao.council),
+      // accountId: In(dao.council),
     });
 
     if (!accounts || !accounts.length) {

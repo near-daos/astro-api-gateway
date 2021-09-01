@@ -1,7 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsNotEmpty, IsString } from 'class-validator';
+import { IsArray, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 import { AccountBearer } from 'src/common/dto/AccountBearer';
+import { DaoConfig } from '../types/dao-config';
 import { DaoStatus } from '../types/dao-status';
+import { PolicyDto } from './policy.dto';
 
 export class DaoDto extends AccountBearer {
   @ApiProperty()
@@ -15,33 +17,33 @@ export class DaoDto extends AccountBearer {
   amount: string;
 
   @ApiProperty()
-  @IsString()
   @IsNotEmpty()
-  bond: string;
+  config: DaoConfig;
 
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  purpose: string;
+  totalSupply: string;
+
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  lastBountyId: number;
+  
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  lastProposalId: number;
 
   @ApiProperty()
   @IsString()
-  @IsNotEmpty()
-  votePeriod: string;
+  stakingContract: string;
 
   @ApiProperty()
   @IsArray()
   @IsNotEmpty()
-  council: string[];
 
-  numberOfProposals: number = 0;
-  councilSeats: number;
-  numberOfMembers: number = 0;
-
-  transactionHash: string;
-  updateTransactionHash: string;
-  createTimestamp: number;
-  updateTimestamp: number;
+  policy: PolicyDto;
 
   @ApiProperty()
   @IsString()
@@ -52,6 +54,11 @@ export class DaoDto extends AccountBearer {
   @IsString()
   @IsNotEmpty()
   description: string;
+
+  transactionHash: string;
+  updateTransactionHash: string;
+  createTimestamp: number;
+  updateTimestamp: number;
 
   status: DaoStatus;
 }

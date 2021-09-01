@@ -1,11 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Dao } from 'src/daos/entities/dao.entity';
-import { buildProposalId, convertDuration } from 'src/utils';
+import { buildProposalId } from 'src/utils';
 import { Like, Repository } from 'typeorm';
 import { ProposalDto } from './dto/proposal.dto';
-import { Proposal, ProposalKind } from './entities/proposal.entity';
-import camelcaseKeys from 'camelcase-keys';
+import { Proposal } from './entities/proposal.entity';
 import { SearchQuery } from 'src/common';
 import { ProposalQuery } from './dto/proposal-query.dto';
 
@@ -21,13 +20,11 @@ export class ProposalService {
       id,
       daoId,
       description,
-      kind,
+      kind: { kind },
       proposer,
-      target,
       status,
-      vote_no,
-      vote_yes,
-      vote_period_end,
+      vote_counts,
+      submission_time,
       votes,
       transactionHash,
       updateTransactionHash,
@@ -47,13 +44,13 @@ export class ProposalService {
 
     proposal.description = description;
     proposal.proposer = proposer;
-    proposal.target = target;
     proposal.status = status;
-    proposal.voteNo = vote_no;
-    proposal.voteYes = vote_yes;
-    proposal.votePeriodEnd = vote_period_end;
-    proposal.kind = camelcaseKeys(kind, { deep: true }) as ProposalKind;
+    proposal.voteCounts = vote_counts;
     proposal.votes = votes;
+    proposal.submissionTime = submission_time;
+    proposal.kind = kind;
+    proposal.votes = votes;
+    
     proposal.transactionHash = transactionHash;
     proposal.updateTransactionHash = updateTransactionHash;
     proposal.createTimestamp = createTimestamp;

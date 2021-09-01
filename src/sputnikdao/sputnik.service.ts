@@ -1,13 +1,13 @@
 import { Account, Contract, Near } from 'near-api-js';
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import Decimal from 'decimal.js';
-import { PROPOSAL_REQUEST_CHUNK_SIZE, yoktoNear } from './constants';
-import { formatTimestamp } from '../utils';
+import { PROPOSAL_REQUEST_CHUNK_SIZE } from './constants';
 import { DaoDto } from 'src/daos/dto/dao.dto';
-import { ProposalDto } from 'src/proposals/dto/proposal.dto';
+import { castKind, ProposalDto } from 'src/proposals/dto/proposal.dto';
 import PromisePool from '@supercharge/promise-pool';
 import { NearSputnikProvider } from 'src/config/sputnik';
 import { NEAR_SPUTNIK_PROVIDER } from 'src/common/constants';
+import { PolicyDto } from 'src/daos/dto/policy.dto';
+import { DaoConfig } from 'src/daos/types/dao-config';
 
 @Injectable()
 export class SputnikDaoService {
@@ -59,11 +59,15 @@ export class SputnikDaoService {
     try {
       const contract = this.getContract(contractId);
 
-      const numProposals = await contract.get_num_proposals();
+      //TODO: check when no proposals
+      // Taking into account that proposal ID is sequential,
+      // considering that last proposal id is the proposal count
+      // for the given DAO
+      const lastProposalId = await contract.get_last_proposal_id();
 
       const chunkSize = PROPOSAL_REQUEST_CHUNK_SIZE;
       const chunkCount =
-        (numProposals - (numProposals % chunkSize)) / chunkSize + 1;
+        (lastProposalId - (lastProposalId % chunkSize)) / chunkSize + 1;
       const { results, errors } = await PromisePool.withConcurrency(1)
         .for([...Array(chunkCount).keys()])
         .process(
@@ -79,11 +83,14 @@ export class SputnikDaoService {
           (acc: ProposalDto[], prop: ProposalDto[]) => acc.concat(prop),
           [],
         )
-        .map((proposal: ProposalDto, index: number) => ({
-          ...proposal,
-          id: index,
-          daoId: contractId,
-        }));
+        .map((proposal: ProposalDto, index: number) => {
+          return {
+            ...proposal,
+            id: index,
+            daoId: contractId,
+            kind: castKind(proposal.kind),
+          };
+        });
     } catch (error) {
       this.logger.error(error);
 
@@ -94,21 +101,17 @@ export class SputnikDaoService {
   private async getDaoById(daoId: string): Promise<DaoDto | null> {
     const contract = this.getContract(daoId);
 
-    const getDaoAmount = async (): Promise<string> => {
-      const account = await this.near.account(daoId);
-      const state = await account.state();
-
-      return state.amount;
-    };
-
     const daoEnricher = {
-      amount: async (): Promise<string> => getDaoAmount(),
-      bond: async (): Promise<string> => contract.get_bond(),
-      purpose: async (): Promise<string> => contract.get_purpose(),
-      votePeriod: async (): Promise<string> => contract.get_vote_period(),
-      numberOfProposals: async (): Promise<number> =>
-        contract.get_num_proposals(),
-      council: async (): Promise<string[]> => contract.get_council(),
+      config: async (): Promise<DaoConfig> => contract.get_config(),
+      policy: async (): Promise<PolicyDto> => contract.get_policy(),
+      stakingContract: async (): Promise<string> =>
+        contract.get_staking_contract(),
+      amount: async (): Promise<string> => contract.get_available_amount(),
+      totalSupply: async (): Promise<string> =>
+        contract.delegation_total_supply(),
+      lastProposalId: async (): Promise<string> =>
+        contract.get_last_proposal_id(),
+      lastBountyId: async (): Promise<string> => contract.get_last_bounty_id(),
     };
 
     const dao = new DaoDto();
@@ -127,21 +130,22 @@ export class SputnikDaoService {
       return Promise.reject(`Unable to enrich DAO with id ${daoId}`);
     }
 
-    return { ...dao, councilSeats: dao.council.length, id: daoId };
+    return { ...dao, id: daoId };
   }
 
   private getContract(contractId: string): Contract & any {
     return new Contract(this.account, contractId, {
       viewMethods: [
-        'get_council',
-        'get_bond',
-        'get_proposal',
-        'get_num_proposals',
+        'get_config',
+        'get_policy',
+        'get_staking_contract',
+        'get_available_amount',
+        'delegation_total_supply',
+        'get_last_proposal_id',
+        'get_last_bounty_id',
         'get_proposals',
-        'get_vote_period',
-        'get_purpose',
       ],
-      changeMethods: ['vote', 'add_proposal', 'finalize'],
+      changeMethods: ['add_proposal', 'act_proposal'],
     });
   }
 }
