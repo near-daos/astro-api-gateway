@@ -2,7 +2,7 @@ import { NestFactory, Reflector } from '@nestjs/core';
 import { ClassSerializerInterceptor } from '@nestjs/common';
 import { AppService } from './app-service';
 import { Transport } from '@nestjs/microservices';
-import { EVENT_QUEUE_NAME } from './common/constants';
+import { EVENT_NOTIFICATIONS_QUEUE_NAME } from './common/constants';
 import { NotificationsModule } from './notifications/notifications.module';
 
 export default class Notifier implements AppService {
@@ -11,7 +11,7 @@ export default class Notifier implements AppService {
       transport: Transport.RMQ,
       options: {
         urls: [process.env.RABBITMQ_URL],
-        queue: EVENT_QUEUE_NAME,
+        queue: EVENT_NOTIFICATIONS_QUEUE_NAME,
         queueOptions: {
           durable: true,
         },

@@ -5,7 +5,7 @@ import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppService } from './app-service';
 import { Transport } from '@nestjs/microservices';
-import { EVENT_QUEUE_NAME } from './common/constants';
+import { EVENT_CACHE_QUEUE_NAME } from './common/constants';
 
 export default class Api implements AppService {
   async bootstrap(): Promise<void> {
@@ -17,7 +17,7 @@ export default class Api implements AppService {
       transport: Transport.RMQ,
       options: {
         urls: [process.env.RABBITMQ_URL],
-        queue: EVENT_QUEUE_NAME,
+        queue: EVENT_CACHE_QUEUE_NAME,
         queueOptions: {
           durable: true,
         },

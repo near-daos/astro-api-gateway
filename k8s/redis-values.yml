@@ -246,7 +246,6 @@ master:
   ## ref: https://redis.io/topics/security#disabling-of-specific-commands
   ##
   disableCommands:
-  - FLUSHDB
   - FLUSHALL
 
   ## Redis Master additional pod labels and annotations
