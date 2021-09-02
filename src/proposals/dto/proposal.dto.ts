@@ -89,17 +89,17 @@ export class ProposalKindDto {
   }
 }
 
-export function castKind(kind: unknown): ProposalKindDto | null {
+export function castProposalKind(kind: unknown): ProposalKindDto | null {
   if (!kind) {
     return null;
   }
 
-  const kindType = Object.keys(ProposalType).find((key) =>
+  const type = Object.keys(ProposalType).find((key) =>
     kind.hasOwnProperty(key),
   );
 
   return new ProposalKindDto({
-    type: kindType,
-    ...camelcaseKeys(kind[kindType], { deep: true }),
+    type,
+    ...camelcaseKeys(kind[type], { deep: true }),
   });
 }

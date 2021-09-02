@@ -39,6 +39,9 @@ export class DaoService {
       lastBountyId,
       lastProposalId,
       link,
+      numberOfMembers,
+      council,
+      councilSeats,
       policy: policyDto,
       status,
       stakingContract,
@@ -66,6 +69,10 @@ export class DaoService {
     dao.lastBountyId = lastBountyId;
     dao.lastProposalId = lastProposalId;
     dao.stakingContract = stakingContract;
+    dao.numberOfMembers = numberOfMembers;
+    dao.numberOfProposals = lastProposalId;
+    dao.council = council;
+    dao.councilSeats = councilSeats;
 
     dao.link = link;
     dao.description = description;

@@ -2,12 +2,14 @@ import { Account, Contract, Near } from 'near-api-js';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { PROPOSAL_REQUEST_CHUNK_SIZE } from './constants';
 import { DaoDto } from 'src/daos/dto/dao.dto';
-import { castKind, ProposalDto } from 'src/proposals/dto/proposal.dto';
+import { castProposalKind, ProposalDto } from 'src/proposals/dto/proposal.dto';
 import PromisePool from '@supercharge/promise-pool';
 import { NearSputnikProvider } from 'src/config/sputnik';
 import { NEAR_SPUTNIK_PROVIDER } from 'src/common/constants';
 import { PolicyDto } from 'src/daos/dto/policy.dto';
 import { DaoConfig } from 'src/daos/types/dao-config';
+import { castWeighOrRatio } from './types/vote-policy';
+import { castRoleKind, RoleKindType } from './types/role';
 
 @Injectable()
 export class SputnikDaoService {
@@ -88,7 +90,7 @@ export class SputnikDaoService {
             ...proposal,
             id: index,
             daoId: contractId,
-            kind: castKind(proposal.kind),
+            kind: castProposalKind(proposal.kind),
           };
         });
     } catch (error) {
@@ -130,7 +132,35 @@ export class SputnikDaoService {
       return Promise.reject(`Unable to enrich DAO with id ${daoId}`);
     }
 
-    return { ...dao, id: daoId };
+    const { policy } = dao;
+
+    const roles = policy.roles.map((role) => ({
+      ...role,
+      kind: castRoleKind(role.kind),
+    }));
+
+    const council = roles
+      .filter(
+        ({ name, kind }) =>
+          'council' === name && RoleKindType.Group === kind.type,
+      )
+      .map(({ kind }) => (kind as any).accountIds)
+      .reduce((acc, val) => acc.concat(val), []);
+
+    return {
+      ...dao,
+      id: daoId,
+      policy: {
+        ...policy,
+        default_vote_policy: {
+          ...policy.default_vote_policy,
+          threshold: castWeighOrRatio(policy.default_vote_policy.threshold),
+        },
+        roles
+      },
+      council,
+      councilSeats: council.length
+    };
   }
 
   private getContract(contractId: string): Contract & any {

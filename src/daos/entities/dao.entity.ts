@@ -46,7 +46,23 @@ export class Dao extends BaseEntity {
 
   @ApiProperty()
   @Column()
+  numberOfProposals: number;
+
+  @ApiProperty()
+  @Column()
   stakingContract: string;
+
+  @ApiProperty()
+  @Column({ nullable: true })
+  numberOfMembers: number;
+
+  @ApiProperty()
+  @Column({ type: 'text', array: true })
+  council: string[];
+
+  @ApiProperty()
+  @Column()
+  councilSeats: number;
 
   @ApiProperty()
   @OneToOne((_) => Policy, { eager: true, cascade: true })

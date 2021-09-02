@@ -36,3 +36,21 @@ export type VotePolicy = {
   /// How many votes to pass this vote.
   threshold: WeightOrRatio;
 };
+
+export function castWeighOrRatio(weightOrRatio: unknown): WeightOrRatio | null {
+  if (!weightOrRatio) {
+    return null;
+  }
+
+  if (weightOrRatio instanceof Array) {
+    return {
+      type: WeightOrRatioType.Ratio,
+      value: weightOrRatio,
+    } as WeightOrRatio;
+  }
+
+  return {
+    type: WeightOrRatioType.Weight,
+    value: weightOrRatio,
+  } as WeightOrRatio;
+}

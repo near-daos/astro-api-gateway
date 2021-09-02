@@ -8,7 +8,7 @@ import { TransactionService } from 'src/transactions/transaction.service';
 import { ConfigService } from '@nestjs/config';
 import { Transaction, Account } from 'src/near';
 import { DaoDto } from 'src/daos/dto/dao.dto';
-import { castKind, ProposalDto } from 'src/proposals/dto/proposal.dto';
+import { castProposalKind, ProposalDto } from 'src/proposals/dto/proposal.dto';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { buildDaoId, buildProposalId } from 'src/utils';
 import { EventService } from 'src/events/events.service';
@@ -239,7 +239,7 @@ export class AggregatorService {
           ).proposal || {};
           return (
             description === txDescription &&
-            kind.equals(castKind(txKind)) &&
+            kind.equals(castProposalKind(txKind)) &&
             signerAccountId === proposer
           );
         });

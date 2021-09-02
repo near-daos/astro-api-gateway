@@ -8,7 +8,6 @@ export enum RoleKindType {
   Group = 'Group',
 }
 
-//TODO: check policy groups type casting
 export type RoleKind =
   /// Matches everyone, who is not matched by other roles.
   | {
@@ -36,3 +35,32 @@ export type RolePermission = {
   /// For each proposal kind, defines voting policy.
   votePolicy: { [key: string]: VotePolicy };
 };
+
+export function castRoleKind(kind: unknown): RoleKind | null {
+  if (!kind) {
+    return null;
+  }
+
+  if (RoleKindType.Everyone === kind) {
+    return { type: RoleKindType.Everyone };
+  }
+
+  const type = Object.keys(RoleKindType).find((key) =>
+    kind.hasOwnProperty(key),
+  );
+
+  switch (type) {
+    case RoleKindType.Group:
+      return {
+        type,
+        accountIds: kind[type],
+      } as RoleKind;
+    case RoleKindType.Member:
+      return {
+        type,
+        balance: kind[type],
+      } as RoleKind;
+  }
+
+  return kind as RoleKind;
+}
