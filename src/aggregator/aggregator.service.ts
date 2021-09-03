@@ -173,7 +173,7 @@ export class AggregatorService {
         ...acc,
         [accountId]: {
           transactionHash: receipt.originatedFromTransactionHash,
-          createTimestamp: receipt.includedInBlockTimestamp,
+          blockTimestamp: receipt.includedInBlockTimestamp,
         },
       }),
       {},
@@ -200,7 +200,7 @@ export class AggregatorService {
       return {
         ...dao,
         transactionHash: txData?.transactionHash,
-        createTimestamp: txData?.createTimestamp,
+        createTimestamp: txData?.blockTimestamp,
         updateTransactionHash: (txUpdateData || txData)?.transactionHash,
         updateTimestamp: (txUpdateData || txData)?.blockTimestamp,
         numberOfMembers: new Set(signersByAccountId[dao.id]).size,

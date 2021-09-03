@@ -22,15 +22,12 @@ export class DaoDto extends AccountBearer {
 
   @ApiProperty()
   @IsString()
-  @IsNotEmpty()
   totalSupply: string;
 
   @ApiProperty()
   @IsNumber()
-  @IsNotEmpty()
   lastBountyId: number;
   
-  @ApiProperty()
   @IsNumber()
   lastProposalId: number;
 
@@ -47,6 +44,8 @@ export class DaoDto extends AccountBearer {
   @IsNotEmpty()
   council: string[];
 
+  councilSeats: number;
+
   @ApiProperty()
   @IsNotEmpty()
   policy: PolicyDto;
@@ -60,8 +59,6 @@ export class DaoDto extends AccountBearer {
   @IsString()
   @IsNotEmpty()
   description: string;
-
-  councilSeats: number;
 
   transactionHash: string;
   updateTransactionHash: string;

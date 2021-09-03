@@ -11,23 +11,23 @@ import { VotePolicy } from 'src/sputnikdao/types/vote-policy';
 export class PolicyDto {
   @ApiProperty()
   @IsString()
-  proposal_bond: string;
+  proposalBond: string;
 
   @ApiProperty()
   @IsString()
-  bounty_bond: string;
+  bountyBond: string;
 
   @ApiProperty()
   @IsNumber()
-  proposal_period: number;
+  proposalPeriod: number;
 
   @ApiProperty()
   @IsNumber()
-  bounty_forgiveness_period: number;
+  bountyForgivenessPeriod: number;
 
   @ApiProperty()
   @IsObject()
-  default_vote_policy: VotePolicy;
+  defaultVotePolicy: VotePolicy;
 
   @ApiProperty()
   @IsArray()

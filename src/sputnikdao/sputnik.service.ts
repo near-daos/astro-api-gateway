@@ -10,6 +10,7 @@ import { PolicyDto } from 'src/daos/dto/policy.dto';
 import { DaoConfig } from 'src/daos/types/dao-config';
 import { castWeighOrRatio } from './types/vote-policy';
 import { castRoleKind, RoleKindType } from './types/role';
+import camelcaseKeys from 'camelcase-keys';
 
 @Injectable()
 export class SputnikDaoService {
@@ -132,7 +133,7 @@ export class SputnikDaoService {
       return Promise.reject(`Unable to enrich DAO with id ${daoId}`);
     }
 
-    const { policy } = dao;
+    const policy = camelcaseKeys(dao.policy, { deep: true });
 
     const roles = policy.roles.map((role) => ({
       ...role,
@@ -152,9 +153,9 @@ export class SputnikDaoService {
       id: daoId,
       policy: {
         ...policy,
-        default_vote_policy: {
-          ...policy.default_vote_policy,
-          threshold: castWeighOrRatio(policy.default_vote_policy.threshold),
+        defaultVotePolicy: {
+          ...policy.defaultVotePolicy,
+          threshold: castWeighOrRatio(policy.defaultVotePolicy.threshold),
         },
         roles
       },
