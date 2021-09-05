@@ -47,23 +47,12 @@ export class NearService {
       .orderBy('transaction.block_timestamp', 'ASC');
 
     queryBuilder = fromBlockTimestamp
-      ? queryBuilder.andWhere('transaction.block_timestamp > :from', {
+      ? queryBuilder.andWhere('transaction.block_timestamp >= :from', {
           from: fromBlockTimestamp,
         })
       : queryBuilder;
 
     return queryBuilder.getMany();
-  }
-
-  async lastTransaction(receiverAccountIds: string[]): Promise<Transaction> {
-    return this.transactionRepository
-      .createQueryBuilder('transaction')
-      .leftJoinAndSelect('transaction.transactionAction', 'transaction_actions')
-      .where('transaction.receiver_account_id = ANY(ARRAY[:...ids])', {
-        ids: receiverAccountIds,
-      })
-      .orderBy('transaction.block_timestamp', 'DESC')
-      .getOne();
   }
 
   async findTransaction(transactionHash: string): Promise<Transaction> {

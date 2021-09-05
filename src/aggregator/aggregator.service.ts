@@ -37,40 +37,33 @@ export class AggregatorService {
     this.logger.log('Scheduling Data Aggregation...');
 
     this.logger.log('Collecting DAO IDs...');
-    const daoIds = (await this.sputnikDaoService.getDaoIds());
+    const daoIds = await this.sputnikDaoService.getDaoIds();
 
     this.logger.log('Checking data relevance...');
 
-    const aggregatedTxCount = await this.transactionService.count();
+    const tx = await this.transactionService.lastTransaction();
 
-    const [tx, nearTx] = await Promise.all([
-      this.transactionService.lastTransaction(),
-      this.nearService.lastTransaction([...daoIds, contractName]),
-    ]);
-
-    if (
-      aggregatedTxCount &&
-      tx &&
-      nearTx &&
-      tx.transactionHash === nearTx.transactionHash
-    ) {
-      return this.logger.log('Data is up to date. Skipping data aggregation.');
-    }
-
-    const { blockTimestamp } = tx || {};
-
-    const accounts: Account[] =
-      await this.nearService.findAccountsByContractName(contractName);
     const transactions: Transaction[] =
       await this.nearService.findTransactionsByReceiverAccountIds(
         [...daoIds, contractName],
-        blockTimestamp,
+        tx?.blockTimestamp,
       );
+
+    // Last transaction from NEAR Indexer - for the list of DAOs defined
+    const { transactionHash: nearTransactionHash } =
+      transactions?.[transactions?.length - 1] || {};
+
+    if (tx && tx.transactionHash === nearTransactionHash) {
+      return this.logger.log('Data is up to date. Skipping data aggregation.');
+    }
+
+    const accounts: Account[] =
+      await this.nearService.findAccountsByContractName(contractName);
 
     let accountDaoIds = daoIds;
     let proposalDaoIds = daoIds;
 
-    if (aggregatedTxCount) {
+    if (tx) {
       accountDaoIds = [
         ...new Set(
           transactions
@@ -141,7 +134,7 @@ export class AggregatorService {
 
     //Q2: Proposals with the absent DAO references?
     //Filtering proposals for unavailable DAOs
-    const filteredProposals = !aggregatedTxCount
+    const filteredProposals = !tx
       ? proposals.filter(({ daoId }) => enrichedDaoIds.includes(daoId))
       : proposals;
 
@@ -160,9 +153,7 @@ export class AggregatorService {
 
     this.logger.log('Persisting aggregated Bounties...');
     await Promise.all(
-      bounties.map((bounty) =>
-        this.bountyService.create(bounty),
-      ),
+      bounties.map((bounty) => this.bountyService.create(bounty)),
     );
     this.logger.log('Finished Bounties aggregation.');
 
