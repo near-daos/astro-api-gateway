@@ -9,6 +9,8 @@ import { RolePermission } from 'src/sputnikdao/types/role';
 import { VotePolicy } from 'src/sputnikdao/types/vote-policy';
 
 export class PolicyDto {
+  daoId: string;
+
   @ApiProperty()
   @IsString()
   proposalBond: string;

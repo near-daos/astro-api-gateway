@@ -11,6 +11,7 @@ import { AggregatorService } from './aggregator.service';
 import { AppController } from 'src/app.controller';
 import { EventModule } from 'src/events/events.module';
 import { GarbageCollectorService } from './garbage-collector.service';
+import { BountyModule } from 'src/bounties/bounty.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { GarbageCollectorService } from './garbage-collector.service';
     NearModule,
     TransactionModule,
     EventModule,
+    BountyModule,
   ],
   controllers: [AppController],
   providers: [

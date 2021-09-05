@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { BaseEntity } from 'src/common';
+import { TransactionEntity } from 'src/common/transaction.entity';
 import {
   Column,
   Entity,
@@ -7,22 +7,18 @@ import {
   OneToOne,
   PrimaryColumn,
 } from 'typeorm';
+import { DaoConfig } from '../types/dao-config';
 import { DaoStatus } from '../types/dao-status';
 import { Policy } from './policy.entity';
 
 @Entity()
-export class Dao extends BaseEntity {
+export class Dao extends TransactionEntity {
   @ApiProperty()
   @PrimaryColumn({ type: 'text', unique: true })
   id: string;
 
-  @ApiProperty()
-  @Column()
-  name: string;
-
-  @ApiProperty()
-  @Column()
-  metadata: string;
+  @Column({ type: 'simple-json' })
+  config: DaoConfig;
 
   @ApiProperty()
   @Column()
@@ -31,10 +27,6 @@ export class Dao extends BaseEntity {
   @ApiProperty()
   @Column()
   totalSupply: string;
-
-  @ApiProperty()
-  @Column()
-  purpose: string;
 
   @ApiProperty()
   @Column()
@@ -68,20 +60,6 @@ export class Dao extends BaseEntity {
   @OneToOne((_) => Policy, { eager: true, cascade: true })
   @JoinColumn({ name: 'id' })
   policy: Policy;
-
-  @ApiProperty()
-  @Column({ nullable: true })
-  transactionHash: string;
-
-  @ApiProperty()
-  @Column({ nullable: true })
-  updateTransactionHash: string;
-
-  @Column({ type: 'bigint', nullable: true })
-  createTimestamp: number;
-  
-  @Column({ type: 'bigint', nullable: true })
-  updateTimestamp: number;
 
   @Column({ nullable: true })
   link: string;

@@ -1,7 +1,7 @@
 import { PolicyDto } from 'src/daos/dto/policy.dto';
 import { DaoConfig } from 'src/daos/types/dao-config';
 import { ActionCall } from 'src/sputnikdao/types/action-call';
-import { Bounty } from 'src/sputnikdao/types/bounty';
+import { Bounty } from 'src/bounties/entities/bounty.entity';
 import { ProposalType } from '../types/proposal-type';
 
 export type ProposalKind =

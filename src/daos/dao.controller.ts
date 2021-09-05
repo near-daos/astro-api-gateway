@@ -24,7 +24,7 @@ import {
   HttpCacheInterceptor,
 } from 'src/common';
 import { DaoService } from './dao.service';
-import { DaoDto } from './dto/dao.dto';
+import { CreateDaoDto } from './dto/dao-create.dto';
 import { Dao } from './entities/dao.entity';
 import { WalletCallbackParams } from 'src/common/dto/WalletCallbackParams';
 import { DaoGuard } from 'src/common/guards/dao.guard';
@@ -46,7 +46,7 @@ export class DaoController {
   })
   @UseGuards(AccountAccessGuard, DaoGuard)
   @Post('/')
-  async create(@Body() createDaoDto: DaoDto): Promise<Dao> {
+  async create(@Body() createDaoDto: CreateDaoDto): Promise<Dao> {
     return await this.daoService.createDraft(createDaoDto);
   }
 

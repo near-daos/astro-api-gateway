@@ -7,12 +7,13 @@ import { NearService } from 'src/near/near.service';
 import { TransactionService } from 'src/transactions/transaction.service';
 import { ConfigService } from '@nestjs/config';
 import { Transaction, Account } from 'src/near';
-import { DaoDto } from 'src/daos/dto/dao.dto';
+import { SputnikDaoDto } from 'src/daos/dto/dao-sputnik.dto';
 import { castProposalKind, ProposalDto } from 'src/proposals/dto/proposal.dto';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { buildDaoId, buildProposalId } from 'src/utils';
 import { EventService } from 'src/events/events.service';
 import { DaoStatus } from 'src/daos/types/dao-status';
+import { BountyService } from 'src/bounties/bounty.service';
 
 @Injectable()
 export class AggregatorService {
@@ -26,6 +27,7 @@ export class AggregatorService {
     private readonly nearService: NearService,
     private readonly transactionService: TransactionService,
     private readonly eventService: EventService,
+    private readonly bountyService: BountyService,
   ) {}
 
   @Cron(CronExpression.EVERY_10_SECONDS)
@@ -35,7 +37,7 @@ export class AggregatorService {
     this.logger.log('Scheduling Data Aggregation...');
 
     this.logger.log('Collecting DAO IDs...');
-    const daoIds = await this.sputnikDaoService.getDaoIds();
+    const daoIds = (await this.sputnikDaoService.getDaoIds());
 
     this.logger.log('Checking data relevance...');
 
@@ -120,9 +122,10 @@ export class AggregatorService {
     }
 
     this.logger.log('Aggregating data...');
-    const [daos, proposals] = await Promise.all([
+    const [daos, proposals, bounties] = await Promise.all([
       this.sputnikDaoService.getDaoList(accountDaoIds),
       this.sputnikDaoService.getProposals(proposalDaoIds),
+      this.sputnikDaoService.getBounties(proposalDaoIds),
     ]);
 
     const enrichedDaos = this.enrichDaos(daos, accounts, transactions);
@@ -155,6 +158,14 @@ export class AggregatorService {
     );
     this.logger.log('Finished Proposals aggregation.');
 
+    this.logger.log('Persisting aggregated Bounties...');
+    await Promise.all(
+      bounties.map((bounty) =>
+        this.bountyService.create(bounty),
+      ),
+    );
+    this.logger.log('Finished Bounties aggregation.');
+
     this.logger.log('Persisting aggregated Transactions...');
     await Promise.all(
       transactions.map((transaction) =>
@@ -164,10 +175,10 @@ export class AggregatorService {
   }
 
   private enrichDaos(
-    daos: DaoDto[],
+    daos: SputnikDaoDto[],
     accounts: Account[],
     transactions: Transaction[],
-  ): DaoDto[] {
+  ): SputnikDaoDto[] {
     const daoTxDataMap = accounts.reduce(
       (acc, { accountId, receipt }) => ({
         ...acc,

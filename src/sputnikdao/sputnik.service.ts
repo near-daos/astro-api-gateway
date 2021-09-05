@@ -1,7 +1,7 @@
-import { Account, Contract, Near } from 'near-api-js';
+import { Account, Contract } from 'near-api-js';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { PROPOSAL_REQUEST_CHUNK_SIZE } from './constants';
-import { DaoDto } from 'src/daos/dto/dao.dto';
+import { SputnikDaoDto } from 'src/daos/dto/dao-sputnik.dto';
 import { castProposalKind, ProposalDto } from 'src/proposals/dto/proposal.dto';
 import PromisePool from '@supercharge/promise-pool';
 import { NearSputnikProvider } from 'src/config/sputnik';
@@ -11,12 +11,12 @@ import { DaoConfig } from 'src/daos/types/dao-config';
 import { castWeighOrRatio } from './types/vote-policy';
 import { castRoleKind, RoleKindType } from './types/role';
 import camelcaseKeys from 'camelcase-keys';
+import { BountyDto } from 'src/bounties/dto/bounty.dto';
+import { buildBountyId, buildProposalId } from 'src/utils';
 
 @Injectable()
 export class SputnikDaoService {
   private readonly logger = new Logger(SputnikDaoService.name);
-
-  private near!: Near;
 
   private factoryContract!: Contract & any;
 
@@ -26,9 +26,8 @@ export class SputnikDaoService {
     @Inject(NEAR_SPUTNIK_PROVIDER)
     private nearSputnikProvider: NearSputnikProvider,
   ) {
-    const { near, factoryContract, account } = nearSputnikProvider;
+    const { factoryContract, account } = nearSputnikProvider;
 
-    this.near = near;
     this.factoryContract = factoryContract;
     this.account = account;
   }
@@ -37,7 +36,7 @@ export class SputnikDaoService {
     return await this.factoryContract.get_dao_list();
   }
 
-  public async getDaoList(daoIds: string[]): Promise<DaoDto[]> {
+  public async getDaoList(daoIds: string[]): Promise<SputnikDaoDto[]> {
     const list: string[] =
       daoIds || (await this.factoryContract.get_dao_list());
 
@@ -71,7 +70,9 @@ export class SputnikDaoService {
       const chunkSize = PROPOSAL_REQUEST_CHUNK_SIZE;
       const chunkCount =
         (lastProposalId - (lastProposalId % chunkSize)) / chunkSize + 1;
-      const { results, errors } = await PromisePool.withConcurrency(1)
+      const { results: proposals, errors } = await PromisePool.withConcurrency(
+        1,
+      )
         .for([...Array(chunkCount).keys()])
         .process(
           async (offset) =>
@@ -81,16 +82,18 @@ export class SputnikDaoService {
             }),
         );
 
-      return results
+      return proposals
         .reduce(
           (acc: ProposalDto[], prop: ProposalDto[]) => acc.concat(prop),
           [],
         )
         .map((proposal: ProposalDto, index: number) => {
           return {
-            ...proposal,
-            id: index,
+            ...camelcaseKeys(proposal, { deep: true }),
+            id: buildProposalId(contractId, index),
+            proposalId: index,
             daoId: contractId,
+            dao: { id: contractId },
             kind: castProposalKind(proposal.kind),
           };
         });
@@ -101,7 +104,59 @@ export class SputnikDaoService {
     }
   }
 
-  private async getDaoById(daoId: string): Promise<DaoDto | null> {
+  public async getBounties(daoIds: string[]): Promise<BountyDto[]> {
+    const ids: string[] = daoIds || (await this.factoryContract.getDaoIds());
+
+    //TODO: Get bounty claims
+
+    const { results: bounties, errors } = await PromisePool.withConcurrency(5)
+      .for(ids)
+      .process(async (daoId) => await this.getBountiesByDao(daoId));
+
+    return bounties.reduce((acc, prop) => acc.concat(prop), []);
+  }
+
+  public async getBountiesByDao(contractId: string): Promise<BountyDto[]> {
+    try {
+      const contract = this.getContract(contractId);
+
+      // Taking into account that bounty ID is sequential,
+      // considering that last bounty id is the bounty count
+      // for the given DAO
+      const lastBountyId = await contract.get_last_bounty_id();
+
+      const chunkSize = PROPOSAL_REQUEST_CHUNK_SIZE;
+      const chunkCount =
+        (lastBountyId - (lastBountyId % chunkSize)) / chunkSize + 1;
+      const { results, errors } = await PromisePool.withConcurrency(1)
+        .for([...Array(chunkCount).keys()])
+        .process(
+          async (offset) =>
+            await contract.get_bounties({
+              from_index: offset * chunkSize,
+              limit: chunkSize,
+            }),
+        );
+
+      return results
+        .reduce((acc: BountyDto[], prop: BountyDto[]) => acc.concat(prop), [])
+        .map((bounty: BountyDto, index: number) => {
+          return {
+            ...camelcaseKeys(bounty, { deep: true }),
+            id: buildBountyId(contractId, index),
+            bountyId: index,
+            daoId: contractId,
+            dao: { id: contractId },
+          };
+        });
+    } catch (error) {
+      this.logger.error(error);
+
+      return Promise.reject(error);
+    }
+  }
+
+  private async getDaoById(daoId: string): Promise<SputnikDaoDto | null> {
     const contract = this.getContract(daoId);
 
     const daoEnricher = {
@@ -117,7 +172,7 @@ export class SputnikDaoService {
       lastBountyId: async (): Promise<string> => contract.get_last_bounty_id(),
     };
 
-    const dao = new DaoDto();
+    const dao = new SputnikDaoDto();
 
     const { errors } = await PromisePool.withConcurrency(3)
       .for(Object.keys(daoEnricher))
@@ -153,14 +208,15 @@ export class SputnikDaoService {
       id: daoId,
       policy: {
         ...policy,
+        daoId,
         defaultVotePolicy: {
           ...policy.defaultVotePolicy,
           threshold: castWeighOrRatio(policy.defaultVotePolicy.threshold),
         },
-        roles
+        roles,
       },
       council,
-      councilSeats: council.length
+      councilSeats: council?.length,
     };
   }
 
@@ -173,8 +229,10 @@ export class SputnikDaoService {
         'get_available_amount',
         'delegation_total_supply',
         'get_last_proposal_id',
-        'get_last_bounty_id',
         'get_proposals',
+        'get_last_bounty_id',
+        'get_bounties',
+        'get_bounty_claims',
       ],
       changeMethods: ['add_proposal', 'act_proposal'],
     });

@@ -3,6 +3,8 @@ import { PolicyDto } from 'src/daos/dto/policy.dto';
 import { Vote } from 'src/sputnikdao/types/vote';
 import { ProposalStatus } from '../types/proposal-status';
 import { ProposalType } from '../types/proposal-type';
+import { TransactionInfo } from 'src/common/dto/TransactionInfo';
+
 import {
   ProposalKind,
   ProposalKindAddBounty,
@@ -18,22 +20,18 @@ import {
   ProposalKindUpgradeSelf,
 } from './proposal-kind.dto';
 
-export class ProposalDto {
-  id: number;
+export class ProposalDto extends TransactionInfo {
+  id: string;
   daoId: string;
   proposer: string;
   description: string;
   status: ProposalStatus;
-  submission_time: number;
+  submissionTime: number;
   kind: ProposalKindDto;
-  vote_counts: { [key: string]: number[] };
+  voteCounts: { [key: string]: number[] };
   votes: {
     [key: string]: Vote;
   };
-  transactionHash: string;
-  updateTransactionHash: string;
-  createTimestamp: number;
-  updateTimestamp: number;
 }
 
 export class ProposalKindDto {

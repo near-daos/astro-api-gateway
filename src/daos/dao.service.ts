@@ -7,6 +7,7 @@ import { Account, Receipt } from 'src/near';
 import { NearService } from 'src/near/near.service';
 import { ExecutionOutcomeStatus } from 'src/near/types/execution-outcome-status';
 import { DeleteResult, LessThanOrEqual, Repository } from 'typeorm';
+import { CreateDaoDto } from './dto/dao-create.dto';
 import { DaoQuery } from './dto/dao-query.dto';
 import { DaoDto } from './dto/dao.dto';
 import { Dao } from './entities/dao.entity';
@@ -22,7 +23,7 @@ export class DaoService {
     private readonly nearService: NearService,
   ) {}
 
-  async createDraft(daoDto: DaoDto): Promise<Dao> {
+  async createDraft(daoDto: CreateDaoDto): Promise<Dao> {
     return this.create({
       ...daoDto,
       status: DaoStatus.Pending,
@@ -30,65 +31,7 @@ export class DaoService {
   }
 
   async create(daoDto: DaoDto): Promise<Dao> {
-    const {
-      id,
-      config,
-      totalSupply,
-      amount,
-      description,
-      lastBountyId,
-      lastProposalId,
-      link,
-      numberOfMembers,
-      council,
-      councilSeats,
-      policy: policyDto,
-      status,
-      stakingContract,
-      transactionHash,
-      createTimestamp,
-      updateTransactionHash,
-      updateTimestamp
-    } = daoDto;
-
-    const {
-      metadata,
-      name,
-      purpose,
-    } = config;
-
-    const dao = new Dao();
-    dao.id = id;
-
-    dao.name = name;
-    dao.purpose = purpose;
-    dao.metadata = metadata;
-
-    dao.amount = amount;
-    dao.totalSupply = totalSupply;
-    dao.lastBountyId = lastBountyId;
-    dao.lastProposalId = lastProposalId;
-    dao.stakingContract = stakingContract;
-    dao.numberOfMembers = numberOfMembers;
-    dao.numberOfProposals = lastProposalId;
-    dao.council = council;
-    dao.councilSeats = councilSeats;
-
-    dao.link = link;
-    dao.description = description;
-    dao.status = status;
-    
-    dao.transactionHash = transactionHash;
-    dao.createTimestamp = createTimestamp;
-
-    dao.updateTransactionHash = updateTransactionHash;
-    dao.updateTimestamp = updateTimestamp;
-    
-    const policy = camelcaseKeys(policyDto, { deep: true }) as Policy;
-    policy.daoId = id;
-    dao.policy = policy;
-
-    return this.daoRepository.save(dao);
+    return this.daoRepository.save(daoDto);
   }
 
   async find({ offset, limit, order }: DaoQuery): Promise<Dao[]> {
