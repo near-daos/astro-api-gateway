@@ -34,6 +34,10 @@ export const buildBountyId = (daoId: string, bountyId: number): string => {
   return `${daoId}-${bountyId}`;
 };
 
+export const buildRoleId = (daoId: string, name: string): string => {
+  return `${daoId}-${name}`;
+};
+
 export const buildSubscriptionId = (
   daoId: string,
   accountId: string,

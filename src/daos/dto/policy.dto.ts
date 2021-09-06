@@ -5,7 +5,7 @@ import {
   IsObject,
   IsString
 } from 'class-validator';
-import { RolePermission } from 'src/sputnikdao/types/role';
+import { RolePermissionDto } from 'src/sputnikdao/types/role';
 import { VotePolicy } from 'src/sputnikdao/types/vote-policy';
 
 export class PolicyDto {
@@ -33,5 +33,5 @@ export class PolicyDto {
 
   @ApiProperty()
   @IsArray()
-  roles: RolePermission[];
+  roles: RolePermissionDto[];
 }

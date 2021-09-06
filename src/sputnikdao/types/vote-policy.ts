@@ -11,17 +11,6 @@ export enum WeightOrRatioType {
   Ratio = 'Ratio',
 }
 
-//TODO: check type casting
-export type WeightOrRatio =
-  | {
-      type: WeightOrRatioType.Weight;
-      value: number;
-    }
-  | {
-      type: WeightOrRatioType.Ratio;
-      value: number[];
-    };
-
 export type VotePolicy = {
   /// Kind of weight to use for votes.
   weightKind: WeightKind;
@@ -34,23 +23,34 @@ export type VotePolicy = {
   quorum: number;
 
   /// How many votes to pass this vote.
-  threshold: WeightOrRatio;
+  kind: WeightOrRatioType;
+  weight: number;
+  ratio: number[];
 };
 
-export function castWeighOrRatio(weightOrRatio: unknown): WeightOrRatio | null {
-  if (!weightOrRatio) {
+export function castVotePolicy(policy: unknown): VotePolicy | null {
+  if (!policy) {
     return null;
   }
 
-  if (weightOrRatio instanceof Array) {
+  const { threshold, weightKind, quorum } = policy as any || {};
+
+  let votePolicy = {
+    weightKind,
+    quorum,
+  };
+
+  if (threshold instanceof Array) {
     return {
-      type: WeightOrRatioType.Ratio,
-      value: weightOrRatio,
-    } as WeightOrRatio;
+      ...votePolicy,
+      kind: WeightOrRatioType.Ratio,
+      ratio: threshold,
+    } as VotePolicy;
   }
 
   return {
-    type: WeightOrRatioType.Weight,
-    value: weightOrRatio,
-  } as WeightOrRatio;
+    ...votePolicy,
+    kind: WeightOrRatioType.Weight,
+    weight: threshold,
+  } as VotePolicy;
 }

@@ -1,4 +1,4 @@
-import { VotePolicy } from './vote-policy';
+import { castVotePolicy, VotePolicy } from './vote-policy';
 
 export enum RoleKindType {
   Everyone = 'Everyone',
@@ -24,11 +24,14 @@ export type RoleKind =
       accountIds: string[];
     };
 
-export type RolePermission = {
+export type RolePermissionDto = {
+  id: string,
   /// Name of the role to display to the user.
   name: string;
   /// Kind of the role: defines which users this permissions apply.
-  kind: RoleKind;
+  kind: RoleKindType;
+  balance: number,
+  accountIds: string[],
   /// Set of actions on which proposals that this role is allowed to execute.
   /// <proposal_kind>:<action>
   permissions: string[];
@@ -36,31 +39,36 @@ export type RolePermission = {
   votePolicy: { [key: string]: VotePolicy };
 };
 
-export function castRoleKind(kind: unknown): RoleKind | null {
-  if (!kind) {
+export function castRolePermission(permission: any): RolePermissionDto | null {
+  if (!permission) {
     return null;
   }
 
-  if (RoleKindType.Everyone === kind) {
-    return { type: RoleKindType.Everyone };
+  if (RoleKindType.Everyone === (permission as any).kind) {
+    return { ...permission };
   }
 
   const type = Object.keys(RoleKindType).find((key) =>
-    kind.hasOwnProperty(key),
+    permission?.kind.hasOwnProperty(key),
   );
+
+  let role = {
+    ...permission,
+    votePolicy: castVotePolicy(permission.votePolicy),
+  };
 
   switch (type) {
     case RoleKindType.Group:
       return {
-        type,
-        accountIds: kind[type],
-      } as RoleKind;
+        ...role,
+        kind: RoleKindType.Group,
+        accountIds: permission?.kind[type],
+      };
     case RoleKindType.Member:
       return {
-        type,
-        balance: kind[type],
-      } as RoleKind;
+        ...role,
+        kind: RoleKindType.Member,
+        balance: permission?.kind[type],
+      };
   }
-
-  return kind as RoleKind;
 }

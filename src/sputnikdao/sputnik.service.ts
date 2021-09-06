@@ -8,11 +8,11 @@ import { NearSputnikProvider } from 'src/config/sputnik';
 import { NEAR_SPUTNIK_PROVIDER } from 'src/common/constants';
 import { PolicyDto } from 'src/daos/dto/policy.dto';
 import { DaoConfig } from 'src/daos/types/dao-config';
-import { castWeighOrRatio } from './types/vote-policy';
-import { castRoleKind, RoleKindType } from './types/role';
+import { castVotePolicy } from './types/vote-policy';
+import { castRolePermission, RoleKindType } from './types/role';
 import camelcaseKeys from 'camelcase-keys';
 import { BountyDto } from 'src/bounties/dto/bounty.dto';
-import { buildBountyId, buildProposalId } from 'src/utils';
+import { buildBountyId, buildProposalId, buildRoleId } from 'src/utils';
 
 @Injectable()
 export class SputnikDaoService {
@@ -188,19 +188,20 @@ export class SputnikDaoService {
       return Promise.reject(`Unable to enrich DAO with id ${daoId}`);
     }
 
-    const policy = camelcaseKeys(dao.policy, { deep: true });
-
-    const roles = policy.roles.map((role) => ({
-      ...role,
-      kind: castRoleKind(role.kind),
+    const roles = dao.policy.roles.map((role) => ({
+      ...castRolePermission(role),
+      id: buildRoleId(daoId, role.name),
+      policy: { daoId },
     }));
+
+    const policy = camelcaseKeys(dao.policy, { deep: true });
 
     const council = roles
       .filter(
         ({ name, kind }) =>
-          'council' === name && RoleKindType.Group === kind.type,
+          'council' === name && RoleKindType.Group === kind,
       )
-      .map(({ kind }) => (kind as any).accountIds)
+      .map(({ accountIds }) => accountIds)
       .reduce((acc, val) => acc.concat(val), []);
 
     return {
@@ -209,10 +210,7 @@ export class SputnikDaoService {
       policy: {
         ...policy,
         daoId,
-        defaultVotePolicy: {
-          ...policy.defaultVotePolicy,
-          threshold: castWeighOrRatio(policy.defaultVotePolicy.threshold),
-        },
+        defaultVotePolicy: castVotePolicy(policy.defaultVotePolicy),
         roles,
       },
       council,
