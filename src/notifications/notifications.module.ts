@@ -4,7 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import configuration, {
   TypeOrmConfigService,
-  validationSchema,
+  notifierValidationSchema as validationSchema,
 } from '../config';
 import { Subscription } from 'src/subscriptions/entities/subscription.entity';
 import { NotificationsController } from './notifications.controller';

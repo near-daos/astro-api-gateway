@@ -4,7 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import configuration, {
   TypeOrmConfigService,
-  validationSchema,
+  apiValidationSchema as validationSchema,
 } from './config';
 import { DaoModule } from './daos/dao.module';
 import { SubscriptionModule } from './subscriptions/subscription.module';
