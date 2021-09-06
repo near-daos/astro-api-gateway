@@ -1,10 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { TransactionEntity } from 'src/common/transaction.entity';
 import { Dao } from 'src/daos/entities/dao.entity';
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
 
 @Entity()
-export class Bounty extends TransactionEntity {
+export class Bounty {
   @ApiProperty()
   @PrimaryColumn({ type: 'text', unique: true })
   id: string;

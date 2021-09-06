@@ -13,6 +13,7 @@ import { SearchModule } from './search/search.module';
 import { TransactionModule } from './transactions/transaction.module';
 import { HttpCacheModule } from './cache/cache.module';
 import { AccountModule } from './account/account.module';
+import { BountyModule } from './bounties/bounty.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { AccountModule } from './account/account.module';
     SubscriptionModule,
     HttpCacheModule,
     AccountModule,
+    BountyModule,
   ],
   controllers: [AppController],
 })
