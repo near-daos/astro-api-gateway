@@ -116,7 +116,9 @@ export class AggregatorService {
 
     this.logger.log('Aggregating data...');
     const [daos, proposals, bounties] = await Promise.all([
-      this.sputnikDaoService.getDaoList(accountDaoIds),
+      this.sputnikDaoService.getDaoList(
+        Array.from(new Set([...accountDaoIds, ...proposalDaoIds])),
+      ),
       this.sputnikDaoService.getProposals(proposalDaoIds),
       this.sputnikDaoService.getBounties(proposalDaoIds),
     ]);
