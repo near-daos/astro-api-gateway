@@ -3,7 +3,6 @@ import {
   Controller,
   Get,
   Param,
-  Query,
   UseInterceptors,
 } from '@nestjs/common';
 import {
@@ -12,11 +11,15 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import {
+  ParsedRequest,
+  CrudRequest,
+  CrudRequestInterceptor,
+  GetManyDefaultResponse,
+} from '@nestjsx/crud';
 import { FindOneParams, HttpCacheInterceptor } from 'src/common';
 import { BountyService } from './bounty.service';
-import { SortPipe } from 'src/common/pipes/sort.pipe';
 import { Bounty } from './entities/bounty.entity';
-import { BountyQuery } from './dto/bounty-query.dto';
 
 @ApiTags('Bounty')
 @Controller('/bounties')
@@ -33,10 +36,12 @@ export class BountyController {
     description:
       'limit/offset must be a number conforming to the specified constraints',
   })
-  @UseInterceptors(HttpCacheInterceptor)
+  @UseInterceptors(HttpCacheInterceptor, CrudRequestInterceptor)
   @Get('/')
-  async bounties(@Query(new SortPipe()) query: BountyQuery): Promise<Bounty[]> {
-    return await this.bountyService.find(query);
+  async bounties(
+    @ParsedRequest() query: CrudRequest,
+  ): Promise<Bounty[] | GetManyDefaultResponse<Bounty>> {
+    return await this.bountyService.getMany(query);
   }
 
   @ApiParam({

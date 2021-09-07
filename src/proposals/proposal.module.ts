@@ -4,7 +4,6 @@ import { Proposal } from './entities/proposal.entity';
 import { ProposalController } from './proposal.controller';
 import { ProposalService } from './proposal.service';
 import { CacheConfigService } from 'src/config';
-import { ProposalOrmService } from './proposal-orm.service';
 
 @Module({
   imports: [
@@ -13,8 +12,8 @@ import { ProposalOrmService } from './proposal-orm.service';
     }),
     TypeOrmModule.forFeature([Proposal]),
   ],
-  providers: [ProposalService, ProposalOrmService],
+  providers: [ProposalService],
   controllers: [ProposalController],
-  exports: [ProposalService, ProposalOrmService],
+  exports: [ProposalService],
 })
 export class ProposalModule {}

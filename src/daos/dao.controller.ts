@@ -37,16 +37,12 @@ import { CreateDaoDto } from './dto/dao-create.dto';
 import { Dao } from './entities/dao.entity';
 import { WalletCallbackParams } from 'src/common/dto/WalletCallbackParams';
 import { DaoGuard } from 'src/common/guards/dao.guard';
-import { DaoOrmService } from './dao-orm.service';
 import { QueryParams } from 'src/common/dto/QueryParams';
 
 @ApiTags('DAO')
 @Controller('/daos')
 export class DaoController {
-  constructor(
-    private readonly daoService: DaoService,
-    private readonly daoOrmService: DaoOrmService,
-  ) {}
+  constructor(private readonly daoService: DaoService) {}
 
   @ApiResponse({
     status: 201,
@@ -78,7 +74,7 @@ export class DaoController {
   async daos(
     @ParsedRequest() query: CrudRequest,
   ): Promise<Dao[] | GetManyDefaultResponse<Dao>> {
-    return await this.daoOrmService.getMany(query);
+    return await this.daoService.getMany(query);
   }
 
   @ApiParam({

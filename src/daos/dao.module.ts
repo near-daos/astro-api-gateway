@@ -7,7 +7,6 @@ import { CacheConfigService } from 'src/config';
 import { NearModule } from 'src/near/near.module';
 import { Policy } from './entities/policy.entity';
 import { Role } from './entities/role.entity';
-import { DaoOrmService } from './dao-orm.service';
 
 @Module({
   imports: [
@@ -17,8 +16,8 @@ import { DaoOrmService } from './dao-orm.service';
     TypeOrmModule.forFeature([Dao, Policy, Role]),
     NearModule,
   ],
-  providers: [DaoService, DaoOrmService],
+  providers: [DaoService],
   controllers: [DaoController],
-  exports: [DaoService, DaoOrmService],
+  exports: [DaoService],
 })
 export class DaoModule {}
