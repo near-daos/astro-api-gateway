@@ -8,10 +8,10 @@ import configuration, {
 } from '../config';
 import { Subscription } from 'src/subscriptions/entities/subscription.entity';
 import { NotificationsController } from './notifications.controller';
-import { SubscriptionModule } from 'src/subscriptions/subscription.module';
+import { SubscriptionSlimModule } from 'src/subscriptions/subscription-slim.module';
 import { NotificationService } from './notifications.service';
-import { AccountModule } from 'src/account/account.module';
-import { DaoModule } from 'src/daos/dao.module';
+import { AccountSlimModule } from 'src/account/account-slim.module';
+import { DaoSlimModule } from 'src/daos/dao-slim.module';
 import { Account } from 'src/account/entities/Account.entity';
 import { Dao } from 'src/daos/entities/dao.entity';
 
@@ -26,14 +26,10 @@ import { Dao } from 'src/daos/entities/dao.entity';
     TypeOrmModule.forRootAsync({
       useClass: TypeOrmConfigService,
     }),
-    TypeOrmModule.forFeature([
-      Subscription,
-      Account,
-      Dao
-    ]),
-    SubscriptionModule,
-    AccountModule,
-    DaoModule
+    TypeOrmModule.forFeature([Subscription, Account, Dao]),
+    SubscriptionSlimModule,
+    AccountSlimModule,
+    DaoSlimModule,
   ],
   controllers: [NotificationsController],
   providers: [NotificationService],
