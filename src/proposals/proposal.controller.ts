@@ -3,26 +3,34 @@ import {
   Controller,
   Get,
   Param,
-  Query,
   UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiParam,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import {
+  ParsedRequest,
+  CrudRequest,
+  CrudRequestInterceptor,
+  GetManyDefaultResponse,
+} from '@nestjsx/crud';
 import { FindOneParams, HttpCacheInterceptor } from 'src/common';
-import { SortPipe } from 'src/common/pipes/sort.pipe';
-import { ProposalQuery } from './dto/proposal-query.dto';
+import { QueryParams } from 'src/common/dto/QueryParams';
 import { Proposal } from './entities/proposal.entity';
+import { ProposalOrmService } from './proposal-orm.service';
 import { ProposalService } from './proposal.service';
 
 @ApiTags('Proposals')
 @Controller()
-@UseInterceptors(HttpCacheInterceptor)
 export class ProposalController {
-  constructor(private readonly proposalService: ProposalService) {}
+  constructor(
+    private readonly proposalService: ProposalService,
+    private readonly proposalOrmService: ProposalOrmService,
+  ) {}
 
   @ApiResponse({
     status: 200,
@@ -34,11 +42,13 @@ export class ProposalController {
     description:
       'limit/offset must be a number conforming to the specified constraints',
   })
+  @UseInterceptors(HttpCacheInterceptor, CrudRequestInterceptor)
+  @ApiQuery({ type: QueryParams })
   @Get('/proposals')
   async proposals(
-    @Query(new SortPipe()) query: ProposalQuery,
-  ): Promise<Proposal[]> {
-    return await this.proposalService.find(query);
+    @ParsedRequest() query: CrudRequest,
+  ): Promise<Proposal[] | GetManyDefaultResponse<Proposal>> {
+    return await this.proposalOrmService.getMany(query);
   }
 
   @ApiParam({
