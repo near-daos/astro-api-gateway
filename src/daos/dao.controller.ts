@@ -14,9 +14,18 @@ import {
   ApiBadRequestResponse,
   ApiForbiddenResponse,
   ApiParam,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+
+import {
+  ParsedRequest,
+  CrudRequest,
+  CrudRequestInterceptor,
+  GetManyDefaultResponse,
+} from '@nestjsx/crud';
+
 import { Response } from 'express';
 import {
   AccountAccessGuard,
@@ -28,13 +37,16 @@ import { CreateDaoDto } from './dto/dao-create.dto';
 import { Dao } from './entities/dao.entity';
 import { WalletCallbackParams } from 'src/common/dto/WalletCallbackParams';
 import { DaoGuard } from 'src/common/guards/dao.guard';
-import { SortPipe } from 'src/common/pipes/sort.pipe';
-import { DaoQuery } from './dto/dao-query.dto';
+import { DaoOrmService } from './dao-orm.service';
+import { QueryParams } from 'src/common/dto/QueryParams';
 
 @ApiTags('DAO')
 @Controller('/daos')
 export class DaoController {
-  constructor(private readonly daoService: DaoService) {}
+  constructor(
+    private readonly daoService: DaoService,
+    private readonly daoOrmService: DaoOrmService,
+  ) {}
 
   @ApiResponse({
     status: 201,
@@ -60,10 +72,13 @@ export class DaoController {
     description:
       'limit/offset must be a number conforming to the specified constraints',
   })
-  @UseInterceptors(HttpCacheInterceptor)
+  @UseInterceptors(HttpCacheInterceptor, CrudRequestInterceptor)
+  @ApiQuery({ type: QueryParams })
   @Get('/')
-  async daos(@Query(new SortPipe()) query: DaoQuery): Promise<Dao[]> {
-    return await this.daoService.find(query);
+  async daos(
+    @ParsedRequest() query: CrudRequest,
+  ): Promise<Dao[] | GetManyDefaultResponse<Dao>> {
+    return await this.daoOrmService.getMany(query);
   }
 
   @ApiParam({
