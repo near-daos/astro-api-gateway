@@ -44,7 +44,22 @@ export class ProposalController {
   async proposals(
     @ParsedRequest() query: CrudRequest,
   ): Promise<Proposal[] | GetManyDefaultResponse<Proposal>> {
-    return await this.proposalService.getMany(query);
+    return await this.proposalService.getMany({
+      ...query,
+      options: {
+        ...query.options,
+        query: {
+          join: {
+            dao: {
+              eager: true,
+            },
+            'dao.policy': {
+              eager: true,
+            }
+          },
+        },
+      },
+    });
   }
 
   @ApiParam({
