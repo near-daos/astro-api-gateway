@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import {
   EVENT_CACHE_QUEUE_NAME,
@@ -7,17 +6,10 @@ import {
   EVENT_NOTIFICATIONS_QUEUE_NAME,
   EVENT_NOTIFICATION_SERVICE,
 } from 'src/common/constants';
-import configuration, { validationSchema } from '../config';
 import { EventService } from './events.service';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-      load: configuration,
-      validationSchema,
-      envFilePath: ['.env.local', '.env'],
-    }),
     ClientsModule.registerAsync([
       {
         name: EVENT_NOTIFICATION_SERVICE,
