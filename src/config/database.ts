@@ -6,6 +6,8 @@ import { Proposal } from 'src/proposals/entities/proposal.entity';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import { Account } from 'src/account/entities/Account.entity';
 import { Policy } from 'src/daos/entities/policy.entity';
+import { Bounty } from 'src/bounties/entities/bounty.entity';
+import { Role } from 'src/daos/entities/role.entity';
 
 export default registerAs('db_default', () => ({
   type: 'postgres',
@@ -18,6 +20,8 @@ export default registerAs('db_default', () => ({
     Subscription,
     Dao,
     Policy,
+    Role,
+    Bounty,
     Proposal,
     Transaction,
     TransactionAction,

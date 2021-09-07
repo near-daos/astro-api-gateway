@@ -1,10 +1,12 @@
+import { PolicyDto } from 'src/daos/dto/policy.dto';
 import { DaoConfig } from 'src/daos/types/dao-config';
 import { ActionCall } from 'src/sputnikdao/types/action-call';
-import { Bounty } from 'src/sputnikdao/types/bounty';
+import { Bounty } from 'src/bounties/entities/bounty.entity';
 import { ProposalType } from '../types/proposal-type';
 
 export type ProposalKind =
   | ProposalKindChangeConfig
+  | ProposalKindChangePolicy
   | ProposalKindAddMemberToRole
   | ProposalKindAddRemoveMemberFromRole
   | ProposalKindFunctionCall
@@ -20,6 +22,12 @@ export type ProposalKind =
 export type ProposalKindChangeConfig = {
   type: ProposalType.ChangeConfig;
   config: DaoConfig;
+};
+
+/// Change the full policy.
+export type ProposalKindChangePolicy = {
+  type: ProposalType.ChangePolicy;
+  policy: PolicyDto | string[];
 };
 
 /// Add member to given role in the policy. This is short cut to updating the whole policy.

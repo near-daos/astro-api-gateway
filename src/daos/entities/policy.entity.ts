@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { BaseEntity } from 'src/common';
-import { RolePermission } from 'src/sputnikdao/types/role';
 import { VotePolicy } from 'src/sputnikdao/types/vote-policy';
-import { Column, Entity, PrimaryColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
+import { Role } from './role.entity';
 
 @Entity()
 export class Policy extends BaseEntity {
@@ -27,10 +27,10 @@ export class Policy extends BaseEntity {
   bountyForgivenessPeriod: number;
 
   @ApiProperty()
-  @Column({ type: 'jsonb' })
+  @Column({ type: 'simple-json' })
   defaultVotePolicy: VotePolicy;
 
   @ApiProperty()
-  @Column({ type: 'jsonb' })
-  roles: RolePermission[];
+  @OneToMany(() => Role, (role) => role.policy, { cascade: true, eager: true })
+  roles: Role[];
 }

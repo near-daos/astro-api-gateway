@@ -7,12 +7,13 @@ import { NearService } from 'src/near/near.service';
 import { TransactionService } from 'src/transactions/transaction.service';
 import { ConfigService } from '@nestjs/config';
 import { Transaction, Account } from 'src/near';
-import { DaoDto } from 'src/daos/dto/dao.dto';
-import { castKind, ProposalDto } from 'src/proposals/dto/proposal.dto';
+import { SputnikDaoDto } from 'src/daos/dto/dao-sputnik.dto';
+import { castProposalKind, ProposalDto } from 'src/proposals/dto/proposal.dto';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { buildDaoId, buildProposalId } from 'src/utils';
 import { EventService } from 'src/events/events.service';
 import { DaoStatus } from 'src/daos/types/dao-status';
+import { BountyService } from 'src/bounties/bounty.service';
 
 @Injectable()
 export class AggregatorService {
@@ -26,6 +27,7 @@ export class AggregatorService {
     private readonly nearService: NearService,
     private readonly transactionService: TransactionService,
     private readonly eventService: EventService,
+    private readonly bountyService: BountyService,
   ) {}
 
   @Cron(CronExpression.EVERY_10_SECONDS)
@@ -39,36 +41,29 @@ export class AggregatorService {
 
     this.logger.log('Checking data relevance...');
 
-    const aggregatedTxCount = await this.transactionService.count();
+    const tx = await this.transactionService.lastTransaction();
 
-    const [tx, nearTx] = await Promise.all([
-      this.transactionService.lastTransaction(),
-      this.nearService.lastTransaction([...daoIds, contractName]),
-    ]);
-
-    if (
-      aggregatedTxCount &&
-      tx &&
-      nearTx &&
-      tx.transactionHash === nearTx.transactionHash
-    ) {
-      return this.logger.log('Data is up to date. Skipping data aggregation.');
-    }
-
-    const { blockTimestamp } = tx || {};
-
-    const accounts: Account[] =
-      await this.nearService.findAccountsByContractName(contractName);
     const transactions: Transaction[] =
       await this.nearService.findTransactionsByReceiverAccountIds(
         [...daoIds, contractName],
-        blockTimestamp,
+        tx?.blockTimestamp,
       );
+
+    // Last transaction from NEAR Indexer - for the list of DAOs defined
+    const { transactionHash: nearTransactionHash } =
+      transactions?.[transactions?.length - 1] || {};
+
+    if (tx && tx.transactionHash === nearTransactionHash) {
+      return this.logger.log('Data is up to date. Skipping data aggregation.');
+    }
+
+    const accounts: Account[] =
+      await this.nearService.findAccountsByContractName(contractName);
 
     let accountDaoIds = daoIds;
     let proposalDaoIds = daoIds;
 
-    if (aggregatedTxCount) {
+    if (tx) {
       accountDaoIds = [
         ...new Set(
           transactions
@@ -120,9 +115,12 @@ export class AggregatorService {
     }
 
     this.logger.log('Aggregating data...');
-    const [daos, proposals] = await Promise.all([
-      this.sputnikDaoService.getDaoList(accountDaoIds),
+    const [daos, proposals, bounties] = await Promise.all([
+      this.sputnikDaoService.getDaoList(
+        Array.from(new Set([...accountDaoIds, ...proposalDaoIds])),
+      ),
       this.sputnikDaoService.getProposals(proposalDaoIds),
+      this.sputnikDaoService.getBounties(proposalDaoIds),
     ]);
 
     const enrichedDaos = this.enrichDaos(daos, accounts, transactions);
@@ -138,7 +136,7 @@ export class AggregatorService {
 
     //Q2: Proposals with the absent DAO references?
     //Filtering proposals for unavailable DAOs
-    const filteredProposals = !aggregatedTxCount
+    const filteredProposals = !tx
       ? proposals.filter(({ daoId }) => enrichedDaoIds.includes(daoId))
       : proposals;
 
@@ -155,6 +153,12 @@ export class AggregatorService {
     );
     this.logger.log('Finished Proposals aggregation.');
 
+    this.logger.log('Persisting aggregated Bounties...');
+    await Promise.all(
+      bounties.map((bounty) => this.bountyService.create(bounty)),
+    );
+    this.logger.log('Finished Bounties aggregation.');
+
     this.logger.log('Persisting aggregated Transactions...');
     await Promise.all(
       transactions.map((transaction) =>
@@ -164,16 +168,16 @@ export class AggregatorService {
   }
 
   private enrichDaos(
-    daos: DaoDto[],
+    daos: SputnikDaoDto[],
     accounts: Account[],
     transactions: Transaction[],
-  ): DaoDto[] {
+  ): SputnikDaoDto[] {
     const daoTxDataMap = accounts.reduce(
       (acc, { accountId, receipt }) => ({
         ...acc,
         [accountId]: {
           transactionHash: receipt.originatedFromTransactionHash,
-          createTimestamp: receipt.includedInBlockTimestamp,
+          blockTimestamp: receipt.includedInBlockTimestamp,
         },
       }),
       {},
@@ -200,7 +204,7 @@ export class AggregatorService {
       return {
         ...dao,
         transactionHash: txData?.transactionHash,
-        createTimestamp: txData?.createTimestamp,
+        createTimestamp: txData?.blockTimestamp,
         updateTransactionHash: (txUpdateData || txData)?.transactionHash,
         updateTimestamp: (txUpdateData || txData)?.blockTimestamp,
         numberOfMembers: new Set(signersByAccountId[dao.id]).size,
@@ -239,7 +243,7 @@ export class AggregatorService {
           ).proposal || {};
           return (
             description === txDescription &&
-            kind.equals(castKind(txKind)) &&
+            kind.equals(castProposalKind(txKind)) &&
             signerAccountId === proposer
           );
         });

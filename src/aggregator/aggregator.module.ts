@@ -3,7 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ScheduleModule } from '@nestjs/schedule';
 import configuration, {
   TypeOrmConfigService,
-  aggregatorValidationSchema as validationSchema,
+  aggregatorValidationSchema as validationSchema
 } from '../config';
 import { DaoSlimModule } from 'src/daos/dao-slim.module';
 import { ProposalSlimModule } from 'src/proposals/proposal-slim.module';
@@ -14,6 +14,7 @@ import { AggregatorService } from './aggregator.service';
 import { AppController } from 'src/app.controller';
 import { EventModule } from 'src/events/events.module';
 import { GarbageCollectorService } from './garbage-collector.service';
+import { BountyModule } from 'src/bounties/bounty.module';
 import { ConfigModule } from '@nestjs/config';
 
 @Module({
@@ -33,6 +34,7 @@ import { ConfigModule } from '@nestjs/config';
     NearModule,
     TransactionModule,
     EventModule,
+    BountyModule,
   ],
   controllers: [AppController],
   providers: [

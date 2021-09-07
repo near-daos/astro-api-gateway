@@ -16,47 +16,10 @@ export class ProposalService {
   ) {}
 
   create(proposalDto: ProposalDto): Promise<Proposal> {
-    const {
-      id,
-      daoId,
-      description,
-      kind: { kind },
-      proposer,
-      status,
-      vote_counts,
-      submission_time,
-      votes,
-      transactionHash,
-      updateTransactionHash,
-      createTimestamp,
-      updateTimestamp,
-    } = proposalDto;
-
-    const proposalId = buildProposalId(daoId, id);
-    const proposal = new Proposal();
-
-    proposal.id = proposalId;
-    proposal.proposalId = id;
-
-    proposal.daoId = daoId;
-    const dao = { id: daoId } as Dao;
-    proposal.dao = dao;
-
-    proposal.description = description;
-    proposal.proposer = proposer;
-    proposal.status = status;
-    proposal.voteCounts = vote_counts;
-    proposal.votes = votes;
-    proposal.submissionTime = submission_time;
-    proposal.kind = kind;
-    proposal.votes = votes;
-    
-    proposal.transactionHash = transactionHash;
-    proposal.updateTransactionHash = updateTransactionHash;
-    proposal.createTimestamp = createTimestamp;
-    proposal.updateTimestamp = updateTimestamp;
-
-    return this.proposalRepository.save(proposal);
+    return this.proposalRepository.save({
+      ...proposalDto,
+      kind: proposalDto.kind.kind,
+    });
   }
 
   async find({

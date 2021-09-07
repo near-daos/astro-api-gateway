@@ -5,31 +5,33 @@ import {
   IsObject,
   IsString
 } from 'class-validator';
-import { RolePermission } from 'src/sputnikdao/types/role';
+import { RolePermissionDto } from 'src/sputnikdao/types/role';
 import { VotePolicy } from 'src/sputnikdao/types/vote-policy';
 
 export class PolicyDto {
-  @ApiProperty()
-  @IsString()
-  proposal_bond: string;
+  daoId: string;
 
   @ApiProperty()
   @IsString()
-  bounty_bond: string;
+  proposalBond: string;
+
+  @ApiProperty()
+  @IsString()
+  bountyBond: string;
 
   @ApiProperty()
   @IsNumber()
-  proposal_period: number;
+  proposalPeriod: number;
 
   @ApiProperty()
   @IsNumber()
-  bounty_forgiveness_period: number;
+  bountyForgivenessPeriod: number;
 
   @ApiProperty()
   @IsObject()
-  default_vote_policy: VotePolicy;
+  defaultVotePolicy: VotePolicy;
 
   @ApiProperty()
   @IsArray()
-  roles: RolePermission[];
+  roles: RolePermissionDto[];
 }
