@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sputnik-v2-configmap
+data:
+  REDIS_HTTP_CACHE_TTL: "60"
+  NEAR_ENV: "{{ .Values.environment.near_env }}"
+  NEAR_CREDENTIALS_DIR: ".near-credentials"

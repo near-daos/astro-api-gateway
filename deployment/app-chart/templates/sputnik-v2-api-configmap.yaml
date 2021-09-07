@@ -4,5 +4,4 @@ metadata:
   name: sputnik-v2-api-configmap
 data:
   PORT: "3000"
-  REDIS_HTTP_CACHE_TTL: "60"
   NEST_APP_TYPE: api
