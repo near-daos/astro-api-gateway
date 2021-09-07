@@ -21,16 +21,12 @@ import {
 import { FindOneParams, HttpCacheInterceptor } from 'src/common';
 import { QueryParams } from 'src/common/dto/QueryParams';
 import { Proposal } from './entities/proposal.entity';
-import { ProposalOrmService } from './proposal-orm.service';
 import { ProposalService } from './proposal.service';
 
 @ApiTags('Proposals')
 @Controller()
 export class ProposalController {
-  constructor(
-    private readonly proposalService: ProposalService,
-    private readonly proposalOrmService: ProposalOrmService,
-  ) {}
+  constructor(private readonly proposalService: ProposalService) {}
 
   @ApiResponse({
     status: 200,
@@ -48,7 +44,7 @@ export class ProposalController {
   async proposals(
     @ParsedRequest() query: CrudRequest,
   ): Promise<Proposal[] | GetManyDefaultResponse<Proposal>> {
-    return await this.proposalOrmService.getMany(query);
+    return await this.proposalService.getMany(query);
   }
 
   @ApiParam({
