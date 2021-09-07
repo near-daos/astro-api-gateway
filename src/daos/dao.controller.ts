@@ -74,7 +74,23 @@ export class DaoController {
   async daos(
     @ParsedRequest() query: CrudRequest,
   ): Promise<Dao[] | GetManyDefaultResponse<Dao>> {
-    return await this.daoService.getMany(query);
+    //TODO: move query transformation to pipes?
+    return await this.daoService.getMany({
+      ...query,
+      options: {
+        ...query.options,
+        query: {
+          join: {
+            policy: {
+              eager: true,
+            },
+            'policy.roles': {
+              eager: true,
+            },
+          },
+        },
+      },
+    });
   }
 
   @ApiParam({
