@@ -1,7 +1,10 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ScheduleModule } from '@nestjs/schedule';
-import { TypeOrmConfigService } from '../config';
+import configuration, {
+  TypeOrmConfigService,
+  aggregatorValidationSchema as validationSchema
+} from '../config';
 import { DaoSlimModule } from 'src/daos/dao-slim.module';
 import { ProposalSlimModule } from 'src/proposals/proposal-slim.module';
 import { NearModule } from 'src/near/near.module';
@@ -12,9 +15,16 @@ import { AppController } from 'src/app.controller';
 import { EventModule } from 'src/events/events.module';
 import { GarbageCollectorService } from './garbage-collector.service';
 import { BountyModule } from 'src/bounties/bounty.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: configuration,
+      validationSchema,
+      envFilePath: ['.env.local', '.env'],
+    }),
     TypeOrmModule.forRootAsync({
       useClass: TypeOrmConfigService,
     }),
