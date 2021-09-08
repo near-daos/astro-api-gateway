@@ -15,10 +15,10 @@ import {
   ParsedRequest,
   CrudRequest,
   CrudRequestInterceptor,
-  GetManyDefaultResponse,
 } from '@nestjsx/crud';
 import { FindOneParams, HttpCacheInterceptor } from 'src/common';
 import { BountyService } from './bounty.service';
+import { BountyResponse } from './dto/bounty-response.dto';
 import { Bounty } from './entities/bounty.entity';
 
 @ApiTags('Bounty')
@@ -29,8 +29,7 @@ export class BountyController {
   @ApiResponse({
     status: 200,
     description: 'List of aggregated Sputnik DAO Bounties',
-    type: Bounty,
-    isArray: true,
+    type: BountyResponse,
   })
   @ApiBadRequestResponse({
     description:
@@ -40,7 +39,7 @@ export class BountyController {
   @Get('/')
   async bounties(
     @ParsedRequest() query: CrudRequest,
-  ): Promise<Bounty[] | GetManyDefaultResponse<Bounty>> {
+  ): Promise<Bounty[] | BountyResponse> {
     return await this.bountyService.getMany(query);
   }
 
