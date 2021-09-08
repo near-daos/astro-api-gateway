@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
+import { CrudRequest } from '@nestjsx/crud';
 import { SearchQuery } from 'src/common';
 import { Account, Receipt } from 'src/near';
 import { NearService } from 'src/near/near.service';
@@ -11,6 +12,7 @@ import { CreateDaoDto } from './dto/dao-create.dto';
 import { DaoDto } from './dto/dao.dto';
 import { Dao } from './entities/dao.entity';
 import { DaoStatus } from './types/dao-status';
+import { DaoResponse } from './dto/dao-response.dto';
 
 @Injectable()
 export class DaoService extends TypeOrmCrudService<Dao> {
@@ -32,6 +34,25 @@ export class DaoService extends TypeOrmCrudService<Dao> {
 
   async create(daoDto: DaoDto): Promise<Dao> {
     return this.daoRepository.save(daoDto);
+  }
+
+  async getMany(req: CrudRequest): Promise<DaoResponse | Dao[]> {
+    return super.getMany({
+      ...req,
+      options: {
+        ...req.options,
+        query: {
+          join: {
+            policy: {
+              eager: true,
+            },
+            'policy.roles': {
+              eager: true,
+            },
+          },
+        },
+      },
+    });
   }
 
   async findByQuery({ query, offset, limit }: SearchQuery): Promise<Dao[]> {
