@@ -16,10 +16,10 @@ import {
   ParsedRequest,
   CrudRequest,
   CrudRequestInterceptor,
-  GetManyDefaultResponse,
 } from '@nestjsx/crud';
 import { FindOneParams, HttpCacheInterceptor } from 'src/common';
 import { QueryParams } from 'src/common/dto/QueryParams';
+import { ProposalResponse } from './dto/proposal-response.dto';
 import { Proposal } from './entities/proposal.entity';
 import { ProposalService } from './proposal.service';
 
@@ -31,8 +31,7 @@ export class ProposalController {
   @ApiResponse({
     status: 200,
     description: 'List of aggregated Sputnik DAO Proposals',
-    type: Proposal,
-    isArray: true,
+    type: ProposalResponse,
   })
   @ApiBadRequestResponse({
     description:
@@ -43,7 +42,7 @@ export class ProposalController {
   @Get('/proposals')
   async proposals(
     @ParsedRequest() query: CrudRequest,
-  ): Promise<Proposal[] | GetManyDefaultResponse<Proposal>> {
+  ): Promise<Proposal[] | ProposalResponse> {
     return await this.proposalService.getMany({
       ...query,
       options: {

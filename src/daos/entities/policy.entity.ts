@@ -26,11 +26,11 @@ export class Policy extends BaseEntity {
   @Column({ type: 'bigint' })
   bountyForgivenessPeriod: number;
 
-  @ApiProperty()
+  @ApiProperty({ type: VotePolicy })
   @Column({ type: 'simple-json' })
   defaultVotePolicy: VotePolicy;
 
-  @ApiProperty()
+  @ApiProperty({ type: [Role] })
   @OneToMany(() => Role, (role) => role.policy, { cascade: true, eager: true })
   roles: Role[];
 }

@@ -1,3 +1,5 @@
+import { ApiProperty } from '@nestjs/swagger';
+
 export enum WeightKind {
   /// Using token amounts and total delegated at the moment.
   TokenWeight = 'TokenWeight',
@@ -11,8 +13,9 @@ export enum WeightOrRatioType {
   Ratio = 'Ratio',
 }
 
-export type VotePolicy = {
+export class VotePolicy {
   /// Kind of weight to use for votes.
+  @ApiProperty({ enum: Object.keys(WeightKind) })
   weightKind: WeightKind;
 
   /// Minimum number required for vote to finalize.
@@ -20,20 +23,26 @@ export type VotePolicy = {
   ///     This allows to avoid situation where the number of staked tokens from total supply is too small.
   /// If RoleWeight - this is minimum umber of votes.
   ///     This allows to avoid situation where the role is got too small but policy kept at 1/2, for example.
+  @ApiProperty()
   quorum: number;
 
   /// How many votes to pass this vote.
+  @ApiProperty({ enum: Object.keys(WeightOrRatioType) })
   kind: WeightOrRatioType;
+
+  @ApiProperty()
   weight: number;
+
+  @ApiProperty()
   ratio: number[];
-};
+}
 
 export function castVotePolicy(policy: unknown): VotePolicy | null {
   if (!policy) {
     return null;
   }
 
-  const { threshold, weightKind, quorum } = policy as any || {};
+  const { threshold, weightKind, quorum } = (policy as any) || {};
 
   let votePolicy = {
     weightKind,
