@@ -16,7 +16,7 @@ export class Bounty {
   @Column()
   daoId: string;
 
-  @ApiProperty()
+  @ApiProperty({ type: Dao })
   @ManyToOne((_) => Dao, { eager: true })
   @JoinColumn({ name: 'dao_id' })
   dao: Dao;

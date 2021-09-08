@@ -34,7 +34,7 @@ export class Role extends BaseEntity {
   @Column({ type: 'text', array: true })
   permissions: string[];
 
-  @ApiProperty()
+  @ApiProperty({ type: VotePolicy })
   @Column({ type: 'simple-json', nullable: true })
   votePolicy: VotePolicy;
 }

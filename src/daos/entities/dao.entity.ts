@@ -17,6 +17,7 @@ export class Dao extends TransactionEntity {
   @PrimaryColumn({ type: 'text', unique: true })
   id: string;
 
+  @ApiProperty({ type: DaoConfig })
   @Column({ type: 'simple-json' })
   config: DaoConfig;
 
@@ -67,7 +68,9 @@ export class Dao extends TransactionEntity {
   @Column({ nullable: true })
   description: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    enum: Object.keys(DaoStatus),
+  })
   @Column({
     type: 'enum',
     enum: DaoStatus,

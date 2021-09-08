@@ -33,7 +33,9 @@ export class Proposal extends TransactionEntity {
   @Column()
   description: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    enum: Object.keys(ProposalStatus),
+  })
   @Column({
     type: 'enum',
     enum: ProposalStatus,
@@ -49,11 +51,11 @@ export class Proposal extends TransactionEntity {
   @Column({ type: 'bigint' })
   submissionTime: number;
 
-  @ApiProperty()
+  @ApiProperty({ type: 'object' })
   @Column({ type: 'simple-json' })
   voteCounts: Record<string, number[]>;
 
-  @ApiProperty()
+  @ApiProperty({ type: 'object' })
   @Column({ type: 'simple-json' })
   votes: Record<string, Vote>;
 }

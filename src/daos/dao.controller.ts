@@ -23,7 +23,6 @@ import {
   ParsedRequest,
   CrudRequest,
   CrudRequestInterceptor,
-  GetManyDefaultResponse,
 } from '@nestjsx/crud';
 
 import { Response } from 'express';
@@ -38,6 +37,7 @@ import { Dao } from './entities/dao.entity';
 import { WalletCallbackParams } from 'src/common/dto/WalletCallbackParams';
 import { DaoGuard } from 'src/common/guards/dao.guard';
 import { QueryParams } from 'src/common/dto/QueryParams';
+import { DaoResponse } from './dto/dao-response.dto';
 
 @ApiTags('DAO')
 @Controller('/daos')
@@ -61,8 +61,7 @@ export class DaoController {
   @ApiResponse({
     status: 200,
     description: 'List of aggregated Sputnik DAOs',
-    type: Dao,
-    isArray: true,
+    type: DaoResponse,
   })
   @ApiBadRequestResponse({
     description:
@@ -73,24 +72,8 @@ export class DaoController {
   @Get('/')
   async daos(
     @ParsedRequest() query: CrudRequest,
-  ): Promise<Dao[] | GetManyDefaultResponse<Dao>> {
-    //TODO: move query transformation to pipes?
-    return await this.daoService.getMany({
-      ...query,
-      options: {
-        ...query.options,
-        query: {
-          join: {
-            policy: {
-              eager: true,
-            },
-            'policy.roles': {
-              eager: true,
-            },
-          },
-        },
-      },
-    });
+  ): Promise<Dao[] | DaoResponse> {
+    return await this.daoService.getMany(query);
   }
 
   @ApiParam({
