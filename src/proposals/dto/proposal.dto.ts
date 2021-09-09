@@ -253,6 +253,10 @@ export function castProposalKind(kind: unknown): ProposalKindDto | null {
     return null;
   }
 
+  if (kind === ProposalType.Vote) {
+    return new ProposalKindDto({ type: ProposalType.Vote });
+  }
+
   if (kind.hasOwnProperty('type')) {
     return new ProposalKindDto(kind as ProposalKindChangePolicy);
   }
