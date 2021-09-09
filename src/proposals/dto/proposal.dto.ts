@@ -223,7 +223,7 @@ export class ProposalKindDto {
       } = bounty;
       const { amount, description, maxDeadline, times, token } = (
         kind as ProposalKindAddBounty
-      )?.bounty;
+      )?.bounty || {};
 
       return (
         thisAmount === amount &&
