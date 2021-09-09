@@ -49,6 +49,7 @@
     "class-validator": "^0.13.1",
     "firebase-admin": "^9.10.0",
     "near-api-js": "^0.42.0",
+    "object-hash": "^2.2.0",
     "pg": "^8.6.0",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",

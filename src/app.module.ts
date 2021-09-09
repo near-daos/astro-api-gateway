@@ -14,6 +14,7 @@ import { TransactionModule } from './transactions/transaction.module';
 import { HttpCacheModule } from './cache/cache.module';
 import { AccountModule } from './account/account.module';
 import { BountyModule } from './bounties/bounty.module';
+import { TokenModule } from './tokens/token.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { BountyModule } from './bounties/bounty.module';
     HttpCacheModule,
     AccountModule,
     BountyModule,
+    TokenModule,
   ],
   controllers: [AppController],
 })

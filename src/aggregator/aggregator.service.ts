@@ -14,6 +14,10 @@ import { buildDaoId, buildProposalId } from 'src/utils';
 import { EventService } from 'src/events/events.service';
 import { DaoStatus } from 'src/daos/types/dao-status';
 import { BountyService } from 'src/bounties/bounty.service';
+import { TokenFactoryService } from 'src/token-factory/token-factory.service';
+import { TokenDto } from 'src/tokens/dto/token.dto';
+import { TokenService } from 'src/tokens/token.service';
+import hash from 'object-hash';
 
 @Injectable()
 export class AggregatorService {
@@ -22,17 +26,20 @@ export class AggregatorService {
   constructor(
     private readonly configService: ConfigService,
     private readonly sputnikDaoService: SputnikDaoService,
+    private readonly tokenFactoryService: TokenFactoryService,
     private readonly daoService: DaoService,
     private readonly proposalService: ProposalService,
     private readonly nearService: NearService,
     private readonly transactionService: TransactionService,
     private readonly eventService: EventService,
     private readonly bountyService: BountyService,
+    private readonly tokenService: TokenService,
   ) {}
 
   @Cron(CronExpression.EVERY_10_SECONDS)
   public async aggregate(): Promise<void> {
-    const { contractName } = this.configService.get('near');
+    const { contractName, tokenFactoryContractName } =
+      this.configService.get('near');
 
     this.logger.log('Scheduling Data Aggregation...');
 
@@ -45,7 +52,7 @@ export class AggregatorService {
 
     const transactions: Transaction[] =
       await this.nearService.findTransactionsByReceiverAccountIds(
-        [...daoIds, contractName],
+        [tokenFactoryContractName],
         tx?.blockTimestamp,
       );
 
@@ -62,6 +69,8 @@ export class AggregatorService {
 
     let accountDaoIds = daoIds;
     let proposalDaoIds = daoIds;
+
+    // TODO: check token re-indexing condition - get delta
 
     if (tx) {
       accountDaoIds = [
@@ -115,12 +124,13 @@ export class AggregatorService {
     }
 
     this.logger.log('Aggregating data...');
-    const [daos, proposals, bounties] = await Promise.all([
+    const [daos, proposals, bounties, tokens] = await Promise.all([
       this.sputnikDaoService.getDaoList(
         Array.from(new Set([...accountDaoIds, ...proposalDaoIds])),
       ),
       this.sputnikDaoService.getProposals(proposalDaoIds),
       this.sputnikDaoService.getBounties(proposalDaoIds),
+      this.tokenFactoryService.getTokens(),
     ]);
 
     const enrichedDaos = this.enrichDaos(daos, accounts, transactions);
@@ -158,6 +168,18 @@ export class AggregatorService {
       bounties.map((bounty) => this.bountyService.create(bounty)),
     );
     this.logger.log('Finished Bounties aggregation.');
+
+    const enrichedTokens = this.enrichTokens(
+      tokens,
+      transactions,
+      tokenFactoryContractName,
+    );
+
+    this.logger.log('Persisting aggregated Tokens...');
+    await Promise.all(
+      enrichedTokens.map((token) => this.tokenService.create(token)),
+    );
+    this.logger.log('Finished Tokens aggregation.');
 
     this.logger.log('Persisting aggregated Transactions...');
     await Promise.all(
@@ -226,9 +248,9 @@ export class AggregatorService {
         return proposal;
       }
 
-      const preFilteredTransactions = transactionsByAccountId[
-        proposal.daoId
-      ].filter((tx) => tx.transactionAction.args.args_json);
+      const preFilteredTransactions = transactionsByAccountId[daoId].filter(
+        (tx) => tx.transactionAction.args.args_json,
+      );
 
       const txData = preFilteredTransactions
         .filter(
@@ -238,9 +260,8 @@ export class AggregatorService {
         .find((tx) => {
           const { signerAccountId } = tx;
 
-          const { description: txDescription, kind: txKind } = (
-            tx.transactionAction.args.args_json as any
-          ).proposal || {};
+          const { description: txDescription, kind: txKind } =
+            (tx.transactionAction.args.args_json as any).proposal || {};
           return (
             description === txDescription &&
             kind.equals(castProposalKind(txKind)) &&
@@ -261,6 +282,58 @@ export class AggregatorService {
       };
 
       return prop;
+    });
+  }
+
+  private enrichTokens(
+    tokens: TokenDto[],
+    transactions: Transaction[],
+    tokenFactoryContractName: string,
+  ): TokenDto[] {
+    const transactionsByAccountId =
+      this.reduceTransactionsByAccountId(transactions);
+
+    const tokenFactoryTransactions =
+      transactionsByAccountId[tokenFactoryContractName];
+
+    if (!tokenFactoryTransactions || !tokenFactoryTransactions.length) {
+      return tokens;
+    }
+
+    const preFilteredTransactions = tokenFactoryTransactions.filter(
+      (tx) => tx.transactionAction.args.args_json,
+    );
+
+    return tokens.map((token) => {
+      const { ownerId, totalSupply } = token;
+
+      const txData = preFilteredTransactions
+        .filter(
+          ({ transactionAction }) =>
+            (transactionAction.args as any).method_name == 'create_token',
+        )
+        .find((tx) => {
+          const { owner_id, total_supply, metadata } = (
+            tx.transactionAction.args.args_json as any
+          ).args;
+
+          //TODO: check tx action related hash
+          return (
+            ownerId === owner_id &&
+            totalSupply === total_supply &&
+            hash(metadata) === hash(metadata)
+          );
+        });
+
+      const enrichedToken = {
+        ...token,
+        transactionHash: txData?.transactionHash,
+        createTimestamp: txData?.blockTimestamp,
+      };
+
+      const id = hash(enrichedToken);
+
+      return { ...enrichedToken, id };
     });
   }
 

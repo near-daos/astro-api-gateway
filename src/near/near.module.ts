@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { NEAR_INDEXER_DB_CONNECTION } from 'src/common/constants';
 import { TypeOrmConfigService } from 'src/config';
 import { nearProvider } from 'src/config/near';
+import { nearTokenFactoryProvider } from 'src/config/near-token-factory';
 import { nearSputnikProvider } from 'src/config/sputnik';
 import { Account } from './entities/account.entity';
 import { Receipt } from './entities/receipt.entity';
@@ -21,7 +22,17 @@ import { NearService } from './near.service';
       NEAR_INDEXER_DB_CONNECTION,
     ),
   ],
-  providers: [NearService, nearProvider, nearSputnikProvider],
-  exports: [NearService, nearProvider, nearSputnikProvider],
+  providers: [
+    NearService,
+    nearProvider,
+    nearSputnikProvider,
+    nearTokenFactoryProvider,
+  ],
+  exports: [
+    NearService,
+    nearProvider,
+    nearSputnikProvider,
+    nearTokenFactoryProvider,
+  ],
 })
 export class NearModule {}
