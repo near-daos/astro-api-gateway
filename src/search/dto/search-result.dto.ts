@@ -1,11 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Dao } from 'src/daos/entities/dao.entity';
-import { Proposal } from 'src/proposals/entities/proposal.entity';
+import { DaoResponse } from 'src/daos/dto/dao-response.dto';
+import { ProposalResponse } from 'src/proposals/dto/proposal-response.dto';
 
 export class SearchResultDto {
-  @ApiProperty({ type: [Dao] })
-  daos: Dao[];
+  @ApiProperty({ type: DaoResponse })
+  daos: DaoResponse;
 
-  @ApiProperty({ type: [Proposal] })
-  proposals: Proposal[];
+  @ApiProperty({ type: ProposalResponse })
+  proposals: ProposalResponse;
 }

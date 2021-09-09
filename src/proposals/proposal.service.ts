@@ -2,10 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 import { CrudRequest } from '@nestjsx/crud';
-import { Like, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { ProposalDto } from './dto/proposal.dto';
 import { Proposal } from './entities/proposal.entity';
-import { SearchQuery } from 'src/common';
 import { ProposalResponse } from './dto/proposal-response.dto';
 
 @Injectable()
@@ -25,41 +24,44 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
   }
 
   async getMany(req: CrudRequest): Promise<ProposalResponse | Proposal[]> {
-    return super.getMany({
-      ...req,
-      options: {
-        ...req.options,
-        query: {
-          join: {
-            dao: {
-              eager: true,
-            },
-            'dao.policy': {
-              eager: true,
-            },
-          },
-        },
-      },
-    });
+    return super.getMany(req);
   }
 
-  async findByQuery({
-    query,
-    offset,
-    limit,
-    order,
-  }: SearchQuery): Promise<Proposal[]> {
-    return this.proposalRepository.find({
-      skip: offset,
-      take: limit,
-      where: [
-        { id: Like(`%${query}%`) },
-        { target: Like(`%${query}%`) },
-        { proposer: Like(`%${query}%`) },
-        { description: Like(`%${query}%`) },
-        { votes: Like(`%${query}%`) },
+  async search(
+    req: CrudRequest,
+    query: string,
+  ): Promise<Proposal[] | ProposalResponse> {
+    req.options.query.join = {
+      dao: {
+        eager: true,
+      },
+      'dao.policy': {
+        eager: true,
+      },
+    };
+    
+    req.parsed.search = {
+      $and: [
+        {},
+        {
+          $or: [
+            {
+              id: { $contL: query },
+            },
+            {
+              description: { $contL: query },
+            },
+            {
+              proposer: { $contL: query },
+            },
+            {
+              votes: { $contL: query },
+            },
+          ],
+        },
       ],
-      order,
-    });
+    };
+
+    return this.getMany(req);
   }
 }

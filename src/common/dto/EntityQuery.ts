@@ -1,8 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { QueryFilter, QueryJoin, QuerySort } from '@nestjsx/crud-request';
+import { QueryFilter, QueryJoin } from '@nestjsx/crud-request';
+import { PagingQuery } from './PagingQuery';
 
-export class QueryParams {
+export class EntityQuery extends PagingQuery {
   @ApiProperty({
     description:
       'Selects fields that should be returned in the reponse body. Syntax: ```field1,field2,...```',
@@ -37,31 +38,4 @@ export class QueryParams {
     required: false,
   })
   join: QueryJoin[];
-
-  @ApiProperty({
-    description:
-      'Adds sort by field (by multiple fields) and order to query result. Syntax: ```name,ASC&sort=id,DESC```',
-    required: false,
-  })
-  sort: QuerySort[];
-
-  @ApiProperty({
-    description: 'Receive N amount of entities.',
-    default: 50,
-    required: false,
-  })
-  limit: number = 50;
-
-  @ApiProperty({
-    description: 'Limit the amount of received resources.',
-    default: 0,
-    required: false,
-  })
-  offset: number = 0;
-
-  @ApiProperty({
-    description: 'Receive a portion of limited amount of resources.',
-    required: false,
-  })
-  page: number;
 }

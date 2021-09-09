@@ -1,18 +1,18 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber } from 'class-validator';
-import { SortParam } from './SortParam';
+import { QuerySort } from '@nestjsx/crud-request';
+import { IsNumber, IsOptional } from 'class-validator';
 
 export class PagingQuery {
   @ApiProperty({
-    description: 'Query Offset',
-    default: 0,
+    description:
+      'Adds sort by field (by multiple fields) and order to query result. Syntax: ```name,ASC&sort=id,DESC```',
     required: false,
+    default: 'createdAt,DESC',
   })
-  @IsNumber()
-  offset: number = 0;
+  sort: QuerySort[];
 
   @ApiProperty({
-    description: 'Query Limit',
+    description: 'Receive N amount of entities.',
     default: 50,
     required: false,
   })
@@ -20,10 +20,18 @@ export class PagingQuery {
   limit: number = 50;
 
   @ApiProperty({
-    description: `Sorting: comma-separated fields prefixed by '-' sign if DESC order. Example: '&sort=-id,createdAt' - sort by ID DESC and createdAt ASC`,
-    required: false
+    description: 'Limit the amount of received resources.',
+    default: 0,
+    required: false,
   })
-  sort: string;
+  @IsNumber()
+  offset: number = 0;
 
-  order: SortParam;
+  @ApiProperty({
+    description: 'Receive a portion of limited amount of resources.',
+    required: false,
+  })
+  @IsOptional()
+  @IsNumber()
+  page: number = 1;
 }

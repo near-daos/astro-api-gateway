@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { SearchQuery } from 'src/common';
+import { CrudRequest } from '@nestjsx/crud';
 import { DaoService } from 'src/daos/dao.service';
 import { ProposalService } from 'src/proposals/proposal.service';
 import { SearchResultDto } from './dto/search-result.dto';
@@ -11,10 +11,10 @@ export class SearchService {
     private readonly proposalService: ProposalService,
   ) {}
 
-  async search(query: SearchQuery): Promise<SearchResultDto> {
+  async search(req: CrudRequest, query: string): Promise<SearchResultDto> {
     return {
-      daos: await this.daoService.findByQuery(query),
-      proposals: await this.proposalService.findByQuery(query),
+      daos: await this.daoService.search(req, query),
+      proposals: await this.proposalService.search(req, query),
     } as SearchResultDto;
   }
 }

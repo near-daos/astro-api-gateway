@@ -12,15 +12,12 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import {
-  ParsedRequest,
-  CrudRequest,
-  CrudRequestInterceptor,
-} from '@nestjsx/crud';
+import { ParsedRequest, CrudRequest } from '@nestjsx/crud';
 import { FindOneParams, HttpCacheInterceptor } from 'src/common';
-import { QueryParams } from 'src/common/dto/QueryParams';
+import { EntityQuery } from 'src/common/dto/EntityQuery';
 import { ProposalResponse } from './dto/proposal-response.dto';
 import { Proposal } from './entities/proposal.entity';
+import { ProposalCrudRequestInterceptor } from './interceptors/proposal-crud.interceptor';
 import { ProposalService } from './proposal.service';
 
 @ApiTags('Proposals')
@@ -37,8 +34,8 @@ export class ProposalController {
     description:
       'limit/offset must be a number conforming to the specified constraints',
   })
-  @UseInterceptors(HttpCacheInterceptor, CrudRequestInterceptor)
-  @ApiQuery({ type: QueryParams })
+  @UseInterceptors(HttpCacheInterceptor, ProposalCrudRequestInterceptor)
+  @ApiQuery({ type: EntityQuery })
   @Get('/proposals')
   async proposals(
     @ParsedRequest() query: CrudRequest,

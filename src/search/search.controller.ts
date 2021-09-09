@@ -1,7 +1,16 @@
 import { Controller, Get, Query, UseInterceptors } from '@nestjs/common';
-import { ApiBadRequestResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBadRequestResponse,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import {
+  CrudRequestInterceptor,
+  ParsedRequest,
+  CrudRequest,
+} from '@nestjsx/crud';
 import { HttpCacheInterceptor, SearchQuery } from 'src/common';
-import { SortPipe } from 'src/common/pipes/sort.pipe';
 import { SearchResultDto } from './dto/search-result.dto';
 import { SearchService } from './search.service';
 
@@ -17,10 +26,13 @@ export class SearchController {
     type: SearchResultDto,
   })
   @ApiBadRequestResponse({ description: 'query should not be empty' })
+  @UseInterceptors(HttpCacheInterceptor, CrudRequestInterceptor)
+  @ApiQuery({ type: SearchQuery })
   @Get('/search')
   async search(
-    @Query(new SortPipe()) query: SearchQuery,
+    @ParsedRequest() req: CrudRequest,
+    @Query('query') query: string,
   ): Promise<SearchResultDto> {
-    return await this.searchService.search(query);
+    return await this.searchService.search(req, query);
   }
 }

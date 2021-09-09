@@ -22,7 +22,6 @@ import {
 import {
   ParsedRequest,
   CrudRequest,
-  CrudRequestInterceptor,
 } from '@nestjsx/crud';
 
 import { Response } from 'express';
@@ -36,8 +35,9 @@ import { CreateDaoDto } from './dto/dao-create.dto';
 import { Dao } from './entities/dao.entity';
 import { WalletCallbackParams } from 'src/common/dto/WalletCallbackParams';
 import { DaoGuard } from 'src/common/guards/dao.guard';
-import { QueryParams } from 'src/common/dto/QueryParams';
+import { EntityQuery } from 'src/common/dto/EntityQuery';
 import { DaoResponse } from './dto/dao-response.dto';
+import { DaoCrudRequestInterceptor } from './interceptors/dao-crud.interceptor';
 
 @ApiTags('DAO')
 @Controller('/daos')
@@ -67,8 +67,8 @@ export class DaoController {
     description:
       'limit/offset must be a number conforming to the specified constraints',
   })
-  @UseInterceptors(HttpCacheInterceptor, CrudRequestInterceptor)
-  @ApiQuery({ type: QueryParams })
+  @UseInterceptors(HttpCacheInterceptor, DaoCrudRequestInterceptor)
+  @ApiQuery({ type: EntityQuery })
   @Get('/')
   async daos(
     @ParsedRequest() query: CrudRequest,
