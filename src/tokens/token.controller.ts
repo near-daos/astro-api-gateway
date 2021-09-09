@@ -13,7 +13,7 @@ import {
 } from '@nestjsx/crud';
 
 import { HttpCacheInterceptor } from 'src/common';
-import { QueryParams } from 'src/common/dto/QueryParams';
+import { EntityQuery } from 'src/common/dto/EntityQuery';
 import { TokenService } from './token.service';
 import { TokenResponse } from './dto/token-response.dto';
 import { Token } from './entities/token.entity';
@@ -33,7 +33,7 @@ export class TokenController {
       'limit/offset must be a number conforming to the specified constraints',
   })
   @UseInterceptors(HttpCacheInterceptor, CrudRequestInterceptor)
-  @ApiQuery({ type: QueryParams })
+  @ApiQuery({ type: EntityQuery })
   @Get('/')
   async tokens(
     @ParsedRequest() query: CrudRequest,
