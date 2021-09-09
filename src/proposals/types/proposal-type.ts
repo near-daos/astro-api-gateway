@@ -10,5 +10,5 @@ export enum ProposalType {
   SetStakingContract = 'SetStakingContract',
   AddBounty = 'AddBounty',
   BountyDone = 'BountyDone',
-  Vote = '',
+  Vote = 'Vote',
 }
