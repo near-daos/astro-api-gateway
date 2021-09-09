@@ -52,7 +52,7 @@ export class AggregatorService {
 
     const transactions: Transaction[] =
       await this.nearService.findTransactionsByReceiverAccountIds(
-        [tokenFactoryContractName],
+        [...daoIds, contractName, tokenFactoryContractName],
         tx?.blockTimestamp,
       );
 
