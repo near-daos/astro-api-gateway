@@ -3,7 +3,6 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 import { CrudRequest } from '@nestjsx/crud';
-import { SearchQuery } from 'src/common';
 import { Account, Receipt } from 'src/near';
 import { NearService } from 'src/near/near.service';
 import { ExecutionOutcomeStatus } from 'src/near/types/execution-outcome-status';
@@ -37,35 +36,42 @@ export class DaoService extends TypeOrmCrudService<Dao> {
   }
 
   async getMany(req: CrudRequest): Promise<DaoResponse | Dao[]> {
-    return super.getMany({
-      ...req,
-      options: {
-        ...req.options,
-        query: {
-          join: {
-            policy: {
-              eager: true,
-            },
-            'policy.roles': {
-              eager: true,
-            },
-          },
-        },
-      },
-    });
+    return super.getMany(req);
   }
 
-  async findByQuery({ query, offset, limit }: SearchQuery): Promise<Dao[]> {
-    return this.daoRepository
-      .createQueryBuilder('dao')
-      .where('dao.id like :id', { id: `%${query}%` })
-      .orWhere('dao.purpose like :purpose', { purpose: `%${query}%` })
-      .orWhere("array_to_string(dao.council, ',') like :council", {
-        council: `%${query}%`,
-      })
-      .skip(offset)
-      .take(limit)
-      .getMany();
+  async search(req: CrudRequest, query: string): Promise<Dao[] | DaoResponse> {
+    req.options.query.join = {
+      policy: {
+        eager: true,
+      },
+      'policy.roles': {
+        eager: true,
+      },
+    };
+
+    req.parsed.search = {
+      $and: [
+        {},
+        {
+          $or: [
+            {
+              id: { $contL: query },
+            },
+            {
+              description: { $contL: query },
+            },
+            {
+              config: { $contL: query },
+            },
+            {
+              'policy.roles.accountIds': { $in: [`{${query}}`] },
+            },
+          ],
+        },
+      ],
+    };
+
+    return this.getMany(req);
   }
 
   async processTransactionCallback(transactionHash: string): Promise<any> {

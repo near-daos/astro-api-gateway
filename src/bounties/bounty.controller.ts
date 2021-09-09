@@ -8,6 +8,7 @@ import {
 import {
   ApiBadRequestResponse,
   ApiParam,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -17,6 +18,7 @@ import {
   CrudRequestInterceptor,
 } from '@nestjsx/crud';
 import { FindOneParams, HttpCacheInterceptor } from 'src/common';
+import { EntityQuery } from 'src/common/dto/EntityQuery';
 import { BountyService } from './bounty.service';
 import { BountyResponse } from './dto/bounty-response.dto';
 import { Bounty } from './entities/bounty.entity';
@@ -36,6 +38,7 @@ export class BountyController {
       'limit/offset must be a number conforming to the specified constraints',
   })
   @UseInterceptors(HttpCacheInterceptor, CrudRequestInterceptor)
+  @ApiQuery({ type: EntityQuery })
   @Get('/')
   async bounties(
     @ParsedRequest() query: CrudRequest,
