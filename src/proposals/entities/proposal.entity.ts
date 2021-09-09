@@ -3,6 +3,7 @@ import { TransactionEntity } from 'src/common/transaction.entity';
 import { Dao } from 'src/daos/entities/dao.entity';
 import { Vote } from 'src/sputnikdao/types/vote';
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
+import { ProposalKindDto } from '../dto/proposal-kind-swagger.dto';
 import { ProposalKind } from '../dto/proposal-kind.dto';
 import { ProposalStatus } from '../types/proposal-status';
 
@@ -43,7 +44,9 @@ export class Proposal extends TransactionEntity {
   })
   status: ProposalStatus;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: ProposalKindDto,
+  })
   @Column({ type: 'simple-json' })
   kind: ProposalKind;
 
