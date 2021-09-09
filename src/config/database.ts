@@ -8,6 +8,7 @@ import { Account } from 'src/account/entities/Account.entity';
 import { Policy } from 'src/daos/entities/policy.entity';
 import { Bounty } from 'src/bounties/entities/bounty.entity';
 import { Role } from 'src/daos/entities/role.entity';
+import { Token } from 'src/tokens/entities/token.entity';
 
 export default registerAs('db_default', () => ({
   type: 'postgres',
@@ -25,7 +26,8 @@ export default registerAs('db_default', () => ({
     Proposal,
     Transaction,
     TransactionAction,
-    Account
+    Account,
+    Token,
   ],
   synchronize: true,
   migrationsTableName: 'migration_table',

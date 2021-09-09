@@ -16,6 +16,8 @@ import { EventModule } from 'src/events/events.module';
 import { GarbageCollectorService } from './garbage-collector.service';
 import { ConfigModule } from '@nestjs/config';
 import { BountySlimModule } from 'src/bounties/bounty-slim.module';
+import { TokenFactoryService } from 'src/token-factory/token-factory.service';
+import { TokenSlimModule } from 'src/tokens/token-slim.module';
 
 @Module({
   imports: [
@@ -35,10 +37,12 @@ import { BountySlimModule } from 'src/bounties/bounty-slim.module';
     TransactionModule,
     EventModule,
     BountySlimModule,
+    TokenSlimModule,
   ],
   controllers: [AppController],
   providers: [
     SputnikDaoService,
+    TokenFactoryService,
     AggregatorService,
     GarbageCollectorService,
   ],

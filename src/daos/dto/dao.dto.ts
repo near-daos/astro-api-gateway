@@ -1,8 +1,9 @@
+import { TransactionInfo } from 'src/common/dto/TransactionInfo';
 import { DaoConfig } from '../types/dao-config';
 import { DaoStatus } from '../types/dao-status';
 import { PolicyDto } from './policy.dto';
 
-export interface DaoDto {
+export interface DaoDto extends TransactionInfo {
   id: string;
   amount: string;
   config: DaoConfig;
