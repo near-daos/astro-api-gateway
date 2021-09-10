@@ -1,10 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
-import { CrudRequest } from '@nestjsx/crud';
 import { Repository } from 'typeorm';
 import { Token } from './entities/token.entity';
-import { TokenResponse } from './dto/token-response.dto';
 import { TokenDto } from './dto/token.dto';
 
 @Injectable()
@@ -22,6 +20,8 @@ export class TokenService extends TypeOrmCrudService<Token> {
 
     return this.tokenRepository.save({
       ...tokenDto,
+      // from token-factory sources: let token_id = args.metadata.symbol.to_ascii_lowercase();
+      id: symbol.toLowerCase(),
       decimals,
       icon,
       name,
@@ -30,9 +30,5 @@ export class TokenService extends TypeOrmCrudService<Token> {
       spec,
       symbol,
     });
-  }
-
-  async getMany(req: CrudRequest): Promise<TokenResponse | Token[]> {
-    return super.getMany(req);
   }
 }

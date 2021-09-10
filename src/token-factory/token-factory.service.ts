@@ -21,7 +21,17 @@ export class TokenFactoryService {
     this.factoryContract = factoryContract;
   }
 
-  public async getTokens(): Promise<TokenDto[]> {
+  public async getTokens(tokenIds: string[]): Promise<TokenDto[]> {
+    let tokens = await (tokenIds
+      ? this.getTokensByIds(tokenIds)
+      : this.getTokensList());
+
+    return tokens.map((token: TokenDto) =>
+      camelcaseKeys(token, { deep: true }),
+    );
+  }
+
+  private async getTokensList(): Promise<TokenDto[]> {
     try {
       const numTokens = await this.factoryContract.get_number_of_tokens();
 
@@ -37,9 +47,32 @@ export class TokenFactoryService {
             }),
         );
 
-      return tokens
-        .reduce((acc: TokenDto[], prop: TokenDto[]) => acc.concat(prop), [])
-        .map((token: TokenDto) => camelcaseKeys(token, { deep: true }));
+      return tokens.reduce(
+        (acc: TokenDto[], prop: TokenDto[]) => acc.concat(prop),
+        [],
+      );
+    } catch (error) {
+      this.logger.error(error);
+
+      return Promise.reject(error);
+    }
+  }
+
+  private async getTokensByIds(tokenIds: string[]): Promise<TokenDto[]> {
+    try {
+      const { results: tokens, errors } = await PromisePool.withConcurrency(5)
+        .for(tokenIds)
+        .process(
+          async (tokenId) =>
+            await this.factoryContract.get_token({
+              token_id: tokenId.toLowerCase(),
+            }),
+        );
+
+      return tokens.reduce(
+        (acc: TokenDto[], prop: TokenDto[]) => acc.concat(prop),
+        [],
+      );
     } catch (error) {
       this.logger.error(error);
 
