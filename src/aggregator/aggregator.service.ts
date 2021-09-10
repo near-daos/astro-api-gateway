@@ -69,6 +69,7 @@ export class AggregatorService {
 
     let accountDaoIds = daoIds;
     let proposalDaoIds = daoIds;
+    let tokenIds = null;
 
     // TODO: check token re-indexing condition - get delta
 
@@ -92,11 +93,16 @@ export class AggregatorService {
         ),
       ];
 
+      if (accountDaoIds.length) {
+        this.logger.log(`New DAOs created: ${accountDaoIds.join(',')}`);
+      }
+
+      const actionTransactions = transactions.filter(
+        (tx) => tx.transactionAction.args.args_json,
+      );
+
       //TODO: Re-work this for cases when proposal is created - there is no 'id' in transaction action payload
-      const proposalTransactions = transactions
-        .filter(
-          ({ transactionAction: action }) => (action.args as any).args_json,
-        )
+      const proposalTransactions = actionTransactions
         .filter(({ receiverAccountId }) => receiverAccountId !== contractName)
         .map(({ receiverAccountId, transactionAction: action }) => ({
           receiverAccountId,
@@ -121,6 +127,31 @@ export class AggregatorService {
         );
         await this.eventService.handleDaoUpdates(proposalDaoIds);
       }
+
+      const transactionsByAccountId =
+        this.reduceTransactionsByAccountId(actionTransactions);
+
+      const tokenFactoryTransactions =
+        transactionsByAccountId[tokenFactoryContractName] || [];
+
+      const tokenTransactions = tokenFactoryTransactions
+        .filter(({ transactionAction }) => {
+          const { method_name, args_json } = transactionAction.args;
+          const { metadata } = (args_json as any)?.args || {};
+
+          return method_name == 'create_token' && metadata;
+        })
+
+      tokenIds = [
+        ...new Set(
+          tokenTransactions.map((tx) => {
+            const { symbol } = (tx.transactionAction.args.args_json as any)
+              ?.args?.metadata;
+
+            return symbol;
+          }),
+        ),
+      ];
     }
 
     this.logger.log('Aggregating data...');
@@ -130,7 +161,7 @@ export class AggregatorService {
       ),
       this.sputnikDaoService.getProposals(proposalDaoIds),
       this.sputnikDaoService.getBounties(proposalDaoIds),
-      this.tokenFactoryService.getTokens(),
+      this.tokenFactoryService.getTokens(tokenIds),
     ]);
 
     const enrichedDaos = this.enrichDaos(daos, accounts, transactions);
@@ -305,7 +336,7 @@ export class AggregatorService {
     );
 
     return tokens.map((token) => {
-      const { ownerId, totalSupply } = token;
+      const { symbol } = token.metadata;
 
       const txData = preFilteredTransactions
         .filter(
@@ -313,16 +344,11 @@ export class AggregatorService {
             (transactionAction.args as any).method_name == 'create_token',
         )
         .find((tx) => {
-          const { owner_id, total_supply, metadata } = (
+          const { symbol: txSymbol } = (
             tx.transactionAction.args.args_json as any
-          ).args;
+          )?.args?.metadata || {};
 
-          //TODO: check tx action related hash
-          return (
-            ownerId === owner_id &&
-            totalSupply === total_supply &&
-            hash(metadata) === hash(metadata)
-          );
+          return symbol === txSymbol;
         });
 
       const enrichedToken = {
@@ -331,9 +357,7 @@ export class AggregatorService {
         createTimestamp: txData?.blockTimestamp,
       };
 
-      const id = hash(enrichedToken);
-
-      return { ...enrichedToken, id };
+      return enrichedToken;
     });
   }
 

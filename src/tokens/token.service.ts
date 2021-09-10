@@ -20,6 +20,8 @@ export class TokenService extends TypeOrmCrudService<Token> {
 
     return this.tokenRepository.save({
       ...tokenDto,
+      // from token-factory sources: let token_id = args.metadata.symbol.to_ascii_lowercase();
+      id: symbol.toLowerCase(),
       decimals,
       icon,
       name,
