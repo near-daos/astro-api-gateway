@@ -23,10 +23,6 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
     });
   }
 
-  async getMany(req: CrudRequest): Promise<ProposalResponse | Proposal[]> {
-    return super.getMany(req);
-  }
-
   async search(
     req: CrudRequest,
     query: string,
