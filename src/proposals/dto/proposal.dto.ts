@@ -220,7 +220,7 @@ export class ProposalKindDto {
         maxDeadline: thisMaxDeadline,
         times: thisTimes,
         token: thisToken,
-      } = bounty;
+      } = bounty || {};
       const { amount, description, maxDeadline, times, token } =
         (kind as ProposalKindAddBounty)?.bounty || {};
 

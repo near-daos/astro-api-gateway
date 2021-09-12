@@ -17,7 +17,9 @@ import { BountyService } from 'src/bounties/bounty.service';
 import { TokenFactoryService } from 'src/token-factory/token-factory.service';
 import { TokenDto } from 'src/tokens/dto/token.dto';
 import { TokenService } from 'src/tokens/token.service';
-import hash from 'object-hash';
+import { BountyDto } from 'src/bounties/dto/bounty.dto';
+import { ProposalKindAddBounty } from 'src/proposals/dto/proposal-kind.dto';
+import { ProposalType } from 'src/proposals/types/proposal-type';
 
 @Injectable()
 export class AggregatorService {
@@ -134,13 +136,14 @@ export class AggregatorService {
       const tokenFactoryTransactions =
         transactionsByAccountId[tokenFactoryContractName] || [];
 
-      const tokenTransactions = tokenFactoryTransactions
-        .filter(({ transactionAction }) => {
+      const tokenTransactions = tokenFactoryTransactions.filter(
+        ({ transactionAction }) => {
           const { method_name, args_json } = transactionAction.args;
           const { metadata } = (args_json as any)?.args || {};
 
           return method_name == 'create_token' && metadata;
-        })
+        },
+      );
 
       tokenIds = [
         ...new Set(
@@ -194,9 +197,15 @@ export class AggregatorService {
     );
     this.logger.log('Finished Proposals aggregation.');
 
+    const filteredBounties = !tx
+      ? bounties.filter(({ daoId }) => enrichedDaoIds.includes(daoId))
+      : bounties;
+
+    const enrichedBounties = this.enrichBounties(filteredBounties, transactions);
+
     this.logger.log('Persisting aggregated Bounties...');
     await Promise.all(
-      bounties.map((bounty) => this.bountyService.create(bounty)),
+      enrichedBounties.map((bounty) => this.bountyService.create(bounty)),
     );
     this.logger.log('Finished Bounties aggregation.');
 
@@ -316,6 +325,67 @@ export class AggregatorService {
     });
   }
 
+  private enrichBounties(bounties: BountyDto[], transactions: Transaction[]) {
+    const transactionsByAccountId =
+      this.reduceTransactionsByAccountId(transactions);
+
+    return bounties.map((bounty) => {
+      const { daoId, amount, description, maxDeadline, times, token } = bounty;
+      if (!transactionsByAccountId[daoId]) {
+        return bounty;
+      }
+
+      const preFilteredTransactions = transactionsByAccountId[daoId].filter(
+        (tx) => tx.transactionAction.args.args_json,
+      );
+
+      const txData = preFilteredTransactions
+        .filter(
+          ({ transactionAction }) =>
+            (transactionAction.args as any).method_name == 'add_proposal',
+        )
+        .filter((tx) => {
+          const { kind: txKind } =
+            (tx.transactionAction.args.args_json as any).proposal || {};
+
+          const txProposalKind = castProposalKind(txKind);
+          const { type } = txProposalKind?.kind;
+          if (ProposalType.AddBounty !== type) {
+            return false;
+          }
+
+          const {
+            amount: txAmount,
+            description: txDescription,
+            times: txTimes,
+            maxDeadline: txMaxDeadline,
+            token: txToken,
+          } = (txProposalKind.kind as ProposalKindAddBounty)?.bounty || {};
+
+          return (
+            amount === txAmount &&
+            description === txDescription &&
+            times === txTimes &&
+            maxDeadline === txMaxDeadline &&
+            token === txToken
+          );
+        });
+
+      const txCreateData = txData[0];
+      const txUpdateData = txData[txData.length - 1];
+
+      const enrichedBounty = {
+        ...bounty,
+        transactionHash: txCreateData?.transactionHash,
+        createTimestamp: txCreateData?.blockTimestamp,
+        updateTransactionHash: (txUpdateData || txCreateData)?.transactionHash,
+        updateTimestamp: (txUpdateData || txCreateData)?.blockTimestamp,
+      };
+
+      return enrichedBounty;
+    });
+  }
+
   private enrichTokens(
     tokens: TokenDto[],
     transactions: Transaction[],
@@ -344,9 +414,8 @@ export class AggregatorService {
             (transactionAction.args as any).method_name == 'create_token',
         )
         .find((tx) => {
-          const { symbol: txSymbol } = (
-            tx.transactionAction.args.args_json as any
-          )?.args?.metadata || {};
+          const { symbol: txSymbol } =
+            (tx.transactionAction.args.args_json as any)?.args?.metadata || {};
 
           return symbol === txSymbol;
         });
