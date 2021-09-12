@@ -22,7 +22,6 @@ import { EntityQuery } from 'src/common/dto/EntityQuery';
 import { BountyService } from './bounty.service';
 import { BountyResponse } from './dto/bounty-response.dto';
 import { Bounty } from './entities/bounty.entity';
-import { QueryParams } from '../common/dto/QueryParams';
 
 @ApiTags('Bounty')
 @Controller('/bounties')
@@ -41,7 +40,6 @@ export class BountyController {
   @UseInterceptors(HttpCacheInterceptor, CrudRequestInterceptor)
   @ApiQuery({ type: EntityQuery })
   @Get('/')
-  @ApiQuery({ type: QueryParams })
   async bounties(
     @ParsedRequest() query: CrudRequest,
   ): Promise<Bounty[] | BountyResponse> {
