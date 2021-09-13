@@ -15,4 +15,5 @@ export class BountyDto extends TransactionInfo {
   times: string;
   /// Max deadline from claim that can be spend on this bounty.
   maxDeadline: string;
+  numberOfClaims: number;
 }
