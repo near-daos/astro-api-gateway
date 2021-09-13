@@ -3,7 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Proposal } from './entities/proposal.entity';
 import { ProposalController } from './proposal.controller';
 import { ProposalService } from './proposal.service';
-import { CacheConfigService } from 'src/config';
+import { CacheConfigService } from 'src/config/api-config';
 
 @Module({
   imports: [

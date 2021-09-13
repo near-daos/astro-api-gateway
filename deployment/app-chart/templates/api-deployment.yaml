@@ -65,8 +65,6 @@ spec:
           - secretRef:
               name: redis-secret
           - secretRef:
-              name: firebase-secret
-          - secretRef:
               name: rabbitmq-secret
           resources:
             {{- toYaml .Values.resources | nindent 12 }}

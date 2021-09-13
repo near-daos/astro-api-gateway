@@ -1,13 +1,12 @@
 import { NestFactory, Reflector } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
-import { AppModule } from './app.module';
+import { AppModule } from './api.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { AppService } from './app-service';
 import { Transport } from '@nestjs/microservices';
 import { EVENT_CACHE_QUEUE_NAME } from './common/constants';
 
-export default class Api implements AppService {
+export default class Api {
   async bootstrap(): Promise<void> {
     const app = await NestFactory.create(AppModule);
     app.enableCors();

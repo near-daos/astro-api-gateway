@@ -19,10 +19,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 
-import {
-  ParsedRequest,
-  CrudRequest,
-} from '@nestjsx/crud';
+import { ParsedRequest, CrudRequest } from '@nestjsx/crud';
 
 import { Response } from 'express';
 import {
@@ -38,11 +35,15 @@ import { DaoGuard } from 'src/common/guards/dao.guard';
 import { EntityQuery } from 'src/common/dto/EntityQuery';
 import { DaoResponse } from './dto/dao-response.dto';
 import { DaoCrudRequestInterceptor } from './interceptors/dao-crud.interceptor';
+import { DaoNearService } from './dao-near.service';
 
 @ApiTags('DAO')
 @Controller('/daos')
 export class DaoController {
-  constructor(private readonly daoService: DaoService) {}
+  constructor(
+    private readonly daoService: DaoService,
+    private readonly daoNearService: DaoNearService,
+  ) {}
 
   @ApiResponse({
     status: 201,
@@ -121,7 +122,7 @@ export class DaoController {
       await Promise.all(
         transactionHashes
           .split(',')
-          .map((hash) => this.daoService.processTransactionCallback(hash)),
+          .map((hash) => this.daoNearService.processTransactionCallback(hash)),
       );
     }
 

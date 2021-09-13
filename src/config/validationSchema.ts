@@ -1,26 +1,21 @@
-import * as Joi from '@hapi/joi';
+import { ClassConstructor, plainToClass } from 'class-transformer';
+import { validateSync } from 'class-validator';
+import { BaseValidationSchema } from './schema/base.schema';
 
-export default Joi.object({
-  NODE_ENV: Joi.string()
-    .valid('development', 'production', 'test', 'staging')
-    .required(),
-  PORT: Joi.number().required(),
+export default function validate(
+  classname: ClassConstructor<BaseValidationSchema>,
+  config: Record<string, unknown>,
+) {
+  const validatedConfig = plainToClass(classname, config, {
+    enableImplicitConversion: true,
+  });
 
-  DATABASE_USERNAME: Joi.string().required(),
-  DATABASE_PASSWORD: Joi.string().required(),
-  DATABASE_NAME: Joi.string().required(),
-  DATABASE_HOST: Joi.string().hostname().required(),
-  DATABASE_PORT: Joi.number().required(),
-  // DATABASE_RUN_MIGRATIONS: Joi.bool().required(),
-  // ORM_MIGRATIONS_DIR: Joi.string(),
+  const errors = validateSync(validatedConfig, {
+    skipMissingProperties: false,
+  });
 
-  NEAR_INDEXER_DATABASE_USERNAME: Joi.string().required(),
-  NEAR_INDEXER_DATABASE_PASSWORD: Joi.string().required(),
-  NEAR_INDEXER_DATABASE_NAME: Joi.string().required(),
-  NEAR_INDEXER_DATABASE_HOST: Joi.string().hostname().required(),
-  NEAR_INDEXER_DATABASE_PORT: Joi.number().required(),
-
-  FIREBASE_PROJECT_ID: Joi.string().required(),
-  FIREBASE_CLIENT_EMAIL: Joi.string().required(),
-  FIREBASE_PRIVATE_KEY: Joi.string().required(),
-});
+  if (errors.length > 0) {
+    throw new Error(errors.toString());
+  }
+  return validatedConfig;
+}

@@ -1,11 +1,10 @@
 import { NestFactory, Reflector } from '@nestjs/core';
 import { ClassSerializerInterceptor } from '@nestjs/common';
-import { AppService } from './app-service';
 import { Transport } from '@nestjs/microservices';
 import { EVENT_NOTIFICATIONS_QUEUE_NAME } from './common/constants';
 import { NotificationsModule } from './notifications/notifications.module';
 
-export default class Notifier implements AppService {
+export default class Notifier {
   async bootstrap(): Promise<void> {
     const app = await NestFactory.createMicroservice(NotificationsModule, {
       transport: Transport.RMQ,

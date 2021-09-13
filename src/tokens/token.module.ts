@@ -3,8 +3,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { TokenController } from './token.controller';
 import { TokenService } from './token.service';
 import { Token } from './entities/token.entity';
-import { CacheConfigService } from 'src/config';
-import { NearModule } from 'src/near/near.module';
+import { CacheConfigService } from 'src/config/api-config';
+import { NearSlimModule } from 'src/near/near-slim.module';
 
 @Module({
   imports: [
@@ -12,7 +12,7 @@ import { NearModule } from 'src/near/near.module';
       useClass: CacheConfigService,
     }),
     TypeOrmModule.forFeature([Token]),
-    NearModule,
+    NearSlimModule,
   ],
   providers: [TokenService],
   controllers: [TokenController],
