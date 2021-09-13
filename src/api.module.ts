@@ -15,7 +15,7 @@ import { HttpCacheModule } from './cache/cache.module';
 import { AccountModule } from './account/account.module';
 import { BountyModule } from './bounties/bounty.module';
 import { TokenModule } from './tokens/token.module';
-import { ApiValidationSchema } from './config/schema/api.schema';
+import { ApiValidationSchema } from './config/validation/api.schema';
 
 @Module({
   imports: [

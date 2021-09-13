@@ -1,6 +1,6 @@
 import { ClassConstructor, plainToClass } from 'class-transformer';
 import { validateSync } from 'class-validator';
-import { BaseValidationSchema } from './schema/base.schema';
+import { BaseValidationSchema } from './validation/base.schema';
 
 export default function validate(
   classname: ClassConstructor<BaseValidationSchema>,

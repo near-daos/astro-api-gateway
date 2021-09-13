@@ -11,7 +11,7 @@ import { AccountSlimModule } from 'src/account/account-slim.module';
 import { DaoSlimModule } from 'src/daos/dao-slim.module';
 import { Account } from 'src/account/entities/Account.entity';
 import { Dao } from 'src/daos/entities/dao.entity';
-import { NotifierValidationSchema } from 'src/config/schema/notifier.schema';
+import { NotifierValidationSchema } from 'src/config/validation/notifier.schema';
 
 @Module({
   imports: [

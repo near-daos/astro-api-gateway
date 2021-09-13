@@ -18,7 +18,7 @@ import { ConfigModule } from '@nestjs/config';
 import { BountySlimModule } from 'src/bounties/bounty-slim.module';
 import { TokenFactoryService } from 'src/token-factory/token-factory.service';
 import { TokenSlimModule } from 'src/tokens/token-slim.module';
-import { AggregatorValidationSchema } from 'src/config/schema/aggregator.schema';
+import { AggregatorValidationSchema } from 'src/config/validation/aggregator.schema';
 
 @Module({
   imports: [
