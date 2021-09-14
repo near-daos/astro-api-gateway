@@ -41,4 +41,8 @@ export class Bounty extends TransactionEntity {
   @ApiProperty()
   @Column()
   maxDeadline: string;
+
+  @ApiProperty()
+  @Column()
+  numberOfClaims: number;
 }

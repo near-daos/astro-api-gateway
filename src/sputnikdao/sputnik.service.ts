@@ -128,7 +128,7 @@ export class SputnikDaoService {
       const chunkSize = PROPOSAL_REQUEST_CHUNK_SIZE;
       const chunkCount =
         (lastBountyId - (lastBountyId % chunkSize)) / chunkSize + 1;
-      const { results, errors } = await PromisePool.withConcurrency(1)
+      const { results: bounties, errors } = await PromisePool.withConcurrency(1)
         .for([...Array(chunkCount).keys()])
         .process(
           async (offset) =>
@@ -138,7 +138,11 @@ export class SputnikDaoService {
             }),
         );
 
-      return results
+      const { results: numClaims } = await PromisePool.withConcurrency(5)
+        .for([...Array(lastBountyId).keys()])
+        .process(async (id) => await contract.get_bounty_number_of_claims({ id }));
+
+      return bounties
         .reduce((acc: BountyDto[], prop: BountyDto[]) => acc.concat(prop), [])
         .map((bounty: BountyDto, index: number) => {
           return {
@@ -147,6 +151,7 @@ export class SputnikDaoService {
             bountyId: index,
             daoId: contractId,
             dao: { id: contractId },
+            numberOfClaims: numClaims[index]
           };
         });
     } catch (error) {
@@ -231,6 +236,7 @@ export class SputnikDaoService {
         'get_last_bounty_id',
         'get_bounties',
         'get_bounty_claims',
+        'get_bounty_number_of_claims',
       ],
       changeMethods: ['add_proposal', 'act_proposal'],
     });
