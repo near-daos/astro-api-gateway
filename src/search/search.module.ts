@@ -6,7 +6,7 @@ import { Proposal } from 'src/proposals/entities/proposal.entity';
 import { ProposalModule } from 'src/proposals/proposal.module';
 import { SearchController } from './search.controller';
 import { SearchService } from './search.service';
-import { CacheConfigService } from 'src/config';
+import { CacheConfigService } from 'src/config/api-config';
 
 @Module({
   imports: [

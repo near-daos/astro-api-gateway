@@ -2,8 +2,8 @@ import { CacheModule, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BountyController } from './bounty.controller';
 import { BountyService } from './bounty.service';
-import { CacheConfigService } from 'src/config';
-import { NearModule } from 'src/near/near.module';
+import { CacheConfigService } from 'src/config/api-config';
+import { NearSlimModule } from 'src/near/near-slim.module';
 import { Bounty } from './entities/bounty.entity';
 
 @Module({
@@ -12,7 +12,7 @@ import { Bounty } from './entities/bounty.entity';
       useClass: CacheConfigService,
     }),
     TypeOrmModule.forFeature([Bounty]),
-    NearModule,
+    NearSlimModule,
   ],
   providers: [BountyService],
   controllers: [BountyController],

@@ -3,28 +3,29 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ScheduleModule } from '@nestjs/schedule';
 import configuration, {
   TypeOrmConfigService,
-  validationSchema,
-} from '../config';
+  validate,
+} from '../config/aggregator-config';
 import { DaoSlimModule } from 'src/daos/dao-slim.module';
 import { ProposalSlimModule } from 'src/proposals/proposal-slim.module';
 import { NearModule } from 'src/near/near.module';
 import { TransactionModule } from 'src/transactions/transaction.module';
 import { SputnikDaoService } from 'src/sputnikdao/sputnik.service';
 import { AggregatorService } from './aggregator.service';
-import { AppController } from 'src/app.controller';
+import { AppController } from 'src/api.controller';
 import { EventModule } from 'src/events/events.module';
 import { GarbageCollectorService } from './garbage-collector.service';
 import { ConfigModule } from '@nestjs/config';
 import { BountySlimModule } from 'src/bounties/bounty-slim.module';
 import { TokenFactoryService } from 'src/token-factory/token-factory.service';
 import { TokenSlimModule } from 'src/tokens/token-slim.module';
+import { AggregatorValidationSchema } from 'src/config/validation/aggregator.schema';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       load: configuration,
-      validationSchema,
+      validate: (config) => validate(AggregatorValidationSchema, config),
       envFilePath: ['.env.local', '.env'],
     }),
     TypeOrmModule.forRootAsync({

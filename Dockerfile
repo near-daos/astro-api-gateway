@@ -41,6 +41,8 @@ WORKDIR /usr/src/app
 # copy from build image
 COPY --from=development /usr/src/app/dist ./dist
 COPY --from=development /usr/src/app/node_modules ./node_modules
+COPY --from=development /usr/src/app/entrypoints ./
 
 EXPOSE 3000
-CMD ["node", "dist/main"]
+
+CMD [ "/bin/sh", "run.sh" ]
