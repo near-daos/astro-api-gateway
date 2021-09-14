@@ -90,8 +90,8 @@ export class SputnikDaoService {
         .map((proposal: ProposalDto, index: number) => {
           return {
             ...camelcaseKeys(proposal, { deep: true }),
-            id: buildProposalId(contractId, index),
-            proposalId: index,
+            id: buildProposalId(contractId, proposal.id),
+            proposalId: proposal.id,
             daoId: contractId,
             dao: { id: contractId },
             kind: castProposalKind(proposal.kind),
