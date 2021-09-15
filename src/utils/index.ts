@@ -30,8 +30,16 @@ export const buildDaoId = (name: string, contractName: string): string => {
   return `${name}.${contractName}`;
 };
 
-export const buildBountyId = (daoId: string, bountyId: number): string => {
+export const buildBountyId = (daoId: string, bountyId: string): string => {
   return `${daoId}-${bountyId}`;
+};
+
+export const buildBountyClaimId = (
+  daoId: string,
+  bountyId: string,
+  bountyClaimId: number,
+): string => {
+  return `${daoId}-${bountyId}-${bountyClaimId}`;
 };
 
 export const buildRoleId = (daoId: string, name: string): string => {

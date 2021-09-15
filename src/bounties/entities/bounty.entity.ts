@@ -1,7 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { TransactionEntity } from 'src/common/transaction.entity';
 import { Dao } from 'src/daos/entities/dao.entity';
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryColumn,
+} from 'typeorm';
+import { BountyClaim } from './bounty-claim.entity';
 
 @Entity()
 export class Bounty extends TransactionEntity {
@@ -21,6 +29,12 @@ export class Bounty extends TransactionEntity {
   @ManyToOne((_) => Dao, { eager: true })
   @JoinColumn({ name: 'dao_id' })
   dao: Dao;
+
+  @ApiProperty({ type: [BountyClaim] })
+  @OneToMany(() => BountyClaim, (claim) => claim.bounty, {
+    cascade: true
+  })
+  bountyClaims: BountyClaim[];
 
   @ApiProperty()
   @Column()

@@ -9,6 +9,7 @@ import { Policy } from 'src/daos/entities/policy.entity';
 import { Bounty } from 'src/bounties/entities/bounty.entity';
 import { Role } from 'src/daos/entities/role.entity';
 import { Token } from 'src/tokens/entities/token.entity';
+import { BountyClaim } from 'src/bounties/entities/bounty-claim.entity';
 
 export default registerAs('db_default', () => ({
   type: 'postgres',
@@ -23,6 +24,7 @@ export default registerAs('db_default', () => ({
     Policy,
     Role,
     Bounty,
+    BountyClaim,
     Proposal,
     Transaction,
     TransactionAction,

@@ -12,7 +12,8 @@ import { castVotePolicy } from './types/vote-policy';
 import { castRolePermission, RoleKindType } from './types/role';
 import camelcaseKeys from 'camelcase-keys';
 import { BountyDto } from 'src/bounties/dto/bounty.dto';
-import { buildBountyId, buildProposalId, buildRoleId } from 'src/utils';
+import { buildBountyClaimId, buildBountyId, buildProposalId, buildRoleId } from 'src/utils';
+import { BountyClaimDto } from 'src/bounties/dto/bounty-claim.dto';
 
 @Injectable()
 export class SputnikDaoService {
@@ -104,19 +105,25 @@ export class SputnikDaoService {
     }
   }
 
-  public async getBounties(daoIds: string[]): Promise<BountyDto[]> {
+  public async getBounties(
+    daoIds: string[],
+    accountIds: string[],
+  ): Promise<BountyDto[]> {
     const ids: string[] = daoIds || (await this.factoryContract.getDaoIds());
 
     //TODO: Get bounty claims
 
     const { results: bounties, errors } = await PromisePool.withConcurrency(5)
       .for(ids)
-      .process(async (daoId) => await this.getBountiesByDao(daoId));
+      .process(async (daoId) => await this.getBountiesByDao(daoId, accountIds));
 
     return bounties.reduce((acc, prop) => acc.concat(prop), []);
   }
 
-  public async getBountiesByDao(contractId: string): Promise<BountyDto[]> {
+  public async getBountiesByDao(
+    contractId: string,
+    accountIds: string[],
+  ): Promise<BountyDto[]> {
     try {
       const contract = this.getContract(contractId);
 
@@ -140,18 +147,45 @@ export class SputnikDaoService {
 
       const { results: numClaims } = await PromisePool.withConcurrency(5)
         .for([...Array(lastBountyId).keys()])
-        .process(async (id) => await contract.get_bounty_number_of_claims({ id }));
+        .process(
+          async (id) => await contract.get_bounty_number_of_claims({ id }),
+        );
+
+      const { results: claims } = await PromisePool.withConcurrency(5)
+        .for(accountIds)
+        .process(async (accountId) => {
+          const claim = await contract.get_bounty_claims({
+            account_id: accountId,
+          });
+
+          return [{ ...claim?.[0], accountId }];
+        });
+
+      const bountyClaims = claims.reduce(
+        (acc: BountyClaimDto[], prop: BountyClaimDto[]) => acc.concat(prop),
+        [],
+      );
 
       return bounties
         .reduce((acc: BountyDto[], prop: BountyDto[]) => acc.concat(prop), [])
         .map((bounty: BountyDto, index: number) => {
           return {
             ...camelcaseKeys(bounty, { deep: true }),
-            id: buildBountyId(contractId, index),
-            bountyId: index,
+            id: buildBountyId(contractId, bounty.id),
+            bountyId: bounty.id,
             daoId: contractId,
             dao: { id: contractId },
-            numberOfClaims: numClaims[index]
+            numberOfClaims: numClaims[index],
+            bountyClaims: bountyClaims
+              .filter((claim) => bounty.id === claim.bounty_id)
+              .map((claim, index) => ({
+                ...camelcaseKeys(claim, { deep: true }),
+                id: buildBountyClaimId(contractId, bounty.id, index),
+                bounty: {
+                  id: buildBountyId(contractId, bounty.id),
+                  bountyId: buildBountyId(contractId, bounty.id),
+                },
+              })),
           };
         });
     } catch (error) {
@@ -203,8 +237,7 @@ export class SputnikDaoService {
 
     const council = roles
       .filter(
-        ({ name, kind }) =>
-          'council' === name && RoleKindType.Group === kind,
+        ({ name, kind }) => 'council' === name && RoleKindType.Group === kind,
       )
       .map(({ accountIds }) => accountIds)
       .reduce((acc, val) => acc.concat(val), []);
