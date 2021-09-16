@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Param,
+  UseFilters,
   UseInterceptors,
 } from '@nestjs/common';
 import {
@@ -15,6 +16,7 @@ import {
 import { ParsedRequest, CrudRequest } from '@nestjsx/crud';
 import { FindOneParams, HttpCacheInterceptor } from 'src/common';
 import { EntityQuery } from 'src/common/dto/EntityQuery';
+import { QueryFailedErrorFilter } from 'src/common/filters/query-failed-error.filter';
 import { ProposalResponse } from './dto/proposal-response.dto';
 import { Proposal } from './entities/proposal.entity';
 import { ProposalCrudRequestInterceptor } from './interceptors/proposal-crud.interceptor';
@@ -35,6 +37,7 @@ export class ProposalController {
       'limit/offset must be a number conforming to the specified constraints',
   })
   @UseInterceptors(HttpCacheInterceptor, ProposalCrudRequestInterceptor)
+  @UseFilters(new QueryFailedErrorFilter())
   @ApiQuery({ type: EntityQuery })
   @Get('/proposals')
   async proposals(

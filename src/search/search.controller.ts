@@ -1,4 +1,10 @@
-import { Controller, Get, Query, UseInterceptors } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Query,
+  UseFilters,
+  UseInterceptors,
+} from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiQuery,
@@ -11,6 +17,7 @@ import {
   CrudRequest,
 } from '@nestjsx/crud';
 import { HttpCacheInterceptor, SearchQuery } from 'src/common';
+import { QueryFailedErrorFilter } from 'src/common/filters/query-failed-error.filter';
 import { SearchResultDto } from './dto/search-result.dto';
 import { SearchService } from './search.service';
 
@@ -27,6 +34,7 @@ export class SearchController {
   })
   @ApiBadRequestResponse({ description: 'query should not be empty' })
   @UseInterceptors(HttpCacheInterceptor, CrudRequestInterceptor)
+  @UseFilters(new QueryFailedErrorFilter())
   @ApiQuery({ type: SearchQuery })
   @Get('/search')
   async search(

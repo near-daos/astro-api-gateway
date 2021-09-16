@@ -7,6 +7,7 @@ import {
   Post,
   Query,
   Res,
+  UseFilters,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -36,6 +37,7 @@ import { EntityQuery } from 'src/common/dto/EntityQuery';
 import { DaoResponse } from './dto/dao-response.dto';
 import { DaoCrudRequestInterceptor } from './interceptors/dao-crud.interceptor';
 import { DaoNearService } from './dao-near.service';
+import { QueryFailedErrorFilter } from 'src/common/filters/query-failed-error.filter';
 
 @ApiTags('DAO')
 @Controller('/daos')
@@ -69,6 +71,7 @@ export class DaoController {
       'limit/offset must be a number conforming to the specified constraints',
   })
   @UseInterceptors(HttpCacheInterceptor, DaoCrudRequestInterceptor)
+  @UseFilters(new QueryFailedErrorFilter())
   @ApiQuery({ type: EntityQuery })
   @Get('/')
   async daos(

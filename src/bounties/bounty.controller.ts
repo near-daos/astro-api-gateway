@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Param,
+  UseFilters,
   UseInterceptors,
 } from '@nestjs/common';
 import {
@@ -18,6 +19,7 @@ import {
 } from '@nestjsx/crud';
 import { FindOneParams, HttpCacheInterceptor } from 'src/common';
 import { EntityQuery } from 'src/common/dto/EntityQuery';
+import { QueryFailedErrorFilter } from 'src/common/filters/query-failed-error.filter';
 import { BountyService } from './bounty.service';
 import { BountyResponse } from './dto/bounty-response.dto';
 import { Bounty } from './entities/bounty.entity';
@@ -38,6 +40,7 @@ export class BountyController {
       'limit/offset must be a number conforming to the specified constraints',
   })
   @UseInterceptors(HttpCacheInterceptor, BountyCrudRequestInterceptor)
+  @UseFilters(new QueryFailedErrorFilter())
   @ApiQuery({ type: EntityQuery })
   @Get('/')
   async bounties(
