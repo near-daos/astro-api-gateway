@@ -39,7 +39,17 @@ export class AggregatorService {
   ) {}
 
   @Cron(CronExpression.EVERY_10_SECONDS)
-  public async aggregate(): Promise<void> {
+  public async scheduleAggregation(): Promise<void> {
+    const tx = await this.transactionService.lastTransaction();
+    if (!tx) {
+      // Skipping cron job scheduling until the very 1st aggregation completes.
+      return;
+    }
+
+    return this.aggregate(tx);
+  }
+
+  public async aggregate(lastTx?: Transaction): Promise<void> {
     const { contractName, tokenFactoryContractName } =
       this.configService.get('near');
 
@@ -50,7 +60,7 @@ export class AggregatorService {
 
     this.logger.log('Checking data relevance...');
 
-    const tx = await this.transactionService.lastTransaction();
+    const tx = lastTx || (await this.transactionService.lastTransaction());
 
     const transactions: Transaction[] =
       await this.nearService.findTransactionsByReceiverAccountIds(
@@ -212,7 +222,10 @@ export class AggregatorService {
       ? bounties.filter(({ daoId }) => enrichedDaoIds.includes(daoId))
       : bounties;
 
-    const enrichedBounties = this.enrichBounties(filteredBounties, transactions);
+    const enrichedBounties = this.enrichBounties(
+      filteredBounties,
+      transactions,
+    );
 
     this.logger.log('Persisting aggregated Bounties...');
     await Promise.all(
@@ -385,8 +398,37 @@ export class AggregatorService {
       const txCreateData = txData[0];
       const txUpdateData = txData[txData.length - 1];
 
+      const bountyClaimTransactions = preFilteredTransactions.filter(
+        ({ transactionAction }) =>
+          (transactionAction.args as any).method_name == 'bounty_claim',
+      );
+
+      const bountyClaims = bounty.bountyClaims.map((bountyClaim) => {
+        const { bounty, deadline, accountId } = bountyClaim;
+        const txCreateData = bountyClaimTransactions.find((tx) => {
+          const { signerAccountId } = tx;
+          const { id: txId, deadline: txDeadline } = tx.transactionAction.args
+            .args_json as any;
+
+          return (
+            signerAccountId === accountId &&
+            bounty?.bountyId === txId &&
+            deadline === txDeadline
+          );
+        });
+
+        const enrichedBountyClaim = {
+          ...bountyClaim,
+          transactionHash: txCreateData?.transactionHash,
+          createTimestamp: txCreateData?.blockTimestamp,
+        };
+
+        return enrichedBountyClaim;
+      });
+
       const enrichedBounty = {
         ...bounty,
+        bountyClaims,
         transactionHash: txCreateData?.transactionHash,
         createTimestamp: txCreateData?.blockTimestamp,
         updateTransactionHash: (txUpdateData || txCreateData)?.transactionHash,

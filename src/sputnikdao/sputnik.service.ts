@@ -111,8 +111,6 @@ export class SputnikDaoService {
   ): Promise<BountyDto[]> {
     const ids: string[] = daoIds || (await this.factoryContract.getDaoIds());
 
-    //TODO: Get bounty claims
-
     const { results: bounties, errors } = await PromisePool.withConcurrency(5)
       .for(ids)
       .process(async (daoId) => await this.getBountiesByDao(daoId, accountIds));
@@ -183,7 +181,7 @@ export class SputnikDaoService {
                 id: buildBountyClaimId(contractId, bounty.id, index),
                 bounty: {
                   id: buildBountyId(contractId, bounty.id),
-                  bountyId: buildBountyId(contractId, bounty.id),
+                  bountyId: bounty.id
                 },
               })),
           };
