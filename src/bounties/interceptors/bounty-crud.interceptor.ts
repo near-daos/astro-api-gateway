@@ -18,6 +18,9 @@ export class BountyCrudRequestInterceptor extends BaseCrudRequestInterceptor {
       'dao.policy': {
         eager: true,
       },
+      bountyClaims: {
+        eager: true
+      }
     };
 
     return crudRequest;

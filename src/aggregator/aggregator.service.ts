@@ -73,6 +73,10 @@ export class AggregatorService {
     let proposalDaoIds = daoIds;
     let tokenIds = null;
 
+    const actionTransactions = transactions.filter(
+      (tx) => tx.transactionAction.args.args_json,
+    );
+
     // TODO: check token re-indexing condition - get delta
 
     if (tx) {
@@ -98,10 +102,6 @@ export class AggregatorService {
       if (accountDaoIds.length) {
         this.logger.log(`New DAOs created: ${accountDaoIds.join(',')}`);
       }
-
-      const actionTransactions = transactions.filter(
-        (tx) => tx.transactionAction.args.args_json,
-      );
 
       //TODO: Re-work this for cases when proposal is created - there is no 'id' in transaction action payload
       const proposalTransactions = actionTransactions
@@ -157,13 +157,24 @@ export class AggregatorService {
       ];
     }
 
+    const bountyClaimAccountIds = [
+      ...new Set(
+        actionTransactions
+          .filter(
+            ({ transactionAction: action }) =>
+              'bounty_claim' === (action.args as any).method_name,
+          )
+          .map(({ signerAccountId }) => signerAccountId),
+      ),
+    ];
+
     this.logger.log('Aggregating data...');
     const [daos, proposals, bounties, tokens] = await Promise.all([
       this.sputnikDaoService.getDaoList(
         Array.from(new Set([...accountDaoIds, ...proposalDaoIds])),
       ),
       this.sputnikDaoService.getProposals(proposalDaoIds),
-      this.sputnikDaoService.getBounties(proposalDaoIds),
+      this.sputnikDaoService.getBounties(proposalDaoIds, bountyClaimAccountIds),
       this.tokenFactoryService.getTokens(tokenIds),
     ]);
 

@@ -1,5 +1,6 @@
 import { TransactionInfo } from 'src/common/dto/TransactionInfo';
 import { DaoDto } from 'src/daos/dto/dao.dto';
+import { BountyClaimDto } from './bounty-claim.dto';
 
 export class BountyDto extends TransactionInfo {
   id: string;
@@ -16,4 +17,5 @@ export class BountyDto extends TransactionInfo {
   /// Max deadline from claim that can be spend on this bounty.
   maxDeadline: string;
   numberOfClaims: number;
+  bountyClaims: BountyClaimDto[];
 }
