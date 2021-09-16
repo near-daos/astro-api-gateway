@@ -73,6 +73,16 @@ pipelines:
       - step: *build-test
 
   branches:
+    custom:
+      - step:
+          <<: *set-environment
+
+          script:
+            - >-
+              echo export DOCKER_ENV_TAG=develop-$BITBUCKET_COMMIT >> environment.sh
+
+      - step: *docker-build-publish
+
     develop:
       - step:
           <<: *set-environment
