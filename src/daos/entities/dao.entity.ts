@@ -39,10 +39,6 @@ export class Dao extends TransactionEntity {
 
   @ApiProperty()
   @Column()
-  numberOfProposals: number;
-
-  @ApiProperty()
-  @Column()
   stakingContract: string;
 
   @ApiProperty()
