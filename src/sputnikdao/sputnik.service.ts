@@ -157,11 +157,11 @@ export class SputnikDaoService {
       const { results: claims } = await PromisePool.withConcurrency(5)
         .for(accountIds)
         .process(async (accountId) => {
-          const claim = await contract.get_bounty_claims({
+          const bountyClaims = await contract.get_bounty_claims({
             account_id: accountId,
           });
 
-          return [{ ...claim?.[0], accountId }];
+          return bountyClaims.map((claim) => ({ ...claim, accountId }));
         });
 
       const bountyClaims = claims.reduce(
