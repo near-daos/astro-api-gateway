@@ -150,9 +150,13 @@ export class SputnikDaoService {
 
       const { results: numClaims } = await PromisePool.withConcurrency(5)
         .for(bounties.map(({ id }) => id))
-        .process(
-          async (id) => await contract.get_bounty_number_of_claims({ id }),
-        );
+        .process(async (bountyId) => {
+          const numClaims = await contract.get_bounty_number_of_claims({
+            id: bountyId,
+          });
+
+          return { numClaims, bountyId };
+        });
 
       const { results: claims } = await PromisePool.withConcurrency(5)
         .for(accountIds)
@@ -177,7 +181,9 @@ export class SputnikDaoService {
             bountyId: bounty.id,
             daoId: contractId,
             dao: { id: contractId },
-            numberOfClaims: numClaims[index],
+            numberOfClaims: numClaims.find(
+              ({ bountyId }) => bountyId === bounty.id,
+            )?.numClaims,
             bountyClaims: bountyClaims
               .filter((claim) => bounty.id === claim.bounty_id)
               .map((claim, index) => ({
@@ -185,7 +191,7 @@ export class SputnikDaoService {
                 id: buildBountyClaimId(contractId, bounty.id, index),
                 bounty: {
                   id: buildBountyId(contractId, bounty.id),
-                  bountyId: bounty.id
+                  bountyId: bounty.id,
                 },
               })),
           };
