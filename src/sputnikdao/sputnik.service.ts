@@ -88,9 +88,9 @@ export class SputnikDaoService {
           (acc: ProposalDto[], prop: ProposalDto[]) => acc.concat(prop),
           [],
         )
-        .map((proposal: ProposalDto, index: number) => {
+        .map((proposal: ProposalDto) => {
           return {
-            ...camelcaseKeys(proposal, { deep: true }),
+            ...camelcaseKeys(proposal),
             id: buildProposalId(contractId, proposal.id),
             proposalId: proposal.id,
             daoId: contractId,
@@ -174,9 +174,9 @@ export class SputnikDaoService {
       );
 
       return bounties
-        .map((bounty: BountyDto, index: number) => {
+        .map((bounty: BountyDto) => {
           return {
-            ...camelcaseKeys(bounty, { deep: true }),
+            ...camelcaseKeys(bounty),
             id: buildBountyId(contractId, bounty.id),
             bountyId: bounty.id,
             daoId: contractId,
@@ -187,7 +187,7 @@ export class SputnikDaoService {
             bountyClaims: bountyClaims
               .filter((claim) => bounty.id === claim.bounty_id)
               .map((claim, index) => ({
-                ...camelcaseKeys(claim, { deep: true }),
+                ...camelcaseKeys(claim),
                 id: buildBountyClaimId(contractId, bounty.id, index),
                 bounty: {
                   id: buildBountyId(contractId, bounty.id),
