@@ -1,9 +1,11 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
 import { ExecutionOutcomeStatus } from '../types/execution-outcome-status';
 import { TransactionAction } from './transaction-action.entity';
 
 @Entity({ name: 'transactions' })
 export class Transaction {
+  @ApiProperty()
   @PrimaryColumn()
   transactionHash: string;
 
@@ -16,13 +18,16 @@ export class Transaction {
   @Column()
   indexInChunk: number;
 
+  @ApiProperty()
   @OneToOne((_) => TransactionAction, { cascade: true })
   @JoinColumn({ name: 'transaction_hash' })
   transactionAction: TransactionAction;
 
+  @ApiProperty()
   @Column()
   receiverAccountId: string;
 
+  @ApiProperty()
   @Column()
   signerAccountId: string;
 
@@ -35,6 +40,9 @@ export class Transaction {
   @Column()
   signature: string;
 
+  @ApiProperty({
+    enum: Object.keys(ExecutionOutcomeStatus),
+  })
   @Column({
     type: 'enum',
     enum: ExecutionOutcomeStatus,
@@ -44,12 +52,15 @@ export class Transaction {
   @Column()
   convertedIntoReceiptId: string;
 
+  @ApiProperty()
   @Column()
   receiptConversionGasBurnt: string;
 
+  @ApiProperty()
   @Column()
   receiptConversionTokensBurnt: string;
 
+  @ApiProperty()
   @Column({ type: 'bigint' })
   blockTimestamp: number;
 }
