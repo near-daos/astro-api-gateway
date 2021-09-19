@@ -1,7 +1,7 @@
 import { IsNotEmpty, IsNumber } from 'class-validator';
-import { AggregatorValidationSchema } from './aggregator.schema';
+import { NearDatabaseValidationSchema } from './near-db.schema';
 
-export class ApiValidationSchema extends AggregatorValidationSchema {
+export class ApiValidationSchema extends NearDatabaseValidationSchema {
   @IsNumber()
   @IsNotEmpty()
   PORT: number;
