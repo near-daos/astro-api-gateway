@@ -5,3 +5,4 @@ metadata:
 data:
   PORT: "3000"
   NEST_APP_TYPE: aggregator
+  AGGREGATOR_POLLING_INTERVAL: "{{ .Values.environment.aggregator_polling_interval }}"

@@ -5,3 +5,4 @@ metadata:
 data:
   PORT: "3000"
   NEST_APP_TYPE: api
+  REDIS_HTTP_CACHE_TTL: "60"

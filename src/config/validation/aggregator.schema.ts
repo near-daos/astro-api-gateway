@@ -21,4 +21,8 @@ export class AggregatorValidationSchema extends DatabaseValidationSchema {
   @IsNumber()
   @IsNotEmpty()
   NEAR_INDEXER_DATABASE_PORT: number;
+
+  @IsNumber()
+  @IsNotEmpty()
+  AGGREGATOR_POLLING_INTERVAL: number;
 }

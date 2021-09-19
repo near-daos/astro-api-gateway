@@ -119,3 +119,4 @@ environment:
   near_env: "testnet"
   near_contract_name: "sputnikv2.testnet"
   near_token_factory_contract_name: "tokenfactory.testnet"
+  aggregator_polling_interval: "10000"
