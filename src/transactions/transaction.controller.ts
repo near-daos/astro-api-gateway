@@ -22,7 +22,7 @@ import { TransactionQuery } from 'src/common/dto/TransactionQuery';
 import { TransactionCrudRequestInterceptor } from './interceptors/transaction-crud.interceptor';
 import { TransferCrudRequestInterceptor } from './interceptors/transfer-crud.interceptor';
 
-@ApiTags('Transaction')
+@ApiTags('Transactions')
 @Controller('/transactions')
 export class TransactionController {
   constructor(private readonly transactionService: TransactionService) {}
