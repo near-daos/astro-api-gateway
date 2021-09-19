@@ -36,8 +36,7 @@ export class BountyController {
     type: BountyResponse,
   })
   @ApiBadRequestResponse({
-    description:
-      'limit/offset must be a number conforming to the specified constraints',
+    description: 'Bad Request Response based on the query params set',
   })
   @UseInterceptors(HttpCacheInterceptor, BountyCrudRequestInterceptor)
   @UseFilters(new QueryFailedErrorFilter())

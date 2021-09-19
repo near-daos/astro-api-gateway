@@ -67,8 +67,7 @@ export class DaoController {
     type: DaoResponse,
   })
   @ApiBadRequestResponse({
-    description:
-      'limit/offset must be a number conforming to the specified constraints',
+    description: 'Bad Request Response based on the query params set',
   })
   @UseInterceptors(HttpCacheInterceptor, DaoCrudRequestInterceptor)
   @UseFilters(new QueryFailedErrorFilter())
