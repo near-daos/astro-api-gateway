@@ -9,7 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import { Transaction, Account } from 'src/near';
 import { SputnikDaoDto } from 'src/daos/dto/dao-sputnik.dto';
 import { castProposalKind, ProposalDto } from 'src/proposals/dto/proposal.dto';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { SchedulerRegistry } from '@nestjs/schedule';
 import { buildDaoId, buildProposalId } from 'src/utils';
 import { EventService } from 'src/events/events.service';
 import { DaoStatus } from 'src/daos/types/dao-status';
@@ -36,9 +36,17 @@ export class AggregatorService {
     private readonly eventService: EventService,
     private readonly bountyService: BountyService,
     private readonly tokenService: TokenService,
-  ) {}
+    private readonly schedulerRegistry: SchedulerRegistry,
+  ) {
+    const { pollingInterval } = this.configService.get('aggregator');
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
+    const interval = setInterval(
+      () => this.scheduleAggregation(),
+      pollingInterval,
+    );
+    schedulerRegistry.addInterval('polling', interval);
+  }
+
   public async scheduleAggregation(): Promise<void> {
     const tx = await this.transactionService.lastTransaction();
     if (!tx) {

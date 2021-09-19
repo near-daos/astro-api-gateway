@@ -53,7 +53,7 @@ export default class Api {
 
     const configService = app.get(ConfigService);
 
-    const port = configService.get('port');
+    const { port } = configService.get('api');
 
     await app.startAllMicroservicesAsync();
 
