@@ -32,7 +32,8 @@ export class Bounty extends TransactionEntity {
 
   @ApiProperty({ type: [BountyClaim] })
   @OneToMany(() => BountyClaim, (claim) => claim.bounty, {
-    cascade: true
+    cascade: true,
+    persistence: false,
   })
   bountyClaims: BountyClaim[];
 
