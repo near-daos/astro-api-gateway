@@ -165,7 +165,10 @@ export class SputnikDaoService {
             account_id: accountId,
           });
 
-          return bountyClaims.map((claim) => ({ ...claim, accountId }));
+          return bountyClaims.map((claim) => ({
+            ...camelcaseKeys(claim),
+            accountId,
+          }));
         });
 
       const bountyClaims = claims.reduce(
@@ -185,10 +188,10 @@ export class SputnikDaoService {
               ({ bountyId }) => bountyId === bounty.id,
             )?.numClaims,
             bountyClaims: bountyClaims
-              .filter((claim) => bounty.id === claim.bounty_id)
-              .map((claim, index) => ({
+              .filter((claim) => bounty.id === claim.bountyId)
+              .map((claim) => ({
                 ...camelcaseKeys(claim),
-                id: buildBountyClaimId(contractId, bounty.id, index),
+                id: buildBountyClaimId(contractId, bounty.id, claim.startTime),
                 bounty: {
                   id: buildBountyId(contractId, bounty.id),
                   bountyId: bounty.id,
