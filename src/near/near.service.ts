@@ -30,6 +30,7 @@ export class NearService {
     return this.accountRepository
       .createQueryBuilder('account')
       .leftJoinAndSelect('account.receipt', 'receipts')
+      .leftJoinAndSelect('receipts.originatedFromTransaction', 'transactions')
       .where('account.account_id like :id', { id: `%${contractName}%` })
       .getMany();
   }

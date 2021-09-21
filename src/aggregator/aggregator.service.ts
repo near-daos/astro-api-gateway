@@ -272,6 +272,7 @@ export class AggregatorService {
         [accountId]: {
           transactionHash: receipt.originatedFromTransactionHash,
           blockTimestamp: receipt.includedInBlockTimestamp,
+          signerAccountId: receipt.originatedFromTransaction?.signerAccountId,
         },
       }),
       {},
@@ -293,8 +294,7 @@ export class AggregatorService {
 
     return daos.map((dao) => {
       const txData = daoTxDataMap[dao.id];
-      const daoTxs = transactionsByAccountId[dao.id];
-      const txUpdateData = daoTxs?.[daoTxs?.length - 1];
+      const txUpdateData = transactionsByAccountId[dao.id]?.pop();
 
       return {
         ...dao,
@@ -304,7 +304,7 @@ export class AggregatorService {
         updateTimestamp: (txUpdateData || txData)?.blockTimestamp,
         numberOfMembers: new Set(signersByAccountId[dao.id]).size,
         status: DaoStatus.Success,
-        createdBy: daoTxs?.[0]?.signerAccountId,
+        createdBy: txData?.signerAccountId,
       };
     });
   }
