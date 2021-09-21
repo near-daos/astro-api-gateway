@@ -49,6 +49,8 @@ export class CreateDaoDto extends AccountBearer implements DaoDto {
 
   status: DaoStatus;
 
+  createdBy: string;
+
   transactionHash: string;
   updateTransactionHash: string;
   createTimestamp: number;

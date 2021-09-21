@@ -73,4 +73,8 @@ export class Dao extends TransactionEntity {
     nullable: true,
   })
   status: DaoStatus;
+
+  @ApiProperty()
+  @Column({ nullable: true })
+  createdBy: string;
 }
