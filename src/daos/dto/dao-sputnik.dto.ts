@@ -12,7 +12,7 @@ export class SputnikDaoDto extends TransactionInfo implements DaoDto {
   lastProposalId: number;
   stakingContract: string;
   policy: PolicyDto;
-  amount: string;
+  amount: number;
   council: string[];
   councilSeats: number;
   numberOfMembers: number = 0;
