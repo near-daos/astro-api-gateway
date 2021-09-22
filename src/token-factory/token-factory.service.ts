@@ -1,10 +1,12 @@
-import { Contract } from 'near-api-js';
+import { Account, Contract } from 'near-api-js';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import PromisePool from '@supercharge/promise-pool';
 import { NEAR_TOKEN_FACTORY_PROVIDER } from 'src/common/constants';
 import { NearTokenFactoryProvider } from 'src/config/near-token-factory';
 import { TokenDto } from 'src/tokens/dto/token.dto';
 import camelcaseKeys from 'camelcase-keys';
+import { NFTTokenDto } from 'src/tokens/dto/nft-token.dto';
+import { buildNFTTokenId } from 'src/utils';
 
 @Injectable()
 export class TokenFactoryService {
@@ -12,13 +14,16 @@ export class TokenFactoryService {
 
   private factoryContract!: Contract & any;
 
+  private account!: Account;
+
   constructor(
     @Inject(NEAR_TOKEN_FACTORY_PROVIDER)
     private nearTokenFactoryProvider: NearTokenFactoryProvider,
   ) {
-    const { factoryContract } = nearTokenFactoryProvider;
+    const { factoryContract, account } = nearTokenFactoryProvider;
 
     this.factoryContract = factoryContract;
+    this.account = account;
   }
 
   public async getTokens(tokenIds: string[]): Promise<TokenDto[]> {
@@ -29,6 +34,38 @@ export class TokenFactoryService {
     return tokens.map((token: TokenDto) =>
       camelcaseKeys(token, { deep: true }),
     );
+  }
+
+  public async getNFTs(tokenOwners: any): Promise<NFTTokenDto[]> {
+    const { results: nfts, errors } = await PromisePool.withConcurrency(5)
+      .for(tokenOwners)
+      .process(
+        async ({ contractId, accountId }) =>
+          await this.getContract(contractId)?.nft_tokens_for_owner({
+            account_id: accountId,
+          }),
+      );
+
+    return nfts
+      .reduce((acc: TokenDto[], token: TokenDto[]) => acc.concat(token), [])
+      .map((token) => {
+        const { owner_id, id, token_id, metadata } = token;
+        const ownerId =
+          owner_id instanceof Object
+            ? owner_id?.Account
+            : owner_id;
+        const tokenId = buildNFTTokenId(ownerId, id || token_id);
+
+        return {
+          ...camelcaseKeys(token, { deep: true }),
+          id: tokenId,
+          ownerId,
+          metadata: {
+            ...camelcaseKeys(metadata),
+            tokenId
+          }
+        };
+      });
   }
 
   private async getTokensList(): Promise<TokenDto[]> {
@@ -78,5 +115,12 @@ export class TokenFactoryService {
 
       return Promise.reject(error);
     }
+  }
+
+  private getContract(contractId: string): Contract & any {
+    return new Contract(this.account, contractId, {
+      viewMethods: ['nft_tokens_for_owner'],
+      changeMethods: [],
+    });
   }
 }
