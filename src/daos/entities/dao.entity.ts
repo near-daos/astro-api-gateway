@@ -22,8 +22,8 @@ export class Dao extends TransactionEntity {
   config: DaoConfig;
 
   @ApiProperty()
-  @Column()
-  amount: string;
+  @Column({ type: 'numeric' })
+  amount: number;
 
   @ApiProperty()
   @Column()
