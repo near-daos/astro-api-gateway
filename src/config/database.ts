@@ -10,6 +10,8 @@ import { Bounty } from 'src/bounties/entities/bounty.entity';
 import { Role } from 'src/daos/entities/role.entity';
 import { Token } from 'src/tokens/entities/token.entity';
 import { BountyClaim } from 'src/bounties/entities/bounty-claim.entity';
+import { NFTToken } from 'src/tokens/entities/nft-token.entity';
+import { NFTTokenMetadata } from 'src/tokens/entities/nft-token-metadata.entity';
 
 export default registerAs('db_default', () => ({
   type: 'postgres',
@@ -30,6 +32,8 @@ export default registerAs('db_default', () => ({
     TransactionAction,
     Account,
     Token,
+    NFTToken,
+    NFTTokenMetadata,
   ],
   synchronize: true,
   migrationsTableName: 'migration_table',

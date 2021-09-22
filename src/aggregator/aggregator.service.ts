@@ -6,7 +6,7 @@ import { isNotNull } from 'src/utils/guards';
 import { NearService } from 'src/near/near.service';
 import { TransactionService } from 'src/transactions/transaction.service';
 import { ConfigService } from '@nestjs/config';
-import { Transaction, Account } from 'src/near';
+import { Transaction, Account, ActionReceiptAction } from 'src/near';
 import { SputnikDaoDto } from 'src/daos/dto/dao-sputnik.dto';
 import { castProposalKind, ProposalDto } from 'src/proposals/dto/proposal.dto';
 import { SchedulerRegistry } from '@nestjs/schedule';
@@ -20,6 +20,8 @@ import { TokenService } from 'src/tokens/token.service';
 import { BountyDto } from 'src/bounties/dto/bounty.dto';
 import { ProposalKindAddBounty } from 'src/proposals/dto/proposal-kind.dto';
 import { ProposalType } from 'src/proposals/types/proposal-type';
+import { NFTTokenService } from 'src/tokens/nft-token.service';
+import { NFTTokenDto } from 'src/tokens/dto/nft-token.dto';
 
 @Injectable()
 export class AggregatorService {
@@ -36,6 +38,7 @@ export class AggregatorService {
     private readonly eventService: EventService,
     private readonly bountyService: BountyService,
     private readonly tokenService: TokenService,
+    private readonly nftTokenService: NFTTokenService,
     private readonly schedulerRegistry: SchedulerRegistry,
   ) {
     const { pollingInterval } = this.configService.get('aggregator');
@@ -94,6 +97,33 @@ export class AggregatorService {
     const actionTransactions = transactions.filter(
       (tx) => tx.transactionAction.args.args_json,
     );
+
+    const nftActionReceipts =
+      await this.nearService.findNFTActionReceiptsByReceiverAccountIds(
+        [...daoIds, contractName, tokenFactoryContractName],
+        tx?.blockTimestamp,
+      );
+
+    const nftTokenOwners = [];
+    nftActionReceipts
+      .filter(({ args }) => (args?.args_json as any)?.receiver_id)
+      .map(({ receiptReceiverAccountId, args }) => {
+        const receiverId = (args.args_json as any).receiver_id;
+        if (
+          nftTokenOwners.some(
+            ({ contractId, accountId }) =>
+              contractId === receiptReceiverAccountId &&
+              accountId === receiverId,
+          )
+        ) {
+          return;
+        }
+
+        nftTokenOwners.push({
+          contractId: receiptReceiverAccountId,
+          accountId: (args.args_json as any).receiver_id,
+        });
+      });
 
     // TODO: check token re-indexing condition - get delta
 
@@ -187,13 +217,14 @@ export class AggregatorService {
     ];
 
     this.logger.log('Aggregating data...');
-    const [daos, proposals, bounties, tokens] = await Promise.all([
+    const [daos, proposals, bounties, tokens, nftTokens] = await Promise.all([
       this.sputnikDaoService.getDaoList(
         Array.from(new Set([...accountDaoIds, ...proposalDaoIds])),
       ),
       this.sputnikDaoService.getProposals(proposalDaoIds),
       this.sputnikDaoService.getBounties(proposalDaoIds, bountyClaimAccountIds),
       this.tokenFactoryService.getTokens(tokenIds),
+      this.tokenFactoryService.getNFTs(nftTokenOwners),
     ]);
 
     const enrichedDaos = this.enrichDaos(daos, accounts, transactions);
@@ -253,12 +284,24 @@ export class AggregatorService {
     );
     this.logger.log('Finished Tokens aggregation.');
 
+    const enrichedNFTTokens = this.enrichNFTTokens(
+      nftTokens,
+      nftActionReceipts,
+    );
+
+    this.logger.log('Persisting aggregated NFT Tokens...');
+    await Promise.all(
+      enrichedNFTTokens.map((token) => this.nftTokenService.create(token)),
+    );
+    this.logger.log('Finished NFT Tokens aggregation.');
+
     this.logger.log('Persisting aggregated Transactions...');
     await Promise.all(
       transactions.map((transaction) =>
         this.transactionService.create(transaction),
       ),
     );
+    this.logger.log('Finished Transactions aggregation.');
   }
 
   private enrichDaos(
@@ -488,6 +531,30 @@ export class AggregatorService {
       };
 
       return enrichedToken;
+    });
+  }
+
+  private enrichNFTTokens(
+    tokens: NFTTokenDto[],
+    nftActionReceipts: ActionReceiptAction[],
+  ): NFTTokenDto[] {
+    return tokens.map((token) => {
+      const { id, ownerId, tokenId } = token;
+
+      const actionReceipt = nftActionReceipts.find((receiptAction) => {
+        const { receiver_id, token_series_id } =
+          (receiptAction.args?.args_json as any) || {};
+
+        return (
+          ownerId === receiver_id && (id || tokenId)?.includes(token_series_id)
+        );
+      });
+
+      return {
+        ...token,
+        transactionHash: actionReceipt?.transaction?.transactionHash,
+        createTimestamp: actionReceipt?.transaction?.blockTimestamp,
+      };
     });
   }
 

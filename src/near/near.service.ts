@@ -1,8 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import PromisePool from '@supercharge/promise-pool';
 import { NEAR_INDEXER_DB_CONNECTION } from 'src/common/constants';
 import { Repository } from 'typeorm';
 import { Account, Transaction } from '.';
+import { ActionReceiptAction } from './entities/action-receipt-action.entity';
 import { Receipt } from './entities/receipt.entity';
 
 @Injectable()
@@ -16,6 +18,9 @@ export class NearService {
 
     @InjectRepository(Receipt, NEAR_INDEXER_DB_CONNECTION)
     private readonly receiptRepository: Repository<Receipt>,
+
+    @InjectRepository(ActionReceiptAction, NEAR_INDEXER_DB_CONNECTION)
+    private readonly actionReceiptActionRepository: Repository<ActionReceiptAction>,
   ) {}
 
   /**
@@ -53,6 +58,39 @@ export class NearService {
       : queryBuilder;
 
     return queryBuilder.getMany();
+  }
+
+  async findNFTActionReceiptsByReceiverAccountIds(
+    receiverAccountIds: string[],
+    fromBlockTimestamp?: number,
+  ): Promise<ActionReceiptAction[]> {
+    const { results: actionReceipts, errors } =
+      await PromisePool.withConcurrency(5)
+        .for(receiverAccountIds)
+        .process(async (id) => {
+          let queryBuilder = this.actionReceiptActionRepository
+            .createQueryBuilder('action_receipt_action')
+            .leftJoinAndSelect(
+              'action_receipt_action.transaction',
+              'transactions',
+            )
+            .where(
+              "action_receipt_action.args->'args_json'->>'receiver_id' = :id and action_kind = 'FUNCTION_CALL' and action_receipt_action.args->>'args_json' is not null and args->>'method_name' like 'nft_%'",
+              {
+                id,
+              },
+            );
+
+          queryBuilder = fromBlockTimestamp
+            ? queryBuilder.andWhere('transaction.block_timestamp >= :from', {
+                from: fromBlockTimestamp,
+              })
+            : queryBuilder;
+
+          return await queryBuilder.getMany();
+        });
+
+    return actionReceipts.reduce((acc, prop) => acc.concat(prop), []);
   }
 
   async findTransaction(transactionHash: string): Promise<Transaction> {

@@ -6,6 +6,7 @@ import { nearProvider } from 'src/config/near';
 import { nearTokenFactoryProvider } from 'src/config/near-token-factory';
 import { nearSputnikProvider } from 'src/config/sputnik';
 import { Account } from './entities/account.entity';
+import { ActionReceiptAction } from './entities/action-receipt-action.entity';
 import { Receipt } from './entities/receipt.entity';
 import { TransactionAction } from './entities/transaction-action.entity';
 import { Transaction } from './entities/transaction.entity';
@@ -18,7 +19,7 @@ import { NearService } from './near.service';
       useClass: TypeOrmConfigService,
     }),
     TypeOrmModule.forFeature(
-      [Account, Receipt, Transaction, TransactionAction],
+      [Account, Receipt, Transaction, TransactionAction, ActionReceiptAction],
       NEAR_INDEXER_DB_CONNECTION,
     ),
   ],
