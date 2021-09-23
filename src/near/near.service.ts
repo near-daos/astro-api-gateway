@@ -6,6 +6,7 @@ import { Repository } from 'typeorm';
 import { Account, Transaction } from '.';
 import { ActionReceiptAction } from './entities/action-receipt-action.entity';
 import { Receipt } from './entities/receipt.entity';
+import { ActionKind } from './types/action-kind';
 
 @Injectable()
 export class NearService {
@@ -47,6 +48,18 @@ export class NearService {
     let queryBuilder = this.transactionRepository
       .createQueryBuilder('transaction')
       .leftJoinAndSelect('transaction.transactionAction', 'transaction_actions')
+      .leftJoinAndSelect(
+        'transaction.receipts',
+        'receipts',
+        'receipts.predecessor_account_id = ANY(ARRAY[:...ids])',
+        { ids: receiverAccountIds },
+      )
+      .leftJoinAndSelect(
+        'receipts.receiptAction',
+        'action_receipt_actions',
+        'action_receipt_actions.receipt_predecessor_account_id = ANY(ARRAY[:...ids]) AND action_receipt_actions.action_kind = :actionKind',
+        { ids: receiverAccountIds, actionKind: ActionKind.Transfer },
+      )
       .where('transaction.receiver_account_id = ANY(ARRAY[:...ids])', {
         ids: receiverAccountIds,
       })

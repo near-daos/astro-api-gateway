@@ -1,5 +1,6 @@
 import { registerAs } from '@nestjs/config';
 import { NEAR_INDEXER_DB_CONNECTION } from 'src/common/constants';
+import { ReceiptAction } from 'src/near/entities/receipt-action.entity';
 import {
   Account,
   Receipt,
@@ -19,6 +20,7 @@ export default registerAs(`db_${NEAR_INDEXER_DB_CONNECTION}`, () => ({
   entities: [
     Account,
     Receipt,
+    ReceiptAction,
     Transaction,
     TransactionAction,
     ActionReceiptAction,
