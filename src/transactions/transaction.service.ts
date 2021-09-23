@@ -23,4 +23,12 @@ export class TransactionService extends TypeOrmCrudService<Transaction> {
       order: { blockTimestamp: 'DESC' },
     });
   }
+
+  public async findBountyClaimTransactions(): Promise<Transaction[]> {
+    return this.transactionRepository
+      .createQueryBuilder('transaction')
+      .leftJoinAndSelect('transaction.transactionAction', 'transaction_actions')
+      .where("transaction_actions.args->>'method_name' = 'bounty_claim'")
+      .getMany();
+  }
 }
