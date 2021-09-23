@@ -43,6 +43,8 @@ export class TokenFactoryService {
         async ({ contractId, accountId }) =>
           await this.getContract(contractId)?.nft_tokens_for_owner({
             account_id: accountId,
+            from_index: "0",
+            limit: 1000 //TODO: magic number - no way to find out the limit now
           }),
       );
 
@@ -119,7 +121,7 @@ export class TokenFactoryService {
 
   private getContract(contractId: string): Contract & any {
     return new Contract(this.account, contractId, {
-      viewMethods: ['nft_tokens_for_owner'],
+      viewMethods: ['nft_tokens_for_owner', 'nft_metadata'],
       changeMethods: [],
     });
   }
