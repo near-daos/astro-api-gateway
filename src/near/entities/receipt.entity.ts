@@ -23,7 +23,9 @@ export class Receipt {
   @Column()
   originatedFromTransactionHash: string;
 
-  @ManyToOne((_) => Transaction, (transaction) => transaction.receipts)
+  @ManyToOne((_) => Transaction, (transaction) => transaction.receipts, {
+    nullable: true,
+  })
   @JoinColumn({ name: 'originated_from_transaction_hash' })
   originatedFromTransaction: Transaction;
 
