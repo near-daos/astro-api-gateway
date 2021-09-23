@@ -205,9 +205,11 @@ export class AggregatorService {
       ];
     }
 
+    const bountyClaimTransactions =
+      await this.transactionService.findBountyClaimTransactions();
     const bountyClaimAccountIds = [
       ...new Set(
-        actionTransactions
+        [...bountyClaimTransactions, ...actionTransactions]
           .filter(
             ({ transactionAction: action }) =>
               'bounty_claim' === (action.args as any).method_name,

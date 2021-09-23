@@ -24,6 +24,6 @@ export class TransactionAction extends BaseEntity {
   actionKind: string;
 
   @ApiProperty()
-  @Column({ type: 'simple-json' })
+  @Column({ type: 'jsonb', nullable: true })
   args: Record<string, unknown>;
 }
