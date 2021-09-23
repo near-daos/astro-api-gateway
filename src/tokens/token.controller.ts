@@ -52,7 +52,7 @@ export class TokenController {
   @ApiResponse({
     status: 200,
     description: 'List of aggregated Non-Fungible Tokens',
-    type: TokenResponse,
+    type: NFTTokenResponse,
   })
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
