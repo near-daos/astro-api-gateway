@@ -1,20 +1,19 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
-import { Transaction } from '..';
+import { Column, Entity, OneToOne, PrimaryColumn } from 'typeorm';
+import { Receipt } from '..';
 import { ActionKind } from '../types/action-kind';
 
 @Entity({ name: 'action_receipt_actions' })
-export class ActionReceiptAction {
+export class ReceiptAction {
   @ApiProperty()
   @PrimaryColumn()
   receiptId: string;
 
-  @OneToOne((_) => Transaction)
-  @JoinColumn({
-    name: 'receipt_id',
-    referencedColumnName: 'convertedIntoReceiptId',
+  @OneToOne((_) => Receipt, (receipt) => receipt.receiptAction, {
+    nullable: true,
+    createForeignKeyConstraints: false,
   })
-  transaction: Transaction;
+  receipt: Receipt;
 
   @Column()
   receiptPredecessorAccountId: string;

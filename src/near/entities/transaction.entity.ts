@@ -1,5 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  OneToMany,
+  OneToOne,
+  PrimaryColumn,
+} from 'typeorm';
+import { Receipt } from '..';
 import { ExecutionOutcomeStatus } from '../types/execution-outcome-status';
 import { TransactionAction } from './transaction-action.entity';
 
@@ -22,6 +30,12 @@ export class Transaction {
   @OneToOne((_) => TransactionAction, { cascade: true })
   @JoinColumn({ name: 'transaction_hash' })
   transactionAction: TransactionAction;
+
+  @ApiProperty({ type: [Receipt] })
+  @OneToMany(() => Receipt, (receipt) => receipt.originatedFromTransaction, {
+    cascade: true,
+  })
+  receipts: Receipt[];
 
   @ApiProperty()
   @Column()

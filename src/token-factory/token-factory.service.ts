@@ -48,6 +48,8 @@ export class TokenFactoryService {
           }),
       );
 
+    errors?.map((error) => this.logger.error(error));
+
     return nfts
       .reduce((acc: TokenDto[], token: TokenDto[]) => acc.concat(token), [])
       .map((token) => {
@@ -86,6 +88,8 @@ export class TokenFactoryService {
             }),
         );
 
+      errors?.map((error) => this.logger.error(error));
+
       return tokens.reduce(
         (acc: TokenDto[], prop: TokenDto[]) => acc.concat(prop),
         [],
@@ -107,6 +111,8 @@ export class TokenFactoryService {
               token_id: tokenId.toLowerCase(),
             }),
         );
+
+      errors?.map((error) => this.logger.error(error));
 
       return tokens.reduce(
         (acc: TokenDto[], prop: TokenDto[]) => acc.concat(prop),

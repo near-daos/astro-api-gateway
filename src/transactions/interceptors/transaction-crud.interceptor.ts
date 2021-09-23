@@ -20,6 +20,12 @@ export class TransactionCrudRequestInterceptor extends BaseCrudRequestIntercepto
       transactionAction: {
         eager: true,
       },
+      receipts: {
+        eager: true,
+      },
+      'receipts.receiptAction': {
+        eager: true,
+      },
     };
 
     return crudRequest;
