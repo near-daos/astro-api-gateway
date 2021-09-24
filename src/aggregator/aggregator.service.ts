@@ -347,7 +347,7 @@ export class AggregatorService {
         createTimestamp: txData?.blockTimestamp,
         updateTransactionHash: (txUpdateData || txData)?.transactionHash,
         updateTimestamp: (txUpdateData || txData)?.blockTimestamp,
-        numberOfMembers: new Set(signersByAccountId[dao.id]).size,
+        numberOfAssociates: new Set(signersByAccountId[dao.id]).size,
         status: DaoStatus.Success,
         createdBy: txData?.signerAccountId,
       };

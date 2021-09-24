@@ -41,15 +41,22 @@ export class Dao extends TransactionEntity {
   @Column()
   stakingContract: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    description:
+      'How many accounts in total have interacted with the DAO (made proposals, voted, etc).',
+  })
   @Column({ nullable: true })
-  numberOfMembers: number;
+  numberOfAssociates: number;
 
-  @ApiProperty()
+  @ApiProperty({
+    description: 'List of accounts that can vote for various activity',
+  })
   @Column({ type: 'text', array: true })
   council: string[];
 
-  @ApiProperty()
+  @ApiProperty({
+    description: 'Council accounts count',
+  })
   @Column()
   councilSeats: number;
 
