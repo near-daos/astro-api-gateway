@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { CacheModule, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './api.controller';
@@ -16,9 +16,15 @@ import { AccountModule } from './account/account.module';
 import { BountyModule } from './bounties/bounty.module';
 import { TokenModule } from './tokens/token.module';
 import { ApiValidationSchema } from './config/validation/api.schema';
+import { WebsocketModule } from './websocket/websocket.module';
+import { WebsocketGateway } from './websocket/websocket.gateway';
+import { CacheConfigService } from './config/api-config';
 
 @Module({
   imports: [
+    CacheModule.registerAsync({
+      useClass: CacheConfigService,
+    }),
     ConfigModule.forRoot({
       isGlobal: true,
       load: configuration,
@@ -37,7 +43,9 @@ import { ApiValidationSchema } from './config/validation/api.schema';
     AccountModule,
     BountyModule,
     TokenModule,
+    WebsocketModule,
   ],
   controllers: [AppController],
+  providers: [WebsocketGateway],
 })
 export class AppModule {}

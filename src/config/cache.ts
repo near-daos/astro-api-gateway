@@ -10,7 +10,7 @@ export class CacheConfigService implements CacheOptionsFactory {
   createCacheOptions(): CacheModuleOptions {
     return {
       store: redisStore,
-      url: process.env.REDIS_URL,
+      url: process.env.REDIS_CACHE_URL,
       ttl: parseInt(process.env.REDIS_HTTP_CACHE_TTL),
     };
   }

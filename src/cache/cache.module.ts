@@ -2,7 +2,6 @@ import { CacheModule as NestCacheModule, Module } from '@nestjs/common';
 
 import { CacheConfigService } from '../config/api-config';
 import { CacheService } from './service/cache.service';
-import { CacheController } from './controller/cache.controller';
 
 @Module({
   imports: [
@@ -10,7 +9,7 @@ import { CacheController } from './controller/cache.controller';
       useClass: CacheConfigService,
     }),
   ],
-  controllers: [CacheController],
   providers: [CacheService],
+  exports: [CacheService],
 })
 export class HttpCacheModule {}

@@ -149,6 +149,8 @@ export class AggregatorService {
 
       if (accountDaoIds.length) {
         this.logger.log(`New DAOs created: ${accountDaoIds.join(',')}`);
+
+        this.eventService.handleDaoUpdates(accountDaoIds);
       }
 
       //TODO: Re-work this for cases when proposal is created - there is no 'id' in transaction action payload

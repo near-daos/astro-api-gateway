@@ -11,7 +11,6 @@ import { NearModule } from 'src/near/near.module';
 import { TransactionModule } from 'src/transactions/transaction.module';
 import { SputnikDaoService } from 'src/sputnikdao/sputnik.service';
 import { AggregatorService } from './aggregator.service';
-import { AppController } from 'src/api.controller';
 import { EventModule } from 'src/events/events.module';
 import { GarbageCollectorService } from './garbage-collector.service';
 import { ConfigModule } from '@nestjs/config';
@@ -40,7 +39,6 @@ import { AggregatorValidationSchema } from 'src/config/validation/aggregator.sch
     BountySlimModule,
     TokenSlimModule,
   ],
-  controllers: [AppController],
   providers: [
     SputnikDaoService,
     TokenFactoryService,

@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import {
-  EVENT_CACHE_QUEUE_NAME,
-  EVENT_CACHE_SERVICE,
+  EVENT_API_QUEUE_NAME,
+  EVENT_API_SERVICE,
   EVENT_NOTIFICATIONS_QUEUE_NAME,
   EVENT_NOTIFICATION_SERVICE,
 } from 'src/common/constants';
@@ -24,13 +24,13 @@ import { EventService } from './events.service';
         },
       },
       {
-        name: EVENT_CACHE_SERVICE,
+        name: EVENT_API_SERVICE,
         useFactory: async () => {
           return {
             transport: Transport.RMQ,
             options: {
               urls: [process.env.RABBITMQ_URL],
-              queue: EVENT_CACHE_QUEUE_NAME,
+              queue: EVENT_API_QUEUE_NAME,
             },
           };
         },

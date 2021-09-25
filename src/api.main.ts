@@ -4,7 +4,8 @@ import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { AppModule } from './api.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { Transport } from '@nestjs/microservices';
-import { EVENT_CACHE_QUEUE_NAME } from './common/constants';
+import { EVENT_API_QUEUE_NAME } from './common/constants';
+import { initAdapters } from './adapters.init';
 
 export default class Api {
   async bootstrap(): Promise<void> {
@@ -12,11 +13,13 @@ export default class Api {
     app.enableCors();
     app.setGlobalPrefix('/api/v1');
 
+    initAdapters(app);
+
     app.connectMicroservice({
       transport: Transport.RMQ,
       options: {
         urls: [process.env.RABBITMQ_URL],
-        queue: EVENT_CACHE_QUEUE_NAME,
+        queue: EVENT_API_QUEUE_NAME,
         queueOptions: {
           durable: true,
         },

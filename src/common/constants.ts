@@ -11,9 +11,8 @@ export const EVENT_NOTIFICATION_SERVICE = 'EVENT_NOTIFICATION_SERVICE';
 export const EVENT_NOTIFICATIONS_QUEUE_NAME = 'sputnik-events-notifications';
 export const EVENT_DAO_UPDATE_MESSAGE_PATTERN = 'sputnik_dao_update_event';
 
-export const EVENT_CACHE_SERVICE = 'EVENT_CACHE_SERVICE';
-export const EVENT_CACHE_QUEUE_NAME = 'sputnik-events-cache';
-export const EVENT_CLEAR_HTTP_CACHE_MESSAGE_PATTERN = 'clear_http_cache_event';
+export const EVENT_API_SERVICE = 'EVENT_API_SERVICE';
+export const EVENT_API_QUEUE_NAME = 'sputnik-events-api';
 
 export const DB_FOREIGN_KEY_VIOLATION = '23503';
 
