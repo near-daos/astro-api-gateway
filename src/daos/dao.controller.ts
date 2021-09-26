@@ -80,6 +80,22 @@ export class DaoController {
   }
 
   @ApiParam({
+    name: 'accountId',
+    type: String,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Sputnik DAO',
+    type: Dao,
+  })
+  @ApiBadRequestResponse({ description: 'Invalid accountId' })
+  @UseInterceptors(HttpCacheInterceptor)
+  @Get('/account-daos/:accountId')
+  async daosByAccountId(@Param() { accountId }): Promise<Dao[] | DaoResponse> {
+    return await this.daoService.findAccountDaos(accountId);
+  }
+
+  @ApiParam({
     name: 'id',
     type: String,
   })

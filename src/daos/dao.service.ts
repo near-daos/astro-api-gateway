@@ -25,6 +25,17 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     });
   }
 
+  async findAccountDaos(accountId: string): Promise<Dao[] | DaoResponse> {
+    return await this.daoRepository
+      .createQueryBuilder('dao')
+      .leftJoinAndSelect('dao.policy', 'policy')
+      .leftJoinAndSelect('policy.roles', 'roles')
+      .where(`:accountId = ANY(roles.accountIds)`, {
+        accountId,
+      })
+      .getMany();
+  }
+
   async create(daoDto: DaoDto): Promise<Dao> {
     return this.daoRepository.save(daoDto);
   }
