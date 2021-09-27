@@ -1,3 +1,4 @@
+import camelcaseKeys from 'camelcase-keys';
 import { castVotePolicy, VotePolicy } from './vote-policy';
 
 export enum RoleKindType {
@@ -52,9 +53,14 @@ export function castRolePermission(permission: any): RolePermissionDto | null {
     permission?.kind.hasOwnProperty(key),
   );
 
+  const votePolicy = { ...permission.votePolicy };
+  Object.keys(votePolicy).map((key) => {
+    votePolicy[key] = castVotePolicy(camelcaseKeys(votePolicy[key]));
+  });
+
   let role = {
     ...permission,
-    votePolicy: castVotePolicy(permission.votePolicy),
+    votePolicy,
   };
 
   switch (type) {

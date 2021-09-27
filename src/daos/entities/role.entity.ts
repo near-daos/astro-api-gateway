@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
 import { BaseEntity } from 'src/common';
 import { RoleKindType } from 'src/sputnikdao/types/role';
 import { VotePolicy } from 'src/sputnikdao/types/vote-policy';
@@ -34,7 +34,10 @@ export class Role extends BaseEntity {
   @Column({ type: 'text', array: true })
   permissions: string[];
 
-  @ApiProperty({ type: VotePolicy })
+  @ApiProperty({
+    type: 'object',
+    additionalProperties: { $ref: getSchemaPath(VotePolicy) },
+  })
   @Column({ type: 'simple-json', nullable: true })
-  votePolicy: VotePolicy;
+  votePolicy: Record<string, VotePolicy>;
 }
