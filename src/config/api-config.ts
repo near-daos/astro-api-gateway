@@ -11,15 +11,19 @@ export { TypeOrmConfigService } from './typeorm-config.service';
 export { CacheConfigService } from './cache';
 
 const api = registerAs('api', () => {
-  const { host: redisHost, port: redisPort, database: redisDB } = parseRedisUrl(
-    process.env.REDIS_SOCKET_URL,
-  )?.[0];
+  const {
+    host: redisHost,
+    port: redisPort,
+    database: redisDB,
+    password: redisPassword,
+  } = parseRedisUrl(process.env.REDIS_SOCKET_URL)?.[0];
 
   return {
     port: parseInt(process.env.PORT, 10),
     redisHost,
     redisPort,
-    redisDB
+    redisDB,
+    redisPassword,
   };
 });
 
