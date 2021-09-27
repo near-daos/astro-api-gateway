@@ -1,4 +1,13 @@
-FROM node:14.16.0-alpine As development
+FROM node:14.16.0-alpine As dependencies
+
+WORKDIR /usr/src/app
+
+COPY package*.json ./
+
+# install dependencies
+RUN npm install
+
+FROM node:14.16.0-alpine as development
 
 # requirements
 RUN apk update && apk add curl bash && rm -rf /var/cache/apk/*
@@ -8,10 +17,7 @@ RUN curl -sfL https://install.goreleaser.com/github.com/tj/node-prune.sh | bash 
 
 WORKDIR /usr/src/app
 
-COPY package*.json ./
-
-# install dependencies
-RUN npm install
+COPY --from=dependencies /usr/src/app/node_modules ./node_modules
 
 COPY . .
 
