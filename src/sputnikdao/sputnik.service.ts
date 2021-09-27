@@ -239,7 +239,7 @@ export class SputnikDaoService {
     }
 
     const roles = dao.policy.roles.map((role) => ({
-      ...castRolePermission(role),
+      ...castRolePermission(camelcaseKeys(role)),
       id: buildRoleId(daoId, role.name),
       policy: { daoId },
     }));
