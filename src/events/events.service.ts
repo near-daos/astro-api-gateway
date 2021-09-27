@@ -1,12 +1,15 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import {
-  EVENT_CLEAR_HTTP_CACHE_MESSAGE_PATTERN,
   EVENT_NOTIFICATION_SERVICE,
-  EVENT_CACHE_SERVICE,
+  EVENT_API_SERVICE,
+  EVENT_API_DAO_UPDATE,
+  EVENT_API_PROPOSAL_UPDATE,
+  EVENT_DAO_UPDATE_NOTIFICATION,
 } from 'src/common/constants';
 import { ClientProxy } from '@nestjs/microservices';
-import { DaoUpdateMessage } from './messages/dao-update.message';
 import { BaseMessage } from './messages/base.event';
+import { DaoDto } from 'src/daos/dto/dao.dto';
+import { ProposalDto } from 'src/proposals/dto/proposal.dto';
 
 @Injectable()
 export class EventService {
@@ -15,28 +18,30 @@ export class EventService {
   constructor(
     @Inject(EVENT_NOTIFICATION_SERVICE)
     private readonly notificationEventClient: ClientProxy,
-    @Inject(EVENT_CACHE_SERVICE)
-    private readonly cacheEventClient: ClientProxy,
+    @Inject(EVENT_API_SERVICE)
+    private readonly apiEventClient: ClientProxy,
   ) {}
 
-  async handleDaoUpdates(daoIds: string[]): Promise<any> {
+  public async sendDaoUpdateNotificationEvent(daoIds: string[]): Promise<any> {
+    const message = new BaseMessage(EVENT_DAO_UPDATE_NOTIFICATION, { daoIds });
+
     return Promise.all([
-      this.sendDaoUpdates(daoIds),
-      this.sendClearCacheEvent(),
+      this.sendEvent(this.notificationEventClient, message),
+      this.sendEvent(this.apiEventClient, message),
     ]);
   }
 
-  private async sendDaoUpdates(daoIds: string[]): Promise<void> {
+  public async sendDaoUpdates(daos: DaoDto[]): Promise<any> {
     return this.sendEvent(
-      this.notificationEventClient,
-      new DaoUpdateMessage(daoIds),
+      this.apiEventClient,
+      new BaseMessage(EVENT_API_DAO_UPDATE, { daos }),
     );
   }
 
-  private async sendClearCacheEvent(): Promise<void> {
+  public async sendProposalUpdates(proposals: ProposalDto[]): Promise<any> {
     return this.sendEvent(
-      this.cacheEventClient,
-      new BaseMessage(EVENT_CLEAR_HTTP_CACHE_MESSAGE_PATTERN, {}),
+      this.apiEventClient,
+      new BaseMessage(EVENT_API_PROPOSAL_UPDATE, { proposals }),
     );
   }
 

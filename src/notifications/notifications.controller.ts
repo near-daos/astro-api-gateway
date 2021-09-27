@@ -1,7 +1,7 @@
 import { Controller, Logger } from '@nestjs/common';
 import { EventPattern, Transport } from '@nestjs/microservices';
 
-import { EVENT_DAO_UPDATE_MESSAGE_PATTERN } from 'src/common/constants';
+import { EVENT_DAO_UPDATE_NOTIFICATION } from 'src/common/constants';
 import { NotificationService } from './notifications.service';
 
 @Controller()
@@ -10,7 +10,7 @@ export class NotificationsController {
 
   constructor(private readonly notificationService: NotificationService) {}
 
-  @EventPattern(EVENT_DAO_UPDATE_MESSAGE_PATTERN, Transport.RMQ)
+  @EventPattern(EVENT_DAO_UPDATE_NOTIFICATION, Transport.RMQ)
   async handleDaoUpdates(data: Record<string, string[]>) {
     const { daoIds } = data;
     this.logger.log(`Received DAO updates: ${daoIds}`);
