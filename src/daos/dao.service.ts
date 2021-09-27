@@ -33,6 +33,7 @@ export class DaoService extends TypeOrmCrudService<Dao> {
       .where(`:accountId = ANY(roles.accountIds)`, {
         accountId,
       })
+      .orderBy('dao.createTimestamp', 'DESC')
       .getMany();
   }
 
