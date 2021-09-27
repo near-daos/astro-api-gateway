@@ -15,7 +15,7 @@ export class SputnikDaoDto extends TransactionInfo implements DaoDto {
   amount: number;
   council: string[];
   councilSeats: number;
-  numberOfMembers: number = 0;
+  numberOfAssociates: number = 0;
   link: string;
   description: string;
   status: DaoStatus;
