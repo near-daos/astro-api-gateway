@@ -269,7 +269,7 @@ export class AggregatorService {
 
     if (tx) {
       this.logger.log('Sending Proposal updates...');
-      this.eventService.sendProposalUpdates(proposals);
+      this.eventService.sendProposalUpdates(filteredProposals);
       this.logger.log('Sent Proposal updates succesfully.');
     }
 
