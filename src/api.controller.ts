@@ -2,7 +2,11 @@ import { Controller, Get, Logger } from '@nestjs/common';
 import { EventPattern, Transport } from '@nestjs/microservices';
 import { ApiExcludeEndpoint } from '@nestjs/swagger';
 import { CacheService } from './cache/service/cache.service';
-import { EVENT_DAO_UPDATE_MESSAGE_PATTERN } from './common/constants';
+import {
+  EVENT_API_DAO_UPDATE,
+  EVENT_API_PROPOSAL_UPDATE,
+  EVENT_DAO_UPDATE_NOTIFICATION,
+} from './common/constants';
 import { REDIS_SOCKET_EVENT_EMIT_ALL_NAME } from './websocket/redis-propagator/redis-propagator.constants';
 import { RedisService } from './websocket/redis/redis.service';
 
@@ -21,14 +25,26 @@ export class AppController {
     return 'Sputnik v2 API v1.0';
   }
 
-  @EventPattern(EVENT_DAO_UPDATE_MESSAGE_PATTERN, Transport.RMQ)
-  async onDaoUpdates(data: Record<string, string[]>) {
+  @EventPattern(EVENT_DAO_UPDATE_NOTIFICATION, Transport.RMQ)
+  async clearCache() {
     this.logger.log(`Clearing cache on DAO update.`);
     await this.cacheService.clearCache();
+  }
 
-    this.logger.log('Sending Websocket event.');
+  @EventPattern(EVENT_API_DAO_UPDATE, Transport.RMQ)
+  async onDaoUpdate(data: Record<string, string[]>) {
+    this.logger.log('Sending DAO updates to Websocket clients.');
     await this.redisService.publish(REDIS_SOCKET_EVENT_EMIT_ALL_NAME, {
       event: 'dao-update',
+      data,
+    });
+  }
+
+  @EventPattern(EVENT_API_PROPOSAL_UPDATE, Transport.RMQ)
+  async onProposalUpdate(data: Record<string, string[]>) {
+    this.logger.log('Sending Proposal updates to Websocket clients.');
+    await this.redisService.publish(REDIS_SOCKET_EVENT_EMIT_ALL_NAME, {
+      event: 'proposal-update',
       data,
     });
   }

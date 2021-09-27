@@ -22,8 +22,14 @@
       console.log(heartbeat);
     });
 
-    s.on('dao-update', ({ daoIds }) => {
-      console.log(`DAO updates: ${daoIds}`);
+    s.on('dao-update', ({ daos }) => {
+      console.log(`DAO updates:`);
+      console.log(daos);
+    })
+
+    s.on('proposal-update', ({ proposals }) => {
+      console.log(`Proposal updates:`);
+      console.log(proposals)
     })
   </script>
 </body>

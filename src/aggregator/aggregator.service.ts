@@ -150,7 +150,7 @@ export class AggregatorService {
       if (accountDaoIds.length) {
         this.logger.log(`New DAOs created: ${accountDaoIds.join(',')}`);
 
-        this.eventService.handleDaoUpdates(accountDaoIds);
+        this.eventService.sendDaoUpdateNotificationEvent(accountDaoIds);
       }
 
       //TODO: Re-work this for cases when proposal is created - there is no 'id' in transaction action payload
@@ -177,7 +177,7 @@ export class AggregatorService {
         this.logger.log(
           `Proposals updated for DAOs: ${proposalDaoIds.join(',')}`,
         );
-        await this.eventService.handleDaoUpdates(proposalDaoIds);
+        await this.eventService.sendDaoUpdateNotificationEvent(proposalDaoIds);
       }
 
       const transactionsByAccountId =
@@ -242,6 +242,12 @@ export class AggregatorService {
     );
     this.logger.log('Finished DAO aggregation.');
 
+    if (tx) {
+      this.logger.log('Sending DAO updates...');
+      this.eventService.sendDaoUpdates(daos);
+      this.logger.log('Sent DAO updates succesfully.');
+    }
+
     //Q2: Proposals with the absent DAO references?
     //Filtering proposals for unavailable DAOs
     const filteredProposals = !tx
@@ -260,6 +266,12 @@ export class AggregatorService {
       ),
     );
     this.logger.log('Finished Proposals aggregation.');
+
+    if (tx) {
+      this.logger.log('Sending Proposal updates...');
+      this.eventService.sendProposalUpdates(proposals);
+      this.logger.log('Sent Proposal updates succesfully.');
+    }
 
     const filteredBounties = !tx
       ? bounties.filter(({ daoId }) => enrichedDaoIds.includes(daoId))
