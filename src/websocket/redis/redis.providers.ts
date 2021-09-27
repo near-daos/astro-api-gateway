@@ -15,9 +15,10 @@ export const redisProviders: Provider[] = [
         redisHost: host,
         redisPort: port,
         redisDB: db,
+        redisPassword: password,
       } = configService.get('api');
 
-      return new Redis({ host, port, db });
+      return new Redis({ host, port, db, password });
     },
     inject: [ConfigService],
     provide: REDIS_SUBSCRIBER_CLIENT,
@@ -28,9 +29,10 @@ export const redisProviders: Provider[] = [
         redisHost: host,
         redisPort: port,
         redisDB: db,
+        redisPassword: password,
       } = configService.get('api');
 
-      return new Redis({ host, port, db });
+      return new Redis({ host, port, db, password });
     },
     inject: [ConfigService],
     provide: REDIS_PUBLISHER_CLIENT,
