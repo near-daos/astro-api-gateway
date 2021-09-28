@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import PromisePool from '@supercharge/promise-pool';
 import { NEAR_INDEXER_DB_CONNECTION } from 'src/common/constants';
-import { Repository } from 'typeorm';
+import { Repository, SelectQueryBuilder } from 'typeorm';
 import { Account, Transaction } from '.';
 import { ActionReceiptAction } from './entities/action-receipt-action.entity';
 import { Receipt } from './entities/receipt.entity';
@@ -41,43 +41,35 @@ export class NearService {
       .getMany();
   }
 
+  async findLastTransactionByReceiverAccountIds(
+    receiverAccountIds: string[],
+    fromBlockTimestamp?: number,
+  ): Promise<Transaction> {
+    return this.buildAggregationTransactionQuery(
+      receiverAccountIds,
+      fromBlockTimestamp,
+    )
+      .orderBy('transaction.block_timestamp', 'DESC')
+      .getOne();
+  }
+
   async findTransactionsByReceiverAccountIds(
     receiverAccountIds: string[],
     fromBlockTimestamp?: number,
   ): Promise<Transaction[]> {
-    let queryBuilder = this.transactionRepository
-      .createQueryBuilder('transaction')
-      .leftJoinAndSelect('transaction.transactionAction', 'transaction_actions')
-      .leftJoinAndSelect(
-        'transaction.receipts',
-        'receipts',
-        'receipts.predecessor_account_id = ANY(ARRAY[:...ids])',
-        { ids: receiverAccountIds },
-      )
-      .leftJoinAndSelect(
-        'receipts.receiptAction',
-        'action_receipt_actions',
-        'action_receipt_actions.receipt_predecessor_account_id = ANY(ARRAY[:...ids]) AND action_receipt_actions.action_kind = :actionKind',
-        { ids: receiverAccountIds, actionKind: ActionKind.Transfer },
-      )
-      .where('transaction.receiver_account_id = ANY(ARRAY[:...ids])', {
-        ids: receiverAccountIds,
-      })
-      .orderBy('transaction.block_timestamp', 'ASC');
-
-    queryBuilder = fromBlockTimestamp
-      ? queryBuilder.andWhere('transaction.block_timestamp >= :from', {
-          from: fromBlockTimestamp,
-        })
-      : queryBuilder;
-
-    return queryBuilder.getMany();
+    return this.buildAggregationTransactionQuery(
+      receiverAccountIds,
+      fromBlockTimestamp,
+    )
+      .orderBy('transaction.block_timestamp', 'ASC')
+      .getMany();
   }
 
   async findNFTActionReceiptsByReceiverAccountIds(
     receiverAccountIds: string[],
     fromBlockTimestamp?: number,
   ): Promise<ActionReceiptAction[]> {
+    console.log(receiverAccountIds)
     const { results: actionReceipts, errors } =
       await PromisePool.withConcurrency(5)
         .for(receiverAccountIds)
@@ -133,5 +125,37 @@ export class NearService {
       .createQueryBuilder('account')
       .where('account.created_by_receipt_id = :receiptId', { receiptId })
       .getOne();
+  }
+
+  private buildAggregationTransactionQuery(
+    receiverAccountIds: string[],
+    fromBlockTimestamp?: number,
+  ): SelectQueryBuilder<Transaction> {
+    let queryBuilder = this.transactionRepository
+      .createQueryBuilder('transaction')
+      .leftJoinAndSelect('transaction.transactionAction', 'transaction_actions')
+      .leftJoinAndSelect(
+        'transaction.receipts',
+        'receipts',
+        'receipts.predecessor_account_id = ANY(ARRAY[:...ids])',
+        { ids: receiverAccountIds },
+      )
+      .leftJoinAndSelect(
+        'receipts.receiptAction',
+        'action_receipt_actions',
+        'action_receipt_actions.receipt_predecessor_account_id = ANY(ARRAY[:...ids]) AND action_receipt_actions.action_kind = :actionKind',
+        { ids: receiverAccountIds, actionKind: ActionKind.Transfer },
+      )
+      .where('transaction.receiver_account_id = ANY(ARRAY[:...ids])', {
+        ids: receiverAccountIds,
+      });
+
+    queryBuilder = fromBlockTimestamp
+      ? queryBuilder.andWhere('transaction.block_timestamp >= :from', {
+          from: fromBlockTimestamp,
+        })
+      : queryBuilder;
+
+    return queryBuilder;
   }
 }

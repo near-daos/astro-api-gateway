@@ -22,10 +22,13 @@ import { ProposalKindAddBounty } from 'src/proposals/dto/proposal-kind.dto';
 import { ProposalType } from 'src/proposals/types/proposal-type';
 import { NFTTokenService } from 'src/tokens/nft-token.service';
 import { NFTTokenDto } from 'src/tokens/dto/nft-token.dto';
+import { AggregationState, AggregationStatus } from './types/aggregation-state';
 
 @Injectable()
 export class AggregatorService {
   private readonly logger = new Logger(AggregatorService.name);
+
+  private aggregationState: AggregationState = new AggregationState(null);
 
   constructor(
     private readonly configService: ConfigService,
@@ -73,36 +76,62 @@ export class AggregatorService {
 
     const tx = lastTx || (await this.transactionService.lastTransaction());
 
+    // Last transaction from NEAR Indexer - for the list of DAOs defined
+    const nearTx =
+      await this.nearService.findLastTransactionByReceiverAccountIds(
+        [...daoIds, contractName, tokenFactoryContractName],
+        tx?.blockTimestamp,
+      );
+
+    if (tx && tx.transactionHash === nearTx?.transactionHash) {
+      return this.logger.log('Data is up to date. Skipping data aggregation.');
+    }
+
+    if (this.isAggregationInProgress(nearTx?.transactionHash)) {
+      return this.logger.log(
+        `Aggregation for transaction ${nearTx?.transactionHash} is already in progress.`,
+      );
+    }
+
+    this.logger.log('Aggregating data...');
+    this.aggregationState = new AggregationState(nearTx?.transactionHash);
+
+    let startTime = new Date().getTime();
+    const accounts: Account[] =
+      await this.nearService.findAccountsByContractName(contractName);
+
+    const accountsTime = new Date().getTime();
+    this.logger.log(`Accounts retrieval time: ${accountsTime - startTime} ms`);
+
+    let accountDaoIds = daoIds;
+    let proposalDaoIds = daoIds;
+    let tokenIds = null;
+
+    startTime = new Date().getTime();
     const transactions: Transaction[] =
       await this.nearService.findTransactionsByReceiverAccountIds(
         [...daoIds, contractName, tokenFactoryContractName],
         tx?.blockTimestamp,
       );
 
-    // Last transaction from NEAR Indexer - for the list of DAOs defined
-    const { transactionHash: nearTransactionHash } =
-      transactions?.[transactions?.length - 1] || {};
-
-    if (tx && tx.transactionHash === nearTransactionHash) {
-      return this.logger.log('Data is up to date. Skipping data aggregation.');
-    }
-
-    const accounts: Account[] =
-      await this.nearService.findAccountsByContractName(contractName);
-
-    let accountDaoIds = daoIds;
-    let proposalDaoIds = daoIds;
-    let tokenIds = null;
+    const transactionsTime = new Date().getTime();
+    this.logger.log(
+      `Transactions retrieval time: ${transactionsTime - startTime} ms`,
+    );
 
     const actionTransactions = transactions.filter(
       (tx) => tx.transactionAction.args.args_json,
     );
 
+    startTime = new Date().getTime();
     const nftActionReceipts =
       await this.nearService.findNFTActionReceiptsByReceiverAccountIds(
         [...daoIds, contractName, tokenFactoryContractName],
         tx?.blockTimestamp,
       );
+
+    const nftTime = new Date().getTime();
+    this.logger.log(`NFTs retrieval time: ${nftTime - startTime} ms`);
 
     const nftTokenOwners = [];
     nftActionReceipts
@@ -147,12 +176,6 @@ export class AggregatorService {
         ),
       ];
 
-      if (accountDaoIds.length) {
-        this.logger.log(`New DAOs created: ${accountDaoIds.join(',')}`);
-
-        this.eventService.sendDaoUpdateNotificationEvent(accountDaoIds);
-      }
-
       //TODO: Re-work this for cases when proposal is created - there is no 'id' in transaction action payload
       const proposalTransactions = actionTransactions
         .filter(({ receiverAccountId }) => receiverAccountId !== contractName)
@@ -172,13 +195,6 @@ export class AggregatorService {
           ),
         ),
       ];
-
-      if (proposalTransactions.length) {
-        this.logger.log(
-          `Proposals updated for DAOs: ${proposalDaoIds.join(',')}`,
-        );
-        await this.eventService.sendDaoUpdateNotificationEvent(proposalDaoIds);
-      }
 
       const transactionsByAccountId =
         this.reduceTransactionsByAccountId(actionTransactions);
@@ -205,6 +221,19 @@ export class AggregatorService {
           }),
         ),
       ];
+
+      if (accountDaoIds.length) {
+        this.logger.log(`New DAOs created: ${accountDaoIds.join(',')}`);
+
+        this.eventService.sendDaoUpdateNotificationEvent(accountDaoIds);
+      }
+
+      if (proposalDaoIds.length) {
+        this.logger.log(
+          `Proposals updated for DAOs: ${proposalDaoIds.join(',')}`,
+        );
+        await this.eventService.sendDaoUpdateNotificationEvent(proposalDaoIds);
+      }
     }
 
     const bountyClaimTransactions =
@@ -220,7 +249,7 @@ export class AggregatorService {
       ),
     ];
 
-    this.logger.log('Aggregating data...');
+    startTime = new Date().getTime();
     const [daos, proposals, bounties, tokens, nftTokens] = await Promise.all([
       this.sputnikDaoService.getDaoList(
         Array.from(new Set([...accountDaoIds, ...proposalDaoIds])),
@@ -230,6 +259,10 @@ export class AggregatorService {
       this.tokenFactoryService.getTokens(tokenIds),
       this.tokenFactoryService.getNFTs(nftTokenOwners),
     ]);
+    const aggregationTime = new Date().getTime();
+    this.logger.log(
+      `Smart Contract aggregation time: ${aggregationTime - startTime} ms`,
+    );
 
     const enrichedDaos = this.enrichDaos(daos, accounts, transactions);
     const enrichedDaoIds = enrichedDaos.map(({ id }) => id);
@@ -318,6 +351,8 @@ export class AggregatorService {
       ),
     );
     this.logger.log('Finished Transactions aggregation.');
+
+    this.aggregationState.status = AggregationStatus.Success;
   }
 
   private enrichDaos(
@@ -586,5 +621,18 @@ export class AggregatorService {
       }),
       {},
     );
+  }
+
+  private isAggregationInProgress(transactionHash: string): boolean {
+    const { status, transactionHash: txHash } = this.aggregationState;
+
+    if (
+      AggregationStatus.Success !== status &&
+      this.aggregationState.isExpired()
+    ) {
+      return false;
+    }
+
+    return transactionHash === txHash;
   }
 }
