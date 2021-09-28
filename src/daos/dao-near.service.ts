@@ -28,7 +28,6 @@ export class DaoNearService {
 
     const {
       receiptId,
-      originatedFromTransactionHash,
       originatedFromTransaction,
     } = receipt || {};
     if (
@@ -50,7 +49,7 @@ export class DaoNearService {
     return this.daoRepository.save({
       id: account.accountId,
       status: DaoStatus.Success,
-      transactionHash: originatedFromTransactionHash,
+      transactionHash: originatedFromTransaction.transactionHash,
     });
   }
 }

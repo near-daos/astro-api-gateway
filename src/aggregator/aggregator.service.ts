@@ -364,7 +364,7 @@ export class AggregatorService {
       (acc, { accountId, receipt }) => ({
         ...acc,
         [accountId]: {
-          transactionHash: receipt.originatedFromTransactionHash,
+          transactionHash: receipt.originatedFromTransaction.transactionHash,
           blockTimestamp: receipt.includedInBlockTimestamp,
           signerAccountId: receipt.originatedFromTransaction?.signerAccountId,
         },
