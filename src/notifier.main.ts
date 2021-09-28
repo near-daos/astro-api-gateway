@@ -1,10 +1,12 @@
 import { NestFactory, Reflector } from '@nestjs/core';
-import { ClassSerializerInterceptor } from '@nestjs/common';
+import { ClassSerializerInterceptor, Logger } from '@nestjs/common';
 import { Transport } from '@nestjs/microservices';
 import { EVENT_NOTIFICATIONS_QUEUE_NAME } from './common/constants';
 import { NotificationsModule } from './notifications/notifications.module';
 
 export default class Notifier {
+  private readonly logger = new Logger(Notifier.name);
+
   async bootstrap(): Promise<void> {
     const app = await NestFactory.createMicroservice(NotificationsModule, {
       transport: Transport.RMQ,
@@ -22,7 +24,7 @@ export default class Notifier {
     );
 
     await app.listen(() =>
-      console.log('Notifications Microservice is listening...'),
+      this.logger.log('Notifications Microservice is listening...'),
     );
   }
 }

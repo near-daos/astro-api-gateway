@@ -96,18 +96,11 @@ export class AggregatorService {
     this.logger.log('Aggregating data...');
     this.aggregationState = new AggregationState(nearTx?.transactionHash);
 
-    let startTime = new Date().getTime();
-    const accounts: Account[] =
-      await this.nearService.findAccountsByContractName(contractName);
-
-    const accountsTime = new Date().getTime();
-    this.logger.log(`Accounts retrieval time: ${accountsTime - startTime} ms`);
-
     let accountDaoIds = daoIds;
     let proposalDaoIds = daoIds;
     let tokenIds = null;
 
-    startTime = new Date().getTime();
+    let startTime = new Date().getTime();
     const transactions: Transaction[] =
       await this.nearService.findTransactionsByReceiverAccountIds(
         [...daoIds, contractName, tokenFactoryContractName],
@@ -122,39 +115,6 @@ export class AggregatorService {
     const actionTransactions = transactions.filter(
       (tx) => tx.transactionAction.args.args_json,
     );
-
-    startTime = new Date().getTime();
-    const nftActionReceipts =
-      await this.nearService.findNFTActionReceiptsByReceiverAccountIds(
-        [...daoIds, contractName, tokenFactoryContractName],
-        tx?.blockTimestamp,
-      );
-
-    const nftTime = new Date().getTime();
-    this.logger.log(`NFTs retrieval time: ${nftTime - startTime} ms`);
-
-    const nftTokenOwners = [];
-    nftActionReceipts
-      .filter(({ args }) => (args?.args_json as any)?.receiver_id)
-      .map(({ receiptReceiverAccountId, args }) => {
-        const receiverId = (args.args_json as any).receiver_id;
-        if (
-          nftTokenOwners.some(
-            ({ contractId, accountId }) =>
-              contractId === receiptReceiverAccountId &&
-              accountId === receiverId,
-          )
-        ) {
-          return;
-        }
-
-        nftTokenOwners.push({
-          contractId: receiptReceiverAccountId,
-          accountId: (args.args_json as any).receiver_id,
-        });
-      });
-
-    // TODO: check token re-indexing condition - get delta
 
     if (tx) {
       accountDaoIds = [
@@ -236,6 +196,52 @@ export class AggregatorService {
       }
     }
 
+    startTime = new Date().getTime();
+    const accountsCombinedDaoIds = Array.from(
+      new Set([...accountDaoIds, ...proposalDaoIds]),
+    );
+    const accounts: Account[] = tx
+      ? accountsCombinedDaoIds?.length
+        ? await this.nearService.findAccountsByAccountIds(
+            accountsCombinedDaoIds,
+          )
+        : []
+      : await this.nearService.findAccountsByContractName(contractName);
+
+    const accountsTime = new Date().getTime();
+    this.logger.log(`Accounts retrieval time: ${accountsTime - startTime} ms`);
+
+    startTime = new Date().getTime();
+    const nftActionReceipts =
+      await this.nearService.findNFTActionReceiptsByReceiverAccountIds(
+        [...accountDaoIds, contractName, tokenFactoryContractName],
+        tx?.blockTimestamp,
+      );
+
+    const nftTime = new Date().getTime();
+    this.logger.log(`NFTs retrieval time: ${nftTime - startTime} ms`);
+
+    const nftTokenOwners = [];
+    nftActionReceipts
+      .filter(({ args }) => (args?.args_json as any)?.receiver_id)
+      .map(({ receiptReceiverAccountId, args }) => {
+        const receiverId = (args.args_json as any).receiver_id;
+        if (
+          nftTokenOwners.some(
+            ({ contractId, accountId }) =>
+              contractId === receiptReceiverAccountId &&
+              accountId === receiverId,
+          )
+        ) {
+          return;
+        }
+
+        nftTokenOwners.push({
+          contractId: receiptReceiverAccountId,
+          accountId: (args.args_json as any).receiver_id,
+        });
+      });
+
     const bountyClaimTransactions =
       await this.transactionService.findBountyClaimTransactions();
     const bountyClaimAccountIds = [
@@ -251,9 +257,7 @@ export class AggregatorService {
 
     startTime = new Date().getTime();
     const [daos, proposals, bounties, tokens, nftTokens] = await Promise.all([
-      this.sputnikDaoService.getDaoList(
-        Array.from(new Set([...accountDaoIds, ...proposalDaoIds])),
-      ),
+      this.sputnikDaoService.getDaoList(accountsCombinedDaoIds),
       this.sputnikDaoService.getProposals(proposalDaoIds),
       this.sputnikDaoService.getBounties(proposalDaoIds, bountyClaimAccountIds),
       this.tokenFactoryService.getTokens(tokenIds),
