@@ -41,6 +41,15 @@ export class NearService {
       .getMany();
   }
 
+  async findAccountsByAccountIds(accountIds: string[]): Promise<Account[]> {
+    return this.accountRepository
+      .createQueryBuilder('account')
+      .leftJoinAndSelect('account.receipt', 'receipts')
+      .leftJoinAndSelect('receipts.originatedFromTransaction', 'transactions')
+      .where('account.account_id = ANY(ARRAY[:...ids])', { ids: accountIds })
+      .getMany();
+  }
+
   async findLastTransactionByReceiverAccountIds(
     receiverAccountIds: string[],
     fromBlockTimestamp?: number,
@@ -69,7 +78,6 @@ export class NearService {
     receiverAccountIds: string[],
     fromBlockTimestamp?: number,
   ): Promise<ActionReceiptAction[]> {
-    console.log(receiverAccountIds)
     const { results: actionReceipts, errors } =
       await PromisePool.withConcurrency(5)
         .for(receiverAccountIds)
