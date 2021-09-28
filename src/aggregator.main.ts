@@ -1,10 +1,12 @@
 import { NestFactory, Reflector } from '@nestjs/core';
-import { ClassSerializerInterceptor } from '@nestjs/common';
+import { ClassSerializerInterceptor, Logger } from '@nestjs/common';
 import { AggregatorModule } from './aggregator/aggregator.module';
 import { Transport } from '@nestjs/microservices';
 import { AggregatorService } from './aggregator/aggregator.service';
 
 export default class Aggregator {
+  private readonly logger = new Logger(Aggregator.name);
+
   async bootstrap(): Promise<void> {
     const app = await NestFactory.createMicroservice(AggregatorModule, {
       transport: Transport.TCP,
@@ -15,7 +17,7 @@ export default class Aggregator {
     );
 
     await app.listen(() =>
-      console.log('Aggregator Microservice is listening...'),
+      this.logger.log('Aggregator Microservice is listening...'),
     );
 
     app.get(AggregatorService).aggregate();
