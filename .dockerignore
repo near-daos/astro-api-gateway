@@ -23,3 +23,8 @@ Dockerfile
 README.md
 tslint.json
 nodemon.json
+
+deployment
+k8s
+samples
+test

@@ -1,6 +1,9 @@
 image: node:14.16.0
 
 definitions:
+  caches:
+    docker-cache: docker-cache
+
   steps:
     - step: &set-environment
         name: Set Environment
@@ -12,25 +15,31 @@ definitions:
         caches:
           - node
         script:
-          - npm install
-          - npm test || true
-          - npm install eslint
-          - npx eslint . || true
+          - yarn install
+          - yarn test || true
+          - yarn lint . || true
+          - yarn build
     
     - step: &docker-build-publish
         name: Docker - Build and Publish
         services:
           - docker
         caches:
-          - docker
+          - docker-cache
         script:
           - source environment.sh
+          - >-
+            if [[ -f "docker-cache/cache.tar" ]]; then
+              docker load < docker-cache/cache.tar;
+            fi
           - >-
             docker build
             -t $APP_NAME:latest
             -t $APP_NAME:develop-latest
             -t $APP_NAME:$DOCKER_ENV_TAG
             .
+          - >-
+            docker save $(docker images -qa) > docker-cache/cache.tar;
 
           - pipe: atlassian/aws-ecr-push-image:1.4.2
             variables:
