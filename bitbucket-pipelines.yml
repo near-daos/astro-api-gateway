@@ -29,7 +29,9 @@ definitions:
         script:
           - source environment.sh
           - >-
-            docker load < docker-cache/cache.tar;
+            if [[ -f "docker-cache/cache.tar" ]]; then
+              docker load < docker-cache/cache.tar;
+            fi
           - >-
             docker build
             -t $APP_NAME:latest
