@@ -25,11 +25,18 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     });
   }
 
+  async findById(id: string): Promise<Dao> {
+    return await this.findOne(id, {
+      where: { status: DaoStatus.Success },
+    });
+  }
+
   async findAccountDaos(accountId: string): Promise<Dao[] | DaoResponse> {
     return await this.daoRepository
       .createQueryBuilder('dao')
       .leftJoinAndSelect('dao.policy', 'policy')
       .leftJoinAndSelect('policy.roles', 'roles')
+      .where('status = :status', { status: DaoStatus.Success })
       .where(`:accountId = ANY(roles.accountIds)`, {
         accountId,
       })
@@ -54,6 +61,9 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     req.parsed.search = {
       $and: [
         {},
+        {
+          status: { $eq: DaoStatus.Success },
+        },
         {
           $or: [
             {
