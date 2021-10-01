@@ -37,7 +37,7 @@ export class DaoService extends TypeOrmCrudService<Dao> {
       .leftJoinAndSelect('dao.policy', 'policy')
       .leftJoinAndSelect('policy.roles', 'roles')
       .where('status = :status', { status: DaoStatus.Success })
-      .where(`:accountId = ANY(roles.accountIds)`, {
+      .andWhere(`:accountId = ANY(roles.accountIds)`, {
         accountId,
       })
       .orderBy('dao.createTimestamp', 'DESC')
