@@ -6,7 +6,7 @@ import { isNotNull } from 'src/utils/guards';
 import { NearService } from 'src/near/near.service';
 import { TransactionService } from 'src/transactions/transaction.service';
 import { ConfigService } from '@nestjs/config';
-import { Transaction, Account, ActionReceiptAction } from 'src/near';
+import { Account, ActionReceiptAction, Transaction } from 'src/near';
 import { SputnikDaoDto } from 'src/daos/dto/dao-sputnik.dto';
 import { castProposalKind, ProposalDto } from 'src/proposals/dto/proposal.dto';
 import { SchedulerRegistry } from '@nestjs/schedule';
@@ -23,6 +23,7 @@ import { ProposalType } from 'src/proposals/types/proposal-type';
 import { NFTTokenService } from 'src/tokens/nft-token.service';
 import { NFTTokenDto } from 'src/tokens/dto/nft-token.dto';
 import { AggregationState, AggregationStatus } from './types/aggregation-state';
+import { RoleKindType } from '../sputnikdao/types/role';
 
 @Injectable()
 export class AggregatorService {
@@ -393,6 +394,10 @@ export class AggregatorService {
     return daos.map((dao) => {
       const txData = daoTxDataMap[dao.id];
       const txUpdateData = transactionsByAccountId[dao.id]?.pop();
+      const numberOfMembers = dao.policy.roles
+        .filter((role) => role.kind === RoleKindType.Group)
+        .map((group) => group.accountIds)
+        .flat().length;
 
       return {
         ...dao,
@@ -401,6 +406,7 @@ export class AggregatorService {
         updateTransactionHash: (txUpdateData || txData)?.transactionHash,
         updateTimestamp: (txUpdateData || txData)?.blockTimestamp,
         numberOfAssociates: new Set(signersByAccountId[dao.id]).size,
+        numberOfMembers,
         status: DaoStatus.Success,
         createdBy: txData?.signerAccountId,
       };
