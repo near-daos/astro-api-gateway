@@ -1,4 +1,4 @@
-import { Account, Contract } from 'near-api-js';
+import { Account, Contract, Near } from 'near-api-js';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { PROPOSAL_REQUEST_CHUNK_SIZE } from './constants';
 import { SputnikDaoDto } from 'src/daos/dto/dao-sputnik.dto';
@@ -19,6 +19,8 @@ import { BountyClaimDto } from 'src/bounties/dto/bounty-claim.dto';
 export class SputnikDaoService {
   private readonly logger = new Logger(SputnikDaoService.name);
 
+  private near!: Near;
+
   private factoryContract!: Contract & any;
 
   private account!: Account;
@@ -27,8 +29,9 @@ export class SputnikDaoService {
     @Inject(NEAR_SPUTNIK_PROVIDER)
     private nearSputnikProvider: NearSputnikProvider,
   ) {
-    const { factoryContract, account } = nearSputnikProvider;
+    const { near, factoryContract, account } = nearSputnikProvider;
 
+    this.near = near;
     this.factoryContract = factoryContract;
     this.account = account;
   }
@@ -209,12 +212,19 @@ export class SputnikDaoService {
   private async getDaoById(daoId: string): Promise<SputnikDaoDto | null> {
     const contract = this.getContract(daoId);
 
+    const getDaoAmount = async (): Promise<string> => {
+      const account = await this.near.account(daoId);
+      const state = await account.state();
+
+      return state.amount;
+    };
+
     const daoEnricher = {
       config: async (): Promise<DaoConfig> => contract.get_config(),
       policy: async (): Promise<PolicyDto> => contract.get_policy(),
       stakingContract: async (): Promise<string> =>
         contract.get_staking_contract(),
-      amount: async (): Promise<string> => contract.get_available_amount(),
+      amount: async (): Promise<string> => getDaoAmount(),
       totalSupply: async (): Promise<string> =>
         contract.delegation_total_supply(),
       lastProposalId: async (): Promise<string> =>
