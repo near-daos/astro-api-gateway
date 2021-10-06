@@ -67,39 +67,15 @@ service:
   targetPort: 3000
 
 ingress:
-  enabled: false
-  annotations: #{}
-    kubernetes.io/ingress.class: nginx
-    kubernetes.io/tls-acme: "true"
-  hosts:
-    - host: sputnik-v2-api-dev
-      paths:
-        - /
-  tls:
-   - secretName: sputnik-v2-api-tls
-     hosts:
-       - sputnik-v2-api-dev
-dns:
-  domainName: ".westus2.dipd.sbp.eyclienthub.com"
+  host: "sputnik-v2-api-host"
 
-certificate:
-  enabled: false
-  name: cert
-  tls: true
-  issuerRef:
-    name: letsencrypt-prod
-    kind: Issuer
-  # commonName: ".westus2.dipd.sbp.eyclienthub.com"
-  dnsNames:
-    - sputnik-v2-api-dev
-
-resources:
-  limits:
-    cpu: 300m
-    memory: 400Mi
-  requests:
-    cpu: 200m
-    memory: 300Mi
+# resources:
+#   limits:
+#     cpu: 300m
+#     memory: 400Mi
+#   requests:
+#     cpu: 200m
+#     memory: 300Mi
 
 nodeSelector: {}
 
