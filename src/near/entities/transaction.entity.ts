@@ -34,7 +34,6 @@ export class Transaction {
   @ApiProperty({ type: [Receipt] })
   @OneToMany(() => Receipt, (receipt) => receipt.originatedFromTransaction, {
     cascade: true,
-    persistence: false,
   })
   receipts: Receipt[];
 
