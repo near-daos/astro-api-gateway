@@ -65,6 +65,7 @@ definitions:
             --set environment.near_env=$NEAR_ENV
             --set environment.near_contract_name=$NEAR_CONTRACT_NAME
             --set environment.near_token_factory_contract_name=$NEAR_TOKEN_FACTORY_CONTRACT_NAME
+            --set ingress.host=$K8S_INGRESS_HOST
             > $APP_NAME-manifest.yml
 
           - pipe: atlassian/aws-eks-kubectl-run:1.4.2
