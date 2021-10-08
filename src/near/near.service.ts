@@ -58,6 +58,7 @@ export class NearService {
       receiverAccountIds,
       fromBlockTimestamp,
     )
+      .select('transaction.transactionHash')
       .orderBy('transaction.block_timestamp', 'DESC')
       .getOne();
   }

@@ -10,7 +10,7 @@ import { Account, ActionReceiptAction, Transaction } from 'src/near';
 import { SputnikDaoDto } from 'src/daos/dto/dao-sputnik.dto';
 import { castProposalKind, ProposalDto } from 'src/proposals/dto/proposal.dto';
 import { SchedulerRegistry } from '@nestjs/schedule';
-import { buildDaoId, buildProposalId } from 'src/utils';
+import { btoaJSON, buildDaoId, buildProposalId } from 'src/utils';
 import { EventService } from 'src/events/events.service';
 import { DaoStatus } from 'src/daos/types/dao-status';
 import { BountyService } from 'src/bounties/bounty.service';
@@ -114,17 +114,17 @@ export class AggregatorService {
     );
 
     const actionTransactions = transactions.filter(
-      (tx) => tx.transactionAction.args.args_json,
+      (tx) => tx.transactionAction?.args?.args_base64,
     );
 
     if (tx) {
       accountDaoIds = [
         ...new Set(
           transactions
-            //TODO: Q1: args_json is absent? - needs clarification
             .filter(
               ({ transactionAction: action }) =>
-                action.args?.args_json && (action.args?.args_json as any)?.name,
+                action.args?.args_base64 &&
+                btoaJSON(action.args?.args_base64 as string)?.name,
             )
             .filter(
               ({ receiverAccountId: accId, transactionAction: action }) =>
@@ -132,7 +132,10 @@ export class AggregatorService {
                 (action.args as any).method_name === 'create',
             )
             .map(({ transactionAction: action }) =>
-              buildDaoId((action.args as any).args_json.name, contractName),
+              buildDaoId(
+                btoaJSON(action.args?.args_base64 as string)?.name,
+                contractName,
+              ),
             ),
         ),
       ];
@@ -145,7 +148,7 @@ export class AggregatorService {
           function: (action.args as any).method_name,
           id: buildProposalId(
             receiverAccountId,
-            (action.args as any).args_json.id,
+            btoaJSON(action.args?.args_base64 as string)?.id,
           ),
         }));
 
@@ -165,8 +168,8 @@ export class AggregatorService {
 
       const tokenTransactions = tokenFactoryTransactions.filter(
         ({ transactionAction }) => {
-          const { method_name, args_json } = transactionAction.args;
-          const { metadata } = (args_json as any)?.args || {};
+          const { method_name, args_base64 } = transactionAction.args;
+          const { metadata } = btoaJSON(args_base64 as string)?.args || {};
 
           return method_name == 'create_token' && metadata;
         },
@@ -175,8 +178,9 @@ export class AggregatorService {
       tokenIds = [
         ...new Set(
           tokenTransactions.map((tx) => {
-            const { symbol } = (tx.transactionAction.args.args_json as any)
-              ?.args?.metadata;
+            const { symbol } = btoaJSON(
+              tx.transactionAction.args.args_base64 as string,
+            )?.args?.metadata;
 
             return symbol;
           }),
@@ -224,9 +228,9 @@ export class AggregatorService {
 
     const nftTokenOwners = [];
     nftActionReceipts
-      .filter(({ args }) => (args?.args_json as any)?.receiver_id)
+      .filter(({ args }) => btoaJSON(args?.args_base64 as string)?.receiver_id)
       .map(({ receiptReceiverAccountId, args }) => {
-        const receiverId = (args.args_json as any).receiver_id;
+        const receiverId = btoaJSON(args.args_base64 as string)?.receiver_id;
         if (
           nftTokenOwners.some(
             ({ contractId, accountId }) =>
@@ -239,7 +243,7 @@ export class AggregatorService {
 
         nftTokenOwners.push({
           contractId: receiptReceiverAccountId,
-          accountId: (args.args_json as any).receiver_id,
+          accountId: btoaJSON(args.args_base64 as string)?.receiver_id,
         });
       });
 
@@ -427,7 +431,7 @@ export class AggregatorService {
       }
 
       const preFilteredTransactions = transactionsByAccountId[daoId].filter(
-        (tx) => tx.transactionAction.args.args_json,
+        (tx) => tx.transactionAction.args.args_base64,
       );
 
       const txData = preFilteredTransactions
@@ -439,7 +443,8 @@ export class AggregatorService {
           const { signerAccountId } = tx;
 
           const { description: txDescription, kind: txKind } =
-            (tx.transactionAction.args.args_json as any).proposal || {};
+            btoaJSON(tx.transactionAction.args.args_base64 as string)
+              ?.proposal || {};
           return (
             description === txDescription &&
             kind.equals(castProposalKind(txKind)) &&
@@ -448,7 +453,11 @@ export class AggregatorService {
         });
 
       const txUpdateData = preFilteredTransactions
-        .filter((tx) => (tx.transactionAction.args.args_json as any).id === id)
+        .filter(
+          (tx) =>
+            btoaJSON(tx.transactionAction.args.args_base64 as string)?.id ===
+            id,
+        )
         .pop();
 
       const prop = {
@@ -474,7 +483,7 @@ export class AggregatorService {
       }
 
       const preFilteredTransactions = transactionsByAccountId[daoId].filter(
-        (tx) => tx.transactionAction.args.args_json,
+        (tx) => tx.transactionAction.args.args_base64,
       );
 
       const txData = preFilteredTransactions
@@ -484,7 +493,8 @@ export class AggregatorService {
         )
         .filter((tx) => {
           const { kind: txKind } =
-            (tx.transactionAction.args.args_json as any).proposal || {};
+            btoaJSON(tx.transactionAction.args.args_base64 as string)
+              ?.proposal || {};
 
           const txProposalKind = castProposalKind(txKind);
           const { type } = txProposalKind?.kind;
@@ -521,8 +531,8 @@ export class AggregatorService {
         const { bounty, deadline, accountId } = bountyClaim;
         const txCreateData = bountyClaimTransactions.find((tx) => {
           const { signerAccountId } = tx;
-          const { id: txId, deadline: txDeadline } = tx.transactionAction.args
-            .args_json as any;
+          const { id: txId, deadline: txDeadline } =
+            btoaJSON(tx.transactionAction.args.args_base64 as string) || {};
 
           return (
             signerAccountId === accountId &&
@@ -569,7 +579,7 @@ export class AggregatorService {
     }
 
     const preFilteredTransactions = tokenFactoryTransactions.filter(
-      (tx) => tx.transactionAction.args.args_json,
+      (tx) => tx.transactionAction.args.args_base64,
     );
 
     return tokens.map((token) => {
@@ -582,7 +592,8 @@ export class AggregatorService {
         )
         .find((tx) => {
           const { symbol: txSymbol } =
-            (tx.transactionAction.args.args_json as any)?.args?.metadata || {};
+            btoaJSON(tx.transactionAction.args.args_base64 as string)?.args
+              ?.metadata || {};
 
           return symbol === txSymbol;
         });
@@ -606,7 +617,7 @@ export class AggregatorService {
 
       const actionReceipt = nftActionReceipts.find((receiptAction) => {
         const { receiver_id, token_series_id } =
-          (receiptAction.args?.args_json as any) || {};
+          btoaJSON(receiptAction.args?.args_base64 as string) || {};
 
         return (
           ownerId === receiver_id && (id || tokenId)?.includes(token_series_id)
