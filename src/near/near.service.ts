@@ -143,18 +143,17 @@ export class NearService {
     let queryBuilder = this.receiptRepository
       .createQueryBuilder('receipt')
       .leftJoinAndSelect('receipt.receiptAction', 'action_receipt_actions')
-      .leftJoinAndSelect(
-        'receipt.originatedFromTransaction',
-        'action_receipt_actions',
-      )
       .where('receipt.receiver_account_id = ANY(ARRAY[:...ids])', {
         ids: receiverAccountIds,
       });
 
     queryBuilder = fromBlockTimestamp
-      ? queryBuilder.andWhere('transaction.block_timestamp >= :from', {
-          from: fromBlockTimestamp,
-        })
+      ? queryBuilder.andWhere(
+          'transaction.included_in_block_timestamp >= :from',
+          {
+            from: fromBlockTimestamp,
+          },
+        )
       : queryBuilder;
 
     return queryBuilder.getMany();
