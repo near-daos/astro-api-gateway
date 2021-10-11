@@ -195,29 +195,28 @@ export class SputnikDaoService {
         [],
       );
 
-      return bounties
-        .map((bounty: BountyDto) => {
-          return {
-            ...camelcaseKeys(bounty),
-            id: buildBountyId(contractId, bounty.id),
-            bountyId: bounty.id,
-            daoId: contractId,
-            dao: { id: contractId },
-            numberOfClaims: numClaims.find(
-              ({ bountyId }) => bountyId === bounty.id,
-            )?.numClaims,
-            bountyClaims: bountyClaims
-              .filter((claim) => bounty.id === claim.bountyId)
-              .map((claim) => ({
-                ...camelcaseKeys(claim),
-                id: buildBountyClaimId(contractId, bounty.id, claim.startTime),
-                bounty: {
-                  id: buildBountyId(contractId, bounty.id),
-                  bountyId: bounty.id,
-                },
-              })),
-          };
-        });
+      return bounties.map((bounty: BountyDto) => {
+        return {
+          ...camelcaseKeys(bounty),
+          id: buildBountyId(contractId, bounty.id),
+          bountyId: bounty.id,
+          daoId: contractId,
+          dao: { id: contractId },
+          numberOfClaims: numClaims.find(
+            ({ bountyId }) => bountyId === bounty.id,
+          )?.numClaims,
+          bountyClaims: bountyClaims
+            .filter((claim) => bounty.id === claim.bountyId)
+            .map((claim) => ({
+              ...camelcaseKeys(claim),
+              id: buildBountyClaimId(contractId, bounty.id, claim.startTime),
+              bounty: {
+                id: buildBountyId(contractId, bounty.id),
+                bountyId: bounty.id,
+              },
+            })),
+        };
+      });
     } catch (error) {
       this.logger.error(error);
 

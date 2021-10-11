@@ -1,6 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Transaction } from 'src/near/entities/transaction.entity';
 import { DaoService } from 'src/daos/dao.service';
 import { ProposalService } from 'src/proposals/proposal.service';
 import { SputnikDaoService } from 'src/sputnikdao/sputnik.service';
@@ -16,7 +14,6 @@ export class SputnikTransactionService {
   private readonly logger = new Logger(SputnikTransactionService.name);
 
   constructor(
-    @InjectRepository(Transaction)
     private readonly configService: ConfigService,
     private readonly sputnikDaoService: SputnikDaoService,
     private readonly daoService: DaoService,
@@ -107,6 +104,8 @@ export class SputnikTransactionService {
         transactionHash: hash,
         createTimestamp: txTimestamp,
       }));
+
+    console.log('enrichedProposals: ', enrichedProposals);
 
     if (enrichedProposals.length) {
       this.logger.log('Storing Proposals from wallet callback...');

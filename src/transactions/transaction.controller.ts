@@ -14,6 +14,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Response } from 'express';
+import querystring, { ParsedUrlQueryInput } from 'querystring';
 
 import { ParsedRequest, CrudRequest } from '@nestjsx/crud';
 
@@ -77,18 +78,17 @@ export class TransactionController {
   @Get('/wallet/callback/:accountId')
   async success(
     @Param() { accountId },
-    @Query() callback: WalletCallbackParams,
+    @Query() callbackParams: WalletCallbackParams,
     @Res() res: Response,
   ): Promise<any> {
     const { walletCallbackUrl } = this.configService.get('api');
-    const { transactionHashes, errorCode } = callback;
+    const { transactionHashes, errorCode } = callbackParams;
+    const queryString = querystring.stringify(
+      callbackParams as any as ParsedUrlQueryInput,
+    );
 
     if (errorCode) {
-      //TODO: handle error callback - not so much info there
-      // errorCode: 'userRejected'
-      // errorMessage: 'User%20rejected%20transaction'
-
-      res.status(200).send();
+      res.redirect(`${walletCallbackUrl}?${queryString}`);
 
       return;
     }
@@ -104,7 +104,7 @@ export class TransactionController {
     }
 
     if (walletCallbackUrl) {
-      res.redirect(walletCallbackUrl);
+      res.redirect(`${walletCallbackUrl}?${queryString}`);
 
       return;
     }
