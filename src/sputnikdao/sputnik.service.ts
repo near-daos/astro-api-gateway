@@ -12,8 +12,14 @@ import { castVotePolicy } from './types/vote-policy';
 import { castRolePermission, RoleKindType } from './types/role';
 import camelcaseKeys from 'camelcase-keys';
 import { BountyDto } from 'src/bounties/dto/bounty.dto';
-import { buildBountyClaimId, buildBountyId, buildProposalId, buildRoleId } from 'src/utils';
+import {
+  buildBountyClaimId,
+  buildBountyId,
+  buildProposalId,
+  buildRoleId,
+} from 'src/utils';
 import { BountyClaimDto } from 'src/bounties/dto/bounty-claim.dto';
+import { Provider } from 'near-api-js/lib/providers';
 
 @Injectable()
 export class SputnikDaoService {
@@ -25,15 +31,25 @@ export class SputnikDaoService {
 
   private account!: Account;
 
+  private provider: Provider;
+
   constructor(
     @Inject(NEAR_SPUTNIK_PROVIDER)
     private nearSputnikProvider: NearSputnikProvider,
   ) {
-    const { near, factoryContract, account } = nearSputnikProvider;
+    const { near, factoryContract, account, provider } = nearSputnikProvider;
 
     this.near = near;
     this.factoryContract = factoryContract;
     this.account = account;
+    this.provider = provider;
+  }
+
+  public async getTxStatus(
+    transactionHash: string,
+    accountId: string,
+  ): Promise<any> {
+    return await this.provider.txStatus(transactionHash, accountId);
   }
 
   public async getDaoIds(): Promise<string[]> {

@@ -6,7 +6,6 @@ import { NearService } from 'src/near/near.service';
 import { ExecutionOutcomeStatus } from 'src/near/types/execution-outcome-status';
 import { Repository } from 'typeorm';
 import { Dao } from './entities/dao.entity';
-import { DaoStatus } from './types/dao-status';
 
 @Injectable()
 export class DaoNearService {
@@ -48,7 +47,6 @@ export class DaoNearService {
     // Assuming that Dao has been created successfully - changing status to DaoStatus.Success
     return this.daoRepository.save({
       id: account.accountId,
-      status: DaoStatus.Success,
       transactionHash: originatedFromTransaction.transactionHash,
     });
   }
