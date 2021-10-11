@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { CacheConfigService } from 'src/config/cache';
 import { DaoService } from 'src/daos/dao.service';
 import { Dao } from 'src/daos/entities/dao.entity';
+import { Role } from 'src/daos/entities/role.entity';
 import { Transaction, TransactionAction } from 'src/near';
 import { NearModule } from 'src/near/near.module';
 import { Proposal } from 'src/proposals/entities/proposal.entity';
@@ -26,6 +27,7 @@ import { TransactionService } from './transaction.service';
       Dao,
       Proposal,
       Token,
+      Role,
     ]),
     NearModule,
   ],
