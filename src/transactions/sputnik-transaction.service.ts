@@ -105,8 +105,6 @@ export class SputnikTransactionService {
         createTimestamp: txTimestamp,
       }));
 
-    console.log('enrichedProposals: ', enrichedProposals);
-
     if (enrichedProposals.length) {
       this.logger.log('Storing Proposals from wallet callback...');
       await Promise.all(

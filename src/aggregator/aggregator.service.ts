@@ -6,7 +6,7 @@ import { isNotNull } from 'src/utils/guards';
 import { NearService } from 'src/near/near.service';
 import { TransactionService } from 'src/transactions/transaction.service';
 import { ConfigService } from '@nestjs/config';
-import { Account, ActionReceiptAction, Transaction } from 'src/near';
+import { Account, ActionReceiptAction, Receipt, Transaction } from 'src/near';
 import { SputnikDaoDto } from 'src/daos/dto/dao-sputnik.dto';
 import { castProposalKind, ProposalDto } from 'src/proposals/dto/proposal.dto';
 import { SchedulerRegistry } from '@nestjs/schedule';
@@ -295,10 +295,26 @@ export class AggregatorService {
       ? proposals.filter(({ daoId }) => enrichedDaoIds.includes(daoId))
       : proposals;
 
-    const enrichedProposals = this.enrichProposals(
+    let enrichedProposals = this.enrichProposals(
       filteredProposals,
       transactions,
     );
+
+    // working around transaction info population for some legacy proposals
+    const missingProposalDaoIds = enrichedProposals
+      .filter(({ transactionHash }) => !transactionHash)
+      .map(({ daoId }) => daoId);
+
+    const receipts: Receipt[] = missingProposalDaoIds.length
+      ? await this.nearService.findReceiptsByReceiverAccountIds(
+          [...Array.from(new Set(missingProposalDaoIds)), contractName],
+          tx?.blockTimestamp,
+        )
+      : [];
+
+    enrichedProposals = receipts.length
+      ? this.enrichProposals(filteredProposals, transactions, receipts)
+      : enrichedProposals;
 
     this.logger.log('Persisting aggregated Proposals...');
     await Promise.all(
@@ -418,6 +434,7 @@ export class AggregatorService {
   private enrichProposals(
     proposals: ProposalDto[],
     transactions: Transaction[],
+    receipts?: Receipt[],
   ): ProposalDto[] {
     const transactionsByAccountId =
       this.reduceTransactionsByAccountId(transactions);
@@ -432,7 +449,7 @@ export class AggregatorService {
         (tx) => tx.transactionAction.args.args_base64,
       );
 
-      const txData = preFilteredTransactions
+      let txData = preFilteredTransactions
         .filter(
           ({ transactionAction }) =>
             (transactionAction.args as any).method_name == 'add_proposal',
@@ -449,6 +466,34 @@ export class AggregatorService {
             signerAccountId === proposer
           );
         });
+
+        if (!txData && receipts) {
+          const receipt = receipts
+            .filter(({ receiptAction }) => receiptAction?.args?.args_base64)
+            .filter(
+              (receipt) =>
+                receipt.receiverAccountId === daoId &&
+                receipt.predecessorAccountId === proposer,
+            )
+            .find(({ receiptAction }) => {
+              const {
+                description: receiptDescription,
+                kind: receiptKind,
+              } = btoaJSON(
+                receiptAction?.args?.args_base64 as string,
+              )?.proposal || {};
+
+              return (
+                description === receiptDescription &&
+                kind.equals(castProposalKind(receiptKind))
+              );
+            });
+
+          txData = {
+            transactionHash: receipt?.originatedFromTransactionHash,
+            blockTimestamp: receipt?.includedInBlockTimestamp,
+          } as any;
+        }
 
       const txUpdateData = preFilteredTransactions
         .filter(
