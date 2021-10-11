@@ -149,7 +149,7 @@ export class NearService {
 
     queryBuilder = fromBlockTimestamp
       ? queryBuilder.andWhere(
-          'transaction.included_in_block_timestamp >= :from',
+          'receipt.included_in_block_timestamp >= :from',
           {
             from: fromBlockTimestamp,
           },
