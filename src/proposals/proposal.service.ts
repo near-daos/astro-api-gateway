@@ -29,9 +29,18 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
   async getMany(req: CrudRequest): Promise<ProposalResponse | Proposal[]> {
     const proposalResponse = await super.getMany(req);
 
+    const proposals =
+      proposalResponse instanceof Array
+        ? proposalResponse
+        : proposalResponse.data;
+
+    if (!proposals || !proposals.length) {
+      return proposalResponse;
+    }
+
     // populating Proposal Dao Policy with Roles
     const daoIds: Set<string> = new Set(
-      (proposalResponse as ProposalResponse).data.map(({ daoId }) => daoId),
+      proposals.map(({ daoId }) => daoId),
     );
 
     const roles = await this.roleRepository.find({
