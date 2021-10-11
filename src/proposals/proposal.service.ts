@@ -29,11 +29,10 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
   async getMany(req: CrudRequest): Promise<ProposalResponse | Proposal[]> {
     const proposalResponse = await super.getMany(req);
 
-    const proposals = (
+    const proposals =
       proposalResponse instanceof Array
         ? proposalResponse
-        : proposalResponse.data
-    ) as Proposal[];
+        : proposalResponse.data;
 
     if (!proposals || !proposals.length) {
       return proposalResponse;
