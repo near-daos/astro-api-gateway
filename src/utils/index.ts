@@ -56,3 +56,9 @@ export const buildSubscriptionId = (
 export const buildNFTTokenId = (ownerId: string, tokenId: string) => {
   return `${ownerId}-${tokenId}`;
 };
+
+export const btoaJSON = (b: string) => {
+  try {
+    return JSON.parse(Buffer.from(b, 'base64').toString('utf-8'));
+  } catch (e) {}
+};
