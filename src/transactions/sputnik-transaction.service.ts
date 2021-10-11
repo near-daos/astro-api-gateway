@@ -8,6 +8,7 @@ import { isNotNull } from 'src/utils/guards';
 import { castProposalKind } from 'src/proposals/dto/proposal.dto';
 import { TokenFactoryService } from 'src/token-factory/token-factory.service';
 import { TokenService } from 'src/tokens/token.service';
+import { CacheService } from 'src/cache/service/cache.service';
 
 @Injectable()
 export class SputnikTransactionService {
@@ -20,6 +21,7 @@ export class SputnikTransactionService {
     private readonly proposalService: ProposalService,
     private readonly tokenFactoryService: TokenFactoryService,
     private readonly tokenService: TokenService,
+    private readonly cacheService: CacheService,
   ) {}
 
   public async unfoldTransaction(
@@ -128,5 +130,8 @@ export class SputnikTransactionService {
       );
       this.logger.log('Successfully stored Tokens.');
     }
+
+    this.logger.log(`Clearing cache on wallet callback.`);
+    await this.cacheService.clearCache();
   }
 }
