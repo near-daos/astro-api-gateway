@@ -1,5 +1,6 @@
 import { CacheModule, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { CacheService } from 'src/cache/service/cache.service';
 import { CacheConfigService } from 'src/config/cache';
 import { DaoService } from 'src/daos/dao.service';
 import { Dao } from 'src/daos/entities/dao.entity';
@@ -39,6 +40,7 @@ import { TransactionService } from './transaction.service';
     ProposalService,
     TokenFactoryService,
     TokenService,
+    CacheService,
   ],
   controllers: [TransactionController],
   exports: [TransactionService],
