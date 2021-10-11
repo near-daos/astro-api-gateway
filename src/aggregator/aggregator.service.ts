@@ -12,7 +12,6 @@ import { castProposalKind, ProposalDto } from 'src/proposals/dto/proposal.dto';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { btoaJSON, buildDaoId, buildProposalId } from 'src/utils';
 import { EventService } from 'src/events/events.service';
-import { DaoStatus } from 'src/daos/types/dao-status';
 import { BountyService } from 'src/bounties/bounty.service';
 import { TokenFactoryService } from 'src/token-factory/token-factory.service';
 import { TokenDto } from 'src/tokens/dto/token.dto';
@@ -411,7 +410,6 @@ export class AggregatorService {
         updateTimestamp: (txUpdateData || txData)?.blockTimestamp,
         numberOfAssociates: new Set(signersByAccountId[dao.id]).size,
         numberOfMembers,
-        status: DaoStatus.Success,
         createdBy: txData?.signerAccountId,
       };
     });
