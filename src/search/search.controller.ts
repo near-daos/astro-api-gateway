@@ -12,12 +12,12 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import {
-  CrudRequestInterceptor,
   ParsedRequest,
   CrudRequest,
 } from '@nestjsx/crud';
 import { HttpCacheInterceptor, SearchQuery } from 'src/common';
 import { QueryFailedErrorFilter } from 'src/common/filters/query-failed-error.filter';
+import { BaseCrudRequestInterceptor } from 'src/common/interceptors/crud.interceptor';
 import { SearchResultDto } from './dto/search-result.dto';
 import { SearchService } from './search.service';
 
@@ -33,7 +33,7 @@ export class SearchController {
     type: SearchResultDto,
   })
   @ApiBadRequestResponse({ description: 'query should not be empty' })
-  @UseInterceptors(HttpCacheInterceptor, CrudRequestInterceptor)
+  @UseInterceptors(HttpCacheInterceptor, BaseCrudRequestInterceptor)
   @UseFilters(new QueryFailedErrorFilter())
   @ApiQuery({ type: SearchQuery })
   @Get('/search')
