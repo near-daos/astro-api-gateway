@@ -32,7 +32,7 @@ export class DaoCronService {
 
     const daos = [];
 
-    const { errors } = await PromisePool.withConcurrency(5)
+    const { errors } = await PromisePool.withConcurrency(2)
       .for(daoIds)
       .process(async (daoId) => {
         daos.push({
