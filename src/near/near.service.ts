@@ -27,9 +27,9 @@ export class NearService {
   /**
    * Using parent contract name to retrieve child information since
    * child accounts are built based on parent contract name domain
-   * see: 
-   *    genesis.sputnikv2.testnet 
-   * is built on top of 
+   * see:
+   *    genesis.sputnikv2.testnet
+   * is built on top of
    *    sputnikv2.testnet account
    */
   async findAccountsByContractName(contractName: string): Promise<Account[]> {
@@ -136,6 +136,29 @@ export class NearService {
       .getOne();
   }
 
+  async findReceiptsByReceiverAccountIds(
+    receiverAccountIds: string[],
+    fromBlockTimestamp?: number,
+  ): Promise<Receipt[]> {
+    let queryBuilder = this.receiptRepository
+      .createQueryBuilder('receipt')
+      .leftJoinAndSelect('receipt.receiptAction', 'action_receipt_actions')
+      .where('receipt.receiver_account_id = ANY(ARRAY[:...ids])', {
+        ids: receiverAccountIds,
+      });
+
+    queryBuilder = fromBlockTimestamp
+      ? queryBuilder.andWhere(
+          'receipt.included_in_block_timestamp >= :from',
+          {
+            from: fromBlockTimestamp,
+          },
+        )
+      : queryBuilder;
+
+    return queryBuilder.getMany();
+  }
+
   private buildAggregationTransactionQuery(
     receiverAccountIds: string[],
     fromBlockTimestamp?: number,
@@ -143,18 +166,18 @@ export class NearService {
     let queryBuilder = this.transactionRepository
       .createQueryBuilder('transaction')
       .leftJoinAndSelect('transaction.transactionAction', 'transaction_actions')
-      .leftJoinAndSelect(
-        'transaction.receipts',
-        'receipts',
-        'receipts.predecessor_account_id = ANY(ARRAY[:...ids])',
-        { ids: receiverAccountIds },
-      )
-      .leftJoinAndSelect(
-        'receipts.receiptAction',
-        'action_receipt_actions',
-        'action_receipt_actions.receipt_predecessor_account_id = ANY(ARRAY[:...ids]) AND action_receipt_actions.action_kind = :actionKind',
-        { ids: receiverAccountIds, actionKind: ActionKind.Transfer },
-      )
+      // .leftJoinAndSelect(
+      //   'transaction.receipts',
+      //   'receipts',
+      //   'receipts.predecessor_account_id = ANY(ARRAY[:...ids])',
+      //   { ids: receiverAccountIds },
+      // )
+      // .leftJoinAndSelect(
+      //   'receipts.receiptAction',
+      //   'action_receipt_actions',
+      //   'action_receipt_actions.receipt_predecessor_account_id = ANY(ARRAY[:...ids]) AND action_receipt_actions.action_kind = :actionKind',
+      //   { ids: receiverAccountIds, actionKind: ActionKind.Transfer },
+      // )
       .where('transaction.receiver_account_id = ANY(ARRAY[:...ids])', {
         ids: receiverAccountIds,
       });

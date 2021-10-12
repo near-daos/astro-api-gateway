@@ -17,6 +17,3 @@ export const EVENT_API_DAO_UPDATE = 'dao_update';
 export const EVENT_API_PROPOSAL_UPDATE = 'proposal_update';
 
 export const DB_FOREIGN_KEY_VIOLATION = '23503';
-
-// Clean pending DAOs after a week of inactivity
-export const DAO_PENDING_CLEAN_THRESHOLD_IN_MILLIS = 7 * 24 * 60 * 60 * 1000; 

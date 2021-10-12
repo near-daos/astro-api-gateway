@@ -27,6 +27,7 @@ export type NearConfig = {
   walletUrl?: string;
   helperUrl?: string;
   explorerUrl?: string;
+  providerUrl?: string;
   keyPath?: string;
 };
 
@@ -45,6 +46,7 @@ export const getNearConfig = (nearConfig: NEAR_CONFIG): NearConfig => {
         walletUrl: 'https://wallet.near.org',
         helperUrl: 'https://helper.mainnet.near.org',
         explorerUrl: 'https://explorer.mainnet.near.org',
+        providerUrl: 'https://archival-rpc.mainnet.near.org',
       };
     case 'development':
     case 'testnet':
@@ -57,6 +59,7 @@ export const getNearConfig = (nearConfig: NEAR_CONFIG): NearConfig => {
         walletUrl: 'https://wallet.testnet.near.org',
         helperUrl: 'https://helper.testnet.near.org',
         explorerUrl: 'https://explorer.testnet.near.org',
+        providerUrl: 'https://archival-rpc.testnet.near.org',
       };
     case 'betanet':
       return {
@@ -68,6 +71,7 @@ export const getNearConfig = (nearConfig: NEAR_CONFIG): NearConfig => {
         walletUrl: 'https://wallet.betanet.near.org',
         helperUrl: 'https://helper.betanet.near.org',
         explorerUrl: 'https://explorer.betanet.near.org',
+        providerUrl: 'https://archival-rpc.betanet.near.org',
       };
     case 'local':
       return {
@@ -107,6 +111,7 @@ export default registerAs('near', () =>
     env: (process.env.NEAR_ENV as NEAR_ENV) || 'development',
     contractName: process.env.NEAR_CONTRACT_NAME,
     tokenFactoryContractName: process.env.NEAR_TOKEN_FACTORY_CONTRACT_NAME,
-    pollingInterval: process.env.AGGREGATOR_POLLING_INTERVAL
+    pollingInterval: process.env.AGGREGATOR_POLLING_INTERVAL,
+    daoPollingInterval: process.env.DAO_POLLING_INTERVAL
   } as NEAR_CONFIG),
 );

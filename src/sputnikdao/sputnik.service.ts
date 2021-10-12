@@ -12,8 +12,14 @@ import { castVotePolicy } from './types/vote-policy';
 import { castRolePermission, RoleKindType } from './types/role';
 import camelcaseKeys from 'camelcase-keys';
 import { BountyDto } from 'src/bounties/dto/bounty.dto';
-import { buildBountyClaimId, buildBountyId, buildProposalId, buildRoleId } from 'src/utils';
+import {
+  buildBountyClaimId,
+  buildBountyId,
+  buildProposalId,
+  buildRoleId,
+} from 'src/utils';
 import { BountyClaimDto } from 'src/bounties/dto/bounty-claim.dto';
+import { Provider } from 'near-api-js/lib/providers';
 
 @Injectable()
 export class SputnikDaoService {
@@ -25,15 +31,25 @@ export class SputnikDaoService {
 
   private account!: Account;
 
+  private provider: Provider;
+
   constructor(
     @Inject(NEAR_SPUTNIK_PROVIDER)
     private nearSputnikProvider: NearSputnikProvider,
   ) {
-    const { near, factoryContract, account } = nearSputnikProvider;
+    const { near, factoryContract, account, provider } = nearSputnikProvider;
 
     this.near = near;
     this.factoryContract = factoryContract;
     this.account = account;
+    this.provider = provider;
+  }
+
+  public async getTxStatus(
+    transactionHash: string,
+    accountId: string,
+  ): Promise<any> {
+    return await this.provider.txStatus(transactionHash, accountId);
   }
 
   public async getDaoIds(): Promise<string[]> {
@@ -179,29 +195,28 @@ export class SputnikDaoService {
         [],
       );
 
-      return bounties
-        .map((bounty: BountyDto) => {
-          return {
-            ...camelcaseKeys(bounty),
-            id: buildBountyId(contractId, bounty.id),
-            bountyId: bounty.id,
-            daoId: contractId,
-            dao: { id: contractId },
-            numberOfClaims: numClaims.find(
-              ({ bountyId }) => bountyId === bounty.id,
-            )?.numClaims,
-            bountyClaims: bountyClaims
-              .filter((claim) => bounty.id === claim.bountyId)
-              .map((claim) => ({
-                ...camelcaseKeys(claim),
-                id: buildBountyClaimId(contractId, bounty.id, claim.startTime),
-                bounty: {
-                  id: buildBountyId(contractId, bounty.id),
-                  bountyId: bounty.id,
-                },
-              })),
-          };
-        });
+      return bounties.map((bounty: BountyDto) => {
+        return {
+          ...camelcaseKeys(bounty),
+          id: buildBountyId(contractId, bounty.id),
+          bountyId: bounty.id,
+          daoId: contractId,
+          dao: { id: contractId },
+          numberOfClaims: numClaims.find(
+            ({ bountyId }) => bountyId === bounty.id,
+          )?.numClaims,
+          bountyClaims: bountyClaims
+            .filter((claim) => bounty.id === claim.bountyId)
+            .map((claim) => ({
+              ...camelcaseKeys(claim),
+              id: buildBountyClaimId(contractId, bounty.id, claim.startTime),
+              bounty: {
+                id: buildBountyId(contractId, bounty.id),
+                bountyId: bounty.id,
+              },
+            })),
+        };
+      });
     } catch (error) {
       this.logger.error(error);
 
@@ -209,22 +224,22 @@ export class SputnikDaoService {
     }
   }
 
+  public async getDaoAmount(daoId: string): Promise<string> {
+    const account = await this.near.account(daoId);
+    const state = await account.state();
+
+    return state.amount;
+  }
+
   private async getDaoById(daoId: string): Promise<SputnikDaoDto | null> {
     const contract = this.getContract(daoId);
-
-    const getDaoAmount = async (): Promise<string> => {
-      const account = await this.near.account(daoId);
-      const state = await account.state();
-
-      return state.amount;
-    };
 
     const daoEnricher = {
       config: async (): Promise<DaoConfig> => contract.get_config(),
       policy: async (): Promise<PolicyDto> => contract.get_policy(),
       stakingContract: async (): Promise<string> =>
         contract.get_staking_contract(),
-      amount: async (): Promise<string> => getDaoAmount(),
+      amount: async (): Promise<string> => this.getDaoAmount(daoId),
       totalSupply: async (): Promise<string> =>
         contract.delegation_total_supply(),
       lastProposalId: async (): Promise<string> =>

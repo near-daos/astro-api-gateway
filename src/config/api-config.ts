@@ -20,6 +20,7 @@ const api = registerAs('api', () => {
 
   return {
     port: parseInt(process.env.PORT, 10),
+    walletCallbackUrl: process.env.WALLET_CALLBACK_URL,
     redisHost,
     redisPort,
     redisDB,

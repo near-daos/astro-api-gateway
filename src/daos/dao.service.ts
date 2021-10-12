@@ -2,11 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 import { CrudRequest } from '@nestjsx/crud';
-import { DeleteResult, LessThanOrEqual, Repository } from 'typeorm';
-import { CreateDaoDto } from './dto/dao-create.dto';
+import { Repository } from 'typeorm';
 import { DaoDto } from './dto/dao.dto';
 import { Dao } from './entities/dao.entity';
-import { DaoStatus } from './types/dao-status';
 import { DaoResponse } from './dto/dao-response.dto';
 
 @Injectable()
@@ -18,25 +16,11 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     super(daoRepository);
   }
 
-  async createDraft(daoDto: CreateDaoDto): Promise<Dao> {
-    return this.create({
-      ...daoDto,
-      status: DaoStatus.Pending,
-    });
-  }
-
-  async findById(id: string): Promise<Dao> {
-    return await this.findOne(id, {
-      where: { status: DaoStatus.Success },
-    });
-  }
-
   async findAccountDaos(accountId: string): Promise<Dao[] | DaoResponse> {
     return await this.daoRepository
       .createQueryBuilder('dao')
       .leftJoinAndSelect('dao.policy', 'policy')
       .leftJoinAndSelect('policy.roles', 'roles')
-      .where('status = :status', { status: DaoStatus.Success })
       .andWhere(`:accountId = ANY(roles.accountIds)`, {
         accountId,
       })
@@ -46,6 +30,10 @@ export class DaoService extends TypeOrmCrudService<Dao> {
 
   async create(daoDto: DaoDto): Promise<Dao> {
     return this.daoRepository.save(daoDto);
+  }
+
+  async update(daoDto: DaoDto): Promise<any> {
+    return this.daoRepository.update({ id: daoDto.id }, daoDto);
   }
 
   async search(req: CrudRequest, query: string): Promise<Dao[] | DaoResponse> {
@@ -61,9 +49,6 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     req.parsed.search = {
       $and: [
         {},
-        {
-          status: { $eq: DaoStatus.Success },
-        },
         {
           $or: [
             {
@@ -84,12 +69,5 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     };
 
     return this.getMany(req);
-  }
-
-  async clearPendingDaos(dateBefore: Date): Promise<DeleteResult> {
-    return this.daoRepository.delete({
-      status: DaoStatus.Pending,
-      updatedAt: LessThanOrEqual(dateBefore),
-    });
   }
 }

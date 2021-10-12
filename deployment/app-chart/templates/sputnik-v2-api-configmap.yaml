@@ -6,3 +6,4 @@ data:
   PORT: "3000"
   NEST_APP_TYPE: api
   REDIS_HTTP_CACHE_TTL: "60"
+  WALLET_CALLBACK_URL: "{{ .Values.environment.wallet_callback_url }}"
