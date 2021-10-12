@@ -17,6 +17,7 @@ import { BountySlimModule } from 'src/bounties/bounty-slim.module';
 import { TokenFactoryService } from 'src/token-factory/token-factory.service';
 import { TokenSlimModule } from 'src/tokens/token-slim.module';
 import { AggregatorValidationSchema } from 'src/config/validation/aggregator.schema';
+import { DaoCronService } from './dao-cron.service';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { AggregatorValidationSchema } from 'src/config/validation/aggregator.sch
     SputnikDaoService,
     TokenFactoryService,
     AggregatorService,
+    DaoCronService,
   ],
 })
 export class AggregatorModule {}

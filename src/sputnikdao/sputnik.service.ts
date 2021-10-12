@@ -224,22 +224,22 @@ export class SputnikDaoService {
     }
   }
 
+  public async getDaoAmount(daoId: string): Promise<string> {
+    const account = await this.near.account(daoId);
+    const state = await account.state();
+
+    return state.amount;
+  }
+
   private async getDaoById(daoId: string): Promise<SputnikDaoDto | null> {
     const contract = this.getContract(daoId);
-
-    const getDaoAmount = async (): Promise<string> => {
-      const account = await this.near.account(daoId);
-      const state = await account.state();
-
-      return state.amount;
-    };
 
     const daoEnricher = {
       config: async (): Promise<DaoConfig> => contract.get_config(),
       policy: async (): Promise<PolicyDto> => contract.get_policy(),
       stakingContract: async (): Promise<string> =>
         contract.get_staking_contract(),
-      amount: async (): Promise<string> => getDaoAmount(),
+      amount: async (): Promise<string> => this.getDaoAmount(daoId),
       totalSupply: async (): Promise<string> =>
         contract.delegation_total_supply(),
       lastProposalId: async (): Promise<string> =>

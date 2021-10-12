@@ -32,6 +32,10 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     return this.daoRepository.save(daoDto);
   }
 
+  async update(daoDto: DaoDto): Promise<any> {
+    return this.daoRepository.update({ id: daoDto.id }, daoDto);
+  }
+
   async search(req: CrudRequest, query: string): Promise<Dao[] | DaoResponse> {
     req.options.query.join = {
       policy: {
