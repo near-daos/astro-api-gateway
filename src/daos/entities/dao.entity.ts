@@ -8,7 +8,6 @@ import {
   PrimaryColumn,
 } from 'typeorm';
 import { DaoConfig } from '../types/dao-config';
-import { DaoStatus } from '../types/dao-status';
 import { Policy } from './policy.entity';
 
 @Entity()
@@ -76,16 +75,6 @@ export class Dao extends TransactionEntity {
 
   @Column({ nullable: true })
   description: string;
-
-  @ApiProperty({
-    enum: Object.keys(DaoStatus),
-  })
-  @Column({
-    type: 'enum',
-    enum: DaoStatus,
-    nullable: true,
-  })
-  status: DaoStatus;
 
   @ApiProperty()
   @Column({ nullable: true })

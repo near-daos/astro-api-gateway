@@ -92,3 +92,4 @@ environment:
   near_contract_name: "sputnikv2.testnet"
   near_token_factory_contract_name: "tokenfactory.testnet"
   aggregator_polling_interval: "2000"
+  wallet_callback_url: ""

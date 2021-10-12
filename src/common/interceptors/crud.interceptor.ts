@@ -14,10 +14,13 @@ export class BaseCrudRequestInterceptor extends CrudRequestInterceptor {
   ): CrudRequest {
     const crudRequest = super.getCrudRequest(parser, crudOptions);
 
-    const { sort } = crudRequest?.parsed || {};
+    const { sort, offset, limit } = crudRequest?.parsed || {};
     if (!sort || !sort.length) {
       crudRequest.parsed.sort = [{ field: 'createdAt', order: 'DESC' }];
     }
+
+    crudRequest.parsed.offset = offset || 0;
+    crudRequest.parsed.limit = limit || 50;
 
     return crudRequest;
   }

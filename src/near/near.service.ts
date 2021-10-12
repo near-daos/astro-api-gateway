@@ -27,9 +27,9 @@ export class NearService {
   /**
    * Using parent contract name to retrieve child information since
    * child accounts are built based on parent contract name domain
-   * see: 
-   *    genesis.sputnikv2.testnet 
-   * is built on top of 
+   * see:
+   *    genesis.sputnikv2.testnet
+   * is built on top of
    *    sputnikv2.testnet account
    */
   async findAccountsByContractName(contractName: string): Promise<Account[]> {
@@ -134,6 +134,29 @@ export class NearService {
       .createQueryBuilder('account')
       .where('account.created_by_receipt_id = :receiptId', { receiptId })
       .getOne();
+  }
+
+  async findReceiptsByReceiverAccountIds(
+    receiverAccountIds: string[],
+    fromBlockTimestamp?: number,
+  ): Promise<Receipt[]> {
+    let queryBuilder = this.receiptRepository
+      .createQueryBuilder('receipt')
+      .leftJoinAndSelect('receipt.receiptAction', 'action_receipt_actions')
+      .where('receipt.receiver_account_id = ANY(ARRAY[:...ids])', {
+        ids: receiverAccountIds,
+      });
+
+    queryBuilder = fromBlockTimestamp
+      ? queryBuilder.andWhere(
+          'receipt.included_in_block_timestamp >= :from',
+          {
+            from: fromBlockTimestamp,
+          },
+        )
+      : queryBuilder;
+
+    return queryBuilder.getMany();
   }
 
   private buildAggregationTransactionQuery(

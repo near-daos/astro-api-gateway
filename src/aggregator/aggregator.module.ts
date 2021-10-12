@@ -12,7 +12,6 @@ import { TransactionModule } from 'src/transactions/transaction.module';
 import { SputnikDaoService } from 'src/sputnikdao/sputnik.service';
 import { AggregatorService } from './aggregator.service';
 import { EventModule } from 'src/events/events.module';
-import { GarbageCollectorService } from './garbage-collector.service';
 import { ConfigModule } from '@nestjs/config';
 import { BountySlimModule } from 'src/bounties/bounty-slim.module';
 import { TokenFactoryService } from 'src/token-factory/token-factory.service';
@@ -43,7 +42,6 @@ import { AggregatorValidationSchema } from 'src/config/validation/aggregator.sch
     SputnikDaoService,
     TokenFactoryService,
     AggregatorService,
-    GarbageCollectorService,
   ],
 })
 export class AggregatorModule {}

@@ -1,6 +1,5 @@
 import { TransactionInfo } from 'src/common/dto/TransactionInfo';
 import { DaoConfig } from '../types/dao-config';
-import { DaoStatus } from '../types/dao-status';
 import { DaoDto } from './dao.dto';
 import { PolicyDto } from './policy.dto';
 
@@ -18,6 +17,5 @@ export class SputnikDaoDto extends TransactionInfo implements DaoDto {
   numberOfAssociates: number = 0;
   link: string;
   description: string;
-  status: DaoStatus;
   createdBy: string;
 }
