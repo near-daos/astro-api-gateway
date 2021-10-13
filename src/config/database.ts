@@ -13,6 +13,7 @@ import { BountyClaim } from 'src/bounties/entities/bounty-claim.entity';
 import { NFTToken } from 'src/tokens/entities/nft-token.entity';
 import { NFTTokenMetadata } from 'src/tokens/entities/nft-token-metadata.entity';
 import { ReceiptAction } from 'src/near/entities/receipt-action.entity';
+import { AccountChange } from 'src/near/entities/account-change.entity';
 
 export default registerAs('db_default', () => ({
   type: 'postgres',
@@ -34,6 +35,7 @@ export default registerAs('db_default', () => ({
     Account,
     Receipt,
     ReceiptAction,
+    AccountChange,
     Token,
     NFTToken,
     NFTTokenMetadata,

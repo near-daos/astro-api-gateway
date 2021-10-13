@@ -17,6 +17,9 @@ fullnameOverride: ""
 aggregatorNameOverride: "sputnik-v2-aggregator"
 aggregatorFullnameOverride: "sputnik-v2-aggregator"
 
+aggregatorGrossNameOverride: "sputnik-v2-aggregator-gross"
+aggregatorGrossFullnameOverride: "sputnik-v2-aggregator-gross"
+
 notifierNameOverride: "sputnik-v2-notifier"
 notifierFullnameOverride: "sputnik-v2-notifier"
 
