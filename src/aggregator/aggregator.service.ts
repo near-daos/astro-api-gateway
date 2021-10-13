@@ -305,12 +305,17 @@ export class AggregatorService {
       .filter(({ transactionHash }) => !transactionHash)
       .map(({ daoId }) => daoId);
 
-    const receipts: Receipt[] = missingProposalDaoIds.length
-      ? await this.nearService.findReceiptsByReceiverAccountIds(
-          [...Array.from(new Set(missingProposalDaoIds)), contractName],
-          tx?.blockTimestamp,
-        )
-      : [];
+    let receipts: Receipt[] = [];
+    try {
+      receipts = missingProposalDaoIds.length
+        ? await this.nearService.findReceiptsByReceiverAccountIds(
+            [...Array.from(new Set(missingProposalDaoIds)), contractName],
+            tx?.blockTimestamp,
+          )
+        : [];
+    } catch (e) {
+      this.logger.error(e);
+    }
 
     enrichedProposals = receipts.length
       ? this.enrichProposals(filteredProposals, transactions, receipts)
