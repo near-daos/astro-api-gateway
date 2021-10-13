@@ -66,8 +66,10 @@ export class SputnikTransactionService {
         }
       });
 
+    const combinedDaoIds = [...daoIds, ...proposalDaoIds];
+
     const [daos, proposals, tokens] = await Promise.all([
-      daoIds ? this.sputnikDaoService.getDaoList(daoIds) : [],
+      combinedDaoIds ? this.sputnikDaoService.getDaoList(combinedDaoIds) : [],
       proposalDaoIds ? this.sputnikDaoService.getProposals(proposalDaoIds) : [],
       tokenIds ? this.tokenFactoryService.getTokens(tokenIds) : [],
     ]);
