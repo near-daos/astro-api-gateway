@@ -1,5 +1,6 @@
 import { registerAs } from '@nestjs/config';
 import { NEAR_INDEXER_DB_CONNECTION } from 'src/common/constants';
+import { AccountChange } from 'src/near/entities/account-change.entity';
 import { ReceiptAction } from 'src/near/entities/receipt-action.entity';
 import {
   Account,
@@ -24,6 +25,7 @@ export default registerAs(`db_${NEAR_INDEXER_DB_CONNECTION}`, () => ({
     Transaction,
     TransactionAction,
     ActionReceiptAction,
+    AccountChange,
   ],
   synchronize: false,
   namingStrategy: new SnakeNamingStrategy(),

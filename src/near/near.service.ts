@@ -4,6 +4,7 @@ import PromisePool from '@supercharge/promise-pool';
 import { NEAR_INDEXER_DB_CONNECTION } from 'src/common/constants';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import { Account, Transaction } from '.';
+import { AccountChange } from './entities/account-change.entity';
 import { ActionReceiptAction } from './entities/action-receipt-action.entity';
 import { Receipt } from './entities/receipt.entity';
 import { ActionKind } from './types/action-kind';
@@ -22,6 +23,9 @@ export class NearService {
 
     @InjectRepository(ActionReceiptAction, NEAR_INDEXER_DB_CONNECTION)
     private readonly actionReceiptActionRepository: Repository<ActionReceiptAction>,
+
+    @InjectRepository(AccountChange, NEAR_INDEXER_DB_CONNECTION)
+    private readonly accountChangeRepository: Repository<AccountChange>,
   ) {}
 
   /**
@@ -48,6 +52,26 @@ export class NearService {
       .leftJoinAndSelect('receipts.originatedFromTransaction', 'transactions')
       .where('account.account_id = ANY(ARRAY[:...ids])', { ids: accountIds })
       .getMany();
+  }
+
+  async findLastAccountChangesByContractName(
+    contractName: string,
+    fromBlockTimestamp?: number,
+  ): Promise<AccountChange> {
+    return this.buildAccountChangeQuery(
+      contractName,
+      fromBlockTimestamp,
+    ).getOne();
+  }
+
+  async findAccountChangesByContractName(
+    contractName: string,
+    fromBlockTimestamp?: number,
+  ): Promise<AccountChange[]> {
+    return this.buildAccountChangeQuery(
+      contractName,
+      fromBlockTimestamp,
+    ).getMany();
   }
 
   async findLastTransactionByReceiverAccountIds(
@@ -186,6 +210,29 @@ export class NearService {
       ? queryBuilder.andWhere('transaction.block_timestamp >= :from', {
           from: fromBlockTimestamp,
         })
+      : queryBuilder;
+
+    return queryBuilder;
+  }
+
+  private buildAccountChangeQuery(
+    contractName: string,
+    fromBlockTimestamp?: number,
+  ): SelectQueryBuilder<AccountChange> {
+    let queryBuilder = this.accountChangeRepository
+      .createQueryBuilder('account_change')
+      .orderBy('account_change.changed_in_block_timestamp', 'DESC')
+      .where('account_change.affected_account_id like :id', {
+        id: `%${contractName}%`,
+      });
+
+    queryBuilder = fromBlockTimestamp
+      ? queryBuilder.andWhere(
+          'account_change.changed_in_block_timestamp >= :from',
+          {
+            from: fromBlockTimestamp,
+          },
+        )
       : queryBuilder;
 
     return queryBuilder;
