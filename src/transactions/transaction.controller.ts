@@ -1,6 +1,7 @@
 import {
   Controller,
   Get,
+  Logger,
   Param,
   Query,
   Res,
@@ -33,6 +34,8 @@ import { SputnikTransactionService } from './sputnik-transaction.service';
 @ApiTags('Transactions')
 @Controller('/transactions')
 export class TransactionController {
+  private readonly logger = new Logger(TransactionController.name);
+
   constructor(
     private readonly configService: ConfigService,
     private readonly transactionService: TransactionService,
@@ -94,13 +97,17 @@ export class TransactionController {
     }
 
     if (transactionHashes && transactionHashes.length) {
-      await Promise.all(
-        transactionHashes
-          .split(',')
-          .map((hash) =>
-            this.sputnikTransactionService.unfoldTransaction(hash, accountId),
-          ),
-      );
+      try {
+        await Promise.all(
+          transactionHashes
+            .split(',')
+            .map((hash) =>
+              this.sputnikTransactionService.unfoldTransaction(hash, accountId),
+            ),
+        );
+      } catch (e) {
+        this.logger.error(e);
+      }
     }
 
     if (walletCallbackUrl) {

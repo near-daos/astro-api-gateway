@@ -5,6 +5,7 @@ import { TypeOrmConfigService } from 'src/config/aggregator-config';
 import { nearProvider } from 'src/config/near';
 import { nearTokenFactoryProvider } from 'src/config/near-token-factory';
 import { nearSputnikProvider } from 'src/config/sputnik';
+import { AccountChange } from './entities/account-change.entity';
 import { Account } from './entities/account.entity';
 import { ActionReceiptAction } from './entities/action-receipt-action.entity';
 import { ReceiptAction } from './entities/receipt-action.entity';
@@ -27,6 +28,7 @@ import { NearService } from './near.service';
         TransactionAction,
         ActionReceiptAction,
         ReceiptAction,
+        AccountChange
       ],
       NEAR_INDEXER_DB_CONNECTION,
     ),
