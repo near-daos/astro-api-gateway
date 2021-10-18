@@ -114,10 +114,10 @@ export class SputnikDaoService {
 
       return proposals
         .reduce(
-          (acc: ProposalDto[], prop: ProposalDto[]) => acc.concat(prop),
+          (acc: any[], prop: any[]) => acc.concat(prop),
           [],
         )
-        .map((proposal: ProposalDto) =>
+        .map((proposal: any) =>
           this.proposalResponseToDTO(contractId, proposal),
         );
     } catch (error) {

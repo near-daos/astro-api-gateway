@@ -25,10 +25,33 @@ export class SputnikTransactionService {
     private readonly cacheService: CacheService,
   ) {}
 
+  public async unfoldTransaction(
+    transactionHash: string,
+    accountId: string,
+  ): Promise<any> {
+    const txStatus = await this.sputnikDaoService.getTxStatus(
+      transactionHash,
+      accountId,
+    );
+    const { transaction } = txStatus;
+
+    const { actions } = transaction;
+
+    // the approximate block timestamp in microseconds - the same way as it's done in indexer
+    const txTimestamp = new Date().getTime() * 1000 * 1000;
+
+    const filteredActions = actions.filter((action) => action.FunctionCall);
+
+    await this.processActions(filteredActions, transaction, txTimestamp);
+
+    this.logger.log(`Clearing cache on wallet callback.`);
+    await this.cacheService.clearCache();
+  }
+
   private async handleUpdateProposal(
     args: string,
     transaction: any,
-    txTimeStamp: number,
+    txTimestamp: number,
   ) {
     const { id: proposalId } = btoaJSON(args);
     const { hash, receiver_id } = transaction;
@@ -43,14 +66,14 @@ export class SputnikTransactionService {
     await this.proposalService.create({
       ...proposal,
       transactionHash: hash,
-      createTimestamp: txTimeStamp,
+      createTimestamp: txTimestamp,
     });
   }
 
   private async handleNewDao(
     functionCallArgs: string,
     transaction: any,
-    txTimeStamp: number,
+    txTimestamp: number,
   ) {
     const daoIds = [];
     const { contractName } = this.configService.get('near');
@@ -62,13 +85,13 @@ export class SputnikTransactionService {
 
     const daos = await this.sputnikDaoService.getDaoList(daoIds);
 
-    await this.enrichDaos(daos, transaction, txTimeStamp);
+    await this.enrichDaos(daos, transaction, txTimestamp);
   }
 
   private async handleNewToken(
     functionCallArgs: string,
     transaction: any,
-    txTimeStamp: number,
+    txTimestamp: number,
   ) {
     const { args } = btoaJSON(functionCallArgs);
     const { metadata } = args || {};
@@ -80,13 +103,13 @@ export class SputnikTransactionService {
 
     const tokens = await this.tokenFactoryService.getTokens(tokenIds);
 
-    await this.enrichTokens(tokens, transaction, txTimeStamp);
+    await this.enrichTokens(tokens, transaction, txTimestamp);
   }
 
   private async handleNewProposal(
     functionCallArgs: string,
     transaction: any,
-    txTimeStamp: number,
+    txTimestamp: number,
   ) {
     const { proposal } = btoaJSON(functionCallArgs);
     const { receiver_id } = transaction;
@@ -101,21 +124,21 @@ export class SputnikTransactionService {
       proposals,
       proposalTxArgs,
       transaction,
-      txTimeStamp,
+      txTimestamp,
     );
   }
 
   private async enrichDaos(
     daos: SputnikDaoDto[],
     transaction: any,
-    txTimeStamp: number,
+    txTimestamp: number,
   ) {
     const { hash } = transaction;
 
     const enrichedDaos = daos.map((dao) => ({
       ...dao,
       transactionHash: hash,
-      createTimestamp: txTimeStamp,
+      createTimestamp: txTimestamp,
     }));
 
     if (enrichedDaos.length) {
@@ -131,9 +154,9 @@ export class SputnikTransactionService {
 
   private async enrichProposals(
     proposals: ProposalDto[],
-    proposalTxArgs,
-    transaction,
-    txTimeStamp: number,
+    proposalTxArgs: any[],
+    transaction: any,
+    txTimestamp: number,
   ) {
     const { hash, signer_id } = transaction;
     const enrichedProposals = proposals
@@ -152,7 +175,7 @@ export class SputnikTransactionService {
       .map((proposal) => ({
         ...proposal,
         transactionHash: hash,
-        createTimestamp: txTimeStamp,
+        createTimestamp: txTimestamp,
       }));
 
     if (enrichedProposals.length) {
@@ -166,13 +189,17 @@ export class SputnikTransactionService {
     }
   }
 
-  private async enrichTokens(tokens, transaction, txTimeStamp) {
+  private async enrichTokens(
+    tokens: any[],
+    transaction: any,
+    txTimestamp: number,
+  ) {
     const { hash } = transaction;
 
     const enrichedTokens = tokens.map((token) => ({
       ...token,
       transactionHash: hash,
-      createTimestamp: txTimeStamp,
+      createTimestamp: txTimestamp,
     }));
 
     if (enrichedTokens.length) {
@@ -184,34 +211,11 @@ export class SputnikTransactionService {
     }
   }
 
-  private static getTxTimestamp() {
-    // the approximate block timestamp in microseconds - the same way as it's done in indexer
-    return new Date().getTime() * 1000 * 1000;
-  }
-
-  public async unfoldTransaction(
-    transactionHash: string,
-    accountId: string,
-  ): Promise<any> {
-    const txStatus = await this.sputnikDaoService.getTxStatus(
-      transactionHash,
-      accountId,
-    );
-    const { transaction } = txStatus;
-
-    const { actions } = transaction;
-
-    const txTimeStamp = SputnikTransactionService.getTxTimestamp();
-
-    const filteredActions = actions.filter((action) => action.FunctionCall);
-
-    await this.processActions(filteredActions, transaction, txTimeStamp);
-
-    this.logger.log(`Clearing cache on wallet callback.`);
-    await this.cacheService.clearCache();
-  }
-
-  private async processActions(actions, transaction, txTimeStamp: number) {
+  private async processActions(
+    actions: any[],
+    transaction: any,
+    txTimestamp: number,
+  ) {
     for (const action of actions) {
       const { FunctionCall } = action;
 
@@ -219,19 +223,19 @@ export class SputnikTransactionService {
 
       switch (method_name) {
         case 'create': {
-          await this.handleNewDao(args, transaction, txTimeStamp);
+          await this.handleNewDao(args, transaction, txTimestamp);
           break;
         }
         case 'act_proposal': {
-          await this.handleUpdateProposal(args, transaction, txTimeStamp);
+          await this.handleUpdateProposal(args, transaction, txTimestamp);
           break;
         }
         case 'add_proposal': {
-          await this.handleNewProposal(args, transaction, txTimeStamp);
+          await this.handleNewProposal(args, transaction, txTimestamp);
           break;
         }
         case 'create_token': {
-          await this.handleNewToken(args, transaction, txTimeStamp);
+          await this.handleNewToken(args, transaction, txTimestamp);
           break;
         }
       }
