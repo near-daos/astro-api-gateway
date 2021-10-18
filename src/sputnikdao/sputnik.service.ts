@@ -77,6 +77,16 @@ export class SputnikDaoService {
     return proposals.reduce((acc, prop) => acc.concat(prop), []);
   }
 
+  public async getProposal(
+    contractId: string,
+    proposalId: string,
+  ): Promise<ProposalDto> {
+    const contract = this.getContract(contractId);
+    const proposal = await contract.get_proposal({ id: proposalId });
+
+    return this.proposalResponseToDTO(contractId, proposal);
+  }
+
   public async getProposalsByDao(contractId: string): Promise<ProposalDto[]> {
     try {
       const contract = this.getContract(contractId);
@@ -104,19 +114,12 @@ export class SputnikDaoService {
 
       return proposals
         .reduce(
-          (acc: ProposalDto[], prop: ProposalDto[]) => acc.concat(prop),
+          (acc: any[], prop: any[]) => acc.concat(prop),
           [],
         )
-        .map((proposal: ProposalDto) => {
-          return {
-            ...camelcaseKeys(proposal),
-            id: buildProposalId(contractId, proposal.id),
-            proposalId: proposal.id,
-            daoId: contractId,
-            dao: { id: contractId },
-            kind: castProposalKind(proposal.kind),
-          };
-        });
+        .map((proposal: any) =>
+          this.proposalResponseToDTO(contractId, proposal),
+        );
     } catch (error) {
       this.logger.error(error);
 
@@ -292,6 +295,20 @@ export class SputnikDaoService {
     };
   }
 
+  private proposalResponseToDTO(
+    contractId: string,
+    proposal: any,
+  ): ProposalDto {
+    return {
+      ...camelcaseKeys(proposal),
+      id: buildProposalId(contractId, proposal.id),
+      proposalId: proposal.id,
+      daoId: contractId,
+      dao: { id: contractId },
+      kind: castProposalKind(proposal.kind),
+    };
+  }
+
   private getContract(contractId: string): Contract & any {
     return new Contract(this.account, contractId, {
       viewMethods: [
@@ -302,6 +319,7 @@ export class SputnikDaoService {
         'delegation_total_supply',
         'get_last_proposal_id',
         'get_proposals',
+        'get_proposal',
         'get_last_bounty_id',
         'get_bounties',
         'get_bounty_claims',
