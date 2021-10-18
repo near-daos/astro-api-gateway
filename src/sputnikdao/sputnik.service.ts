@@ -234,7 +234,7 @@ export class SputnikDaoService {
     return state.amount;
   }
 
-  private async getDaoById(daoId: string): Promise<SputnikDaoDto | null> {
+  public async getDaoById(daoId: string): Promise<SputnikDaoDto | null> {
     const contract = this.getContract(daoId);
 
     const daoEnricher = {

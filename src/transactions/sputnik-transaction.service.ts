@@ -56,18 +56,34 @@ export class SputnikTransactionService {
     const { id: proposalId } = btoaJSON(args);
     const { hash, receiver_id } = transaction;
 
-    const proposal = await this.sputnikDaoService.getProposal(
-      receiver_id,
-      proposalId,
-    );
+    const [dao, proposal] = await Promise.all([
+      this.sputnikDaoService.getDaoById(receiver_id),
+      this.sputnikDaoService.getProposal(receiver_id, proposalId),
+    ]);
 
-    this.logger.log('Storing updated Proposal from wallet callback...');
-
-    await this.proposalService.create({
+    const enrichedProposal = {
       ...proposal,
       transactionHash: hash,
       createTimestamp: txTimestamp,
-    });
+    };
+
+    this.logger.log(
+      `Storing updated Proposal from wallet callback: ${proposal.id}`,
+    );
+    await this.proposalService.create(enrichedProposal);
+    this.logger.log(`Successfully updated Proposal: ${proposal.id}`);
+
+    const enrichedDao = {
+      ...dao,
+      updateTransactionHash: hash,
+      updateTimestamp: txTimestamp,
+    };
+
+    this.logger.log(
+      `Storing updated DAO from Proposal wallet callback: ${dao.id}`,
+    );
+    await this.daoService.create(enrichedDao);
+    this.logger.log(`Successfully updated DAO: ${dao.id}`);
   }
 
   private async handleNewDao(
@@ -75,17 +91,23 @@ export class SputnikTransactionService {
     transaction: any,
     txTimestamp: number,
   ) {
-    const daoIds = [];
+    const { hash } = transaction;
     const { contractName } = this.configService.get('near');
     const { name } = btoaJSON(functionCallArgs);
 
-    if (name) {
-      daoIds.push(`${name}.${contractName}`);
-    }
+    const dao = await this.sputnikDaoService.getDaoById(
+      `${name}.${contractName}`,
+    );
 
-    const daos = await this.sputnikDaoService.getDaoList(daoIds);
+    const enrichedDao = {
+      ...dao,
+      transactionHash: hash,
+      createTimestamp: txTimestamp,
+    };
 
-    await this.enrichDaos(daos, transaction, txTimestamp);
+    this.logger.log(`Storing new DAO from wallet callback: ${dao.id}`);
+    await this.daoService.create(enrichedDao);
+    this.logger.log(`Successfully stored new DAO: ${dao.id}`);
   }
 
   private async handleNewToken(
@@ -93,17 +115,20 @@ export class SputnikTransactionService {
     transaction: any,
     txTimestamp: number,
   ) {
+    const { hash } = transaction;
     const { args } = btoaJSON(functionCallArgs);
     const { metadata } = args || {};
-    const tokenIds = [];
 
-    if (metadata) {
-      tokenIds.push(metadata.symbol);
-    }
+    const token = await this.tokenFactoryService.getToken(metadata.symbol);
 
-    const tokens = await this.tokenFactoryService.getTokens(tokenIds);
+    const enrichedToken = {
+      ...token,
+      transactionHash: hash,
+      createTimestamp: txTimestamp,
+    };
 
-    await this.enrichTokens(tokens, transaction, txTimestamp);
+    this.logger.log('Storing Tokens from wallet callback...');
+    this.tokenService.create(enrichedToken);
   }
 
   private async handleNewProposal(
@@ -112,52 +137,50 @@ export class SputnikTransactionService {
     txTimestamp: number,
   ) {
     const { proposal } = btoaJSON(functionCallArgs);
-    const { receiver_id } = transaction;
-    const proposalTxArgs = [];
-    const proposalDaoIds = [];
+    const { receiver_id, hash } = transaction;
+    const proposalTxArgs = [proposal];
 
-    proposalDaoIds.push(receiver_id);
-    proposalTxArgs.push(proposal);
+    const [dao, proposals] = await Promise.all([
+      this.sputnikDaoService.getDaoById(receiver_id),
+      this.sputnikDaoService.getProposals([receiver_id]),
+    ]);
 
-    const proposals = await this.sputnikDaoService.getProposals(proposalDaoIds);
-    await this.enrichProposals(
+    const enrichedProposals = this.enrichProposals(
       proposals,
       proposalTxArgs,
       transaction,
       txTimestamp,
     );
-  }
 
-  private async enrichDaos(
-    daos: SputnikDaoDto[],
-    transaction: any,
-    txTimestamp: number,
-  ) {
-    const { hash } = transaction;
-
-    const enrichedDaos = daos.map((dao) => ({
-      ...dao,
-      transactionHash: hash,
-      createTimestamp: txTimestamp,
-    }));
-
-    if (enrichedDaos.length) {
-      this.logger.log('Storing DAOs from wallet callback...');
+    if (enrichedProposals.length) {
+      this.logger.log('Storing Proposals from wallet callback...');
       await Promise.all(
-        enrichedDaos
-          .filter((dao) => isNotNull(dao))
-          .map((dao) => this.daoService.create(dao)),
+        enrichedProposals.map((proposal) =>
+          this.proposalService.create(proposal),
+        ),
       );
-      this.logger.log('Successfully stored DAOs.');
+      this.logger.log('Successfully stored Proposals.');
     }
+
+    const enrichedDao = {
+      ...dao,
+      updateTransactionHash: hash,
+      updateTimestamp: txTimestamp,
+    };
+
+    this.logger.log(
+      `Storing updated DAO from Proposal wallet callback: ${dao.id}`,
+    );
+    await this.daoService.create(enrichedDao);
+    this.logger.log(`Successfully updated DAO: ${dao.id}`);
   }
 
-  private async enrichProposals(
+  private enrichProposals(
     proposals: ProposalDto[],
     proposalTxArgs: any[],
     transaction: any,
     txTimestamp: number,
-  ) {
+  ): ProposalDto[] {
     const { hash, signer_id } = transaction;
     const enrichedProposals = proposals
       .filter((proposal) => {
@@ -178,37 +201,7 @@ export class SputnikTransactionService {
         createTimestamp: txTimestamp,
       }));
 
-    if (enrichedProposals.length) {
-      this.logger.log('Storing Proposals from wallet callback...');
-      await Promise.all(
-        enrichedProposals.map((proposal) =>
-          this.proposalService.create(proposal),
-        ),
-      );
-      this.logger.log('Successfully stored Proposals.');
-    }
-  }
-
-  private async enrichTokens(
-    tokens: any[],
-    transaction: any,
-    txTimestamp: number,
-  ) {
-    const { hash } = transaction;
-
-    const enrichedTokens = tokens.map((token) => ({
-      ...token,
-      transactionHash: hash,
-      createTimestamp: txTimestamp,
-    }));
-
-    if (enrichedTokens.length) {
-      this.logger.log('Storing Tokens from wallet callback...');
-      await Promise.all(
-        enrichedTokens.map((token) => this.tokenService.create(token)),
-      );
-      this.logger.log('Successfully stored Tokens.');
-    }
+    return enrichedProposals;
   }
 
   private async processActions(
