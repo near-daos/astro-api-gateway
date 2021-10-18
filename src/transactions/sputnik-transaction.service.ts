@@ -25,7 +25,11 @@ export class SputnikTransactionService {
     private readonly cacheService: CacheService,
   ) {}
 
-  private async handleUpdateProposal(args: string, transaction: any) {
+  private async handleUpdateProposal(
+    args: string,
+    transaction: any,
+    txTimeStamp: number,
+  ) {
     const { id: proposalId } = btoaJSON(args);
     const { hash, receiver_id } = transaction;
 
@@ -39,11 +43,15 @@ export class SputnikTransactionService {
     await this.proposalService.create({
       ...proposal,
       transactionHash: hash,
-      createTimestamp: SputnikTransactionService.getTxTimestamp(),
+      createTimestamp: txTimeStamp,
     });
   }
 
-  private async handleNewDao(functionCallArgs: string, transaction: any) {
+  private async handleNewDao(
+    functionCallArgs: string,
+    transaction: any,
+    txTimeStamp: number,
+  ) {
     const daoIds = [];
     const { contractName } = this.configService.get('near');
     const { name } = btoaJSON(functionCallArgs);
@@ -54,10 +62,14 @@ export class SputnikTransactionService {
 
     const daos = await this.sputnikDaoService.getDaoList(daoIds);
 
-    await this.enrichDaos(daos, transaction);
+    await this.enrichDaos(daos, transaction, txTimeStamp);
   }
 
-  private async handleNewToken(functionCallArgs: string, transaction: any) {
+  private async handleNewToken(
+    functionCallArgs: string,
+    transaction: any,
+    txTimeStamp: number,
+  ) {
     const { args } = btoaJSON(functionCallArgs);
     const { metadata } = args || {};
     const tokenIds = [];
@@ -68,10 +80,14 @@ export class SputnikTransactionService {
 
     const tokens = await this.tokenFactoryService.getTokens(tokenIds);
 
-    await this.enrichTokens(tokens, transaction);
+    await this.enrichTokens(tokens, transaction, txTimeStamp);
   }
 
-  private async handleNewProposal(functionCallArgs: string, transaction: any) {
+  private async handleNewProposal(
+    functionCallArgs: string,
+    transaction: any,
+    txTimeStamp: number,
+  ) {
     const { proposal } = btoaJSON(functionCallArgs);
     const { receiver_id } = transaction;
     const proposalTxArgs = [];
@@ -81,16 +97,25 @@ export class SputnikTransactionService {
     proposalTxArgs.push(proposal);
 
     const proposals = await this.sputnikDaoService.getProposals(proposalDaoIds);
-    await this.enrichProposals(proposals, proposalTxArgs, transaction);
+    await this.enrichProposals(
+      proposals,
+      proposalTxArgs,
+      transaction,
+      txTimeStamp,
+    );
   }
 
-  private async enrichDaos(daos: SputnikDaoDto[], transaction: any) {
+  private async enrichDaos(
+    daos: SputnikDaoDto[],
+    transaction: any,
+    txTimeStamp: number,
+  ) {
     const { hash } = transaction;
 
     const enrichedDaos = daos.map((dao) => ({
       ...dao,
       transactionHash: hash,
-      createTimestamp: SputnikTransactionService.getTxTimestamp(),
+      createTimestamp: txTimeStamp,
     }));
 
     if (enrichedDaos.length) {
@@ -108,6 +133,7 @@ export class SputnikTransactionService {
     proposals: ProposalDto[],
     proposalTxArgs,
     transaction,
+    txTimeStamp: number,
   ) {
     const { hash, signer_id } = transaction;
     const enrichedProposals = proposals
@@ -126,7 +152,7 @@ export class SputnikTransactionService {
       .map((proposal) => ({
         ...proposal,
         transactionHash: hash,
-        createTimestamp: SputnikTransactionService.getTxTimestamp(),
+        createTimestamp: txTimeStamp,
       }));
 
     if (enrichedProposals.length) {
@@ -140,13 +166,13 @@ export class SputnikTransactionService {
     }
   }
 
-  private async enrichTokens(tokens, transaction) {
+  private async enrichTokens(tokens, transaction, txTimeStamp) {
     const { hash } = transaction;
 
     const enrichedTokens = tokens.map((token) => ({
       ...token,
       transactionHash: hash,
-      createTimestamp: SputnikTransactionService.getTxTimestamp(),
+      createTimestamp: txTimeStamp,
     }));
 
     if (enrichedTokens.length) {
@@ -175,28 +201,39 @@ export class SputnikTransactionService {
 
     const { actions } = transaction;
 
+    const txTimeStamp = SputnikTransactionService.getTxTimestamp();
+
     const filteredActions = actions.filter((action) => action.FunctionCall);
 
-    await this.processActions(filteredActions, transaction);
-  }
+    await this.processActions(filteredActions, transaction, txTimeStamp);
 
-  private async processActions(actions, transaction) {
     this.logger.log(`Clearing cache on wallet callback.`);
     await this.cacheService.clearCache();
+  }
 
+  private async processActions(actions, transaction, txTimeStamp: number) {
     for (const action of actions) {
       const { FunctionCall } = action;
 
       const { method_name, args } = FunctionCall;
 
-      if ('create' === method_name) {
-        await this.handleNewDao(args, transaction);
-      } else if ('act_proposal' === method_name) {
-        await this.handleUpdateProposal(args, transaction);
-      } else if ('add_proposal' === method_name) {
-        await this.handleNewProposal(args, transaction);
-      } else if ('create_token' === method_name) {
-        await this.handleNewToken(args, transaction);
+      switch (method_name) {
+        case 'create': {
+          await this.handleNewDao(args, transaction, txTimeStamp);
+          break;
+        }
+        case 'act_proposal': {
+          await this.handleUpdateProposal(args, transaction, txTimeStamp);
+          break;
+        }
+        case 'add_proposal': {
+          await this.handleNewProposal(args, transaction, txTimeStamp);
+          break;
+        }
+        case 'create_token': {
+          await this.handleNewToken(args, transaction, txTimeStamp);
+          break;
+        }
       }
     }
   }

@@ -84,14 +84,7 @@ export class SputnikDaoService {
     const contract = this.getContract(contractId);
     const proposal = await contract.get_proposal({ id: proposalId });
 
-    return {
-      ...camelcaseKeys(proposal),
-      id: buildProposalId(contractId, proposal.id),
-      proposalId: proposal.id,
-      daoId: contractId,
-      dao: { id: contractId },
-      kind: castProposalKind(proposal.kind),
-    };
+    return this.proposalResponseToDTO(contractId, proposal);
   }
 
   public async getProposalsByDao(contractId: string): Promise<ProposalDto[]> {
@@ -124,16 +117,9 @@ export class SputnikDaoService {
           (acc: ProposalDto[], prop: ProposalDto[]) => acc.concat(prop),
           [],
         )
-        .map((proposal: ProposalDto) => {
-          return {
-            ...camelcaseKeys(proposal),
-            id: buildProposalId(contractId, proposal.id),
-            proposalId: proposal.id,
-            daoId: contractId,
-            dao: { id: contractId },
-            kind: castProposalKind(proposal.kind),
-          };
-        });
+        .map((proposal: ProposalDto) =>
+          this.proposalResponseToDTO(contractId, proposal),
+        );
     } catch (error) {
       this.logger.error(error);
 
@@ -306,6 +292,20 @@ export class SputnikDaoService {
       },
       council,
       councilSeats: council?.length,
+    };
+  }
+
+  private proposalResponseToDTO(
+    contractId: string,
+    proposal: any,
+  ): ProposalDto {
+    return {
+      ...camelcaseKeys(proposal),
+      id: buildProposalId(contractId, proposal.id),
+      proposalId: proposal.id,
+      daoId: contractId,
+      dao: { id: contractId },
+      kind: castProposalKind(proposal.kind),
     };
   }
 
