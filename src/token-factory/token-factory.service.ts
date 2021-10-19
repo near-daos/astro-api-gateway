@@ -36,6 +36,14 @@ export class TokenFactoryService {
     );
   }
 
+  public async getToken(tokenId: string): Promise<TokenDto> {
+    let token = await this.factoryContract.get_token({
+      token_id: tokenId.toLowerCase(),
+    });
+
+    return { ...camelcaseKeys(token, { deep: true }) };
+  }
+
   public async getNFTs(tokenOwners: any): Promise<NFTTokenDto[]> {
     const { results: nfts, errors } = await PromisePool.withConcurrency(5)
       .for(tokenOwners)
@@ -43,8 +51,8 @@ export class TokenFactoryService {
         async ({ contractId, accountId }) =>
           await this.getContract(contractId)?.nft_tokens_for_owner({
             account_id: accountId,
-            from_index: "0",
-            limit: 1000 //TODO: magic number - no way to find out the limit now
+            from_index: '0',
+            limit: 1000, //TODO: magic number - no way to find out the limit now
           }),
       );
 
@@ -55,9 +63,7 @@ export class TokenFactoryService {
       .map((token) => {
         const { owner_id, id, token_id, metadata } = token;
         const ownerId =
-          owner_id instanceof Object
-            ? owner_id?.Account
-            : owner_id;
+          owner_id instanceof Object ? owner_id?.Account : owner_id;
         const tokenId = buildNFTTokenId(ownerId, id || token_id);
 
         return {
@@ -66,8 +72,8 @@ export class TokenFactoryService {
           ownerId,
           metadata: {
             ...camelcaseKeys(metadata),
-            tokenId
-          }
+            tokenId,
+          },
         };
       });
   }
