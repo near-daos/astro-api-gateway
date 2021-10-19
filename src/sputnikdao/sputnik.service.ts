@@ -113,10 +113,7 @@ export class SputnikDaoService {
         );
 
       return proposals
-        .reduce(
-          (acc: any[], prop: any[]) => acc.concat(prop),
-          [],
-        )
+        .reduce((acc: any[], prop: any[]) => acc.concat(prop), [])
         .map((proposal: any) =>
           this.proposalResponseToDTO(contractId, proposal),
         );
@@ -295,6 +292,15 @@ export class SputnikDaoService {
     };
   }
 
+  public async getFTBalance(
+    contractName: string,
+    accountId: string,
+  ): Promise<string> {
+    const contract = this.getContract(contractName);
+
+    return contract.ft_balance_of({ account_id: accountId });
+  }
+
   private proposalResponseToDTO(
     contractId: string,
     proposal: any,
@@ -324,6 +330,7 @@ export class SputnikDaoService {
         'get_bounties',
         'get_bounty_claims',
         'get_bounty_number_of_claims',
+        'ft_balance_of',
       ],
       changeMethods: ['add_proposal', 'act_proposal'],
     });
