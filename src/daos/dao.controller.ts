@@ -16,21 +16,24 @@ import {
 
 import { ParsedRequest, CrudRequest } from '@nestjsx/crud';
 
-import {
-  FindOneParams,
-  HttpCacheInterceptor,
-} from 'src/common';
+import { FindOneParams, HttpCacheInterceptor } from 'src/common';
 import { DaoService } from './dao.service';
 import { Dao } from './entities/dao.entity';
 import { EntityQuery } from 'src/common/dto/EntityQuery';
 import { DaoResponse } from './dto/dao-response.dto';
 import { DaoCrudRequestInterceptor } from './interceptors/dao-crud.interceptor';
 import { QueryFailedErrorFilter } from 'src/common/filters/query-failed-error.filter';
+import { DaoNearService } from './dao-near.service';
+import { DaoTokenResponseDto } from './dto/dao-token-response.dto';
+
 
 @ApiTags('DAO')
 @Controller('/daos')
 export class DaoController {
-  constructor(private readonly daoService: DaoService) {}
+  constructor(
+    private readonly daoService: DaoService,
+    private readonly daoNearService: DaoNearService,
+  ) {}
 
   @ApiResponse({
     status: 200,
@@ -86,5 +89,21 @@ export class DaoController {
     }
 
     return dao;
+  }
+
+  @ApiParam({
+    name: 'id',
+    type: String,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Sputnik DAO FTs',
+    type: DaoTokenResponseDto,
+  })
+  @ApiBadRequestResponse({ description: 'Invalid Dao ID' })
+  // @UseInterceptors(HttpCacheInterceptor)
+  @Get('/:id/fungible-tokens')
+  async tokensByDao(@Param() { id }: FindOneParams): Promise<any> {
+    return await this.daoNearService.getTokensByDao(id);
   }
 }

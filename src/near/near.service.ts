@@ -1,17 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { ConfigService } from '@nestjs/config';
+import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 import PromisePool from '@supercharge/promise-pool';
 import { NEAR_INDEXER_DB_CONNECTION } from 'src/common/constants';
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { Connection, Repository, SelectQueryBuilder } from 'typeorm';
 import { Account, Transaction } from '.';
 import { AccountChange } from './entities/account-change.entity';
 import { ActionReceiptAction } from './entities/action-receipt-action.entity';
 import { Receipt } from './entities/receipt.entity';
-import { ActionKind } from './types/action-kind';
 
 @Injectable()
 export class NearService {
   constructor(
+    private readonly configService: ConfigService,
+
     @InjectRepository(Account, NEAR_INDEXER_DB_CONNECTION)
     private readonly accountRepository: Repository<Account>,
 
@@ -26,6 +28,9 @@ export class NearService {
 
     @InjectRepository(AccountChange, NEAR_INDEXER_DB_CONNECTION)
     private readonly accountChangeRepository: Repository<AccountChange>,
+
+    @InjectConnection(NEAR_INDEXER_DB_CONNECTION)
+    private connection: Connection,
   ) {}
 
   /**
@@ -172,15 +177,66 @@ export class NearService {
       });
 
     queryBuilder = fromBlockTimestamp
-      ? queryBuilder.andWhere(
-          'receipt.included_in_block_timestamp >= :from',
-          {
-            from: fromBlockTimestamp,
-          },
-        )
+      ? queryBuilder.andWhere('receipt.included_in_block_timestamp >= :from', {
+          from: fromBlockTimestamp,
+        })
       : queryBuilder;
 
     return queryBuilder.getMany();
+  }
+
+  // Account Likely Tokens - taken from NEAR Helper Indexer middleware
+  // https://github.com/near/near-contract-helper/blob/master/middleware/indexer.js
+  async findLikelyTokens(accountId: string): Promise<any[]> {
+    const { bridgeTokenFactoryContractName } = this.configService.get('near');
+
+    const received = `
+        select distinct receipt_receiver_account_id as receiver_account_id
+        from action_receipt_actions
+        where args->'args_json'->>'receiver_id' = $1
+            and action_kind = 'FUNCTION_CALL'
+            and args->>'args_json' is not null
+            and args->>'method_name' in ('ft_transfer', 'ft_transfer_call','ft_mint')
+    `;
+
+    const mintedWithBridge = `
+        select distinct receipt_receiver_account_id as receiver_account_id from (
+            select args->'args_json'->>'account_id' as account_id, receipt_receiver_account_id
+            from action_receipt_actions
+            where action_kind = 'FUNCTION_CALL' and
+                receipt_predecessor_account_id = $2 and
+                args->>'method_name' = 'mint'
+        ) minted_with_bridge
+        where account_id = $1
+    `;
+
+    const calledByUser = `
+        select distinct receipt_receiver_account_id as receiver_account_id
+        from action_receipt_actions
+        where receipt_predecessor_account_id = $1
+            and action_kind = 'FUNCTION_CALL'
+            and (args->>'method_name' like 'ft_%' or args->>'method_name' = 'storage_deposit')
+    `;
+
+    const [receivedTokens, mintedWithBridgeTokens, calledByUserTokens] =
+      await Promise.all([
+        this.connection.query(received, [accountId]),
+        this.connection.query(mintedWithBridge, [
+          accountId,
+          bridgeTokenFactoryContractName,
+        ]),
+        this.connection.query(calledByUser, [accountId]),
+      ]);
+
+    return [
+      ...new Set(
+        [
+          ...receivedTokens,
+          ...mintedWithBridgeTokens,
+          ...calledByUserTokens,
+        ].map(({ receiver_account_id }) => receiver_account_id),
+      ),
+    ];
   }
 
   private buildAggregationTransactionQuery(

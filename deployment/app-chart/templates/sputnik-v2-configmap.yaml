@@ -6,4 +6,5 @@ data:
   NEAR_ENV: "{{ .Values.environment.near_env }}"
   NEAR_CONTRACT_NAME: "{{ .Values.environment.near_contract_name }}"
   NEAR_TOKEN_FACTORY_CONTRACT_NAME: "{{ .Values.environment.near_token_factory_contract_name }}"
+  NEAR_BRIDGE_TOKEN_FACTORY_CONTRACT_NAME: "{{ .Values.environment.near_bridge_token_factory_contract_name }}"
   NEAR_CREDENTIALS_DIR: ".near-credentials"

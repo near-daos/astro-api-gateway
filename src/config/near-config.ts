@@ -15,6 +15,7 @@ export type NEAR_CONFIG = {
   env: NEAR_ENV;
   contractName: string;
   tokenFactoryContractName: string;
+  bridgeTokenFactoryContractName: string;
 };
 
 export type NearConfig = {
@@ -23,6 +24,7 @@ export type NearConfig = {
   nodeUrl: string;
   contractName: string;
   tokenFactoryContractName: string;
+  bridgeTokenFactoryContractName: string;
   masterAccount?: string;
   walletUrl?: string;
   helperUrl?: string;
@@ -32,7 +34,12 @@ export type NearConfig = {
 };
 
 export const getNearConfig = (nearConfig: NEAR_CONFIG): NearConfig => {
-  const { env, contractName, tokenFactoryContractName } = nearConfig;
+  const {
+    env,
+    contractName,
+    tokenFactoryContractName,
+    bridgeTokenFactoryContractName,
+  } = nearConfig;
 
   switch (env) {
     case 'production':
@@ -43,6 +50,7 @@ export const getNearConfig = (nearConfig: NEAR_CONFIG): NearConfig => {
         nodeUrl: 'https://rpc.mainnet.near.org',
         contractName,
         tokenFactoryContractName,
+        bridgeTokenFactoryContractName,
         walletUrl: 'https://wallet.near.org',
         helperUrl: 'https://helper.mainnet.near.org',
         explorerUrl: 'https://explorer.mainnet.near.org',
@@ -56,6 +64,7 @@ export const getNearConfig = (nearConfig: NEAR_CONFIG): NearConfig => {
         nodeUrl: 'https://rpc.testnet.near.org',
         contractName,
         tokenFactoryContractName,
+        bridgeTokenFactoryContractName,
         walletUrl: 'https://wallet.testnet.near.org',
         helperUrl: 'https://helper.testnet.near.org',
         explorerUrl: 'https://explorer.testnet.near.org',
@@ -68,6 +77,7 @@ export const getNearConfig = (nearConfig: NEAR_CONFIG): NearConfig => {
         nodeUrl: 'https://rpc.betanet.near.org',
         contractName,
         tokenFactoryContractName,
+        bridgeTokenFactoryContractName,
         walletUrl: 'https://wallet.betanet.near.org',
         helperUrl: 'https://helper.betanet.near.org',
         explorerUrl: 'https://explorer.betanet.near.org',
@@ -81,6 +91,7 @@ export const getNearConfig = (nearConfig: NEAR_CONFIG): NearConfig => {
         walletUrl: 'http://localhost:4000/wallet',
         contractName,
         tokenFactoryContractName,
+        bridgeTokenFactoryContractName,
       };
     case 'test':
     case 'ci':
@@ -89,6 +100,7 @@ export const getNearConfig = (nearConfig: NEAR_CONFIG): NearConfig => {
         nodeUrl: 'https://rpc.ci-testnet.near.org',
         contractName,
         tokenFactoryContractName,
+        bridgeTokenFactoryContractName,
         masterAccount: 'test.near',
       };
     case 'ci-betanet':
@@ -97,6 +109,7 @@ export const getNearConfig = (nearConfig: NEAR_CONFIG): NearConfig => {
         nodeUrl: 'https://rpc.ci-betanet.near.org',
         contractName,
         tokenFactoryContractName,
+        bridgeTokenFactoryContractName,
         masterAccount: 'test.near',
       };
     default:
@@ -111,6 +124,7 @@ export default registerAs('near', () =>
     env: (process.env.NEAR_ENV as NEAR_ENV) || 'development',
     contractName: process.env.NEAR_CONTRACT_NAME,
     tokenFactoryContractName: process.env.NEAR_TOKEN_FACTORY_CONTRACT_NAME,
+    bridgeTokenFactoryContractName: process.env.NEAR_BRIDGE_TOKEN_FACTORY_CONTRACT_NAME,
     pollingInterval: process.env.AGGREGATOR_POLLING_INTERVAL,
     daoPollingInterval: process.env.DAO_POLLING_INTERVAL
   } as NEAR_CONFIG),
