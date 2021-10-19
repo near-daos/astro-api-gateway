@@ -5,10 +5,11 @@ import { SputnikDaoService } from 'src/sputnikdao/sputnik.service';
 import { ConfigService } from '@nestjs/config';
 import { btoaJSON } from 'src/utils';
 import { isNotNull } from 'src/utils/guards';
-import { castProposalKind } from 'src/proposals/dto/proposal.dto';
+import { castProposalKind, ProposalDto } from 'src/proposals/dto/proposal.dto';
 import { TokenFactoryService } from 'src/token-factory/token-factory.service';
 import { TokenService } from 'src/tokens/token.service';
 import { CacheService } from 'src/cache/service/cache.service';
+import { SputnikDaoDto } from '../daos/dto/dao-sputnik.dto';
 
 @Injectable()
 export class SputnikTransactionService {
@@ -28,71 +29,162 @@ export class SputnikTransactionService {
     transactionHash: string,
     accountId: string,
   ): Promise<any> {
-    // the approximate block timestamp in microseconds - the same way as it's done in indexer
-    const txTimestamp = new Date().getTime() * 1000 * 1000;
-
-    const { contractName } = this.configService.get('near');
-
     const txStatus = await this.sputnikDaoService.getTxStatus(
       transactionHash,
       accountId,
     );
     const { transaction } = txStatus;
-    const { hash, receiver_id, signer_id, actions } = transaction;
 
-    const daoIds = [];
-    const proposalDaoIds = [];
-    const tokenIds = [];
+    const { actions } = transaction;
 
-    const proposalTxArgs = [];
+    // the approximate block timestamp in microseconds - the same way as it's done in indexer
+    const txTimestamp = new Date().getTime() * 1000 * 1000;
 
-    actions
-      .filter((action) => action.FunctionCall)
-      .map(({ FunctionCall }) => {
-        const { method_name } = FunctionCall;
-        const { name, proposal = {}, args } = btoaJSON(FunctionCall.args) || {};
-        const { metadata } = args || {};
+    const filteredActions = actions.filter((action) => action.FunctionCall);
 
-        if ('create' === method_name) {
-          if (name) {
-            daoIds.push(`${name}.${contractName}`);
-          }
-        } else if ('add_proposal' === method_name) {
-          proposalDaoIds.push(receiver_id);
+    await this.processActions(filteredActions, transaction, txTimestamp);
 
-          proposalTxArgs.push(proposal);
-        } else if ('create_token' === method_name && metadata) {
-          tokenIds.push(metadata.symbol);
-        }
-      });
+    this.logger.log(`Clearing cache on wallet callback.`);
+    await this.cacheService.clearCache();
+  }
 
-    const combinedDaoIds = [...daoIds, ...proposalDaoIds];
+  private async handleUpdateProposal(
+    args: string,
+    transaction: any,
+    txTimestamp: number,
+  ) {
+    const { id: proposalId } = btoaJSON(args);
+    const { hash, receiver_id } = transaction;
 
-    const [daos, proposals, tokens] = await Promise.all([
-      combinedDaoIds ? this.sputnikDaoService.getDaoList(combinedDaoIds) : [],
-      proposalDaoIds ? this.sputnikDaoService.getProposals(proposalDaoIds) : [],
-      tokenIds ? this.tokenFactoryService.getTokens(tokenIds) : [],
+    const [dao, proposal] = await Promise.all([
+      this.sputnikDaoService.getDaoById(receiver_id),
+      this.sputnikDaoService.getProposal(receiver_id, proposalId),
     ]);
 
-    const enrichedDaos = daos.map((dao) => ({
+    const enrichedProposal = {
+      ...proposal,
+      transactionHash: hash,
+      createTimestamp: txTimestamp,
+    };
+
+    this.logger.log(
+      `Storing updated Proposal from wallet callback: ${proposal.id}`,
+    );
+    await this.proposalService.create(enrichedProposal);
+    this.logger.log(`Successfully updated Proposal: ${proposal.id}`);
+
+    const enrichedDao = {
+      ...dao,
+      updateTransactionHash: hash,
+      updateTimestamp: txTimestamp,
+    };
+
+    this.logger.log(
+      `Storing updated DAO from Proposal wallet callback: ${dao.id}`,
+    );
+    await this.daoService.create(enrichedDao);
+    this.logger.log(`Successfully updated DAO: ${dao.id}`);
+  }
+
+  private async handleNewDao(
+    functionCallArgs: string,
+    transaction: any,
+    txTimestamp: number,
+  ) {
+    const { hash } = transaction;
+    const { contractName } = this.configService.get('near');
+    const { name } = btoaJSON(functionCallArgs);
+
+    const dao = await this.sputnikDaoService.getDaoById(
+      `${name}.${contractName}`,
+    );
+
+    const enrichedDao = {
       ...dao,
       transactionHash: hash,
       createTimestamp: txTimestamp,
-    }));
+    };
 
-    if (enrichedDaos.length) {
-      this.logger.log('Storing DAOs from wallet callback...');
+    this.logger.log(`Storing new DAO from wallet callback: ${dao.id}`);
+    await this.daoService.create(enrichedDao);
+    this.logger.log(`Successfully stored new DAO: ${dao.id}`);
+  }
+
+  private async handleNewToken(
+    functionCallArgs: string,
+    transaction: any,
+    txTimestamp: number,
+  ) {
+    const { hash } = transaction;
+    const { args } = btoaJSON(functionCallArgs);
+    const { metadata } = args || {};
+
+    const token = await this.tokenFactoryService.getToken(metadata.symbol);
+
+    const enrichedToken = {
+      ...token,
+      transactionHash: hash,
+      createTimestamp: txTimestamp,
+    };
+
+    this.logger.log('Storing Tokens from wallet callback...');
+    this.tokenService.create(enrichedToken);
+  }
+
+  private async handleNewProposal(
+    functionCallArgs: string,
+    transaction: any,
+    txTimestamp: number,
+  ) {
+    const { proposal } = btoaJSON(functionCallArgs);
+    const { receiver_id, hash } = transaction;
+    const proposalTxArgs = [proposal];
+
+    const [dao, proposals] = await Promise.all([
+      this.sputnikDaoService.getDaoById(receiver_id),
+      this.sputnikDaoService.getProposals([receiver_id]),
+    ]);
+
+    const enrichedProposals = this.enrichProposals(
+      proposals,
+      proposalTxArgs,
+      transaction,
+      txTimestamp,
+    );
+
+    if (enrichedProposals.length) {
+      this.logger.log('Storing Proposals from wallet callback...');
       await Promise.all(
-        enrichedDaos
-          .filter((dao) => isNotNull(dao))
-          .map((dao) => this.daoService.create(dao)),
+        enrichedProposals.map((proposal) =>
+          this.proposalService.create(proposal),
+        ),
       );
-      this.logger.log('Successfully stored DAOs.');
+      this.logger.log('Successfully stored Proposals.');
     }
 
+    const enrichedDao = {
+      ...dao,
+      updateTransactionHash: hash,
+      updateTimestamp: txTimestamp,
+    };
+
+    this.logger.log(
+      `Storing updated DAO from Proposal wallet callback: ${dao.id}`,
+    );
+    await this.daoService.create(enrichedDao);
+    this.logger.log(`Successfully updated DAO: ${dao.id}`);
+  }
+
+  private enrichProposals(
+    proposals: ProposalDto[],
+    proposalTxArgs: any[],
+    transaction: any,
+    txTimestamp: number,
+  ): ProposalDto[] {
+    const { hash, signer_id } = transaction;
     const enrichedProposals = proposals
       .filter((proposal) => {
-        const { id, daoId, description, kind, proposer } = proposal;
+        const { description, kind, proposer } = proposal;
 
         const proposalTx = proposalTxArgs.find(
           ({ description: txDescription, kind: txKind }) =>
@@ -109,31 +201,37 @@ export class SputnikTransactionService {
         createTimestamp: txTimestamp,
       }));
 
-    if (enrichedProposals.length) {
-      this.logger.log('Storing Proposals from wallet callback...');
-      await Promise.all(
-        enrichedProposals.map((proposal) =>
-          this.proposalService.create(proposal),
-        ),
-      );
-      this.logger.log('Successfully stored Proposals.');
+    return enrichedProposals;
+  }
+
+  private async processActions(
+    actions: any[],
+    transaction: any,
+    txTimestamp: number,
+  ) {
+    for (const action of actions) {
+      const { FunctionCall } = action;
+
+      const { method_name, args } = FunctionCall;
+
+      switch (method_name) {
+        case 'create': {
+          await this.handleNewDao(args, transaction, txTimestamp);
+          break;
+        }
+        case 'act_proposal': {
+          await this.handleUpdateProposal(args, transaction, txTimestamp);
+          break;
+        }
+        case 'add_proposal': {
+          await this.handleNewProposal(args, transaction, txTimestamp);
+          break;
+        }
+        case 'create_token': {
+          await this.handleNewToken(args, transaction, txTimestamp);
+          break;
+        }
+      }
     }
-
-    const enrichedTokens = tokens.map((token) => ({
-      ...token,
-      transactionHash: hash,
-      createTimestamp: txTimestamp,
-    }));
-
-    if (enrichedTokens.length) {
-      this.logger.log('Storing Tokens from wallet callback...');
-      await Promise.all(
-        enrichedTokens.map((token) => this.tokenService.create(token)),
-      );
-      this.logger.log('Successfully stored Tokens.');
-    }
-
-    this.logger.log(`Clearing cache on wallet callback.`);
-    await this.cacheService.clearCache();
   }
 }
