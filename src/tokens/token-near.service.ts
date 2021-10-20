@@ -6,6 +6,7 @@ import { TokenAccountResponseDto } from './dto/token-account-response.dto';
 import { NearService } from 'src/near/near.service';
 import { SputnikDaoService } from 'src/sputnikdao/sputnik.service';
 import { ConfigService } from '@nestjs/config';
+import PromisePool from '@supercharge/promise-pool';
 
 @Injectable()
 export class TokenNearService {
@@ -30,11 +31,12 @@ export class TokenNearService {
       ),
     );
 
-    const balances: string[] = await Promise.all(
-      tokenIds.map((token) =>
-        this.sputnikDaoService.getFTBalance(token, accountId),
-      ),
-    );
+    const { results: balances, errors } = await PromisePool.withConcurrency(2)
+      .for(tokenIds)
+      .process(
+        async (token) =>
+          await this.sputnikDaoService.getFTBalance(token, accountId),
+      );
 
     return tokens.map((token) => {
       const tokenIdx = tokenIds.indexOf(
