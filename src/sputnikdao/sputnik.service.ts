@@ -296,13 +296,9 @@ export class SputnikDaoService {
     contractName: string,
     accountId: string,
   ): Promise<string> {
-    try {
-      const contract = this.getContract(contractName);
+    const contract = this.getContract(contractName);
 
-      return await contract.ft_balance_of({ account_id: accountId });
-    } catch (e) {
-      // handling wasm execution error when retrieving account balance
-    }
+    return await contract.ft_balance_of({ account_id: accountId });
   }
 
   private proposalResponseToDTO(
