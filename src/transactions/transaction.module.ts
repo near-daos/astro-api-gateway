@@ -15,7 +15,7 @@ import { TokenFactoryService } from 'src/token-factory/token-factory.service';
 import { Token } from 'src/tokens/entities/token.entity';
 import { TokenService } from 'src/tokens/token.service';
 import { AccountChangeService } from './account-change.service';
-import { SputnikTransactionService } from './sputnik-transaction.service';
+import { TransactionCallbackService } from './transaction-callback.service';
 import { TransactionController } from './transaction.controller';
 import { TransactionService } from './transaction.service';
 
@@ -37,7 +37,7 @@ import { TransactionService } from './transaction.service';
   ],
   providers: [
     TransactionService,
-    SputnikTransactionService,
+    TransactionCallbackService,
     SputnikDaoService,
     DaoService,
     ProposalService,

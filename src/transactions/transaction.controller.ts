@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiParam,
   ApiQuery,
   ApiResponse,
   ApiTags,
@@ -22,14 +23,16 @@ import { ParsedRequest, CrudRequest } from '@nestjsx/crud';
 import { HttpCacheInterceptor } from 'src/common';
 import { TransactionResponse } from './dto/transaction-response.dto';
 import { QueryFailedErrorFilter } from 'src/common/filters/query-failed-error.filter';
-import { Transaction } from 'src/near';
+import { Receipt, Transaction } from 'src/near';
 import { TransactionService } from './transaction.service';
 import { TransactionQuery } from 'src/common/dto/TransactionQuery';
 import { TransactionCrudRequestInterceptor } from './interceptors/transaction-crud.interceptor';
 import { TransferCrudRequestInterceptor } from './interceptors/transfer-crud.interceptor';
 import { WalletCallbackParams } from 'src/common/dto/WalletCallbackParams';
 import { ConfigService } from '@nestjs/config';
-import { SputnikTransactionService } from './sputnik-transaction.service';
+import { TransactionCallbackService } from './transaction-callback.service';
+import { FindAccountParams } from 'src/common/dto/FindAccountParams';
+import { NearService } from 'src/near/near.service';
 
 @ApiTags('Transactions')
 @Controller('/transactions')
@@ -39,7 +42,8 @@ export class TransactionController {
   constructor(
     private readonly configService: ConfigService,
     private readonly transactionService: TransactionService,
-    private readonly sputnikTransactionService: SputnikTransactionService,
+    private readonly transactionCallbackService: TransactionCallbackService,
+    private readonly nearService: NearService,
   ) {}
 
   @ApiResponse({
@@ -78,6 +82,26 @@ export class TransactionController {
     return await this.transactionService.getMany(query);
   }
 
+  @ApiResponse({
+    status: 200,
+    description: 'List of Receipts by Account',
+    type: Receipt,
+  })
+  @ApiParam({
+    name: 'accountId',
+    type: String,
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
+  @UseInterceptors(HttpCacheInterceptor)
+  @Get('/receipts/account-receipts/:accountId')
+  async receiptsByAccount(
+    @Param() { accountId }: FindAccountParams,
+  ): Promise<Receipt[]> {
+    return await this.nearService.receiptsByAccount(accountId);
+  }
+
   @Get('/wallet/callback/:accountId')
   async success(
     @Param() { accountId },
@@ -102,7 +126,10 @@ export class TransactionController {
           transactionHashes
             .split(',')
             .map((hash) =>
-              this.sputnikTransactionService.unfoldTransaction(hash, accountId),
+              this.transactionCallbackService.unfoldTransaction(
+                hash,
+                accountId,
+              ),
             ),
         );
       } catch (e) {

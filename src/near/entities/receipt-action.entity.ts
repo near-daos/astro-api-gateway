@@ -15,9 +15,11 @@ export class ReceiptAction {
   })
   receipt: Receipt;
 
+  @ApiProperty()
   @Column()
   receiptPredecessorAccountId: string;
 
+  @ApiProperty()
   @Column()
   receiptReceiverAccountId: string;
 

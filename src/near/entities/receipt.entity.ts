@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import {
   Column,
   Entity,
@@ -11,15 +12,19 @@ import { Transaction } from './transaction.entity';
 
 @Entity({ name: 'receipts' })
 export class Receipt {
+  @ApiProperty()
   @PrimaryColumn()
   receiptId: string;
 
+  @ApiProperty()
   @Column()
   predecessorAccountId: string;
 
+  @ApiProperty()
   @Column()
   receiverAccountId: string;
 
+  @ApiProperty()
   @Column()
   originatedFromTransactionHash: string;
 
@@ -27,9 +32,11 @@ export class Receipt {
   @JoinColumn({ name: 'originated_from_transaction_hash' })
   originatedFromTransaction: Transaction;
 
+  @ApiProperty()
   @Column({ type: 'bigint' })
   includedInBlockTimestamp: number;
 
+  @ApiProperty()
   @OneToOne((_) => ReceiptAction, (receiptAction) => receiptAction.receipt, {
     cascade: true,
     nullable: true,
