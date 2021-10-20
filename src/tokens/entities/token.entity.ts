@@ -45,4 +45,10 @@ export class Token extends TransactionEntity {
   @ApiProperty()
   @Column({ nullable: true })
   symbol: string;
+
+  @ApiProperty()
+  tokenId?: string;
+
+  @ApiProperty()
+  balance?: string;
 }

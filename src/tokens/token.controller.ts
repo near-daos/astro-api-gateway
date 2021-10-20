@@ -29,7 +29,6 @@ import { NFTTokenCrudRequestInterceptor } from './interceptors/nft-token-crud.in
 import { NFTToken } from './entities/nft-token.entity';
 import { NFTTokenResponse } from './dto/nft-token-response.dto';
 import { NFTTokenService } from './nft-token.service';
-import { TokenAccountResponseDto } from './dto/token-account-response.dto';
 import { FindAccountParams } from 'src/common/dto/FindAccountParams';
 import { TokenNearService } from './token-near.service';
 
@@ -85,14 +84,14 @@ export class TokenController {
   @ApiResponse({
     status: 200,
     description: 'List of Fungible Tokens by Account',
-    type: TokenAccountResponseDto,
+    type: Token,
   })
   @ApiBadRequestResponse({ description: 'Invalid Dao ID' })
   @UseInterceptors(HttpCacheInterceptor)
   @Get('/account-tokens/:accountId')
   async tokensByDao(
     @Param() { accountId }: FindAccountParams,
-  ): Promise<TokenAccountResponseDto[]> {
+  ): Promise<Token[]> {
     return await this.tokenNearService.tokensByAccount(accountId);
   }
 }

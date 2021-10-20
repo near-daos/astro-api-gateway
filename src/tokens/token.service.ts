@@ -4,12 +4,16 @@ import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 import { Repository } from 'typeorm';
 import { Token } from './entities/token.entity';
 import { TokenDto } from './dto/token.dto';
+import { CrudRequest } from '@nestjsx/crud';
+import { TokenResponse } from './dto/token-response.dto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class TokenService extends TypeOrmCrudService<Token> {
   constructor(
     @InjectRepository(Token)
     private readonly tokenRepository: Repository<Token>,
+    private readonly configService: ConfigService,
   ) {
     super(tokenRepository);
   }
@@ -30,5 +34,21 @@ export class TokenService extends TypeOrmCrudService<Token> {
       spec,
       symbol,
     });
+  }
+
+  async getMany(req: CrudRequest): Promise<TokenResponse | Token[]> {
+    const { tokenFactoryContractName } = this.configService.get('near');
+
+    const tokenResponse = await super.getMany(req);
+
+    const tokens =
+      tokenResponse instanceof Array ? tokenResponse : tokenResponse.data;
+
+    (tokenResponse as TokenResponse).data = tokens.map((token) => ({
+      ...token,
+      tokenId: `${token.id}.${tokenFactoryContractName}`,
+    }));
+
+    return tokenResponse;
   }
 }
