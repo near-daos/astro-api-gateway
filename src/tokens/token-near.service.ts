@@ -24,18 +24,22 @@ export class TokenNearService {
       return [];
     }
 
-    const [tokens, balances] = await Promise.all([
-      this.findByIds(
-        tokenIds.map((id) =>
-          id.substring(0, id.indexOf(`.${tokenFactoryContractName}`)),
-        ),
+    const tokens = await this.findByIds(
+      tokenIds.map((id) =>
+        id.substring(0, id.indexOf(`.${tokenFactoryContractName}`)),
       ),
-      Promise.all(
+    );
+
+    let balances: string[];
+    try {
+      balances = await Promise.all(
         tokenIds.map((token) =>
           this.sputnikDaoService.getFTBalance(token, accountId),
         ),
-      ),
-    ]);
+      );
+    } catch (e) {
+      // handling wasm execution error when retrieving account balance
+    }
 
     return tokens.map((token) => {
       const tokenIdx = tokenIds.indexOf(
@@ -45,7 +49,7 @@ export class TokenNearService {
       return {
         ...token,
         tokenId: tokenIds[tokenIdx],
-        balance: balances[tokenIdx],
+        balance: balances?.[tokenIdx],
       };
     });
   }
