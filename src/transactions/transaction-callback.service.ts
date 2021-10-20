@@ -4,16 +4,14 @@ import { ProposalService } from 'src/proposals/proposal.service';
 import { SputnikDaoService } from 'src/sputnikdao/sputnik.service';
 import { ConfigService } from '@nestjs/config';
 import { btoaJSON } from 'src/utils';
-import { isNotNull } from 'src/utils/guards';
 import { castProposalKind, ProposalDto } from 'src/proposals/dto/proposal.dto';
 import { TokenFactoryService } from 'src/token-factory/token-factory.service';
 import { TokenService } from 'src/tokens/token.service';
 import { CacheService } from 'src/cache/service/cache.service';
-import { SputnikDaoDto } from '../daos/dto/dao-sputnik.dto';
 
 @Injectable()
-export class SputnikTransactionService {
-  private readonly logger = new Logger(SputnikTransactionService.name);
+export class TransactionCallbackService {
+  private readonly logger = new Logger(TransactionCallbackService.name);
 
   constructor(
     private readonly configService: ConfigService,

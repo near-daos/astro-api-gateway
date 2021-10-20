@@ -8,6 +8,7 @@ import { Account, Transaction } from '.';
 import { AccountChange } from './entities/account-change.entity';
 import { ActionReceiptAction } from './entities/action-receipt-action.entity';
 import { Receipt } from './entities/receipt.entity';
+import { ActionKind } from './types/action-kind';
 
 @Injectable()
 export class NearService {
@@ -187,7 +188,7 @@ export class NearService {
 
   // Account Likely Tokens - taken from NEAR Helper Indexer middleware
   // https://github.com/near/near-contract-helper/blob/master/middleware/indexer.js
-  async findLikelyTokens(accountId: string): Promise<any[]> {
+  async findLikelyTokens(accountId: string): Promise<string[]> {
     const { bridgeTokenFactoryContractName } = this.configService.get('near');
 
     const received = `
@@ -237,6 +238,22 @@ export class NearService {
         ].map(({ receiver_account_id }) => receiver_account_id),
       ),
     ];
+  }
+
+  async receiptsByAccount(accountId: string): Promise<Receipt[]> {
+    return await this.receiptRepository
+      .createQueryBuilder('receipt')
+      .leftJoinAndSelect('receipt.receiptAction', 'action_receipt_actions')
+      .where(
+        '(receipt.receiver_account_id = :accountId OR receipt.predecessor_account_id = :accountId) ' +
+          'AND action_receipt_actions.action_kind = :actionKind',
+        {
+          accountId,
+          actionKind: ActionKind.Transfer,
+        },
+      )
+      .orderBy('receipt.included_in_block_timestamp', 'ASC')
+      .getMany();
   }
 
   private buildAggregationTransactionQuery(
