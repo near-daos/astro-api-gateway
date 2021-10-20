@@ -241,41 +241,19 @@ export class NearService {
   }
 
   async receiptsByAccount(accountId: string): Promise<Receipt[]> {
-    let receiverQuery = this.receiptRepository
+    return await this.receiptRepository
       .createQueryBuilder('receipt')
       .leftJoinAndSelect('receipt.receiptAction', 'action_receipt_actions')
       .where(
-        'receipt.receiver_account_id = :accountId AND action_receipt_actions.action_kind = :actionKind',
+        '(receipt.receiver_account_id = :accountId OR receipt.predecessor_account_id = :accountId) ' +
+          'AND action_receipt_actions.action_kind = :actionKind',
         {
           accountId,
           actionKind: ActionKind.Transfer,
         },
       )
-      .orderBy('receipt.included_in_block_timestamp', 'ASC');
-
-    let signerQuery = this.receiptRepository
-      .createQueryBuilder('receipt')
-      .leftJoinAndSelect('receipt.receiptAction', 'action_receipt_actions')
-      .where(
-        'receipt.predecessor_account_id = :accountId AND action_receipt_actions.action_kind = :actionKind',
-        {
-          accountId,
-          actionKind: ActionKind.Transfer,
-        },
-      )
-      .orderBy('receipt.included_in_block_timestamp', 'ASC');
-
-    const [receivedTransactions, signedTransactions] = await Promise.all([
-      receiverQuery.getMany(),
-      signerQuery.getMany(),
-    ]);
-
-    return [...receivedTransactions, ...signedTransactions].sort(
-      (
-        { includedInBlockTimestamp: timestamp1 },
-        { includedInBlockTimestamp: timestamp2 },
-      ) => timestamp1 - timestamp2,
-    );
+      .orderBy('receipt.included_in_block_timestamp', 'ASC')
+      .getMany();
   }
 
   private buildAggregationTransactionQuery(
