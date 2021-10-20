@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Token } from './entities/token.entity';
-import { TokenAccountResponseDto } from './dto/token-account-response.dto';
 import { NearService } from 'src/near/near.service';
 import { SputnikDaoService } from 'src/sputnikdao/sputnik.service';
 import { ConfigService } from '@nestjs/config';
@@ -18,7 +17,7 @@ export class TokenNearService {
     private readonly sputnikDaoService: SputnikDaoService,
   ) {}
 
-  async tokensByAccount(accountId: string): Promise<TokenAccountResponseDto[]> {
+  async tokensByAccount(accountId: string): Promise<Token[]> {
     const { tokenFactoryContractName } = this.configService.get('near');
     const tokenIds = await this.nearService.findLikelyTokens(accountId);
     if (!tokenIds?.length) {
