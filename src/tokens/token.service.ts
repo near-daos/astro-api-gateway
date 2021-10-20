@@ -31,11 +31,4 @@ export class TokenService extends TypeOrmCrudService<Token> {
       symbol,
     });
   }
-
-  async findByIds(ids: string[]): Promise<Token[]> {
-    return this.tokenRepository
-      .createQueryBuilder('token')
-      .where('token.id = ANY(ARRAY[:...ids])', { ids })
-      .getMany();
-  }
 }

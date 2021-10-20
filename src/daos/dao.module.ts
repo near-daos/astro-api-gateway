@@ -8,8 +8,6 @@ import { NearModule } from 'src/near/near.module';
 import { Policy } from './entities/policy.entity';
 import { Role } from './entities/role.entity';
 import { DaoNearService } from './dao-near.service';
-import { SputnikDaoService } from 'src/sputnikdao/sputnik.service';
-import { TokenModule } from 'src/tokens/token.module';
 
 @Module({
   imports: [
@@ -18,9 +16,8 @@ import { TokenModule } from 'src/tokens/token.module';
     }),
     TypeOrmModule.forFeature([Dao, Policy, Role]),
     NearModule,
-    TokenModule,
   ],
-  providers: [DaoService, DaoNearService, SputnikDaoService],
+  providers: [DaoService, DaoNearService],
   controllers: [DaoController],
   exports: [DaoService],
 })

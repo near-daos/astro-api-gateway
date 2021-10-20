@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { TransactionInfo } from 'src/common/dto/TransactionInfo';
-import { Token } from '../../tokens/entities/token.entity';
+import { Token } from '../entities/token.entity';
 
-export class DaoTokenResponseDto extends TransactionInfo implements Token {
+export class TokenAccountResponseDto extends TransactionInfo implements Token {
   @ApiProperty()
   decimals: number;
 

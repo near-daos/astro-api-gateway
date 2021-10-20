@@ -24,8 +24,7 @@ import { DaoResponse } from './dto/dao-response.dto';
 import { DaoCrudRequestInterceptor } from './interceptors/dao-crud.interceptor';
 import { QueryFailedErrorFilter } from 'src/common/filters/query-failed-error.filter';
 import { DaoNearService } from './dao-near.service';
-import { DaoTokenResponseDto } from './dto/dao-token-response.dto';
-
+import { FindAccountParams } from 'src/common/dto/FindAccountParams';
 
 @ApiTags('DAO')
 @Controller('/daos')
@@ -65,7 +64,9 @@ export class DaoController {
   @ApiBadRequestResponse({ description: 'Invalid accountId' })
   @UseInterceptors(HttpCacheInterceptor)
   @Get('/account-daos/:accountId')
-  async daosByAccountId(@Param() { accountId }): Promise<Dao[] | DaoResponse> {
+  async daosByAccountId(
+    @Param() { accountId }: FindAccountParams,
+  ): Promise<Dao[] | DaoResponse> {
     return await this.daoService.findAccountDaos(accountId);
   }
 
@@ -89,21 +90,5 @@ export class DaoController {
     }
 
     return dao;
-  }
-
-  @ApiParam({
-    name: 'id',
-    type: String,
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Sputnik DAO FTs',
-    type: DaoTokenResponseDto,
-  })
-  @ApiBadRequestResponse({ description: 'Invalid Dao ID' })
-  // @UseInterceptors(HttpCacheInterceptor)
-  @Get('/:id/fungible-tokens')
-  async tokensByDao(@Param() { id }: FindOneParams): Promise<any> {
-    return await this.daoNearService.getTokensByDao(id);
   }
 }
