@@ -224,8 +224,8 @@ export class SputnikDaoService {
     }
   }
 
-  public async getDaoAmount(daoId: string): Promise<string> {
-    const account = await this.near.account(daoId);
+  public async getAccountAmount(accountId: string): Promise<string> {
+    const account = await this.near.account(accountId);
     const state = await account.state();
 
     return state.amount;
@@ -239,7 +239,7 @@ export class SputnikDaoService {
       policy: async (): Promise<PolicyDto> => contract.get_policy(),
       stakingContract: async (): Promise<string> =>
         contract.get_staking_contract(),
-      amount: async (): Promise<string> => this.getDaoAmount(daoId),
+      amount: async (): Promise<string> => this.getAccountAmount(daoId),
       totalSupply: async (): Promise<string> =>
         contract.delegation_total_supply(),
       lastProposalId: async (): Promise<string> =>
