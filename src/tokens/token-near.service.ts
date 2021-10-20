@@ -6,6 +6,8 @@ import { NearService } from 'src/near/near.service';
 import { SputnikDaoService } from 'src/sputnikdao/sputnik.service';
 import { ConfigService } from '@nestjs/config';
 import PromisePool from '@supercharge/promise-pool';
+import Decimal from 'decimal.js';
+import { yoktoNear } from 'src/sputnikdao/constants';
 
 @Injectable()
 export class TokenNearService {
@@ -30,6 +32,16 @@ export class TokenNearService {
       ),
     );
 
+    const daoAmount = await this.sputnikDaoService.getAccountAmount(accountId);
+
+    const nearToken = {
+      id: '',
+      tokenId: '',
+      symbol: 'NEAR',
+      balance: daoAmount,
+      decimals: new Decimal(yoktoNear).toFixed().length - 1,
+    } as any;
+
     const { results: balances, errors } = await PromisePool.withConcurrency(2)
       .for(tokenIds)
       .process(
@@ -37,7 +49,7 @@ export class TokenNearService {
           await this.sputnikDaoService.getFTBalance(token, accountId),
       );
 
-    return tokens.map((token) => {
+    const enrichedTokens = tokens.map((token) => {
       const tokenIdx = tokenIds.indexOf(
         `${token.id}.${tokenFactoryContractName}`,
       );
@@ -48,6 +60,8 @@ export class TokenNearService {
         balance: balances?.[tokenIdx],
       };
     });
+
+    return [nearToken, ...enrichedTokens];
   }
 
   private async findByIds(ids: string[]): Promise<Token[]> {
