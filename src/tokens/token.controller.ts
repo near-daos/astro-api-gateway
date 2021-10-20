@@ -1,6 +1,13 @@
-import { Controller, Get, UseFilters, UseInterceptors } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  UseFilters,
+  UseInterceptors,
+} from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiParam,
   ApiQuery,
   ApiResponse,
   ApiTags,
@@ -22,6 +29,9 @@ import { NFTTokenCrudRequestInterceptor } from './interceptors/nft-token-crud.in
 import { NFTToken } from './entities/nft-token.entity';
 import { NFTTokenResponse } from './dto/nft-token-response.dto';
 import { NFTTokenService } from './nft-token.service';
+import { TokenAccountResponseDto } from './dto/token-account-response.dto';
+import { FindAccountParams } from 'src/common/dto/FindAccountParams';
+import { TokenNearService } from './token-near.service';
 
 @ApiTags('Token')
 @Controller('/tokens')
@@ -29,6 +39,7 @@ export class TokenController {
   constructor(
     private readonly tokenService: TokenService,
     private readonly nftTokenService: NFTTokenService,
+    private readonly tokenNearService: TokenNearService,
   ) {}
 
   @ApiResponse({
@@ -65,5 +76,23 @@ export class TokenController {
     @ParsedRequest() query: CrudRequest,
   ): Promise<NFTToken[] | NFTTokenResponse> {
     return await this.nftTokenService.getMany(query);
+  }
+
+  @ApiParam({
+    name: 'accountId',
+    type: String,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List of Fungible Tokens by Account',
+    type: TokenAccountResponseDto,
+  })
+  @ApiBadRequestResponse({ description: 'Invalid Dao ID' })
+  @UseInterceptors(HttpCacheInterceptor)
+  @Get('/account-tokens/:accountId')
+  async tokensByDao(
+    @Param() { accountId }: FindAccountParams,
+  ): Promise<TokenAccountResponseDto[]> {
+    return await this.tokenNearService.tokensByAccount(accountId);
   }
 }
