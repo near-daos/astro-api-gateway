@@ -20,6 +20,7 @@ import {
 } from 'src/utils';
 import { BountyClaimDto } from 'src/bounties/dto/bounty-claim.dto';
 import { Provider } from 'near-api-js/lib/providers';
+import { Token } from 'src/tokens/entities/token.entity';
 
 @Injectable()
 export class SputnikDaoService {
@@ -299,6 +300,17 @@ export class SputnikDaoService {
     const contract = this.getContract(contractName);
 
     return await contract.ft_balance_of({ account_id: accountId });
+  }
+
+  public async getFTMetadata(tokenId: string): Promise<Token> {
+    const account = await this.near.account(tokenId);
+
+    const factoryContract: Contract & any = new Contract(account, tokenId, {
+      viewMethods: ['ft_metadata'],
+      changeMethods: [],
+    });
+
+    return await factoryContract.ft_metadata();
   }
 
   private proposalResponseToDTO(

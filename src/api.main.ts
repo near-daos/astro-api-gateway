@@ -1,6 +1,6 @@
 import { NestFactory, Reflector } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
-import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
+import { ClassSerializerInterceptor, Logger, ValidationPipe } from '@nestjs/common';
 import { AppModule } from './api.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { Transport } from '@nestjs/microservices';
@@ -8,6 +8,8 @@ import { EVENT_API_QUEUE_NAME } from './common/constants';
 import { initAdapters } from './adapters.init';
 
 export default class Api {
+  private readonly logger = new Logger(Api.name);
+
   async bootstrap(): Promise<void> {
     const app = await NestFactory.create(AppModule);
     app.enableCors();
@@ -60,6 +62,8 @@ export default class Api {
 
     await app.startAllMicroservicesAsync();
 
-    await app.listen(port);
+    await app.listen(port, () =>
+      this.logger.log('API Service is listening...'),
+    );
   }
 }

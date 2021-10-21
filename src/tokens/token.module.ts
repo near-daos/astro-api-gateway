@@ -1,4 +1,4 @@
-import { CacheModule, Module } from '@nestjs/common';
+import { CacheModule, HttpModule, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TokenController } from './token.controller';
 import { TokenService } from './token.service';
@@ -17,6 +17,7 @@ import { SputnikDaoService } from 'src/sputnikdao/sputnik.service';
       useClass: CacheConfigService,
     }),
     TypeOrmModule.forFeature([Token, NFTToken, NFTTokenMetadata]),
+    HttpModule,
     NearModule,
   ],
   providers: [
