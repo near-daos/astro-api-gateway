@@ -1,6 +1,4 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { HttpService, Injectable, Logger } from '@nestjs/common';
 import { Token } from './entities/token.entity';
 import { NearService } from 'src/near/near.service';
 import { SputnikDaoService } from 'src/sputnikdao/sputnik.service';
@@ -8,29 +6,39 @@ import { ConfigService } from '@nestjs/config';
 import PromisePool from '@supercharge/promise-pool';
 import Decimal from 'decimal.js';
 import { yoktoNear } from 'src/sputnikdao/constants';
+import { lastValueFrom, map } from 'rxjs';
 
 @Injectable()
 export class TokenNearService {
+  private readonly logger = new Logger(TokenNearService.name);
+
   constructor(
-    @InjectRepository(Token)
-    private readonly tokenRepository: Repository<Token>,
     private readonly configService: ConfigService,
+    private readonly httpService: HttpService,
     private readonly nearService: NearService,
     private readonly sputnikDaoService: SputnikDaoService,
   ) {}
 
   async tokensByAccount(accountId: string): Promise<Token[]> {
-    const { tokenFactoryContractName } = this.configService.get('near');
-    const tokenIds = await this.nearService.findLikelyTokens(accountId);
+    const { helperUrl } = this.configService.get('near');
+
+    let tokenIds = [];
+    try {
+      tokenIds = await this.nearService.findLikelyTokens(accountId);
+    } catch (e) {
+      this.logger.error(e);
+
+      // Falling back to Indexer Helper API request
+      tokenIds = await lastValueFrom(
+        this.httpService
+          .get(`${helperUrl}/account/${accountId}/likelyTokens`)
+          .pipe(map((res) => res.data)),
+      );
+    }
+
     if (!tokenIds?.length) {
       return [];
     }
-
-    const tokens = await this.findByIds(
-      tokenIds.map((id) =>
-        id.substring(0, id.indexOf(`.${tokenFactoryContractName}`)),
-      ),
-    );
 
     const daoAmount = await this.sputnikDaoService.getAccountAmount(accountId);
 
@@ -42,32 +50,23 @@ export class TokenNearService {
       decimals: new Decimal(yoktoNear).toFixed().length - 1,
     } as any;
 
-    const { results: balances, errors } = await PromisePool.withConcurrency(2)
+    const { results: tokens } = await PromisePool.withConcurrency(2)
       .for(tokenIds)
-      .process(
-        async (token) =>
-          await this.sputnikDaoService.getFTBalance(token, accountId),
-      );
+      .process(async (tokenId) => ({
+        tokenId,
+        ...(await this.sputnikDaoService.getFTMetadata(tokenId)),
+      }));
 
-    const enrichedTokens = tokens.map((token) => {
-      const tokenIdx = tokenIds.indexOf(
-        `${token.id}.${tokenFactoryContractName}`,
-      );
-
-      return {
+    const { results: enrichedTokens } = await PromisePool.withConcurrency(2)
+      .for(tokens)
+      .process(async (token) => ({
         ...token,
-        tokenId: tokenIds[tokenIdx],
-        balance: balances?.[tokenIdx],
-      };
-    });
+        balance: await this.sputnikDaoService.getFTBalance(
+          token.tokenId,
+          accountId,
+        ),
+      }));
 
     return [nearToken, ...enrichedTokens];
-  }
-
-  private async findByIds(ids: string[]): Promise<Token[]> {
-    return this.tokenRepository
-      .createQueryBuilder('token')
-      .where('token.id = ANY(ARRAY[:...ids])', { ids })
-      .getMany();
   }
 }
