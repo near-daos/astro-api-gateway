@@ -22,6 +22,16 @@ export class TokenNearService {
   async tokensByAccount(accountId: string): Promise<Token[]> {
     const { helperUrl } = this.configService.get('near');
 
+    const daoAmount = await this.sputnikDaoService.getAccountAmount(accountId);
+
+    const nearToken = {
+      id: '',
+      tokenId: '',
+      symbol: 'NEAR',
+      balance: daoAmount,
+      decimals: new Decimal(yoktoNear).toFixed().length - 1,
+    } as any;
+
     let tokenIds = [];
     try {
       tokenIds = await this.nearService.findLikelyTokens(accountId);
@@ -37,18 +47,8 @@ export class TokenNearService {
     }
 
     if (!tokenIds?.length) {
-      return [];
+      return [ nearToken ];
     }
-
-    const daoAmount = await this.sputnikDaoService.getAccountAmount(accountId);
-
-    const nearToken = {
-      id: '',
-      tokenId: '',
-      symbol: 'NEAR',
-      balance: daoAmount,
-      decimals: new Decimal(yoktoNear).toFixed().length - 1,
-    } as any;
 
     const { results: tokens } = await PromisePool.withConcurrency(2)
       .for(tokenIds)
