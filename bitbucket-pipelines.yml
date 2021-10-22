@@ -119,6 +119,7 @@ pipelines:
           <<: *helm-build-deploy
           deployment: Staging
 
+  custom:
     test:
       - step:
           <<: *set-environment
