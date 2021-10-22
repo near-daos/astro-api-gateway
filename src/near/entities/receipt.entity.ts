@@ -42,5 +42,5 @@ export class Receipt {
     nullable: true,
   })
   @JoinColumn({ name: 'receipt_id' })
-  receiptActions: ReceiptAction[];
+  receiptAction: ReceiptAction[];
 }
