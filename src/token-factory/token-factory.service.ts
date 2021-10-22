@@ -3,7 +3,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import PromisePool from '@supercharge/promise-pool';
 import { NEAR_TOKEN_FACTORY_PROVIDER } from 'src/common/constants';
 import { NearTokenFactoryProvider } from 'src/config/near-token-factory';
-import { TokenDto } from 'src/tokens/dto/token.dto';
+import { TokenDto, TokenMetadataDto } from 'src/tokens/dto/token.dto';
 import camelcaseKeys from 'camelcase-keys';
 import { NFTTokenDto } from 'src/tokens/dto/nft-token.dto';
 import { buildNFTTokenId } from 'src/utils';
@@ -49,33 +49,70 @@ export class TokenFactoryService {
       .for(tokenOwners)
       .process(
         async ({ contractId, accountId }) =>
-          await this.getContract(contractId)?.nft_tokens_for_owner({
-            account_id: accountId,
-            from_index: '0',
-            limit: 1000, //TODO: magic number - no way to find out the limit now
-          }),
+          await this.getNFTTokensForOwner(contractId, accountId),
       );
 
     errors?.map((error) => this.logger.error(error));
 
     return nfts
-      .reduce((acc: TokenDto[], token: TokenDto[]) => acc.concat(token), [])
+      .reduce(
+        (acc: NFTTokenDto[], token: NFTTokenDto[]) => acc.concat(token),
+        [],
+      )
       .map((token) => {
-        const { owner_id, id, token_id, metadata } = token;
-        const ownerId =
-          owner_id instanceof Object ? owner_id?.Account : owner_id;
-        const tokenId = buildNFTTokenId(ownerId, id || token_id);
+        let { ownerId, id, tokenId, metadata } = token;
+        ownerId = ownerId instanceof Object ? ownerId?.Account : ownerId;
 
         return {
-          ...camelcaseKeys(token, { deep: true }),
-          id: tokenId,
+          ...token,
+          id: buildNFTTokenId(ownerId, id || tokenId),
           ownerId,
           metadata: {
-            ...camelcaseKeys(metadata),
+            ...metadata,
             tokenId,
           },
         };
       });
+  }
+
+  public async getFTBalance(
+    contractName: string,
+    accountId: string,
+  ): Promise<string> {
+    const contract = this.getFTContract(contractName);
+
+    return await contract.ft_balance_of({ account_id: accountId });
+  }
+
+  public async getFTMetadata(tokenId: string): Promise<TokenMetadataDto> {
+    const contract = this.getFTContract(tokenId);
+
+    const metadata = await contract.ft_metadata();
+
+    return camelcaseKeys(metadata, { deep: true });
+  }
+
+  public async getNFTMetadata(tokenId: string): Promise<TokenMetadataDto> {
+    const contract = this.getNFTContract(tokenId);
+
+    const metadata = await contract.nft_metadata();
+
+    return camelcaseKeys(metadata, { deep: true });
+  }
+
+  public async getNFTTokensForOwner(
+    tokenId: string,
+    accountId: string,
+  ): Promise<NFTTokenDto[] | any[]> {
+    const contract = this.getNFTContract(tokenId);
+
+    const nfts = await contract.nft_tokens_for_owner({
+      account_id: accountId,
+      from_index: '0',
+      limit: 1000, //TODO: magic number - no way to find out the limit now
+    });
+
+    return nfts.map((nft: object) => camelcaseKeys(nft, { deep: true }));
   }
 
   private async getTokensList(): Promise<TokenDto[]> {
@@ -131,7 +168,14 @@ export class TokenFactoryService {
     }
   }
 
-  private getContract(contractId: string): Contract & any {
+  private getFTContract(contractId: string): Contract & any {
+    return new Contract(this.account, contractId, {
+      viewMethods: ['ft_balance_of', 'ft_metadata'],
+      changeMethods: [],
+    });
+  }
+
+  private getNFTContract(contractId: string): Contract & any {
     return new Contract(this.account, contractId, {
       viewMethods: ['nft_tokens_for_owner', 'nft_metadata'],
       changeMethods: [],
