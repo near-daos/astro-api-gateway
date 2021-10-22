@@ -479,8 +479,8 @@ export class AggregatorService {
                 receipt.receiverAccountId === daoId &&
                 receipt.predecessorAccountId === proposer,
             )
-            .find(({ receiptAction }) => {
-              return receiptAction.find((receiptAction) => {
+            .find(({ receiptActions }) => {
+              return receiptActions.find((receiptAction) => {
                 const { description: receiptDescription, kind: receiptKind } =
                   btoaJSON(receiptAction?.args?.args_base64 as string)
                     ?.proposal || {};
