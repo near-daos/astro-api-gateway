@@ -240,6 +240,23 @@ export class NearService {
     ];
   }
 
+  // Account Likely NFTs - taken from NEAR Helper Indexer middleware
+  // https://github.com/near/near-contract-helper/blob/master/middleware/indexer.js
+  async findLikelyNFTs(accountId: string): Promise<string[]> {
+    const received = `
+        select distinct receipt_receiver_account_id as receiver_account_id
+        from action_receipt_actions
+        where args->'args_json'->>'receiver_id' = $1
+            and action_kind = 'FUNCTION_CALL'
+            and args->>'args_json' is not null
+            and args->>'method_name' like 'nft_%'
+    `;
+
+    const receivedTokens = await this.connection.query(received, [accountId]);
+
+    return receivedTokens.map(({ receiver_account_id }) => receiver_account_id);
+  }
+
   async receiptsByAccount(accountId: string): Promise<Receipt[]> {
     return await this.receiptRepository
       .createQueryBuilder('receipt')

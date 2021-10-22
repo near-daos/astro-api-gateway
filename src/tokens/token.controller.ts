@@ -31,6 +31,7 @@ import { NFTTokenResponse } from './dto/nft-token-response.dto';
 import { NFTTokenService } from './nft-token.service';
 import { FindAccountParams } from 'src/common/dto/FindAccountParams';
 import { TokenNearService } from './token-near.service';
+import { NFTTokenDto } from './dto/nft-token.dto';
 
 @ApiTags('Token')
 @Controller('/tokens')
@@ -59,6 +60,24 @@ export class TokenController {
     return await this.tokenService.getMany(query);
   }
 
+  @ApiParam({
+    name: 'accountId',
+    type: String,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List of Fungible Tokens by Account',
+    type: Token,
+  })
+  @ApiBadRequestResponse({ description: 'Invalid Dao ID' })
+  @UseInterceptors(HttpCacheInterceptor)
+  @Get('/account-tokens/:accountId')
+  async tokensByDao(
+    @Param() { accountId }: FindAccountParams,
+  ): Promise<Token[]> {
+    return await this.tokenNearService.tokensByAccount(accountId);
+  }
+
   @ApiResponse({
     status: 200,
     description: 'List of aggregated Non-Fungible Tokens',
@@ -83,15 +102,15 @@ export class TokenController {
   })
   @ApiResponse({
     status: 200,
-    description: 'List of Fungible Tokens by Account',
-    type: Token,
+    description: 'List of Non-Fungible Tokens by Account',
+    type: NFTTokenDto,
   })
   @ApiBadRequestResponse({ description: 'Invalid Dao ID' })
   @UseInterceptors(HttpCacheInterceptor)
-  @Get('/account-tokens/:accountId')
-  async tokensByDao(
+  @Get('/nfts/account-nfts/:accountId')
+  async nftsByDao(
     @Param() { accountId }: FindAccountParams,
-  ): Promise<Token[]> {
-    return await this.tokenNearService.tokensByAccount(accountId);
+  ): Promise<NFTTokenDto[]> {
+    return await this.tokenNearService.nftsByAccount(accountId);
   }
 }

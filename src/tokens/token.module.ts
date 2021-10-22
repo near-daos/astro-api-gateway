@@ -10,6 +10,7 @@ import { NFTTokenService } from './nft-token.service';
 import { NFTTokenMetadata } from './entities/nft-token-metadata.entity';
 import { TokenNearService } from './token-near.service';
 import { SputnikDaoService } from 'src/sputnikdao/sputnik.service';
+import { TokenFactoryService } from 'src/token-factory/token-factory.service';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { SputnikDaoService } from 'src/sputnikdao/sputnik.service';
     NFTTokenService,
     TokenNearService,
     SputnikDaoService,
+    TokenFactoryService,
   ],
   controllers: [TokenController],
   exports: [TokenService, NFTTokenService],
