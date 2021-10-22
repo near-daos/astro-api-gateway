@@ -13,7 +13,6 @@ export class NearDBConnectionErrorFilter implements ExceptionFilter {
   private readonly logger = new Logger(NearDBConnectionErrorFilter.name);
 
   catch(exception: QueryFailedError, host: ArgumentsHost): void {
-    console.log('here');
     this.logger.error(exception, exception.stack);
 
     const { message } = exception;

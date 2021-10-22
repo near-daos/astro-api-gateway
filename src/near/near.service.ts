@@ -8,6 +8,7 @@ import { Account, Transaction } from '.';
 import { AccountChange } from './entities/account-change.entity';
 import { ActionReceiptAction } from './entities/action-receipt-action.entity';
 import { Receipt } from './entities/receipt.entity';
+import { ActionKind } from './types/action-kind';
 
 @Injectable()
 export class NearService {
@@ -271,7 +272,9 @@ export class NearService {
 
     return receipts.map((receipt) => ({
       ...receipt,
-      receiptAction: receipt.receiptActions?.[0],
+      receiptAction: receipt.receiptActions?.find(
+        (action) => action.actionKind === ActionKind.Transfer,
+      ) || receipt.receiptActions?.[0],
     }));
   }
 
