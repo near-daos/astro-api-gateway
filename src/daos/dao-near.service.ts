@@ -25,10 +25,7 @@ export class DaoNearService {
         contractName,
       );
 
-    const {
-      receiptId,
-      originatedFromTransaction,
-    } = receipt || {};
+    const { receiptId, originatedFromTransaction } = receipt || {};
     if (
       !originatedFromTransaction ||
       originatedFromTransaction.status !==

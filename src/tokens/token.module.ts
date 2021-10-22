@@ -1,13 +1,16 @@
-import { CacheModule, Module } from '@nestjs/common';
+import { CacheModule, HttpModule, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TokenController } from './token.controller';
 import { TokenService } from './token.service';
 import { Token } from './entities/token.entity';
 import { CacheConfigService } from 'src/config/api-config';
-import { NearSlimModule } from 'src/near/near-slim.module';
+import { NearModule } from 'src/near/near.module';
 import { NFTToken } from './entities/nft-token.entity';
 import { NFTTokenService } from './nft-token.service';
 import { NFTTokenMetadata } from './entities/nft-token-metadata.entity';
+import { TokenNearService } from './token-near.service';
+import { SputnikDaoService } from 'src/sputnikdao/sputnik.service';
+import { TokenFactoryService } from 'src/token-factory/token-factory.service';
 
 @Module({
   imports: [
@@ -15,9 +18,16 @@ import { NFTTokenMetadata } from './entities/nft-token-metadata.entity';
       useClass: CacheConfigService,
     }),
     TypeOrmModule.forFeature([Token, NFTToken, NFTTokenMetadata]),
-    NearSlimModule,
+    HttpModule,
+    NearModule,
   ],
-  providers: [TokenService, NFTTokenService],
+  providers: [
+    TokenService,
+    NFTTokenService,
+    TokenNearService,
+    SputnikDaoService,
+    TokenFactoryService,
+  ],
   controllers: [TokenController],
   exports: [TokenService, NFTTokenService],
 })
