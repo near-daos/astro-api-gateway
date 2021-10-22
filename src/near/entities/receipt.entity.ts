@@ -4,7 +4,7 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
-  OneToOne,
+  OneToMany,
   PrimaryColumn,
 } from 'typeorm';
 import { ReceiptAction } from './receipt-action.entity';
@@ -37,11 +37,10 @@ export class Receipt {
   includedInBlockTimestamp: number;
 
   @ApiProperty()
-  @OneToOne((_) => ReceiptAction, (receiptAction) => receiptAction.receipt, {
+  @OneToMany((_) => ReceiptAction, (receiptAction) => receiptAction.receipt, {
     cascade: true,
     nullable: true,
-    createForeignKeyConstraints: false,
   })
   @JoinColumn({ name: 'receipt_id' })
-  receiptAction: ReceiptAction;
+  receiptActions: ReceiptAction[];
 }
