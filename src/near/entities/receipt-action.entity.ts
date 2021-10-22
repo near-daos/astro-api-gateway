@@ -13,7 +13,7 @@ export class ReceiptAction {
   @PrimaryColumn()
   indexInActionReceipt: number;
 
-  @ManyToOne((_) => Receipt, (receipt) => receipt.receiptAction, {
+  @ManyToOne((_) => Receipt, (receipt) => receipt.receiptActions, {
     nullable: true,
     createForeignKeyConstraints: false,
   })

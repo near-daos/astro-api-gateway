@@ -42,5 +42,9 @@ export class Receipt {
     nullable: true,
   })
   @JoinColumn({ name: 'receipt_id' })
-  receiptAction: ReceiptAction[];
+  receiptActions: ReceiptAction[];
+
+  // temp backward compatibility
+  @ApiProperty()
+  receiptAction: ReceiptAction;
 }

@@ -171,7 +171,7 @@ export class NearService {
   ): Promise<Receipt[]> {
     let queryBuilder = this.receiptRepository
       .createQueryBuilder('receipt')
-      .leftJoinAndSelect('receipt.receiptAction', 'action_receipt_actions')
+      .leftJoinAndSelect('receipt.receiptActions', 'action_receipt_actions')
       .where('receipt.receiver_account_id = ANY(ARRAY[:...ids])', {
         ids: receiverAccountIds,
       });
@@ -257,9 +257,9 @@ export class NearService {
   }
 
   async receiptsByAccount(accountId: string): Promise<Receipt[]> {
-    return this.receiptRepository
+    const receipts = await this.receiptRepository
       .createQueryBuilder('receipt')
-      .leftJoinAndSelect('receipt.receiptAction', 'action_receipt_actions')
+      .leftJoinAndSelect('receipt.receiptActions', 'action_receipt_actions')
       .where(
         'receipt.receiver_account_id = :accountId OR receipt.predecessor_account_id = :accountId',
         {
@@ -268,6 +268,11 @@ export class NearService {
       )
       .orderBy('included_in_block_timestamp', 'ASC')
       .getMany();
+
+    return receipts.map((receipt) => ({
+      ...receipt,
+      receiptAction: receipt.receiptActions?.[0],
+    }));
   }
 
   private buildAggregationTransactionQuery(
@@ -284,7 +289,7 @@ export class NearService {
       //   { ids: receiverAccountIds },
       // )
       // .leftJoinAndSelect(
-      //   'receipts.receiptAction',
+      //   'receipts.receiptActions',
       //   'action_receipt_actions',
       //   'action_receipt_actions.receipt_predecessor_account_id = ANY(ARRAY[:...ids]) AND action_receipt_actions.action_kind = :actionKind',
       //   { ids: receiverAccountIds, actionKind: ActionKind.Transfer },
