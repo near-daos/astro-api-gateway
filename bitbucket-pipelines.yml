@@ -102,7 +102,7 @@ pipelines:
       - step:
           <<: *helm-build-deploy
           deployment: Development
-    
+
     staging:
       - step:
           <<: *set-environment
@@ -118,6 +118,21 @@ pipelines:
       - step:
           <<: *helm-build-deploy
           deployment: Staging
+
+    test:
+      - step:
+          <<: *set-environment
+          script:
+            - >-
+              echo export DOCKER_ENV_TAG=test-$BITBUCKET_COMMIT >> environment.sh
+
+      - step: *build-test
+
+      - step: *docker-build-publish
+
+      - step:
+          <<: *helm-build-deploy
+          deployment: Test
 
   tags:
     '*':
