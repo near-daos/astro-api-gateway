@@ -94,7 +94,7 @@ export class TransactionController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(HttpCacheInterceptor)
+  // @UseInterceptors(HttpCacheInterceptor)
   @Get('/receipts/account-receipts/:accountId')
   async receiptsByAccount(
     @Param() { accountId }: FindAccountParams,
