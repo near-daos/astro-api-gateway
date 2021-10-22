@@ -9,6 +9,10 @@ export class ActionReceiptAction {
   @PrimaryColumn()
   receiptId: string;
 
+  @ApiProperty()
+  @PrimaryColumn()
+  indexInActionReceipt: number;
+
   @OneToOne((_) => Transaction)
   @JoinColumn({
     name: 'receipt_id',
