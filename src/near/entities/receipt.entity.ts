@@ -36,7 +36,7 @@ export class Receipt {
   @Column({ type: 'bigint' })
   includedInBlockTimestamp: number;
 
-  @ApiProperty()
+  @ApiProperty({ type: [ReceiptAction] })
   @OneToMany((_) => ReceiptAction, (receiptAction) => receiptAction.receipt, {
     cascade: true,
     nullable: true,
