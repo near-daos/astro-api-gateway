@@ -262,11 +262,9 @@ export class NearService {
       .createQueryBuilder('receipt')
       .leftJoinAndSelect('receipt.receiptAction', 'action_receipt_actions')
       .where(
-        '(receipt.receiver_account_id = :accountId OR receipt.predecessor_account_id = :accountId) ' +
-          'AND action_receipt_actions.action_kind = :actionKind',
+        'receipt.receiver_account_id = :accountId OR receipt.predecessor_account_id = :accountId',
         {
           accountId,
-          actionKind: ActionKind.Transfer,
         },
       )
       .orderBy('receipt.included_in_block_timestamp', 'ASC')
