@@ -474,24 +474,22 @@ export class AggregatorService {
 
         if (!txData && receipts) {
           const receipt = receipts
-            .filter(({ receiptAction }) => receiptAction?.args?.args_base64)
             .filter(
               (receipt) =>
                 receipt.receiverAccountId === daoId &&
                 receipt.predecessorAccountId === proposer,
             )
-            .find(({ receiptAction }) => {
-              const {
-                description: receiptDescription,
-                kind: receiptKind,
-              } = btoaJSON(
-                receiptAction?.args?.args_base64 as string,
-              )?.proposal || {};
+            .find(({ receiptActions }) => {
+              return receiptActions.find((receiptAction) => {
+                const { description: receiptDescription, kind: receiptKind } =
+                  btoaJSON(receiptAction?.args?.args_base64 as string)
+                    ?.proposal || {};
 
-              return (
-                description === receiptDescription &&
-                kind.equals(castProposalKind(receiptKind))
-              );
+                return (
+                  description === receiptDescription &&
+                  kind.equals(castProposalKind(receiptKind))
+                );
+              });
             });
 
           txData = {
@@ -545,7 +543,7 @@ export class AggregatorService {
               ?.proposal || {};
 
           const txProposalKind = castProposalKind(txKind);
-          const { type } = txProposalKind?.kind;
+          const { type } = txProposalKind?.kind || {};
           if (ProposalType.AddBounty !== type) {
             return false;
           }

@@ -23,7 +23,7 @@ export class TransactionCrudRequestInterceptor extends BaseCrudRequestIntercepto
       receipts: {
         eager: true,
       },
-      'receipts.receiptAction': {
+      'receipts.receiptActions': {
         eager: true,
       },
     };

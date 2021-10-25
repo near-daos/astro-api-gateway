@@ -4,7 +4,7 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
-  OneToOne,
+  OneToMany,
   PrimaryColumn,
 } from 'typeorm';
 import { ReceiptAction } from './receipt-action.entity';
@@ -36,12 +36,15 @@ export class Receipt {
   @Column({ type: 'bigint' })
   includedInBlockTimestamp: number;
 
-  @ApiProperty()
-  @OneToOne((_) => ReceiptAction, (receiptAction) => receiptAction.receipt, {
+  @ApiProperty({ type: [ReceiptAction] })
+  @OneToMany((_) => ReceiptAction, (receiptAction) => receiptAction.receipt, {
     cascade: true,
     nullable: true,
-    createForeignKeyConstraints: false,
   })
   @JoinColumn({ name: 'receipt_id' })
+  receiptActions: ReceiptAction[];
+
+  // temp backward compatibility
+  @ApiProperty()
   receiptAction: ReceiptAction;
 }
