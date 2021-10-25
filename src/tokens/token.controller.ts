@@ -70,7 +70,6 @@ export class TokenController {
     type: Token,
   })
   @ApiBadRequestResponse({ description: 'Invalid Dao ID' })
-  @UseInterceptors(HttpCacheInterceptor)
   @Get('/account-tokens/:accountId')
   async tokensByDao(
     @Param() { accountId }: FindAccountParams,
@@ -106,7 +105,6 @@ export class TokenController {
     type: NFTTokenDto,
   })
   @ApiBadRequestResponse({ description: 'Invalid Dao ID' })
-  @UseInterceptors(HttpCacheInterceptor)
   @Get('/nfts/account-nfts/:accountId')
   async nftsByDao(
     @Param() { accountId }: FindAccountParams,
