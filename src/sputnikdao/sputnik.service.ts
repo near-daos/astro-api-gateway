@@ -79,7 +79,7 @@ export class SputnikDaoService {
 
   public async getProposal(
     contractId: string,
-    proposalId: string,
+    proposalId: number,
   ): Promise<ProposalDto> {
     const contract = this.getContract(contractId);
     const proposal = await contract.get_proposal({ id: proposalId });
