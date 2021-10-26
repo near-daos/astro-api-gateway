@@ -22,6 +22,7 @@ import {
 
 export class ProposalDto extends TransactionInfo {
   id: string;
+  proposalId: number;
   daoId: string;
   proposer: string;
   description: string;

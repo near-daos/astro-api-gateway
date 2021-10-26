@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 import { CrudRequest } from '@nestjsx/crud';
-import { In, Repository } from 'typeorm';
+import { DeleteResult, In, Repository } from 'typeorm';
 import { ProposalDto } from './dto/proposal.dto';
 import { Proposal } from './entities/proposal.entity';
 import { ProposalResponse } from './dto/proposal-response.dto';
@@ -39,9 +39,7 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
     }
 
     // populating Proposal Dao Policy with Roles
-    const daoIds: Set<string> = new Set(
-      proposals.map(({ daoId }) => daoId),
-    );
+    const daoIds: Set<string> = new Set(proposals.map(({ daoId }) => daoId));
 
     const roles = await this.roleRepository.find({
       where: { policy: { daoId: In([...daoIds]) } },
@@ -78,7 +76,7 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
         eager: true,
       },
     };
-    
+
     req.parsed.search = {
       $and: [
         {},
@@ -102,5 +100,9 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
     };
 
     return this.getMany(req);
+  }
+
+  async remove(id: string): Promise<DeleteResult> {
+    return await this.proposalRepository.delete({ id });
   }
 }

@@ -381,6 +381,8 @@ export class AggregatorService {
     );
     this.logger.log('Finished Transactions aggregation.');
 
+    await this.purgeRemovedProposals(filteredProposals);
+
     this.aggregationState.status = AggregationStatus.Success;
   }
 
@@ -676,6 +678,49 @@ export class AggregatorService {
         createTimestamp: actionReceipt?.transaction?.blockTimestamp,
       };
     });
+  }
+
+  private async purgeRemovedProposals(proposals: ProposalDto[]): Promise<void> {
+    try {
+      const proposalsByDao = proposals.reduce(
+        (acc, cur) => ({
+          ...acc,
+          [cur.daoId]: [...(acc[cur.daoId] || []), cur],
+        }),
+        {},
+      );
+      const removedProposals = [];
+
+      Object.keys(proposalsByDao).map((daoId) => {
+        const daoProposals = proposalsByDao[daoId];
+
+        let lastProposalId = 0;
+        daoProposals.map(({ daoId, proposalId }) => {
+          if (proposalId > lastProposalId) {
+            removedProposals.push(
+              ...[...Array(proposalId - lastProposalId).keys()].map((key) =>
+                buildProposalId(daoId, lastProposalId + key),
+              ),
+            );
+          }
+          lastProposalId = proposalId + 1;
+        });
+      });
+
+      if (!removedProposals.length) {
+        return;
+      }
+
+      this.logger.log(`Found removed Proposals: ${removedProposals}`);
+
+      this.logger.log('Purging aggregated Proposals considered as removed...');
+      await Promise.all(
+        removedProposals.map(({ id }) => this.proposalService.remove(id)),
+      );
+      this.logger.log('Successfully purged removed Proposals.');
+    } catch (e) {
+      this.logger.error(e);
+    }
   }
 
   private reduceTransactionsByAccountId(transactions: Transaction[]): {
