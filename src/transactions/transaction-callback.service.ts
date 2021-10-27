@@ -3,11 +3,12 @@ import { DaoService } from 'src/daos/dao.service';
 import { ProposalService } from 'src/proposals/proposal.service';
 import { SputnikDaoService } from 'src/sputnikdao/sputnik.service';
 import { ConfigService } from '@nestjs/config';
-import { btoaJSON } from 'src/utils';
+import { btoaJSON, calcProposalVotePeriodEnd } from 'src/utils';
 import { castProposalKind, ProposalDto } from 'src/proposals/dto/proposal.dto';
 import { TokenFactoryService } from 'src/token-factory/token-factory.service';
 import { TokenService } from 'src/tokens/token.service';
 import { CacheService } from 'src/cache/service/cache.service';
+import { DaoDto } from 'src/daos/dto/dao.dto';
 
 @Injectable()
 export class TransactionCallbackService {
@@ -61,8 +62,8 @@ export class TransactionCallbackService {
 
     const enrichedProposal = {
       ...proposal,
-      transactionHash: hash,
-      createTimestamp: txTimestamp,
+      updateTransactionHash: hash,
+      updateTimestamp: txTimestamp,
     };
 
     this.logger.log(
@@ -178,6 +179,7 @@ export class TransactionCallbackService {
     proposalTxArgs: any[],
     transaction: any,
     txTimestamp: number,
+    dao?: DaoDto,
   ): ProposalDto[] {
     const { hash, signer_id } = transaction;
     const enrichedProposals = proposals
@@ -197,6 +199,7 @@ export class TransactionCallbackService {
         ...proposal,
         transactionHash: hash,
         createTimestamp: txTimestamp,
+        votePeriodEnd: calcProposalVotePeriodEnd(proposal, dao),
       }));
 
     return enrichedProposals;

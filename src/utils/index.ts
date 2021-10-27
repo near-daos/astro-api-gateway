@@ -1,3 +1,10 @@
+import Decimal from 'decimal.js';
+
+import { DaoDto } from "src/daos/dto/dao.dto";
+import { Dao } from "src/daos/entities/dao.entity";
+import { ProposalDto } from "src/proposals/dto/proposal.dto";
+import { Proposal } from "src/proposals/entities/proposal.entity";
+
 export const formatTimestamp = (timestamp: number): string => {
   const seconds = Number(timestamp / 1e9);
   const d = Math.floor(seconds / (3600 * 24));
@@ -60,5 +67,17 @@ export const buildNFTTokenId = (ownerId: string, tokenId: string) => {
 export const btoaJSON = (b: string) => {
   try {
     return JSON.parse(Buffer.from(b, 'base64').toString('utf-8'));
+  } catch (e) {}
+};
+
+export const calcProposalVotePeriodEnd = (
+  proposal: Proposal | ProposalDto,
+  dao: Dao | DaoDto,
+): number => {
+  try {
+    return Decimal.sum(
+      new Decimal(proposal.submissionTime),
+      new Decimal(dao?.policy?.proposalPeriod),
+    ).toNumber();
   } catch (e) {}
 };

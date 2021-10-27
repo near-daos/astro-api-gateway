@@ -61,4 +61,8 @@ export class Proposal extends TransactionEntity {
   @ApiProperty({ type: 'object' })
   @Column({ type: 'simple-json' })
   votes: Record<string, Vote>;
+
+  @ApiProperty()
+  @Column({ type: 'bigint', nullable: true })
+  votePeriodEnd: number;
 }
