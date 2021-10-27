@@ -33,6 +33,7 @@ export class ProposalDto extends TransactionInfo {
   votes: {
     [key: string]: Vote;
   };
+  votePeriodEnd: number;
 }
 
 export class ProposalKindDto {

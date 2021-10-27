@@ -10,7 +10,12 @@ import { Account, ActionReceiptAction, Receipt, Transaction } from 'src/near';
 import { SputnikDaoDto } from 'src/daos/dto/dao-sputnik.dto';
 import { castProposalKind, ProposalDto } from 'src/proposals/dto/proposal.dto';
 import { SchedulerRegistry } from '@nestjs/schedule';
-import { btoaJSON, buildDaoId, buildProposalId } from 'src/utils';
+import {
+  btoaJSON,
+  buildDaoId,
+  buildProposalId,
+  calcProposalVotePeriodEnd,
+} from 'src/utils';
 import { EventService } from 'src/events/events.service';
 import { BountyService } from 'src/bounties/bounty.service';
 import { TokenFactoryService } from 'src/token-factory/token-factory.service';
@@ -23,6 +28,7 @@ import { NFTTokenService } from 'src/tokens/nft-token.service';
 import { NFTTokenDto } from 'src/tokens/dto/nft-token.dto';
 import { AggregationState, AggregationStatus } from './types/aggregation-state';
 import { RoleKindType } from '../sputnikdao/types/role';
+import { DaoDto } from 'src/daos/dto/dao.dto';
 
 @Injectable()
 export class AggregatorService {
@@ -298,6 +304,8 @@ export class AggregatorService {
     let enrichedProposals = this.enrichProposals(
       filteredProposals,
       transactions,
+      null,
+      daos
     );
 
     // working around transaction info population for some legacy proposals
@@ -318,7 +326,7 @@ export class AggregatorService {
     }
 
     enrichedProposals = receipts.length
-      ? this.enrichProposals(filteredProposals, transactions, receipts)
+      ? this.enrichProposals(filteredProposals, transactions, receipts, daos)
       : enrichedProposals;
 
     this.logger.log('Persisting aggregated Proposals...');
@@ -442,6 +450,7 @@ export class AggregatorService {
     proposals: ProposalDto[],
     transactions: Transaction[],
     receipts?: Receipt[],
+    daos?: DaoDto[],
   ): ProposalDto[] {
     const transactionsByAccountId =
       this.reduceTransactionsByAccountId(transactions);
@@ -451,6 +460,8 @@ export class AggregatorService {
       if (!transactionsByAccountId[daoId]) {
         return proposal;
       }
+
+      const dao = daos.find(({ id }) => id === daoId);
 
       const preFilteredTransactions = transactionsByAccountId[daoId].filter(
         (tx) => tx.transactionAction.args.args_base64,
@@ -514,6 +525,7 @@ export class AggregatorService {
         createTimestamp: txData?.blockTimestamp,
         updateTransactionHash: (txUpdateData || txData)?.transactionHash,
         updateTimestamp: (txUpdateData || txData)?.blockTimestamp,
+        votePeriodEnd: calcProposalVotePeriodEnd(proposal, dao),
       };
 
       return prop;
