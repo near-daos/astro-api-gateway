@@ -5,4 +5,4 @@ metadata:
 data:
   PORT: "3000"
   NEST_APP_TYPE: "aggregator-dao"
-  AGGREGATOR_POLLING_INTERVAL: "{{ .Values.environment.aggregator_polling_interval }}"
+  DAO_POLLING_INTERVAL: "{{ .Values.environment.dao_polling_interval }}"

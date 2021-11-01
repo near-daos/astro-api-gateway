@@ -4,7 +4,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import configuration, {
   TypeOrmConfigService,
   validate,
-} from '../config/aggregator-config';
+} from '../config/aggregator-dao-config';
 import { DaoSlimModule } from 'src/daos/dao-slim.module';
 import { ProposalSlimModule } from 'src/proposals/proposal-slim.module';
 import { NearModule } from 'src/near/near.module';
@@ -16,14 +16,14 @@ import { ConfigModule } from '@nestjs/config';
 import { BountySlimModule } from 'src/bounties/bounty-slim.module';
 import { TokenFactoryService } from 'src/token-factory/token-factory.service';
 import { TokenSlimModule } from 'src/tokens/token-slim.module';
-import { AggregatorValidationSchema } from 'src/config/validation/aggregator.schema';
+import { AggregatorDaoValidationSchema } from 'src/config/validation/aggregator-dao.schema';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       load: configuration,
-      validate: (config) => validate(AggregatorValidationSchema, config),
+      validate: (config) => validate(AggregatorDaoValidationSchema, config),
       envFilePath: ['.env.local', '.env'],
     }),
     TypeOrmModule.forRootAsync({
@@ -38,10 +38,6 @@ import { AggregatorValidationSchema } from 'src/config/validation/aggregator.sch
     BountySlimModule,
     TokenSlimModule,
   ],
-  providers: [
-    SputnikDaoService,
-    TokenFactoryService,
-    AggregatorDaoService,
-  ],
+  providers: [SputnikDaoService, TokenFactoryService, AggregatorDaoService],
 })
 export class AggregatorDaoModule {}
