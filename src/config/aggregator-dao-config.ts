@@ -8,8 +8,8 @@ export { default as validate } from './validationSchema';
 export { TypeOrmConfigService } from './typeorm-config.service';
 export { CacheConfigService } from './cache';
 
-const aggregator = registerAs('aggregator', () => ({
-  daoPollingInterval: parseInt(process.env.DAO_POLLING_INTERVAL, 10),
+const aggregator = registerAs('aggregator-dao', () => ({
+  pollingInterval: parseInt(process.env.DAO_POLLING_INTERVAL, 10),
 }));
 
 export default [
