@@ -24,7 +24,7 @@ export class AggregatorDaoService {
     private readonly eventService: EventService,
     private readonly schedulerRegistry: SchedulerRegistry,
   ) {
-    const { pollingInterval } = this.configService.get('aggregator');
+    const { pollingInterval } = this.configService.get('aggregator-dao');
 
     const interval = setInterval(
       () => this.scheduleAggregation(),
