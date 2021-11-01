@@ -1,5 +1,5 @@
 import { NestFactory, Reflector } from '@nestjs/core';
-import { ClassSerializerInterceptor, Logger } from '@nestjs/common';
+import { ClassSerializerInterceptor, Logger, LogLevel } from '@nestjs/common';
 import { AggregatorModule } from './aggregator/aggregator.module';
 import { Transport } from '@nestjs/microservices';
 import { AggregatorService } from './aggregator/aggregator.service';
@@ -8,8 +8,10 @@ export default class Aggregator {
   private readonly logger = new Logger(Aggregator.name);
 
   async bootstrap(): Promise<void> {
+    const logger = [...(process.env.LOG_LEVELS.split(',') as LogLevel[])];
     const app = await NestFactory.createMicroservice(AggregatorModule, {
       transport: Transport.TCP,
+      logger,
     });
 
     app.useGlobalInterceptors(

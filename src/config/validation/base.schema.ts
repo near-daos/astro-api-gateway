@@ -40,4 +40,8 @@ export class BaseValidationSchema {
   @IsString()
   @IsNotEmpty()
   NEAR_CREDENTIALS_DIR: string;
+
+  @IsString()
+  @IsNotEmpty()
+  LOG_LEVELS: string;
 }

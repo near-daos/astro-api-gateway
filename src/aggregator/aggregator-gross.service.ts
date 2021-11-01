@@ -40,7 +40,7 @@ export class AggregatorGrossService {
       return;
     }
 
-    this.logger.log('Scheduling Data Aggregation...');
+    this.logger.debug('Scheduling Data Aggregation...');
 
     return this.aggregate(accChange);
   }
@@ -48,7 +48,7 @@ export class AggregatorGrossService {
   public async aggregate(lastAccChange?: AccountChange): Promise<void> {
     const { contractName } = this.configService.get('near');
 
-    this.logger.log('Checking data relevance...');
+    this.logger.debug('Checking data relevance...');
     const accChange =
       lastAccChange || (await this.accountChangeService.lastAccountChange());
 
@@ -70,7 +70,7 @@ export class AggregatorGrossService {
       accChange.changedInBlockTimestamp ===
         nearAccChange?.changedInBlockTimestamp
     ) {
-      return this.logger.log('Data is up to date. Skipping data aggregation.');
+      return this.logger.debug('Data is up to date. Skipping data aggregation.');
     }
 
     const accountChanges =

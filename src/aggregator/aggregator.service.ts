@@ -73,12 +73,12 @@ export class AggregatorService {
     const { contractName, tokenFactoryContractName } =
       this.configService.get('near');
 
-    this.logger.log('Scheduling Data Aggregation...');
+    this.logger.debug('Scheduling Data Aggregation...');
 
-    this.logger.log('Collecting DAO IDs...');
+    this.logger.debug('Collecting DAO IDs...');
     const daoIds = await this.sputnikDaoService.getDaoIds();
 
-    this.logger.log('Checking data relevance...');
+    this.logger.debug('Checking data relevance...');
 
     const tx = lastTx || (await this.transactionService.lastTransaction());
 
@@ -90,11 +90,11 @@ export class AggregatorService {
       );
 
     if (tx && tx.transactionHash === nearTx?.transactionHash) {
-      return this.logger.log('Data is up to date. Skipping data aggregation.');
+      return this.logger.debug('Data is up to date. Skipping data aggregation.');
     }
 
     if (this.isAggregationInProgress(nearTx?.transactionHash)) {
-      return this.logger.log(
+      return this.logger.debug(
         `Aggregation for transaction ${nearTx?.transactionHash} is already in progress.`,
       );
     }
@@ -305,7 +305,7 @@ export class AggregatorService {
       filteredProposals,
       transactions,
       null,
-      daos
+      daos,
     );
 
     // working around transaction info population for some legacy proposals
@@ -485,31 +485,31 @@ export class AggregatorService {
           );
         });
 
-        if (!txData && receipts) {
-          const receipt = receipts
-            .filter(
-              (receipt) =>
-                receipt.receiverAccountId === daoId &&
-                receipt.predecessorAccountId === proposer,
-            )
-            .find(({ receiptActions }) => {
-              return receiptActions.find((receiptAction) => {
-                const { description: receiptDescription, kind: receiptKind } =
-                  btoaJSON(receiptAction?.args?.args_base64 as string)
-                    ?.proposal || {};
+      if (!txData && receipts) {
+        const receipt = receipts
+          .filter(
+            (receipt) =>
+              receipt.receiverAccountId === daoId &&
+              receipt.predecessorAccountId === proposer,
+          )
+          .find(({ receiptActions }) => {
+            return receiptActions.find((receiptAction) => {
+              const { description: receiptDescription, kind: receiptKind } =
+                btoaJSON(receiptAction?.args?.args_base64 as string)
+                  ?.proposal || {};
 
-                return (
-                  description === receiptDescription &&
-                  kind.equals(castProposalKind(receiptKind))
-                );
-              });
+              return (
+                description === receiptDescription &&
+                kind.equals(castProposalKind(receiptKind))
+              );
             });
+          });
 
-          txData = {
-            transactionHash: receipt?.originatedFromTransactionHash,
-            blockTimestamp: receipt?.includedInBlockTimestamp,
-          } as any;
-        }
+        txData = {
+          transactionHash: receipt?.originatedFromTransactionHash,
+          blockTimestamp: receipt?.includedInBlockTimestamp,
+        } as any;
+      }
 
       const txUpdateData = preFilteredTransactions
         .filter(
