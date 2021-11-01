@@ -1,6 +1,11 @@
 import { NestFactory, Reflector } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
-import { ClassSerializerInterceptor, Logger, ValidationPipe } from '@nestjs/common';
+import {
+  ClassSerializerInterceptor,
+  Logger,
+  LogLevel,
+  ValidationPipe,
+} from '@nestjs/common';
 import { AppModule } from './api.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { Transport } from '@nestjs/microservices';
@@ -11,7 +16,10 @@ export default class Api {
   private readonly logger = new Logger(Api.name);
 
   async bootstrap(): Promise<void> {
-    const app = await NestFactory.create(AppModule);
+    const logger = [...(process.env.LOG_LEVELS.split(',') as LogLevel[])];
+    const app = await NestFactory.create(AppModule, {
+      logger,
+    });
     app.enableCors();
     app.setGlobalPrefix('/api/v1');
 
