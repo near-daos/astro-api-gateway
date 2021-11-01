@@ -11,8 +11,8 @@ import { AccountChangeService } from 'src/transactions/account-change.service';
 import { AccountChange } from 'src/near/entities/account-change.entity';
 
 @Injectable()
-export class AggregatorGrossService {
-  private readonly logger = new Logger(AggregatorGrossService.name);
+export class AggregatorDaoService {
+  private readonly logger = new Logger(AggregatorDaoService.name);
 
   constructor(
     private readonly configService: ConfigService,

@@ -1,24 +1,24 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "sputnik-v2-aggregator-gross.fullname" . }}
+  name: {{ include "sputnik-v2-aggregator-dao.fullname" . }}
   labels:
-    {{- include "sputnik-v2-aggregator-gross.labels" . | nindent 4 }}
+    {{- include "sputnik-v2-aggregator-dao.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      {{- include "sputnik-v2-aggregator-gross.selectorLabels" . | nindent 6 }}
+      {{- include "sputnik-v2-aggregator-dao.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        {{- include "sputnik-v2-aggregator-gross.selectorLabels" . | nindent 8 }}
+        {{- include "sputnik-v2-aggregator-dao.selectorLabels" . | nindent 8 }}
     spec:
     {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
     {{- end }}
-      serviceAccountName: {{ include "sputnik-v2-aggregator-gross.serviceAccountName" . }}
+      serviceAccountName: {{ include "sputnik-v2-aggregator-dao.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
@@ -56,7 +56,7 @@ spec:
           - configMapRef:
               name: sputnik-v2-configmap
           - configMapRef:
-              name: sputnik-v2-aggregator-gross-configmap
+              name: sputnik-v2-aggregator-dao-configmap
           - configMapRef:
               name: {{ .Release.Name }}-version
           - secretRef:

@@ -132,15 +132,15 @@ Create the name of the service account to use
 
 
 {{/*
-Create variables for aggregator gross deployment
+Create variables for aggregator DAO deployment
 */}}
 
 {{/* vim: set filetype=mustache: */}}
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "sputnik-v2-aggregator-gross.name" -}}
-{{- default .Chart.Name .Values.aggregatorGrossNameOverride | trunc 63 | trimSuffix "-" -}}
+{{- define "sputnik-v2-aggregator-dao.name" -}}
+{{- default .Chart.Name .Values.aggregatorDaoNameOverride | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{/*
@@ -148,11 +148,11 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "sputnik-v2-aggregator-gross.fullname" -}}
-{{- if .Values.aggregatorGrossFullnameOverride -}}
-{{- .Values.aggregatorGrossFullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- define "sputnik-v2-aggregator-dao.fullname" -}}
+{{- if .Values.aggregatorDaoFullnameOverride -}}
+{{- .Values.aggregatorDaoFullnameOverride | trunc 63 | trimSuffix "-" -}}
 {{- else -}}
-{{- $name := default .Chart.Name .Values.aggregatorGrossNameOverride -}}
+{{- $name := default .Chart.Name .Values.aggregatorDaoNameOverride -}}
 {{- if contains $name .Release.Name -}}
 {{- .Release.Name | trunc 63 | trimSuffix "-" -}}
 {{- else -}}
@@ -164,16 +164,16 @@ If release name contains chart name it will be used as a full name.
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "sputnik-v2-aggregator-gross.chart" -}}
+{{- define "sputnik-v2-aggregator-dao.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{/*
 Common labels
 */}}
-{{- define "sputnik-v2-aggregator-gross.labels" -}}
-helm.sh/chart: {{ include "sputnik-v2-aggregator-gross.chart" . }}
-{{ include "sputnik-v2-aggregator-gross.selectorLabels" . }}
+{{- define "sputnik-v2-aggregator-dao.labels" -}}
+helm.sh/chart: {{ include "sputnik-v2-aggregator-dao.chart" . }}
+{{ include "sputnik-v2-aggregator-dao.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -183,17 +183,17 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Selector labels
 */}}
-{{- define "sputnik-v2-aggregator-gross.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "sputnik-v2-aggregator-gross.name" . }}
+{{- define "sputnik-v2-aggregator-dao.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "sputnik-v2-aggregator-dao.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
 
 {{/*
 Create the name of the service account to use
 */}}
-{{- define "sputnik-v2-aggregator-gross.serviceAccountName" -}}
+{{- define "sputnik-v2-aggregator-dao.serviceAccountName" -}}
 {{- if .Values.serviceAccount.create -}}
-    {{ default (include "sputnik-v2-aggregator-gross.fullname" .) .Values.serviceAccount.name }}
+    {{ default (include "sputnik-v2-aggregator-dao.fullname" .) .Values.serviceAccount.name }}
 {{- else -}}
     {{ default "default" .Values.serviceAccount.name }}
 {{- end -}}

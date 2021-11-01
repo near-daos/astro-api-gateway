@@ -1,15 +1,15 @@
 import { NestFactory, Reflector } from '@nestjs/core';
 import { ClassSerializerInterceptor, Logger, LogLevel } from '@nestjs/common';
-import { AggregatorGrossModule } from './aggregator/aggregator-gross.module';
+import { AggregatorDaoModule } from './aggregator/aggregator-dao.module';
 import { Transport } from '@nestjs/microservices';
-import { AggregatorGrossService } from './aggregator/aggregator-gross.service';
+import { AggregatorDaoService } from './aggregator/aggregator-dao.service';
 
-export default class AggregatorGross {
-  private readonly logger = new Logger(AggregatorGross.name);
+export default class AggregatorDao {
+  private readonly logger = new Logger(AggregatorDao.name);
 
   async bootstrap(): Promise<void> {
     const logger = [...(process.env.LOG_LEVELS.split(',') as LogLevel[])];
-    const app = await NestFactory.createMicroservice(AggregatorGrossModule, {
+    const app = await NestFactory.createMicroservice(AggregatorDaoModule, {
       transport: Transport.TCP,
       logger,
     });
@@ -19,9 +19,9 @@ export default class AggregatorGross {
     );
 
     await app.listen(() =>
-      this.logger.log('Aggregator Gross Microservice is listening...'),
+      this.logger.log('Aggregator DAO Microservice is listening...'),
     );
 
-    app.get(AggregatorGrossService).aggregate();
+    app.get(AggregatorDaoService).aggregate();
   }
 }
