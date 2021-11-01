@@ -10,7 +10,7 @@ import { ProposalSlimModule } from 'src/proposals/proposal-slim.module';
 import { NearModule } from 'src/near/near.module';
 import { TransactionModule } from 'src/transactions/transaction.module';
 import { SputnikDaoService } from 'src/sputnikdao/sputnik.service';
-import { AggregatorGrossService } from './aggregator-gross.service';
+import { AggregatorDaoService } from './aggregator-dao.service';
 import { EventModule } from 'src/events/events.module';
 import { ConfigModule } from '@nestjs/config';
 import { BountySlimModule } from 'src/bounties/bounty-slim.module';
@@ -41,7 +41,7 @@ import { AggregatorValidationSchema } from 'src/config/validation/aggregator.sch
   providers: [
     SputnikDaoService,
     TokenFactoryService,
-    AggregatorGrossService,
+    AggregatorDaoService,
   ],
 })
-export class AggregatorGrossModule {}
+export class AggregatorDaoModule {}
