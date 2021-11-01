@@ -75,17 +75,14 @@ export class AggregatorService {
 
     this.logger.debug('Scheduling Data Aggregation...');
 
-    this.logger.debug('Collecting DAO IDs...');
-    const daoIds = await this.sputnikDaoService.getDaoIds();
-
     this.logger.debug('Checking data relevance...');
 
     const tx = lastTx || (await this.transactionService.lastTransaction());
 
     // Last transaction from NEAR Indexer - for the list of DAOs defined
     const nearTx =
-      await this.nearService.findLastTransactionByReceiverAccountIds(
-        [...daoIds, contractName, tokenFactoryContractName],
+      await this.nearService.findLastTransactionByContractName(
+        contractName,
         tx?.blockTimestamp,
       );
 
@@ -102,14 +99,10 @@ export class AggregatorService {
     this.logger.log('Aggregating data...');
     this.aggregationState = new AggregationState(nearTx?.transactionHash);
 
-    let accountDaoIds = daoIds;
-    let proposalDaoIds = daoIds;
-    let tokenIds = null;
-
     let startTime = new Date().getTime();
     const transactions: Transaction[] =
-      await this.nearService.findTransactionsByReceiverAccountIds(
-        [...daoIds, contractName, tokenFactoryContractName],
+      await this.nearService.findTransactionsByContractName(
+        contractName,
         tx?.blockTimestamp,
       );
 
@@ -117,6 +110,14 @@ export class AggregatorService {
     this.logger.log(
       `Transactions retrieval time: ${transactionsTime - startTime} ms`,
     );
+
+    let accountDaoIds = [
+      ...new Set(
+        transactions.map(({ receiverAccountId }) => receiverAccountId),
+      ),
+    ];
+    let proposalDaoIds = accountDaoIds;
+    let tokenIds = null;
 
     const actionTransactions = transactions.filter(
       (tx) => tx.transactionAction?.args?.args_base64,

@@ -80,12 +80,12 @@ export class NearService {
     ).getMany();
   }
 
-  async findLastTransactionByReceiverAccountIds(
-    receiverAccountIds: string[],
+  async findLastTransactionByContractName(
+    contractName: string,
     fromBlockTimestamp?: number,
   ): Promise<Transaction> {
     return this.buildAggregationTransactionQuery(
-      receiverAccountIds,
+      contractName,
       fromBlockTimestamp,
     )
       .select('transaction.transactionHash')
@@ -93,12 +93,12 @@ export class NearService {
       .getOne();
   }
 
-  async findTransactionsByReceiverAccountIds(
-    receiverAccountIds: string[],
+  async findTransactionsByContractName(
+    contractName: string,
     fromBlockTimestamp?: number,
   ): Promise<Transaction[]> {
     return this.buildAggregationTransactionQuery(
-      receiverAccountIds,
+      contractName,
       fromBlockTimestamp,
     )
       .orderBy('transaction.block_timestamp', 'ASC')
@@ -279,7 +279,7 @@ export class NearService {
   }
 
   private buildAggregationTransactionQuery(
-    receiverAccountIds: string[],
+    contractName: string,
     fromBlockTimestamp?: number,
   ): SelectQueryBuilder<Transaction> {
     let queryBuilder = this.transactionRepository
@@ -297,8 +297,8 @@ export class NearService {
       //   'action_receipt_actions.receipt_predecessor_account_id = ANY(ARRAY[:...ids]) AND action_receipt_actions.action_kind = :actionKind',
       //   { ids: receiverAccountIds, actionKind: ActionKind.Transfer },
       // )
-      .where('transaction.receiver_account_id = ANY(ARRAY[:...ids])', {
-        ids: receiverAccountIds,
+      .where('transaction.receiver_account_id LIKE :contractName', {
+        contractName: `%${contractName}`,
       });
 
     queryBuilder = fromBlockTimestamp
