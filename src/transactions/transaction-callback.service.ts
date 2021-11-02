@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { DaoService } from 'src/daos/dao.service';
 import { ProposalService } from 'src/proposals/proposal.service';
+import { NearApiService } from 'src/near-api/near-api.service';
 import { SputnikDaoService } from 'src/sputnikdao/sputnik.service';
 import { ConfigService } from '@nestjs/config';
 import { btoaJSON, calcProposalVotePeriodEnd } from 'src/utils';
@@ -16,6 +17,7 @@ export class TransactionCallbackService {
 
   constructor(
     private readonly configService: ConfigService,
+    private readonly nearApiService: NearApiService,
     private readonly sputnikDaoService: SputnikDaoService,
     private readonly daoService: DaoService,
     private readonly proposalService: ProposalService,
@@ -28,7 +30,7 @@ export class TransactionCallbackService {
     transactionHash: string,
     accountId: string,
   ): Promise<any> {
-    const txStatus = await this.sputnikDaoService.getTxStatus(
+    const txStatus = await this.nearApiService.getTxStatus(
       transactionHash,
       accountId,
     );

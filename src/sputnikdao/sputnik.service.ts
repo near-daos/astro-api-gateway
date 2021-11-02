@@ -1,11 +1,9 @@
-import { Account, Contract, Near } from 'near-api-js';
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Contract } from 'near-api-js';
+import { Injectable, Logger } from '@nestjs/common';
 import { PROPOSAL_REQUEST_CHUNK_SIZE } from './constants';
 import { SputnikDaoDto } from 'src/daos/dto/dao-sputnik.dto';
 import { castProposalKind, ProposalDto } from 'src/proposals/dto/proposal.dto';
 import PromisePool from '@supercharge/promise-pool';
-import { NearSputnikProvider } from 'src/config/sputnik';
-import { NEAR_SPUTNIK_PROVIDER } from 'src/common/constants';
 import { PolicyDto } from 'src/daos/dto/policy.dto';
 import { DaoConfig } from 'src/daos/types/dao-config';
 import { castVotePolicy } from './types/vote-policy';
@@ -19,37 +17,16 @@ import {
   buildRoleId,
 } from 'src/utils';
 import { BountyClaimDto } from 'src/bounties/dto/bounty-claim.dto';
-import { Provider } from 'near-api-js/lib/providers';
+import { NearApiService } from 'src/near-api/near-api.service';
 
 @Injectable()
 export class SputnikDaoService {
   private readonly logger = new Logger(SputnikDaoService.name);
 
-  private near!: Near;
-
   private factoryContract!: Contract & any;
 
-  private account!: Account;
-
-  private provider: Provider;
-
-  constructor(
-    @Inject(NEAR_SPUTNIK_PROVIDER)
-    private nearSputnikProvider: NearSputnikProvider,
-  ) {
-    const { near, factoryContract, account, provider } = nearSputnikProvider;
-
-    this.near = near;
-    this.factoryContract = factoryContract;
-    this.account = account;
-    this.provider = provider;
-  }
-
-  public async getTxStatus(
-    transactionHash: string,
-    accountId: string,
-  ): Promise<any> {
-    return await this.provider.txStatus(transactionHash, accountId);
+  constructor(private readonly nearApiService: NearApiService) {
+    this.factoryContract = nearApiService.getContract('sputnikDaoFactory');
   }
 
   public async getDaoIds(): Promise<string[]> {
@@ -81,7 +58,7 @@ export class SputnikDaoService {
     contractId: string,
     proposalId: number,
   ): Promise<ProposalDto> {
-    const contract = this.getContract(contractId);
+    const contract = this.nearApiService.getContract('sputnikDao', contractId);
     const proposal = await contract.get_proposal({ id: proposalId });
 
     return this.proposalResponseToDTO(contractId, proposal);
@@ -89,7 +66,10 @@ export class SputnikDaoService {
 
   public async getProposalsByDao(contractId: string): Promise<ProposalDto[]> {
     try {
-      const contract = this.getContract(contractId);
+      const contract = this.nearApiService.getContract(
+        'sputnikDao',
+        contractId,
+      );
 
       //TODO: check when no proposals
       // Taking into account that proposal ID is sequential,
@@ -142,7 +122,10 @@ export class SputnikDaoService {
     accountIds: string[],
   ): Promise<BountyDto[]> {
     try {
-      const contract = this.getContract(contractId);
+      const contract = this.nearApiService.getContract(
+        'sputnikDao',
+        contractId,
+      );
 
       // Taking into account that bounty ID is sequential,
       // considering that last bounty id is the bounty count
@@ -225,14 +208,12 @@ export class SputnikDaoService {
   }
 
   public async getAccountAmount(accountId: string): Promise<string> {
-    const account = await this.near.account(accountId);
-    const state = await account.state();
-
+    const state = await this.nearApiService.getAccountState(accountId);
     return state.amount;
   }
 
   public async getDaoById(daoId: string): Promise<SputnikDaoDto | null> {
-    const contract = this.getContract(daoId);
+    const contract = this.nearApiService.getContract('sputnikDao', daoId);
 
     const daoEnricher = {
       config: async (): Promise<DaoConfig> => contract.get_config(),
@@ -304,25 +285,5 @@ export class SputnikDaoService {
       dao: { id: contractId },
       kind: castProposalKind(proposal.kind),
     };
-  }
-
-  private getContract(contractId: string): Contract & any {
-    return new Contract(this.account, contractId, {
-      viewMethods: [
-        'get_config',
-        'get_policy',
-        'get_staking_contract',
-        'get_available_amount',
-        'delegation_total_supply',
-        'get_last_proposal_id',
-        'get_proposals',
-        'get_proposal',
-        'get_last_bounty_id',
-        'get_bounties',
-        'get_bounty_claims',
-        'get_bounty_number_of_claims',
-      ],
-      changeMethods: ['add_proposal', 'act_proposal'],
-    });
   }
 }

@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { BaseResponse } from 'src/common/dto/BaseResponse';
-import { Transaction } from 'src/near';
+import { Transaction } from 'src/near-indexer';
 
 export class TransactionResponse extends BaseResponse<Transaction> {
   @ApiProperty({ type: [Transaction] })

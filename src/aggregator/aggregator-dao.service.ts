@@ -2,13 +2,13 @@ import { Injectable, Logger } from '@nestjs/common';
 import { DaoService } from 'src/daos/dao.service';
 import { SputnikDaoService } from 'src/sputnikdao/sputnik.service';
 import { isNotNull } from 'src/utils/guards';
-import { NearService } from 'src/near/near.service';
+import { NearIndexerService } from 'src/near-indexer/near-indexer.service';
 import { TransactionService } from 'src/transactions/transaction.service';
 import { ConfigService } from '@nestjs/config';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { EventService } from 'src/events/events.service';
 import { AccountChangeService } from 'src/transactions/account-change.service';
-import { AccountChange } from 'src/near/entities/account-change.entity';
+import { AccountChange } from 'src/near-indexer/entities/account-change.entity';
 
 @Injectable()
 export class AggregatorDaoService {
@@ -18,7 +18,7 @@ export class AggregatorDaoService {
     private readonly configService: ConfigService,
     private readonly sputnikDaoService: SputnikDaoService,
     private readonly daoService: DaoService,
-    private readonly nearService: NearService,
+    private readonly nearIndexerService: NearIndexerService,
     private readonly transactionService: TransactionService,
     private readonly accountChangeService: AccountChangeService,
     private readonly eventService: EventService,
@@ -60,7 +60,7 @@ export class AggregatorDaoService {
     }
     
     const nearAccChange =
-      await this.nearService.findLastAccountChangesByContractName(
+      await this.nearIndexerService.findLastAccountChangesByContractName(
         contractName,
         blockTimestamp,
       );
@@ -74,7 +74,7 @@ export class AggregatorDaoService {
     }
 
     const accountChanges =
-      await this.nearService.findAccountChangesByContractName(
+      await this.nearIndexerService.findAccountChangesByContractName(
         contractName,
         blockTimestamp,
       );

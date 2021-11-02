@@ -7,7 +7,8 @@ import configuration, {
 } from '../config/aggregator-dao-config';
 import { DaoSlimModule } from 'src/daos/dao-slim.module';
 import { ProposalSlimModule } from 'src/proposals/proposal-slim.module';
-import { NearModule } from 'src/near/near.module';
+import { NearIndexerModule } from 'src/near-indexer/near-indexer.module';
+import { NearApiModule } from 'src/near-api/near-api.module';
 import { TransactionModule } from 'src/transactions/transaction.module';
 import { SputnikDaoService } from 'src/sputnikdao/sputnik.service';
 import { AggregatorDaoService } from './aggregator-dao.service';
@@ -32,7 +33,8 @@ import { AggregatorDaoValidationSchema } from 'src/config/validation/aggregator-
     ScheduleModule.forRoot(),
     DaoSlimModule,
     ProposalSlimModule,
-    NearModule,
+    NearIndexerModule,
+    NearApiModule,
     TransactionModule,
     EventModule,
     BountySlimModule,

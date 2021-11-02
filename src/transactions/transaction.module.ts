@@ -5,9 +5,10 @@ import { CacheConfigService } from 'src/config/cache';
 import { DaoService } from 'src/daos/dao.service';
 import { Dao } from 'src/daos/entities/dao.entity';
 import { Role } from 'src/daos/entities/role.entity';
-import { Transaction, TransactionAction } from 'src/near';
-import { AccountChange } from 'src/near/entities/account-change.entity';
-import { NearModule } from 'src/near/near.module';
+import { Transaction, TransactionAction } from 'src/near-indexer';
+import { AccountChange } from 'src/near-indexer/entities/account-change.entity';
+import { NearIndexerModule } from 'src/near-indexer/near-indexer.module';
+import { NearApiModule } from 'src/near-api/near-api.module';
 import { Proposal } from 'src/proposals/entities/proposal.entity';
 import { ProposalService } from 'src/proposals/proposal.service';
 import { SputnikDaoService } from 'src/sputnikdao/sputnik.service';
@@ -33,7 +34,8 @@ import { TransactionService } from './transaction.service';
       Token,
       Role,
     ]),
-    NearModule,
+    NearIndexerModule,
+    NearApiModule,
   ],
   providers: [
     TransactionService,

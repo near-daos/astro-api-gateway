@@ -1,0 +1,63 @@
+import { ConfigService } from '@nestjs/config';
+
+import { NEAR_PROVIDER, NEAR_API_PROVIDER } from 'src/common/constants';
+import { Account, Near, providers } from 'near-api-js';
+import { Provider } from 'near-api-js/lib/providers';
+
+export type NearApiContract = {
+  contractId?: string;
+  viewMethods: string[];
+  changeMethods: string[];
+};
+
+export type NearApiProvider = {
+  contracts: Record<string, NearApiContract>;
+  provider: Provider;
+  near: Near;
+  account: Account;
+};
+
+export const nearApiProvider = {
+  provide: NEAR_API_PROVIDER,
+  inject: [ConfigService, NEAR_PROVIDER],
+  useFactory: async (
+    configService: ConfigService,
+    near: Near,
+  ): Promise<NearApiProvider> => {
+    const config = configService.get('near');
+    const { contractName, providerUrl } = config;
+
+    const account = await near.account(contractName);
+    const provider = new providers.JsonRpcProvider(providerUrl);
+
+    return {
+      near,
+      account,
+      provider,
+      contracts: {
+        sputnikDaoFactory: {
+          contractId: contractName,
+          viewMethods: ['get_dao_list', 'tx_status'],
+          changeMethods: [],
+        },
+        sputnikDao: {
+          viewMethods: [
+            'get_config',
+            'get_policy',
+            'get_staking_contract',
+            'get_available_amount',
+            'delegation_total_supply',
+            'get_last_proposal_id',
+            'get_proposals',
+            'get_proposal',
+            'get_last_bounty_id',
+            'get_bounties',
+            'get_bounty_claims',
+            'get_bounty_number_of_claims',
+          ],
+          changeMethods: ['add_proposal', 'act_proposal'],
+        },
+      },
+    };
+  },
+};
