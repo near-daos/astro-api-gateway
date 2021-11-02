@@ -1,10 +1,11 @@
 import { Account, Contract, Near } from 'near-api-js';
 import { Provider } from 'near-api-js/lib/providers';
-import { AccountView } from 'near-api-js/src/providers/provider';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 
 import { NEAR_API_PROVIDER } from 'src/common/constants';
 import { NearApiContract, NearApiProvider } from 'src/config/near-api';
+
+import { AccountState } from './types/account-state';
 
 @Injectable()
 export class NearApiService {
@@ -37,7 +38,7 @@ export class NearApiService {
     return await this.provider.txStatus(transactionHash, accountId);
   }
 
-  public async getAccountState(accountId: string): Promise<AccountView> {
+  public async getAccountState(accountId: string): Promise<AccountState> {
     const account = await this.near.account(accountId);
     return account.state();
   }

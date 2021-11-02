@@ -20,10 +20,7 @@ export type NearApiProvider = {
 export const nearApiProvider = {
   provide: NEAR_API_PROVIDER,
   inject: [ConfigService, NEAR_PROVIDER],
-  useFactory: async (
-    configService: ConfigService,
-    near: Near,
-  ): Promise<NearApiProvider> => {
+  useFactory: async (configService: ConfigService, near: Near) => {
     const config = configService.get('near');
     const { contractName, providerUrl } = config;
 
