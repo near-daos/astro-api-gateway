@@ -19,6 +19,7 @@ import {
 import { BountyClaimDto } from 'src/bounties/dto/bounty-claim.dto';
 import { NearApiService } from 'src/near-api/near-api.service';
 
+// Please note that SputnikDaoService is going to be removed in next iterations
 @Injectable()
 export class SputnikDaoService {
   private readonly logger = new Logger(SputnikDaoService.name);

@@ -22,10 +22,10 @@ export const nearApiProvider = {
   inject: [ConfigService, NEAR_PROVIDER],
   useFactory: async (configService: ConfigService, near: Near) => {
     const config = configService.get('near');
-    const { contractName, providerUrl } = config;
+    const { contractName, nodeUrl } = config;
 
     const account = await near.account(contractName);
-    const provider = new providers.JsonRpcProvider(providerUrl);
+    const provider = new providers.JsonRpcProvider(nodeUrl);
 
     return {
       near,

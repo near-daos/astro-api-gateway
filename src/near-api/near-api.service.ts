@@ -1,16 +1,16 @@
 import { Account, Contract, Near } from 'near-api-js';
 import { Provider } from 'near-api-js/lib/providers';
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 
 import { NEAR_API_PROVIDER } from 'src/common/constants';
 import { NearApiContract, NearApiProvider } from 'src/config/near-api';
 
-import { AccountState } from './types/account-state';
+import { NearAccountState } from './types/near-account-state';
+import { NearTransactionStatus } from './types/near-transaction-status';
+import { castTransactionAction } from './types/near-transaction-action';
 
 @Injectable()
 export class NearApiService {
-  private readonly logger = new Logger(NearApiService.name);
-
   private near!: Near;
 
   private contracts: Record<string, NearApiContract>;
@@ -34,11 +34,17 @@ export class NearApiService {
   public async getTxStatus(
     transactionHash: string,
     accountId: string,
-  ): Promise<any> {
-    return await this.provider.txStatus(transactionHash, accountId);
+  ): Promise<NearTransactionStatus> {
+    const txStatus = await this.provider.txStatus(transactionHash, accountId);
+
+    txStatus.transaction.actions = txStatus.transaction.actions.map(
+      castTransactionAction,
+    );
+
+    return txStatus;
   }
 
-  public async getAccountState(accountId: string): Promise<AccountState> {
+  public async getAccountState(accountId: string): Promise<NearAccountState> {
     const account = await this.near.account(accountId);
     return account.state();
   }

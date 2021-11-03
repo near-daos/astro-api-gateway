@@ -30,7 +30,6 @@ import { TransactionCrudRequestInterceptor } from './interceptors/transaction-cr
 import { TransferCrudRequestInterceptor } from './interceptors/transfer-crud.interceptor';
 import { WalletCallbackParams } from 'src/common/dto/WalletCallbackParams';
 import { ConfigService } from '@nestjs/config';
-import { TransactionCallbackService } from './transaction-callback.service';
 import { FindAccountParams } from 'src/common/dto/FindAccountParams';
 import { NearIndexerService } from 'src/near-indexer/near-indexer.service';
 import { NearDBConnectionErrorFilter } from 'src/common/filters/near-db-connection-error.filter';
@@ -43,7 +42,6 @@ export class TransactionController {
   constructor(
     private readonly configService: ConfigService,
     private readonly transactionService: TransactionService,
-    private readonly transactionCallbackService: TransactionCallbackService,
     private readonly nearIndexerService: NearIndexerService,
   ) {}
 
@@ -128,10 +126,7 @@ export class TransactionController {
           transactionHashes
             .split(',')
             .map((hash) =>
-              this.transactionCallbackService.unfoldTransaction(
-                hash,
-                accountId,
-              ),
+              this.transactionService.walletCallback(hash, accountId),
             ),
         );
       } catch (e) {

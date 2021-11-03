@@ -9,6 +9,7 @@ import { Transaction, TransactionAction } from 'src/near-indexer';
 import { AccountChange } from 'src/near-indexer/entities/account-change.entity';
 import { NearIndexerModule } from 'src/near-indexer/near-indexer.module';
 import { NearApiModule } from 'src/near-api/near-api.module';
+import { TransactionHandlerModule } from 'src/transaction-handler/transaction-handler.module';
 import { Proposal } from 'src/proposals/entities/proposal.entity';
 import { ProposalService } from 'src/proposals/proposal.service';
 import { SputnikDaoService } from 'src/sputnikdao/sputnik.service';
@@ -16,7 +17,6 @@ import { TokenFactoryService } from 'src/token-factory/token-factory.service';
 import { Token } from 'src/tokens/entities/token.entity';
 import { TokenService } from 'src/tokens/token.service';
 import { AccountChangeService } from './account-change.service';
-import { TransactionCallbackService } from './transaction-callback.service';
 import { TransactionController } from './transaction.controller';
 import { TransactionService } from './transaction.service';
 
@@ -36,10 +36,10 @@ import { TransactionService } from './transaction.service';
     ]),
     NearIndexerModule,
     NearApiModule,
+    TransactionHandlerModule,
   ],
   providers: [
     TransactionService,
-    TransactionCallbackService,
     SputnikDaoService,
     DaoService,
     ProposalService,
