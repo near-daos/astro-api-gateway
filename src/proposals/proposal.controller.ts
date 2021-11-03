@@ -16,6 +16,7 @@ import {
 import { ParsedRequest, CrudRequest } from '@nestjsx/crud';
 import { FindOneParams, HttpCacheInterceptor } from 'src/common';
 import { EntityQuery } from 'src/common/dto/EntityQuery';
+import { FindAccountParams } from 'src/common/dto/FindAccountParams';
 import { QueryFailedErrorFilter } from 'src/common/filters/query-failed-error.filter';
 import { ProposalResponse } from './dto/proposal-response.dto';
 import { Proposal } from './entities/proposal.entity';
@@ -64,5 +65,28 @@ export class ProposalController {
     }
 
     return proposal;
+  }
+
+  @ApiParam({
+    name: 'accountId',
+    type: String,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List of Proposals by Account',
+    type: ProposalResponse,
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
+  @UseInterceptors(HttpCacheInterceptor, ProposalCrudRequestInterceptor)
+  @UseFilters(new QueryFailedErrorFilter())
+  @ApiQuery({ type: EntityQuery })
+  @Get('/proposals/account-proposals/:accountId')
+  async proposalByAccount(
+    @ParsedRequest() query: CrudRequest,
+    @Param() { accountId }: FindAccountParams,
+  ): Promise<Proposal[] | ProposalResponse> {
+    return await this.proposalService.getManyByAccountId(accountId, query);
   }
 }

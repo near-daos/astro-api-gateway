@@ -7,6 +7,7 @@ import { ProposalDto } from './dto/proposal.dto';
 import { Proposal } from './entities/proposal.entity';
 import { ProposalResponse } from './dto/proposal-response.dto';
 import { Role } from 'src/daos/entities/role.entity';
+import { ProposalTypeToContractType } from './types/proposal-type';
 
 @Injectable()
 export class ProposalService extends TypeOrmCrudService<Proposal> {
@@ -62,6 +63,82 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
     });
 
     return proposalResponse;
+  }
+
+  async getManyByAccountId(
+    accountId: string,
+    req: CrudRequest,
+  ): Promise<ProposalResponse | Proposal[]> {
+    const proposalResponse = (await this.getMany({
+      ...req,
+      parsed: {
+        ...req.parsed,
+        offset: 0,
+        limit: 10000, // TODO: chunk proposal queries
+      },
+    })) as ProposalResponse;
+
+    const filtered = proposalResponse.data.filter((proposal) => {
+      const groupRole = proposal?.dao?.policy?.roles?.filter(
+        ({ kind, accountIds }) => {
+          return kind === 'Group' && accountIds?.includes(accountId);
+        },
+      );
+
+      function checkPermissions(permission: string, groupPerms: string[]) {
+        const type = ProposalTypeToContractType[proposal.kind.type];
+
+        return (
+          groupPerms.includes('*:*') ||
+          groupPerms.includes(`*:${permission}`) ||
+          groupPerms.includes(`${type}:${permission}`)
+        );
+      }
+
+      const perms = groupRole.reduce(
+        (acc, { permissions: groupPerms }) => {
+          const { canApprove, canReject, canDelete } = acc;
+
+          if (!canApprove) {
+            acc.canApprove = checkPermissions('VoteApprove', groupPerms);
+          }
+
+          if (!canReject) {
+            acc.canReject = checkPermissions('VoteReject', groupPerms);
+          }
+
+          if (!canDelete) {
+            acc.canDelete = checkPermissions('VoteRemove', groupPerms);
+          }
+
+          return acc;
+        },
+        {
+          canApprove: false,
+          canReject: false,
+          canDelete: false,
+        },
+      );
+
+      return perms.canApprove || perms.canReject || perms.canDelete;
+    });
+
+    const { offset, limit } = req.parsed;
+    const total = filtered.length;
+    const page = limit ? Math.floor(offset / limit) + 1 : 1;
+    const data = filtered.slice(offset, page * limit);
+    const pageCount = limit && total ? Math.ceil(total / limit) : 1;
+
+    const response = {
+      ...proposalResponse,
+      data,
+      page,
+      pageCount,
+      count: data.length,
+      total,
+    };
+
+    return response;
   }
 
   async search(

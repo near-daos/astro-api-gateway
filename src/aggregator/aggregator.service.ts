@@ -6,7 +6,12 @@ import { isNotNull } from 'src/utils/guards';
 import { NearIndexerService } from 'src/near-indexer/near-indexer.service';
 import { TransactionService } from 'src/transactions/transaction.service';
 import { ConfigService } from '@nestjs/config';
-import { Account, ActionReceiptAction, Receipt, Transaction } from 'src/near-indexer';
+import {
+  Account,
+  ActionReceiptAction,
+  Receipt,
+  Transaction,
+} from 'src/near-indexer';
 import { SputnikDaoDto } from 'src/daos/dto/dao-sputnik.dto';
 import { castProposalKind, ProposalDto } from 'src/proposals/dto/proposal.dto';
 import { SchedulerRegistry } from '@nestjs/schedule';
@@ -87,7 +92,9 @@ export class AggregatorService {
       );
 
     if (tx && tx.transactionHash === nearTx?.transactionHash) {
-      return this.logger.debug('Data is up to date. Skipping data aggregation.');
+      return this.logger.debug(
+        'Data is up to date. Skipping data aggregation.',
+      );
     }
 
     if (this.isAggregationInProgress(nearTx?.transactionHash)) {
@@ -728,7 +735,7 @@ export class AggregatorService {
 
       this.logger.log('Purging aggregated Proposals considered as removed...');
       await Promise.all(
-        removedProposals.map(({ id }) => this.proposalService.remove(id)),
+        removedProposals.map((id) => this.proposalService.remove(id)),
       );
       this.logger.log('Successfully purged removed Proposals.');
     } catch (e) {
