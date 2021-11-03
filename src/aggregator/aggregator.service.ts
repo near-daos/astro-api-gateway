@@ -80,14 +80,15 @@ export class AggregatorService {
     const tx = lastTx || (await this.transactionService.lastTransaction());
 
     // Last transaction from NEAR Indexer - for the list of DAOs defined
-    const nearTx =
-      await this.nearService.findLastTransactionByContractName(
-        contractName,
-        tx?.blockTimestamp,
-      );
+    const nearTx = await this.nearService.findLastTransactionByContractName(
+      contractName,
+      tx?.blockTimestamp,
+    );
 
     if (tx && tx.transactionHash === nearTx?.transactionHash) {
-      return this.logger.debug('Data is up to date. Skipping data aggregation.');
+      return this.logger.debug(
+        'Data is up to date. Skipping data aggregation.',
+      );
     }
 
     if (this.isAggregationInProgress(nearTx?.transactionHash)) {
@@ -728,7 +729,7 @@ export class AggregatorService {
 
       this.logger.log('Purging aggregated Proposals considered as removed...');
       await Promise.all(
-        removedProposals.map(({ id }) => this.proposalService.remove(id)),
+        removedProposals.map((id) => this.proposalService.remove(id)),
       );
       this.logger.log('Successfully purged removed Proposals.');
     } catch (e) {
