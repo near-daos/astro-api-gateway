@@ -10,6 +10,9 @@ export { CacheConfigService } from './cache';
 
 const aggregator = registerAs('aggregator-dao', () => ({
   pollingInterval: parseInt(process.env.DAO_POLLING_INTERVAL, 10),
+  proposalVoteStatusUpdateInterval: parseInt(
+    process.env.PROPOSAL_VOTE_STATUS_UPDATE_INTERVAL,
+  ),
 }));
 
 export default [

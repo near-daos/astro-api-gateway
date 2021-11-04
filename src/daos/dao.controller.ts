@@ -25,6 +25,8 @@ import { DaoCrudRequestInterceptor } from './interceptors/dao-crud.interceptor';
 import { QueryFailedErrorFilter } from 'src/common/filters/query-failed-error.filter';
 import { DaoNearService } from './dao-near.service';
 import { FindAccountParams } from 'src/common/dto/FindAccountParams';
+import { DaoFeed } from './dto/dao-feed.dto';
+import { DaoFeedResponse } from './dto/dao-feed-response.dto';
 
 @ApiTags('DAO')
 @Controller('/daos')
@@ -50,6 +52,24 @@ export class DaoController {
     @ParsedRequest() query: CrudRequest,
   ): Promise<Dao[] | DaoResponse> {
     return await this.daoService.getMany(query);
+  }
+
+  @ApiResponse({
+    status: 200,
+    description: 'Sputnik DAOs Feed',
+    type: DaoResponse,
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
+  @UseInterceptors(HttpCacheInterceptor, DaoCrudRequestInterceptor)
+  @UseFilters(new QueryFailedErrorFilter())
+  @ApiQuery({ type: EntityQuery })
+  @Get('/feed')
+  async daosFeed(
+    @ParsedRequest() query: CrudRequest,
+  ): Promise<DaoFeed[] | DaoFeedResponse> {
+    return await this.daoService.getFeed(query);
   }
 
   @ApiParam({

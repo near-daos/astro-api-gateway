@@ -9,6 +9,8 @@ import { SchedulerRegistry } from '@nestjs/schedule';
 import { EventService } from 'src/events/events.service';
 import { AccountChangeService } from 'src/transactions/account-change.service';
 import { AccountChange } from 'src/near-indexer/entities/account-change.entity';
+import { ProposalService } from 'src/proposals/proposal.service';
+import { CacheService } from 'src/cache/service/cache.service';
 
 @Injectable()
 export class AggregatorDaoService {
@@ -19,18 +21,30 @@ export class AggregatorDaoService {
     private readonly sputnikDaoService: SputnikDaoService,
     private readonly daoService: DaoService,
     private readonly nearIndexerService: NearIndexerService,
+    private readonly proposalService: ProposalService,
     private readonly transactionService: TransactionService,
     private readonly accountChangeService: AccountChangeService,
     private readonly eventService: EventService,
     private readonly schedulerRegistry: SchedulerRegistry,
+    private readonly cacheService: CacheService,
   ) {
-    const { pollingInterval } = this.configService.get('aggregator-dao');
+    const { pollingInterval, proposalVoteStatusUpdateInterval } =
+      this.configService.get('aggregator-dao');
 
-    const interval = setInterval(
+    const daoInterval = setInterval(
       () => this.scheduleAggregation(),
       pollingInterval,
     );
-    schedulerRegistry.addInterval('polling', interval);
+    schedulerRegistry.addInterval('polling', daoInterval);
+
+    const proposalInterval = setInterval(
+      () => this.scheduleProposalVoteStatusUpdate(),
+      proposalVoteStatusUpdateInterval,
+    );
+    schedulerRegistry.addInterval(
+      'proposal-vote-update-schedule',
+      proposalInterval,
+    );
   }
 
   public async scheduleAggregation(): Promise<void> {
@@ -58,7 +72,7 @@ export class AggregatorDaoService {
 
       blockTimestamp = tx?.blockTimestamp;
     }
-    
+
     const nearAccChange =
       await this.nearIndexerService.findLastAccountChangesByContractName(
         contractName,
@@ -70,7 +84,9 @@ export class AggregatorDaoService {
       accChange.changedInBlockTimestamp ===
         nearAccChange?.changedInBlockTimestamp
     ) {
-      return this.logger.debug('Data is up to date. Skipping data aggregation.');
+      return this.logger.debug(
+        'Data is up to date. Skipping data aggregation.',
+      );
     }
 
     const accountChanges =
@@ -84,8 +100,9 @@ export class AggregatorDaoService {
     );
 
     this.logger.log(`DAOs updated: ${updatedDaoIds.join(',')}`);
+    this.eventService.sendDaoUpdateNotificationEvent(updatedDaoIds);
 
-    let startTime = new Date().getTime();
+    const startTime = new Date().getTime();
     const [daos] = await Promise.all([
       this.sputnikDaoService.getDaoList(updatedDaoIds),
     ]);
@@ -112,5 +129,18 @@ export class AggregatorDaoService {
 
     this.logger.log('Sending DAO updates...');
     this.eventService.sendDaoUpdates(daos);
+  }
+
+  public async scheduleProposalVoteStatusUpdate(): Promise<void> {
+    const updateResult = await this.proposalService.updateExpiredProposals();
+
+    if (updateResult?.affected) {
+      this.logger.log(
+        `Updated ${updateResult.affected} Proposals - Vote Status Expired.`,
+      );
+
+      this.logger.log(`Clearing cache on Proposal Expiration.`);
+      await this.cacheService.clearCache();
+    }
   }
 }
