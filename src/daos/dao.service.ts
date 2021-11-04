@@ -6,12 +6,17 @@ import { Repository } from 'typeorm';
 import { DaoDto } from './dto/dao.dto';
 import { Dao } from './entities/dao.entity';
 import { DaoResponse } from './dto/dao-response.dto';
+import { DaoFeed } from './dto/dao-feed.dto';
+import { DaoFeedResponse } from './dto/dao-feed-response.dto';
+import { ProposalService } from 'src/proposals/proposal.service';
+import { ProposalVoteStatus } from 'src/proposals/types/proposal-vote-status';
 
 @Injectable()
 export class DaoService extends TypeOrmCrudService<Dao> {
   constructor(
     @InjectRepository(Dao)
     private readonly daoRepository: Repository<Dao>,
+    private readonly proposalService: ProposalService,
   ) {
     super(daoRepository);
   }
@@ -65,5 +70,40 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     };
 
     return this.getMany(req);
+  }
+
+  async getFeed(req: CrudRequest): Promise<DaoFeed[] | DaoFeedResponse> {
+    const daoFeedResponse = await super.getMany(req);
+
+    const daos =
+      daoFeedResponse instanceof Array ? daoFeedResponse : daoFeedResponse.data;
+
+    if (!daos || !daos.length) {
+      return daoFeedResponse as DaoFeedResponse;
+    }
+
+    const daoIds: string[] = daos.map(({ id }) => id);
+
+    // TODO: accelerate querying
+    const proposals = await this.proposalService.findProposalsByDaoIds(daoIds);
+
+    const daoFeed: DaoFeed[] = daos.map((dao) => ({
+      ...dao,
+      activeProposalCount: proposals?.filter(
+        ({ daoId, voteStatus }) =>
+          dao.id === daoId && voteStatus === ProposalVoteStatus.Active,
+      ).length,
+      totalProposalCount: proposals?.filter(({ daoId }) => dao.id === daoId)
+        .length,
+    }));
+
+    if (daoFeedResponse instanceof Array) {
+      return daoFeed;
+    }
+
+    return {
+      ...daoFeedResponse,
+      data: daoFeed,
+    };
   }
 }

@@ -1,13 +1,22 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 import { CrudRequest } from '@nestjsx/crud';
-import { DeleteResult, In, Repository } from 'typeorm';
+import {
+  Connection,
+  DeleteResult,
+  FindConditions,
+  In,
+  Repository,
+  UpdateResult,
+} from 'typeorm';
 import { ProposalDto } from './dto/proposal.dto';
 import { Proposal } from './entities/proposal.entity';
 import { ProposalResponse } from './dto/proposal-response.dto';
 import { Role } from 'src/daos/entities/role.entity';
 import { ProposalTypeToContractType } from './types/proposal-type';
+import { ProposalStatus } from './types/proposal-status';
+import { ProposalVoteStatus } from './types/proposal-vote-status';
 
 @Injectable()
 export class ProposalService extends TypeOrmCrudService<Proposal> {
@@ -16,6 +25,8 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
     private readonly proposalRepository: Repository<Proposal>,
     @InjectRepository(Role)
     private readonly roleRepository: Repository<Role>,
+    @InjectConnection()
+    private connection: Connection,
   ) {
     super(proposalRepository);
   }
@@ -177,6 +188,41 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
     };
 
     return this.getMany(req);
+  }
+
+  async findProposalsByDaoIds(
+    daoIds: string[],
+    voteStatus?: ProposalVoteStatus,
+  ): Promise<Proposal[]> {
+    let where: FindConditions<Proposal> = {
+      daoId: In(daoIds),
+    };
+
+    if (voteStatus) {
+      where = {
+        ...where,
+        voteStatus,
+      };
+    }
+
+    return this.proposalRepository.find({ where });
+  }
+
+  async updateExpiredProposals(): Promise<UpdateResult> {
+    const currentTimestamp = new Date().getTime() * 1000 * 1000; // nanoseconds
+
+    return this.connection
+      .createQueryBuilder()
+      .update(Proposal)
+      .where('voteStatus != :voteStatus', {
+        voteStatus: ProposalVoteStatus.Expired,
+      })
+      .andWhere('status = :status', { status: ProposalStatus.InProgress })
+      .andWhere('votePeriodEnd > :date', {
+        date: currentTimestamp,
+      })
+      .set({ voteStatus: ProposalVoteStatus.Expired })
+      .execute();
   }
 
   async remove(id: string): Promise<DeleteResult> {

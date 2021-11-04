@@ -6,6 +6,7 @@ import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
 import { ProposalKindDto } from '../dto/proposal-kind-swagger.dto';
 import { ProposalKind } from '../dto/proposal-kind.dto';
 import { ProposalStatus } from '../types/proposal-status';
+import { ProposalVoteStatus } from '../types/proposal-vote-status';
 
 @Entity()
 export class Proposal extends TransactionEntity {
@@ -43,6 +44,17 @@ export class Proposal extends TransactionEntity {
     default: ProposalStatus.InProgress,
   })
   status: ProposalStatus;
+
+  @ApiProperty({
+    enum: Object.keys(ProposalVoteStatus),
+  })
+  @Column({
+    type: 'enum',
+    enum: ProposalVoteStatus,
+    default: ProposalVoteStatus.Active,
+    nullable: true,
+  })
+  voteStatus: ProposalVoteStatus;
 
   @ApiProperty({
     type: ProposalKindDto,

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { CacheModule, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ScheduleModule } from '@nestjs/schedule';
 import configuration, {
@@ -17,9 +17,14 @@ import { BountySlimModule } from 'src/bounties/bounty-slim.module';
 import { TokenFactoryService } from 'src/token-factory/token-factory.service';
 import { TokenSlimModule } from 'src/tokens/token-slim.module';
 import { AggregatorDaoValidationSchema } from 'src/config/validation/aggregator-dao.schema';
+import { CacheService } from 'src/cache/service/cache.service';
+import { CacheConfigService } from 'src/config/api-config';
 
 @Module({
   imports: [
+    CacheModule.registerAsync({
+      useClass: CacheConfigService,
+    }),
     ConfigModule.forRoot({
       isGlobal: true,
       load: configuration,
@@ -38,6 +43,11 @@ import { AggregatorDaoValidationSchema } from 'src/config/validation/aggregator-
     BountySlimModule,
     TokenSlimModule,
   ],
-  providers: [SputnikDaoService, TokenFactoryService, AggregatorDaoService],
+  providers: [
+    SputnikDaoService,
+    TokenFactoryService,
+    AggregatorDaoService,
+    CacheService,
+  ],
 })
 export class AggregatorDaoModule {}

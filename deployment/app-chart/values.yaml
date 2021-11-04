@@ -97,4 +97,5 @@ environment:
   near_bridge_token_factory_contract_name: "f.ropsten.testnet"
   aggregator_polling_interval: "2000"
   dao_polling_interval: "2000"
+  proposal_vote_status_update_interval: "2000"
   wallet_callback_url: ""
