@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
-import { AccountChange } from 'src/near/entities/account-change.entity';
+import { AccountChange } from 'src/near-indexer/entities/account-change.entity';
 
 @Injectable()
 export class AccountChangeService extends TypeOrmCrudService<AccountChange> {

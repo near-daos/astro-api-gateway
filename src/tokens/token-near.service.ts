@@ -1,6 +1,6 @@
 import { HttpService, Injectable, Logger } from '@nestjs/common';
 import { Token } from './entities/token.entity';
-import { NearService } from 'src/near/near.service';
+import { NearIndexerService } from 'src/near-indexer/near-indexer.service';
 import { SputnikDaoService } from 'src/sputnikdao/sputnik.service';
 import { ConfigService } from '@nestjs/config';
 import PromisePool from '@supercharge/promise-pool';
@@ -17,7 +17,7 @@ export class TokenNearService {
   constructor(
     private readonly configService: ConfigService,
     private readonly httpService: HttpService,
-    private readonly nearService: NearService,
+    private readonly nearIndexerService: NearIndexerService,
     private readonly sputnikDaoService: SputnikDaoService,
     private readonly tokenFactoryService: TokenFactoryService,
   ) {}
@@ -36,7 +36,7 @@ export class TokenNearService {
 
     let tokenIds = [];
     try {
-      tokenIds = await this.nearService.findLikelyTokens(accountId);
+      tokenIds = await this.nearIndexerService.findLikelyTokens(accountId);
     } catch (e) {
       this.logger.error(e);
 
@@ -77,7 +77,7 @@ export class TokenNearService {
 
     let tokenIds = [];
     try {
-      tokenIds = await this.nearService.findLikelyNFTs(accountId);
+      tokenIds = await this.nearIndexerService.findLikelyNFTs(accountId);
     } catch (e) {
       this.logger.error(e);
 

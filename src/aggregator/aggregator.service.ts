@@ -3,10 +3,15 @@ import { DaoService } from 'src/daos/dao.service';
 import { SputnikDaoService } from 'src/sputnikdao/sputnik.service';
 import { ProposalService } from 'src/proposals/proposal.service';
 import { isNotNull } from 'src/utils/guards';
-import { NearService } from 'src/near/near.service';
+import { NearIndexerService } from 'src/near-indexer/near-indexer.service';
 import { TransactionService } from 'src/transactions/transaction.service';
 import { ConfigService } from '@nestjs/config';
-import { Account, ActionReceiptAction, Receipt, Transaction } from 'src/near';
+import {
+  Account,
+  ActionReceiptAction,
+  Receipt,
+  Transaction,
+} from 'src/near-indexer';
 import { SputnikDaoDto } from 'src/daos/dto/dao-sputnik.dto';
 import { castProposalKind, ProposalDto } from 'src/proposals/dto/proposal.dto';
 import { SchedulerRegistry } from '@nestjs/schedule';
@@ -42,7 +47,7 @@ export class AggregatorService {
     private readonly tokenFactoryService: TokenFactoryService,
     private readonly daoService: DaoService,
     private readonly proposalService: ProposalService,
-    private readonly nearService: NearService,
+    private readonly nearIndexerService: NearIndexerService,
     private readonly transactionService: TransactionService,
     private readonly eventService: EventService,
     private readonly bountyService: BountyService,
@@ -80,10 +85,11 @@ export class AggregatorService {
     const tx = lastTx || (await this.transactionService.lastTransaction());
 
     // Last transaction from NEAR Indexer - for the list of DAOs defined
-    const nearTx = await this.nearService.findLastTransactionByContractName(
-      contractName,
-      tx?.blockTimestamp,
-    );
+    const nearTx =
+      await this.nearIndexerService.findLastTransactionByContractName(
+        contractName,
+        tx?.blockTimestamp,
+      );
 
     if (tx && tx.transactionHash === nearTx?.transactionHash) {
       return this.logger.debug(
@@ -102,7 +108,7 @@ export class AggregatorService {
 
     let startTime = new Date().getTime();
     const transactions: Transaction[] =
-      await this.nearService.findTransactionsByContractName(
+      await this.nearIndexerService.findTransactionsByContractName(
         contractName,
         tx?.blockTimestamp,
       );
@@ -214,18 +220,18 @@ export class AggregatorService {
     );
     const accounts: Account[] = tx
       ? accountsCombinedDaoIds?.length
-        ? await this.nearService.findAccountsByAccountIds(
+        ? await this.nearIndexerService.findAccountsByAccountIds(
             accountsCombinedDaoIds,
           )
         : []
-      : await this.nearService.findAccountsByContractName(contractName);
+      : await this.nearIndexerService.findAccountsByContractName(contractName);
 
     const accountsTime = new Date().getTime();
     this.logger.log(`Accounts retrieval time: ${accountsTime - startTime} ms`);
 
     startTime = new Date().getTime();
     const nftActionReceipts =
-      await this.nearService.findNFTActionReceiptsByReceiverAccountIds(
+      await this.nearIndexerService.findNFTActionReceiptsByReceiverAccountIds(
         [...accountDaoIds, contractName, tokenFactoryContractName],
         tx?.blockTimestamp,
       );
@@ -318,7 +324,7 @@ export class AggregatorService {
     let receipts: Receipt[] = [];
     try {
       receipts = missingProposalDaoIds.length
-        ? await this.nearService.findReceiptsByReceiverAccountIds(
+        ? await this.nearIndexerService.findReceiptsByReceiverAccountIds(
             [...Array.from(new Set(missingProposalDaoIds)), contractName],
             tx?.blockTimestamp,
           )

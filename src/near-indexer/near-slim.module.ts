@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 import { nearProvider } from 'src/config/near';
 import { nearTokenFactoryProvider } from 'src/config/near-token-factory';
-import { nearSputnikProvider } from 'src/config/sputnik';
+import { nearApiProvider } from 'src/config/near-api';
 
 @Module({
   imports: [],
-  providers: [nearProvider, nearSputnikProvider, nearTokenFactoryProvider],
-  exports: [nearProvider, nearSputnikProvider, nearTokenFactoryProvider],
+  providers: [nearProvider, nearApiProvider, nearTokenFactoryProvider],
+  exports: [nearProvider, nearApiProvider, nearTokenFactoryProvider],
 })
 export class NearSlimModule {}

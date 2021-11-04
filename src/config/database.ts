@@ -1,6 +1,6 @@
 import { registerAs } from '@nestjs/config';
 import { Dao } from 'src/daos/entities/dao.entity';
-import { TransactionAction, Transaction, Receipt } from 'src/near';
+import { TransactionAction, Transaction, Receipt } from 'src/near-indexer';
 import { Subscription } from 'src/subscriptions/entities/subscription.entity';
 import { Proposal } from 'src/proposals/entities/proposal.entity';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
@@ -12,8 +12,8 @@ import { Token } from 'src/tokens/entities/token.entity';
 import { BountyClaim } from 'src/bounties/entities/bounty-claim.entity';
 import { NFTToken } from 'src/tokens/entities/nft-token.entity';
 import { NFTTokenMetadata } from 'src/tokens/entities/nft-token-metadata.entity';
-import { ReceiptAction } from 'src/near/entities/receipt-action.entity';
-import { AccountChange } from 'src/near/entities/account-change.entity';
+import { ReceiptAction } from 'src/near-indexer/entities/receipt-action.entity';
+import { AccountChange } from 'src/near-indexer/entities/account-change.entity';
 
 export default registerAs('db_default', () => ({
   type: 'postgres',

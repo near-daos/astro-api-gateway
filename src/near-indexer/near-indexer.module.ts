@@ -4,7 +4,7 @@ import { NEAR_INDEXER_DB_CONNECTION } from 'src/common/constants';
 import { TypeOrmConfigService } from 'src/config/aggregator-config';
 import { nearProvider } from 'src/config/near';
 import { nearTokenFactoryProvider } from 'src/config/near-token-factory';
-import { nearSputnikProvider } from 'src/config/sputnik';
+import { nearApiProvider } from 'src/config/near-api';
 import { AccountChange } from './entities/account-change.entity';
 import { Account } from './entities/account.entity';
 import { ActionReceiptAction } from './entities/action-receipt-action.entity';
@@ -12,7 +12,7 @@ import { ReceiptAction } from './entities/receipt-action.entity';
 import { Receipt } from './entities/receipt.entity';
 import { TransactionAction } from './entities/transaction-action.entity';
 import { Transaction } from './entities/transaction.entity';
-import { NearService } from './near.service';
+import { NearIndexerService } from './near-indexer.service';
 
 @Module({
   imports: [
@@ -28,22 +28,22 @@ import { NearService } from './near.service';
         TransactionAction,
         ActionReceiptAction,
         ReceiptAction,
-        AccountChange
+        AccountChange,
       ],
       NEAR_INDEXER_DB_CONNECTION,
     ),
   ],
   providers: [
-    NearService,
+    NearIndexerService,
     nearProvider,
-    nearSputnikProvider,
+    nearApiProvider,
     nearTokenFactoryProvider,
   ],
   exports: [
-    NearService,
+    NearIndexerService,
     nearProvider,
-    nearSputnikProvider,
+    nearApiProvider,
     nearTokenFactoryProvider,
   ],
 })
-export class NearModule {}
+export class NearIndexerModule {}

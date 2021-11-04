@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CrudRequest, MergedCrudOptions } from '@nestjsx/crud';
 import { RequestQueryParser } from '@nestjsx/crud-request';
-import { ActionKind } from 'src/near/types/action-kind';
+import { ActionKind } from 'src/near-indexer/types/action-kind';
 import { TransactionCrudRequestInterceptor } from './transaction-crud.interceptor';
 
 @Injectable()

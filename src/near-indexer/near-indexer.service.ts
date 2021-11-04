@@ -11,7 +11,7 @@ import { Receipt } from './entities/receipt.entity';
 import { ActionKind } from './types/action-kind';
 
 @Injectable()
-export class NearService {
+export class NearIndexerService {
   constructor(
     private readonly configService: ConfigService,
 
