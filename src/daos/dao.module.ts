@@ -8,6 +8,7 @@ import { NearModule } from 'src/near/near.module';
 import { Policy } from './entities/policy.entity';
 import { Role } from './entities/role.entity';
 import { DaoNearService } from './dao-near.service';
+import { ProposalModule } from 'src/proposals/proposal.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { DaoNearService } from './dao-near.service';
     }),
     TypeOrmModule.forFeature([Dao, Policy, Role]),
     NearModule,
+    ProposalModule,
   ],
   providers: [DaoService, DaoNearService],
   controllers: [DaoController],
