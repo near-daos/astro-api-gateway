@@ -56,9 +56,15 @@ export class TransactionActionHandlerService {
 
   async handleTransactionActions(actions: TransactionAction[]) {
     // Actions are handled one by one to keep order of transactions
-    await PromisePool.withConcurrency(1)
+    const { errors } = await PromisePool.withConcurrency(1)
       .for(actions)
       .process(async (action) => this.handleTransactionAction(action));
+
+    errors.forEach((error) => {
+      this.logger.error(
+        `Failed to handle transaction ${error.item.transactionHash} with error: ${error}`,
+      );
+    });
   }
 
   async handleTransactionAction(action: TransactionAction) {
