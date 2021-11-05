@@ -51,7 +51,6 @@ export class Proposal extends TransactionEntity {
   @Column({
     type: 'enum',
     enum: ProposalVoteStatus,
-    default: ProposalVoteStatus.Active,
     nullable: true,
   })
   voteStatus: ProposalVoteStatus;
