@@ -72,6 +72,28 @@ export class DaoController {
     return await this.daoService.getFeed(query);
   }
 
+  @ApiResponse({
+    status: 200,
+    description: 'Sputnik DAO Feed',
+    type: DaoFeed,
+  })
+  @ApiBadRequestResponse({ description: 'Invalid Dao ID' })
+  @UseInterceptors(HttpCacheInterceptor)
+  @ApiParam({
+    name: 'id',
+    type: String,
+  })
+  @Get('/feed/:id')
+  async daoFeed(@Param() { id }: FindOneParams): Promise<DaoFeed> {
+    const daoFeed = await this.daoService.getDaoFeed(id);
+
+    if (!daoFeed) {
+      throw new BadRequestException('Invalid Dao ID');
+    }
+
+    return daoFeed;
+  }
+
   @ApiParam({
     name: 'accountId',
     type: String,

@@ -10,6 +10,8 @@ import { DaoFeed } from './dto/dao-feed.dto';
 import { DaoFeedResponse } from './dto/dao-feed-response.dto';
 import { ProposalService } from 'src/proposals/proposal.service';
 import { ProposalVoteStatus } from 'src/proposals/types/proposal-vote-status';
+import { ProposalStatus } from 'src/proposals/types/proposal-status';
+import { Proposal } from 'src/proposals/entities/proposal.entity';
 
 @Injectable()
 export class DaoService extends TypeOrmCrudService<Dao> {
@@ -87,15 +89,17 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     // TODO: accelerate querying
     const proposals = await this.proposalService.findProposalsByDaoIds(daoIds);
 
-    const daoFeed: DaoFeed[] = daos.map((dao) => ({
-      ...dao,
-      activeProposalCount: proposals?.filter(
-        ({ daoId, voteStatus }) =>
-          dao.id === daoId && voteStatus === ProposalVoteStatus.Active,
-      ).length,
-      totalProposalCount: proposals?.filter(({ daoId }) => dao.id === daoId)
-        .length,
-    }));
+    const proposalsByDao = proposals?.reduce(
+      (acc, cur) => ({
+        ...acc,
+        [cur.daoId]: [...(acc[cur.daoId] || []), cur],
+      }),
+      {},
+    );
+
+    const daoFeed: DaoFeed[] = daos.map((dao) =>
+      this.buildFeedFromDao(dao, proposalsByDao?.[dao.id]),
+    );
 
     if (daoFeedResponse instanceof Array) {
       return daoFeed;
@@ -105,5 +109,32 @@ export class DaoService extends TypeOrmCrudService<Dao> {
       ...daoFeedResponse,
       data: daoFeed,
     };
+  }
+
+  async getDaoFeed(id: string): Promise<DaoFeed> {
+    const dao: Dao = await this.findOne(id);
+
+    const proposals = await this.proposalService.findProposalsByDaoIds([id]);
+
+    return this.buildFeedFromDao(dao, proposals);
+  }
+
+  private buildFeedFromDao(dao: Dao, proposals: Proposal[]): DaoFeed {
+    return {
+      ...dao,
+      activeProposalCount: proposals?.filter((proposal) =>
+        this.isProposalActive(proposal),
+      ).length,
+      totalProposalCount: proposals?.length,
+    };
+  }
+
+  private isProposalActive(proposal: Proposal): boolean {
+    const { voteStatus, status } = proposal;
+
+    return (
+      status === ProposalStatus.InProgress &&
+      voteStatus !== ProposalVoteStatus.Expired
+    );
   }
 }
