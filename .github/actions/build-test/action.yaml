@@ -1,0 +1,10 @@
+name: 'Build Test'
+runs:
+  using: "composite"
+  steps:
+  - run: |
+      yarn install
+      yarn test || true
+      yarn lint . || true
+      yarn build ${SUBAPP_NAME}
+

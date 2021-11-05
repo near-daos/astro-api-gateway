@@ -1,0 +1,26 @@
+name: Test Aggregator
+on:
+  pull-request:
+    branches:
+    - '**'
+    paths:
+    - 'apps/aggregator/**'
+    - 'libs/**'
+
+jobs:
+  build-deploy:
+    name: Build Deploy
+    steps:
+    - name: Set Environment
+      run: |
+         echo DOCKER_ENV_TAG=${GITHUB_REF##*/}-$GITHUB_SHA >> $GITHUB_ENV
+         echo SUBAPP_NAME=aggregator >> $GITHUB_ENV
+
+    - name: Build Test
+      uses: ./.github/actions/build-test
+
+    - name: Docker Build Publish
+      uses: ./.github/actions/docker-build-publish
+
+    - name: Helm Deploy
+      uses: ./.github/actions/helm-build-deploy
