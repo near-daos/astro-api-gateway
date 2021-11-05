@@ -11,8 +11,8 @@ import {
   validate,
 } from '@sputnik-v2/config/notifier-config';
 
-import { NotificationsController } from './notifications.controller';
-import { NotificationService } from './notifications.service';
+import { NotifierController } from './notifier.controller';
+import { NotifierService } from './notifier.service';
 
 @Module({
   imports: [
@@ -30,7 +30,7 @@ import { NotificationService } from './notifications.service';
     AccountModule,
     DaoModule,
   ],
-  controllers: [NotificationsController],
-  providers: [NotificationService],
+  controllers: [NotifierController],
+  providers: [NotifierService],
 })
-export class NotificationsModule {}
+export class NotifierModule {}

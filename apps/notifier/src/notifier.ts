@@ -3,14 +3,14 @@ import { ClassSerializerInterceptor, Logger, LogLevel } from '@nestjs/common';
 import { Transport } from '@nestjs/microservices';
 import { EVENT_NOTIFICATIONS_QUEUE_NAME } from '@sputnik-v2/common';
 
-import { NotificationsModule } from './notifications/notifications.module';
+import { NotifierModule } from './notifier.module';
 
 export default class Notifier {
   private readonly logger = new Logger(Notifier.name);
 
   async bootstrap(): Promise<void> {
     const logger = [...(process.env.LOG_LEVELS.split(',') as LogLevel[])];
-    const app = await NestFactory.createMicroservice(NotificationsModule, {
+    const app = await NestFactory.createMicroservice(NotifierModule, {
       transport: Transport.RMQ,
       logger,
       options: {

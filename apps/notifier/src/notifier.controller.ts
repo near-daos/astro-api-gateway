@@ -2,13 +2,13 @@ import { Controller, Logger } from '@nestjs/common';
 import { EventPattern, Transport } from '@nestjs/microservices';
 import { EVENT_DAO_UPDATE_NOTIFICATION } from '@sputnik-v2/common';
 
-import { NotificationService } from './notifications.service';
+import { NotifierService } from './notifier.service';
 
 @Controller()
-export class NotificationsController {
-  private readonly logger = new Logger(NotificationsController.name);
+export class NotifierController {
+  private readonly logger = new Logger(NotifierController.name);
 
-  constructor(private readonly notificationService: NotificationService) {}
+  constructor(private readonly notifierService: NotifierService) {}
 
   @EventPattern(EVENT_DAO_UPDATE_NOTIFICATION, Transport.RMQ)
   async handleDaoUpdates(data: Record<string, string[]>) {
@@ -18,15 +18,11 @@ export class NotificationsController {
     //TODO: To be re-worked - combine notifications between councelors/subscribers etc...
 
     await Promise.all(
-      daoIds.map((daoId) =>
-        this.notificationService.notifyDaoCouncelors(daoId),
-      ),
+      daoIds.map((daoId) => this.notifierService.notifyDaoCouncelors(daoId)),
     );
 
     await Promise.all(
-      daoIds.map((daoId) =>
-        this.notificationService.notifyDaoSubscribers(daoId),
-      ),
+      daoIds.map((daoId) => this.notifierService.notifyDaoSubscribers(daoId)),
     );
   }
 }

@@ -8,8 +8,8 @@ import { Account } from '@sputnik-v2/account';
 import { Dao } from '@sputnik-v2/dao';
 
 @Injectable()
-export class NotificationService {
-  private readonly logger = new Logger(NotificationService.name);
+export class NotifierService {
+  private readonly logger = new Logger(NotifierService.name);
 
   private firebaseApp: app.App;
 

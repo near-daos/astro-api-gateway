@@ -1,8 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SchedulerRegistry } from '@nestjs/schedule';
-import { DaoService, SputnikDaoDto, DaoDto } from '@sputnik-v2/dao';
-import { SputnikDaoService, RoleKindType } from '@sputnik-v2/sputnikdao';
+import {
+  DaoService,
+  SputnikDaoDto,
+  DaoDto,
+  RoleKindType,
+} from '@sputnik-v2/dao';
+import { SputnikDaoService } from '@sputnik-v2/sputnikdao';
 import {
   ProposalService,
   castProposalKind,
