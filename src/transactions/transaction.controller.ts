@@ -23,16 +23,15 @@ import { ParsedRequest, CrudRequest } from '@nestjsx/crud';
 import { HttpCacheInterceptor } from 'src/common';
 import { TransactionResponse } from './dto/transaction-response.dto';
 import { QueryFailedErrorFilter } from 'src/common/filters/query-failed-error.filter';
-import { Receipt, Transaction } from 'src/near';
+import { Receipt, Transaction } from 'src/near-indexer';
 import { TransactionService } from './transaction.service';
 import { TransactionQuery } from 'src/common/dto/TransactionQuery';
 import { TransactionCrudRequestInterceptor } from './interceptors/transaction-crud.interceptor';
 import { TransferCrudRequestInterceptor } from './interceptors/transfer-crud.interceptor';
 import { WalletCallbackParams } from 'src/common/dto/WalletCallbackParams';
 import { ConfigService } from '@nestjs/config';
-import { TransactionCallbackService } from './transaction-callback.service';
 import { FindAccountParams } from 'src/common/dto/FindAccountParams';
-import { NearService } from 'src/near/near.service';
+import { NearIndexerService } from 'src/near-indexer/near-indexer.service';
 import { NearDBConnectionErrorFilter } from 'src/common/filters/near-db-connection-error.filter';
 
 @ApiTags('Transactions')
@@ -43,8 +42,7 @@ export class TransactionController {
   constructor(
     private readonly configService: ConfigService,
     private readonly transactionService: TransactionService,
-    private readonly transactionCallbackService: TransactionCallbackService,
-    private readonly nearService: NearService,
+    private readonly nearIndexerService: NearIndexerService,
   ) {}
 
   @ApiResponse({
@@ -101,7 +99,7 @@ export class TransactionController {
   async receiptsByAccount(
     @Param() { accountId }: FindAccountParams,
   ): Promise<Receipt[]> {
-    return await this.nearService.receiptsByAccount(accountId);
+    return await this.nearIndexerService.receiptsByAccount(accountId);
   }
 
   @Get('/wallet/callback/:accountId')
@@ -128,10 +126,7 @@ export class TransactionController {
           transactionHashes
             .split(',')
             .map((hash) =>
-              this.transactionCallbackService.unfoldTransaction(
-                hash,
-                accountId,
-              ),
+              this.transactionService.walletCallback(hash, accountId),
             ),
         );
       } catch (e) {

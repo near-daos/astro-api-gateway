@@ -1,9 +1,9 @@
 import Decimal from 'decimal.js';
 
-import { DaoDto } from "src/daos/dto/dao.dto";
-import { Dao } from "src/daos/entities/dao.entity";
-import { ProposalDto } from "src/proposals/dto/proposal.dto";
-import { Proposal } from "src/proposals/entities/proposal.entity";
+import { DaoDto } from 'src/daos/dto/dao.dto';
+import { Dao } from 'src/daos/entities/dao.entity';
+import { ProposalDto } from 'src/proposals/dto/proposal.dto';
+import { Proposal } from 'src/proposals/entities/proposal.entity';
 
 export const formatTimestamp = (timestamp: number): string => {
   const seconds = Number(timestamp / 1e9);
@@ -27,6 +27,11 @@ export const convertDuration = (duration: number): Date => {
   epoch.setUTCSeconds(utcSeconds);
 
   return epoch;
+};
+
+export const getBlockTimestamp = (date = new Date()) => {
+  // the approximate block timestamp in microseconds - the same way as it's done in indexer
+  return date.getTime() * 1000000;
 };
 
 export const buildProposalId = (daoId: string, proposalId: number): string => {

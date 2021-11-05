@@ -2,13 +2,13 @@ import { Injectable, Logger } from '@nestjs/common';
 import { DaoService } from 'src/daos/dao.service';
 import { SputnikDaoService } from 'src/sputnikdao/sputnik.service';
 import { isNotNull } from 'src/utils/guards';
-import { NearService } from 'src/near/near.service';
+import { NearIndexerService } from 'src/near-indexer/near-indexer.service';
 import { TransactionService } from 'src/transactions/transaction.service';
 import { ConfigService } from '@nestjs/config';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { EventService } from 'src/events/events.service';
 import { AccountChangeService } from 'src/transactions/account-change.service';
-import { AccountChange } from 'src/near/entities/account-change.entity';
+import { AccountChange } from 'src/near-indexer/entities/account-change.entity';
 import { ProposalService } from 'src/proposals/proposal.service';
 import { CacheService } from 'src/cache/service/cache.service';
 
@@ -20,8 +20,8 @@ export class AggregatorDaoService {
     private readonly configService: ConfigService,
     private readonly sputnikDaoService: SputnikDaoService,
     private readonly daoService: DaoService,
+    private readonly nearIndexerService: NearIndexerService,
     private readonly proposalService: ProposalService,
-    private readonly nearService: NearService,
     private readonly transactionService: TransactionService,
     private readonly accountChangeService: AccountChangeService,
     private readonly eventService: EventService,
@@ -74,7 +74,7 @@ export class AggregatorDaoService {
     }
 
     const nearAccChange =
-      await this.nearService.findLastAccountChangesByContractName(
+      await this.nearIndexerService.findLastAccountChangesByContractName(
         contractName,
         blockTimestamp,
       );
@@ -84,11 +84,13 @@ export class AggregatorDaoService {
       accChange.changedInBlockTimestamp ===
         nearAccChange?.changedInBlockTimestamp
     ) {
-      return this.logger.debug('Data is up to date. Skipping data aggregation.');
+      return this.logger.debug(
+        'Data is up to date. Skipping data aggregation.',
+      );
     }
 
     const accountChanges =
-      await this.nearService.findAccountChangesByContractName(
+      await this.nearIndexerService.findAccountChangesByContractName(
         contractName,
         blockTimestamp,
       );
@@ -100,7 +102,7 @@ export class AggregatorDaoService {
     this.logger.log(`DAOs updated: ${updatedDaoIds.join(',')}`);
     this.eventService.sendDaoUpdateNotificationEvent(updatedDaoIds);
 
-    let startTime = new Date().getTime();
+    const startTime = new Date().getTime();
     const [daos] = await Promise.all([
       this.sputnikDaoService.getDaoList(updatedDaoIds),
     ]);

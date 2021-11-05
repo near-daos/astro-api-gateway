@@ -3,7 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { BountyController } from './bounty.controller';
 import { BountyService } from './bounty.service';
 import { CacheConfigService } from 'src/config/api-config';
-import { NearSlimModule } from 'src/near/near-slim.module';
+import { NearSlimModule } from 'src/near-indexer/near-slim.module';
 import { Bounty } from './entities/bounty.entity';
 import { BountyClaim } from './entities/bounty-claim.entity';
 
