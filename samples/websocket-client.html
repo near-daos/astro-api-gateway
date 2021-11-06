@@ -11,13 +11,11 @@
 <body>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.dev.js"></script>
   <script>
-    window.s = io('http://localhost:3030', {
-      query: {
-        token: '123',
-      },
-    });
+    const WEBSOCKET_HOST = 'https://api.dev.app.astrodao.com';
 
-    s.emit('heartbeat', { event: 'heartbeat', data: { test: true } });
+    window.s = io(WEBSOCKET_HOST, {});
+
+    s.emit('heartbeat', { event: 'heartbeat', data: {} });
     s.on('heartbeat', (heartbeat) => {
       console.log(heartbeat);
     });

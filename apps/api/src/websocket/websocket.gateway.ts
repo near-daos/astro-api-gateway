@@ -9,7 +9,7 @@ import { RedisPropagatorInterceptor } from './redis-propagator/redis-propagator.
 @WebSocketGateway()
 export class WebsocketGateway {
   @SubscribeMessage('heartbeat')
-  public findAll(): Observable<any> {
+  public heartbeat(): Observable<any> {
     return from(['Websocket connected!']).pipe(
       map((item) => {
         return { event: 'heartbeat', data: item };
