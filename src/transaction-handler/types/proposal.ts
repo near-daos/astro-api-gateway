@@ -14,25 +14,26 @@ export function castCreateProposal({
   dao,
   timestamp = getBlockTimestamp(),
 }): ProposalDto {
-  const proposalDto = {
+  const kind = castProposalKind(proposal.kind);
+  return {
     ...camelcaseKeys(proposal),
     id: buildProposalId(dao.id, dao.lastProposalId),
     proposalId: dao.lastProposalId,
     daoId: dao.id,
     dao: { id: dao.id },
     proposer: signerId,
-    kind: castProposalKind(proposal.kind),
+    kind,
+    type: kind.kind.type,
     status: ProposalStatus.InProgress,
     voteCounts: {},
     votes: {},
+    votePeriodEnd: calcProposalVotePeriodEnd(
+      { submissionTime: timestamp },
+      dao,
+    ),
     submissionTime: timestamp,
     transactionHash: transactionHash,
     createTimestamp: timestamp,
-  };
-
-  return {
-    ...proposalDto,
-    votePeriodEnd: calcProposalVotePeriodEnd(proposalDto, dao),
   };
 }
 

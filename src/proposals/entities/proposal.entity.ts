@@ -6,6 +6,7 @@ import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
 import { ProposalKindDto } from '../dto/proposal-kind-swagger.dto';
 import { ProposalKind } from '../dto/proposal-kind.dto';
 import { ProposalStatus } from '../types/proposal-status';
+import { ProposalType } from '../types/proposal-type';
 import { ProposalVoteStatus } from '../types/proposal-vote-status';
 
 @Entity()
@@ -61,6 +62,12 @@ export class Proposal extends TransactionEntity {
   })
   @Column({ type: 'simple-json' })
   kind: ProposalKind;
+
+  @Column({
+    type: 'enum',
+    enum: ProposalType,
+  })
+  type: ProposalType;
 
   @ApiProperty()
   @Column({ type: 'bigint' })
