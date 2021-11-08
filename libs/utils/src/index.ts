@@ -74,7 +74,7 @@ export const btoaJSON = (b: string) => {
 };
 
 export const calcProposalVotePeriodEnd = (
-  proposal: Proposal | ProposalDto,
+  proposal: Proposal | ProposalDto | { submissionTime: number },
   dao: Dao | DaoDto,
 ): number => {
   try {

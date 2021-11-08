@@ -280,13 +280,15 @@ export class SputnikDaoService {
     contractId: string,
     proposal: any,
   ): ProposalDto {
+    const kind = castProposalKind(proposal.kind);
     return {
       ...camelcaseKeys(proposal),
       id: buildProposalId(contractId, proposal.id),
       proposalId: proposal.id,
       daoId: contractId,
       dao: { id: contractId },
-      kind: castProposalKind(proposal.kind),
+      kind,
+      type: kind.kind.type,
     };
   }
 }

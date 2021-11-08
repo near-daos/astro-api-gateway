@@ -44,8 +44,4 @@ export class Receipt {
   })
   @JoinColumn({ name: 'receipt_id' })
   receiptActions: ReceiptAction[];
-
-  // temp backward compatibility
-  @ApiProperty()
-  receiptAction: ReceiptAction;
 }

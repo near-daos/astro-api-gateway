@@ -261,7 +261,7 @@ export class NearIndexerService {
   }
 
   async receiptsByAccount(accountId: string): Promise<Receipt[]> {
-    const receipts = await this.receiptRepository
+    return this.receiptRepository
       .createQueryBuilder('receipt')
       .leftJoinAndSelect('receipt.receiptActions', 'action_receipt_actions')
       .where(
@@ -272,14 +272,6 @@ export class NearIndexerService {
       )
       .orderBy('included_in_block_timestamp', 'ASC')
       .getMany();
-
-    return receipts.map((receipt) => ({
-      ...receipt,
-      receiptAction:
-        receipt.receiptActions?.find(
-          (action) => action.actionKind === ActionKind.Transfer,
-        ) || receipt.receiptActions?.[0],
-    }));
   }
 
   private buildAggregationTransactionQuery(
