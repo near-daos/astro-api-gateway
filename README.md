@@ -127,6 +127,7 @@ yarn start-dev
 ```
 
 Or run specific service you need:
+
 - Aggregator: `yarn start-aggregator-dev`
 - Aggregator DAO: `yarn start-aggregator-dao-dev`
 - API: `yarn start-api-dev`
