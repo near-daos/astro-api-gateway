@@ -3,11 +3,13 @@
 Astro API Gateway contains list of services used by DAO applications based on [Sputnik DAO Contracts](https://github.com/near-daos/sputnik-dao-contract) version 2 on [NEAR Protocol](https://near.org/).
 
 Main features:
+
 - Sync DAO Contracts data with the Database.
 - Provide API endpoints to interact with DAOs.
 - Produce DAO updates notifications.
 
 ## Tech Stack
+
 - Blockchain: **[NEAR](https://near.org/)**
 - Smart Contracts: **[Sputnik DAO Factory V2](https://github.com/near-daos/sputnik-dao-contract/tree/main/sputnikdao-factory2), [Sputnik DAO V2](https://github.com/near-daos/sputnik-dao-contract/tree/main/sputnikdao2)**
 - Server Environment:  **[NodeJS](https://nodejs.org/)**
@@ -24,6 +26,7 @@ Main features:
 - Build: **[Docker](https://www.docker.com/))**
 
 ## Services
+
 - [Aggregator](./apps/aggregator) - sync blockchain with the Database.
 - [Aggregator DAO](./apps/aggregator-dao) - temporary solution to cover implicit DAO updates that are not covered with Aggregator (is going to be removed in next iterations).
 - [API](./apps/api) - provides a set of API endpoints to view, filter, search, sync etc.
