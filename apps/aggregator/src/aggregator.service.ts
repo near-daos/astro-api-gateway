@@ -404,7 +404,7 @@ export class AggregatorService {
     );
     this.logger.log('Finished Transactions aggregation.');
 
-    await this.purgeRemovedProposals(filteredProposals);
+    await this.purgeRemovedProposals(filteredProposals, enrichedDaos);
 
     this.aggregationState.status = AggregationStatus.Success;
   }
@@ -707,31 +707,28 @@ export class AggregatorService {
     });
   }
 
-  private async purgeRemovedProposals(proposals: ProposalDto[]): Promise<void> {
+  private async purgeRemovedProposals(
+    proposals: ProposalDto[],
+    enrichedDaos: SputnikDaoDto[],
+  ): Promise<void> {
     try {
-      const proposalsByDao = proposals.reduce(
-        (acc, cur) => ({
+      const proposalIdsByDao = proposals.reduce((acc, cur) => {
+        return {
           ...acc,
-          [cur.daoId]: [...(acc[cur.daoId] || []), cur],
-        }),
-        {},
-      );
+          [cur.daoId]: [...(acc[cur.daoId] || []), cur.proposalId],
+        };
+      }, {});
       const removedProposals = [];
 
-      Object.keys(proposalsByDao).map((daoId) => {
-        const daoProposals = proposalsByDao[daoId];
+      Object.keys(proposalIdsByDao).map((daoId) => {
+        const daoProposalIds = proposalIdsByDao[daoId];
+        const dao = enrichedDaos.find(({ id }) => daoId === id);
 
-        let lastProposalId = 0;
-        daoProposals.map(({ daoId, proposalId }) => {
-          if (proposalId > lastProposalId) {
-            removedProposals.push(
-              ...[...Array(proposalId - lastProposalId).keys()].map((key) =>
-                buildProposalId(daoId, lastProposalId + key),
-              ),
-            );
+        for (let i = 0; i < dao.lastProposalId; i++) {
+          if (!daoProposalIds.includes(i)) {
+            removedProposals.push(buildProposalId(daoId, i));
           }
-          lastProposalId = proposalId + 1;
-        });
+        }
       });
 
       if (!removedProposals.length) {
