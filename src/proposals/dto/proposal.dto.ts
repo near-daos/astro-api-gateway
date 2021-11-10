@@ -19,6 +19,7 @@ import {
   ProposalKindUpgradeRemote,
   ProposalKindUpgradeSelf,
 } from './proposal-kind.dto';
+import { ProposalActionDto } from './proposal-action.dto';
 
 export class ProposalDto extends TransactionInfo {
   id: string;
@@ -33,6 +34,7 @@ export class ProposalDto extends TransactionInfo {
   votes: {
     [key: string]: Vote;
   };
+  actions: ProposalActionDto[];
   votePeriodEnd: number;
 }
 

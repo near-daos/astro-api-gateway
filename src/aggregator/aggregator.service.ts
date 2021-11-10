@@ -34,6 +34,9 @@ import { NFTTokenDto } from 'src/tokens/dto/nft-token.dto';
 import { AggregationState, AggregationStatus } from './types/aggregation-state';
 import { RoleKindType } from '../sputnikdao/types/role';
 import { DaoDto } from 'src/daos/dto/dao.dto';
+import { Action } from 'src/proposals/types/action';
+import { ProposalAction } from 'src/proposals/entities/proposal-action.entity';
+import { buildProposalAction, ProposalActionDto } from 'src/proposals/dto/proposal-action.dto';
 
 @Injectable()
 export class AggregatorService {
@@ -464,7 +467,7 @@ export class AggregatorService {
       this.reduceTransactionsByAccountId(transactions);
 
     return proposals.map((proposal) => {
-      const { id, daoId, description, kind, proposer } = proposal;
+      const { id, daoId, description, kind, proposer, proposalId } = proposal;
       if (!transactionsByAccountId[daoId]) {
         return proposal;
       }
@@ -527,6 +530,35 @@ export class AggregatorService {
         )
         .pop();
 
+      const voteActions = preFilteredTransactions
+        .filter(
+          ({ transactionAction }) =>
+            (transactionAction.args as any).method_name == 'act_proposal',
+        )
+        .filter((tx) => {
+          const { id } =
+            btoaJSON(tx.transactionAction.args.args_base64 as string) || {};
+          return id === proposalId;
+        })
+        .map(
+          ({
+            transactionAction,
+            signerAccountId: accountId,
+            transactionHash,
+            blockTimestamp,
+          }) => {
+            const action = btoaJSON(
+              transactionAction.args.args_base64 as string,
+            )?.action;
+
+            return buildProposalAction(
+              proposal,
+              { accountId, transactionHash, blockTimestamp },
+              action,
+            );
+          },
+        );
+
       const prop = {
         ...proposal,
         transactionHash: txData?.transactionHash,
@@ -534,6 +566,17 @@ export class AggregatorService {
         updateTransactionHash: (txUpdateData || txData)?.transactionHash,
         updateTimestamp: (txUpdateData || txData)?.blockTimestamp,
         votePeriodEnd: calcProposalVotePeriodEnd(proposal, dao),
+        actions: [
+          buildProposalAction(
+            proposal,
+            {
+              ...txData,
+              accountId: proposal.proposer,
+            },
+            Action.AddProposal,
+          ),
+          ...voteActions,
+        ],
       };
 
       return prop;

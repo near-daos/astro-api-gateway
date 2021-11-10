@@ -2,12 +2,20 @@ import { ApiProperty } from '@nestjs/swagger';
 import { TransactionEntity } from 'src/common/transaction.entity';
 import { Dao } from 'src/daos/entities/dao.entity';
 import { Vote } from 'src/sputnikdao/types/vote';
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryColumn,
+} from 'typeorm';
 import { ProposalKindDto } from '../dto/proposal-kind-swagger.dto';
 import { ProposalKind } from '../dto/proposal-kind.dto';
 import { ProposalStatus } from '../types/proposal-status';
 import { ProposalType } from '../types/proposal-type';
 import { ProposalVoteStatus } from '../types/proposal-vote-status';
+import { ProposalAction } from './proposal-action.entity';
 
 @Entity()
 export class Proposal extends TransactionEntity {
@@ -79,6 +87,14 @@ export class Proposal extends TransactionEntity {
   @ApiProperty({ type: 'object' })
   @Column({ type: 'simple-json' })
   votes: Record<string, Vote>;
+
+  @ApiProperty({ type: [ProposalAction] })
+  @OneToMany(() => ProposalAction, (action) => action.proposal, {
+    cascade: true,
+    persistence: false,
+    eager: true,
+  })
+  actions: ProposalAction[];
 
   @ApiProperty()
   @Column({ type: 'bigint', nullable: true })
