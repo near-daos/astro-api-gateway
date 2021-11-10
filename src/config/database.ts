@@ -14,6 +14,7 @@ import { NFTToken } from 'src/tokens/entities/nft-token.entity';
 import { NFTTokenMetadata } from 'src/tokens/entities/nft-token-metadata.entity';
 import { ReceiptAction } from 'src/near-indexer/entities/receipt-action.entity';
 import { AccountChange } from 'src/near-indexer/entities/account-change.entity';
+import { ProposalAction } from 'src/proposals/entities/proposal-action.entity';
 
 export default registerAs('db_default', () => ({
   type: 'postgres',
@@ -30,6 +31,7 @@ export default registerAs('db_default', () => ({
     Bounty,
     BountyClaim,
     Proposal,
+    ProposalAction,
     Transaction,
     TransactionAction,
     Account,
