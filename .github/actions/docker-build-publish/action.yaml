@@ -1,12 +1,29 @@
 name: 'Docker Build Publish'
 runs:
+  using: 'composite'
   steps:
+  - name: Docker Cache
+    uses: actions/cache@v2
+    with:
+      path: |
+        docker-cache/**
+      key: docker
+
+  - name: Load Cache
+    shell: bash
+    run: |
+      if [[ -f "docker-cache/cache.tar" ]]; then
+        docker load < docker-cache/cache.tar;
+      else
+        mkdir docker-cache
+      fi
+
   - name: Docker meta
     id: meta
     uses: docker/metadata-action@v3
     with:
       images: |
-        ${secrets.AWS_ECR_URL}-${SUBAPP_NAME}
+        ${{ env.AWS_ECR_URL }}
       tags: |
         type=raw,value=latest
         type=ref,event=branch,suffix=-latest
@@ -18,9 +35,9 @@ runs:
   - name: Configure AWS credentials
     uses: aws-actions/configure-aws-credentials@v1
     with:
-      aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+      aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+      aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+      aws-region: ${{ env.AWS_DEFAULT_REGION }}
 
   - name: Login to ECR
     uses: aws-actions/amazon-ecr-login@v1
@@ -35,3 +52,11 @@ runs:
       platforms: linux/amd64
       tags: ${{ steps.meta.outputs.tags }}
       push: true
+
+  - name: Save Cache
+    shell: bash
+    run: |
+      if [[ -f "docker-cache/cache.tar" ]]; then
+        docker save $(docker images -qa) > docker-cache/cache.tar;
+      fi
+

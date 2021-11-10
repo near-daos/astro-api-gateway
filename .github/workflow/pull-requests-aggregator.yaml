@@ -1,6 +1,6 @@
 name: Test Aggregator
 on:
-  pull-request:
+  pull_request:
     branches:
     - '**'
     paths:
