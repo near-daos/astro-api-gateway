@@ -57,11 +57,11 @@ definitions:
             - yarn build api
 
       - step:
-        conditions: &notifier-condition
-          changesets:
-            includePaths:
-            - "apps/notifier/**"
-            - "libs/**"
+          conditions: &notifier-condition
+            changesets:
+              includePaths:
+              - "apps/notifier/**"
+              - "libs/**"
           name: Build and test notifier
           caches:
             - node
