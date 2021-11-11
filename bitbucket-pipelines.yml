@@ -83,30 +83,30 @@ definitions:
           script:
             - source environment.sh
             - export SUBAPP_NAME=aggregator
-            - <<: &docker-load-cache >-
-                if [[ -f "docker-cache/cache.tar" ]]; then
-                  docker load < docker-cache/cache.tar;
-                fi
-            - <<: &docker-build >-
-                docker build
-                --build-arg SUBAPP_NAME=$SUBAPP_NAME
-                -t ${APP_NAME}-${SUBAPP_NAME}:latest
-                -t ${APP_NAME}-${SUBAPP_NAME}:develop-latest
-                -t ${APP_NAME}-${SUBAPP_NAME}:$DOCKER_ENV_TAG
-                .
+            - &docker-load-cache >-
+              if [[ -f "docker-cache/cache.tar" ]]; then
+                docker load < docker-cache/cache.tar;
+              fi
+            - &docker-build >-
+              docker build
+              --build-arg SUBAPP_NAME=$SUBAPP_NAME
+              -t ${APP_NAME}-${SUBAPP_NAME}:latest
+              -t ${APP_NAME}-${SUBAPP_NAME}:develop-latest
+              -t ${APP_NAME}-${SUBAPP_NAME}:$DOCKER_ENV_TAG
+              .
             - >-
               docker save $(docker images -qa) > docker-cache/cache.tar;
-            - <<: &docker-push
-                pipe: atlassian/aws-ecr-push-image:1.4.2
-                variables:
-                  AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
-                  AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
-                  AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
-                  IMAGE_NAME: ${APP_NAME}-${SUBAPP_NAME}
-                  TAGS: >-
-                    latest
-                    develop-latest
-                    $DOCKER_ENV_TAG
+            - &docker-push
+              pipe: atlassian/aws-ecr-push-image:1.4.2
+              variables:
+                AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+                AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+                AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
+                IMAGE_NAME: ${APP_NAME}-${SUBAPP_NAME}
+                TAGS: >-
+                  latest
+                  develop-latest
+                  $DOCKER_ENV_TAG
 
       - step:
           conditions: *aggregator-dao-condition
@@ -151,27 +151,27 @@ definitions:
             - export SUBAPP_NAME=aggregator
             - export CHART_FOLDER=apps/${SUBAPP_NAME}/deployment/app-chart
             - helm lint $CHART_FOLDER
-            - <<: &helm-template >-
-                helm template $APP_NAME-$SUBAPP_NAME $CHART_FOLDER
-                --set image.tag=$DOCKER_ENV_TAG
-                --set environment.near_env=$NEAR_ENV
-                --set environment.near_contract_name=$NEAR_CONTRACT_NAME
-                --set environment.near_token_factory_contract_name=$NEAR_TOKEN_FACTORY_CONTRACT_NAME
-                --set environment.near_bridge_token_factory_contract_name=$NEAR_BRIDGE_TOKEN_FACTORY_CONTRACT_NAME
-                --set environment.wallet_callback_url=$WALLET_CALLBACK_URL
-                --set ingress.host=$K8S_INGRESS_HOST
-                > $APP_NAME-$SUBAPP_NAME-manifest.yml
-            - <<: &k8s-apply
-                pipe: atlassian/aws-eks-kubectl-run:1.4.2
-                variables:
-                  AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
-                  AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
-                  AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
-                  CLUSTER_NAME: $EKS_CLUSTER_NAME
-                  KUBECTL_COMMAND: 'apply'
-                  RESOURCE_PATH: '$APP_NAME-$SUBAPP_NAME-manifest.yml'
-                  KUBECTL_ARGS:
-                    - "--namespace=$DEPLOYMENT_NAMESPACE"
+            - &helm-template >-
+              helm template $APP_NAME-$SUBAPP_NAME $CHART_FOLDER
+              --set image.tag=$DOCKER_ENV_TAG
+              --set environment.near_env=$NEAR_ENV
+              --set environment.near_contract_name=$NEAR_CONTRACT_NAME
+              --set environment.near_token_factory_contract_name=$NEAR_TOKEN_FACTORY_CONTRACT_NAME
+              --set environment.near_bridge_token_factory_contract_name=$NEAR_BRIDGE_TOKEN_FACTORY_CONTRACT_NAME
+              --set environment.wallet_callback_url=$WALLET_CALLBACK_URL
+              --set ingress.host=$K8S_INGRESS_HOST
+              > $APP_NAME-$SUBAPP_NAME-manifest.yml
+            - &k8s-apply
+              pipe: atlassian/aws-eks-kubectl-run:1.4.2
+              variables:
+                AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+                AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+                AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
+                CLUSTER_NAME: $EKS_CLUSTER_NAME
+                KUBECTL_COMMAND: 'apply'
+                RESOURCE_PATH: '$APP_NAME-$SUBAPP_NAME-manifest.yml'
+                KUBECTL_ARGS:
+                  - "--namespace=$DEPLOYMENT_NAMESPACE"
 
       - step:
           name: Helm - Build and Deploy aggregator-dao
