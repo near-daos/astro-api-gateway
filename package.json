@@ -24,7 +24,10 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./apps/sputnik-v2-api/test/jest-e2e.json"
+    "test-api:e2e": "jest --config ./apps/api/test/jest-e2e.json",
+    "test-aggregator:e2e": "jest --config ./apps/aggregator/test/jest-e2e.json",
+    "test-aggregator-dao:e2e": "jest --config ./apps/aggregator-dao/test/jest-e2e.json",
+    "test-notifier:e2e": "jest --config ./apps/notifier/test/jest-e2e.json"
   },
   "dependencies": {
     "@hapi/joi": "^17.1.1",

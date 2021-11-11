@@ -1,12 +1,9 @@
 {
   "collection": "@nestjs/schematics",
-  "sourceRoot": "apps/sputnik-v2-api/src",
-  "entryFile": "api",
   "monorepo": true,
-  "root": "apps/sputnik-v2-api",
   "compilerOptions": {
     "webpack": true,
-    "tsConfigPath": "apps/sputnik-v2-api/tsconfig.app.json"
+    "tsConfigPath": "tsconfig.build.json"
   },
   "projects": {
     "api": {
