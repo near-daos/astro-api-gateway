@@ -83,13 +83,11 @@ definitions:
           script:
             - source environment.sh
             - export SUBAPP_NAME=aggregator
-            - &docker-load-cache
-              >-
+            - &docker-load-cache >-
               if [[ -f "docker-cache/cache.tar" ]]; then
                 docker load < docker-cache/cache.tar;
               fi
-            - &docker-build
-              >-
+            - &docker-build >-
               docker build
               --build-arg SUBAPP_NAME=$SUBAPP_NAME
               -t ${APP_NAME}-${SUBAPP_NAME}:latest
@@ -117,9 +115,9 @@ definitions:
           script:
             - source environment.sh
             - export SUBAPP_NAME=aggregator-dao
-            - <<: *docker-load-cache
-            - <<: *docker-build
-            - <<: *docker-push
+            - *docker-load-cache
+            - *docker-build
+            - *docker-push
 
       - step:
           conditions: *api-condition
@@ -128,9 +126,9 @@ definitions:
           script:
             - source environment.sh
             - export SUBAPP_NAME=api
-            - <<: *docker-load-cache
-            - <<: *docker-build
-            - <<: *docker-push
+            - *docker-load-cache
+            - *docker-build
+            - *docker-push
 
       - step:
           conditions: *notifier-condition
@@ -139,9 +137,9 @@ definitions:
           script:
             - source environment.sh
             - export SUBAPP_NAME=notifier
-            - <<: *docker-load-cache
-            - <<: *docker-build
-            - <<: *docker-push
+            - *docker-load-cache
+            - *docker-build
+            - *docker-push
 
     - parallel: &helm-build-deploy
       - step:
@@ -153,8 +151,7 @@ definitions:
             - export SUBAPP_NAME=aggregator
             - export CHART_FOLDER=apps/${SUBAPP_NAME}/deployment/app-chart
             - helm lint $CHART_FOLDER
-            - &helm-template
-              >-
+            - &helm-template >-
               helm template $APP_NAME-$SUBAPP_NAME $CHART_FOLDER
               --set image.tag=$DOCKER_ENV_TAG
               --set environment.near_env=$NEAR_ENV
@@ -185,8 +182,8 @@ definitions:
             - export SUBAPP_NAME=aggregator-dao
             - export CHART_FOLDER=apps/${SUBAPP_NAME}/deployment/app-chart
             - helm lint $CHART_FOLDER
-            - <<: *helm-template
-            - <<: *k8s-apply
+            - *helm-template
+            - *k8s-apply
 
       - step:
           name: Helm - Build and Deploy api
@@ -197,8 +194,8 @@ definitions:
             - export SUBAPP_NAME=api
             - export CHART_FOLDER=apps/${SUBAPP_NAME}/deployment/app-chart
             - helm lint $CHART_FOLDER
-            - <<: *helm-template
-            - <<: *k8s-apply
+            - *helm-template
+            - *k8s-apply
 
       - step:
           name: Helm - Build and Deploy notifier
@@ -209,8 +206,8 @@ definitions:
             - export SUBAPP_NAME=notifier
             - export CHART_FOLDER=apps/${SUBAPP_NAME}/deployment/app-chart
             - helm lint $CHART_FOLDER
-            - <<: *helm-template
-            - <<: *k8s-apply
+            - *helm-template
+            - *k8s-apply
 
 
 pipelines:
