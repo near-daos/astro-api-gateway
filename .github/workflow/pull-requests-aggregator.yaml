@@ -1,5 +1,6 @@
 name: Test Aggregator
 on:
+  workflow_dispatch:
   pull_request:
     branches:
     - '**'
@@ -8,19 +9,15 @@ on:
     - 'libs/**'
 
 jobs:
-  build-deploy:
-    name: Build Deploy
+  build:
+    runs-on: ubuntu-latest
+    name: Build
     steps:
+    - uses: actions/checkout@v2
     - name: Set Environment
       run: |
-         echo DOCKER_ENV_TAG=${GITHUB_REF##*/}-$GITHUB_SHA >> $GITHUB_ENV
          echo SUBAPP_NAME=aggregator >> $GITHUB_ENV
+         cat ".github/env.common" >>$GITHUB_ENV
 
     - name: Build Test
       uses: ./.github/actions/build-test
-
-    - name: Docker Build Publish
-      uses: ./.github/actions/docker-build-publish
-
-    - name: Helm Deploy
-      uses: ./.github/actions/helm-build-deploy
