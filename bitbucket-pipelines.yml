@@ -19,10 +19,12 @@ definitions:
             includePaths:
             - "apps/aggregator/**"
             - "libs/**"
-        name: 
+        name: Check Aggregator Changed
         script:
         - source environment.sh
         - echo "export UPDATED_APPS='$UPDATED_APPS aggregator'" >> environment.sh
+        artifacts:
+          - environment.sh
 
     - step: &set-aggregator-dao
         conditions: &aggregator-dao-condition
@@ -30,10 +32,12 @@ definitions:
             includePaths:
             - "apps/aggregator-dao/**"
             - "libs/**"
-        name: 
+        name: Check Aggregator DAO Changed
         script:
         - source environment.sh
         - echo "export UPDATED_APPS='$UPDATED_APPS aggregator-dao'" >> environment.sh
+        artifacts:
+          - environment.sh
 
     - step: &set-api
         conditions: &api-condition
@@ -41,10 +45,12 @@ definitions:
             includePaths:
             - "apps/api/**"
             - "libs/**"
-        name: 
+        name: Check API Changed
         script:
         - source environment.sh
         - echo "export UPDATED_APPS='$UPDATED_APPS api'" >> environment.sh
+        artifacts:
+          - environment.sh
 
     - step: &set-notifier
         conditions: &notifier-condition
@@ -52,10 +58,12 @@ definitions:
             includePaths:
             - "apps/notifier/**"
             - "libs/**"
-        name: 
+        name: Check Notifier Changed
         script:
         - source environment.sh
         - echo "export UPDATED_APPS='$UPDATED_APPS notifier'" >> environment.sh
+        artifacts:
+          - environment.sh
 
     - parallel: &build-test
       - step:
@@ -205,6 +213,7 @@ definitions:
                 - "--namespace=$DEPLOYMENT_NAMESPACE"
         artifacts:
           - manifests/**
+          - environment.sh
 
 
 pipelines:
