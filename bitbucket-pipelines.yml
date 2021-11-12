@@ -193,7 +193,11 @@ definitions:
                   --set ingress.host=$K8S_INGRESS_HOST \
                   > manifests/$APP_NAME.yml
               done
-          - cat manifests/*
+          - |
+              for m in $(ls -1  manifests)
+              do
+                cat manifests/$m
+              done
           #- pipe: atlassian/aws-eks-kubectl-run:1.4.2
           #  variables:
           #    AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
