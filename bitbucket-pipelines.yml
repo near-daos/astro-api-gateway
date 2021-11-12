@@ -1,6 +1,9 @@
 image: node:14.16.0
 
 definitions:
+  services:
+    docker:
+      memory: 2048
   caches:
     docker-cache: docker-cache
 
