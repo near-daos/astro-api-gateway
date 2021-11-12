@@ -10,13 +10,53 @@ definitions:
         artifacts:
           - environment.sh
 
+    - step: &set-aggregator
+        conditions: &aggregator-condition
+          changesets:
+            includePaths:
+            - "apps/aggregator/**"
+            - "libs/**"
+        name: 
+        script:
+        - source environment.sh
+        - echo "export UPDATED_APPS='$UPDATED_APPS aggregator'" >> environment.sh
+
+    - step: &set-aggregator-dao
+        conditions: &aggregator-dao-condition
+          changesets:
+            includePaths:
+            - "apps/aggregator-dao/**"
+            - "libs/**"
+        name: 
+        script:
+        - source environment.sh
+        - echo "export UPDATED_APPS='$UPDATED_APPS aggregator-dao'" >> environment.sh
+
+    - step: &set-api
+        conditions: &api-condition
+          changesets:
+            includePaths:
+            - "apps/api/**"
+            - "libs/**"
+        name: 
+        script:
+        - source environment.sh
+        - echo "export UPDATED_APPS='$UPDATED_APPS api'" >> environment.sh
+
+    - step: &set-notifier
+        conditions: &notifier-condition
+          changesets:
+            includePaths:
+            - "apps/notifier/**"
+            - "libs/**"
+        name: 
+        script:
+        - source environment.sh
+        - echo "export UPDATED_APPS='$UPDATED_APPS notifier'" >> environment.sh
+
     - parallel: &build-test
       - step:
-          conditions: &aggregator-condition
-            changesets:
-              includePaths:
-              - "apps/aggregator/**"
-              - "libs/**"
+          conditions: *aggregator-condition
           name: Build and test aggregator
           caches:
             - node
@@ -27,11 +67,7 @@ definitions:
             - yarn build aggregator
 
       - step:
-          conditions: &aggregator-dao-condition
-            changesets:
-              includePaths:
-              - "apps/aggregator-dao/**"
-              - "libs/**"
+          conditions: *aggregator-dao-condition
           name: Build and test aggregator-dao
           caches:
             - node
@@ -42,11 +78,7 @@ definitions:
             - yarn build aggregator-dao
 
       - step:
-          conditions: &api-condition
-            changesets:
-              includePaths:
-              - "apps/api/**"
-              - "libs/**"
+          conditions: *api-condition
           name: Build and test api
           caches:
             - node
@@ -57,11 +89,7 @@ definitions:
             - yarn build api
 
       - step:
-          conditions: &notifier-condition
-            changesets:
-              includePaths:
-              - "apps/notifier/**"
-              - "libs/**"
+          conditions: *notifier-condition
           name: Build and test notifier
           caches:
             - node
@@ -82,17 +110,17 @@ definitions:
             - docker-cache
           script:
             - source environment.sh
-            - export SUBAPP_NAME=aggregator
+            - export APP_NAME=aggregator
             - &docker-load-cache >-
               if [[ -f "docker-cache/cache.tar" ]]; then
                 docker load < docker-cache/cache.tar;
               fi
             - &docker-build >-
               docker build
-              --build-arg SUBAPP_NAME=$SUBAPP_NAME
-              -t ${APP_NAME}-${SUBAPP_NAME}:latest
-              -t ${APP_NAME}-${SUBAPP_NAME}:develop-latest
-              -t ${APP_NAME}-${SUBAPP_NAME}:$DOCKER_ENV_TAG
+              --build-arg APP_NAME=$APP_NAME
+              -t sputnik-v2-${APP_NAME}:latest
+              -t sputnik-v2-${APP_NAME}:develop-latest
+              -t sputnik-v2-${APP_NAME}:$DOCKER_ENV_TAG
               .
             - >-
               docker save $(docker images -qa) > docker-cache/cache.tar;
@@ -102,7 +130,7 @@ definitions:
                 AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
                 AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
                 AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
-                IMAGE_NAME: ${APP_NAME}-${SUBAPP_NAME}
+                IMAGE_NAME: sputnik-v2-${APP_NAME}
                 TAGS: >-
                   latest
                   develop-latest
@@ -114,7 +142,7 @@ definitions:
           <<: *docker-service
           script:
             - source environment.sh
-            - export SUBAPP_NAME=aggregator-dao
+            - export APP_NAME=aggregator-dao
             - *docker-load-cache
             - *docker-build
             - *docker-push
@@ -125,7 +153,7 @@ definitions:
           <<: *docker-service
           script:
             - source environment.sh
-            - export SUBAPP_NAME=api
+            - export APP_NAME=api
             - *docker-load-cache
             - *docker-build
             - *docker-push
@@ -136,78 +164,43 @@ definitions:
           <<: *docker-service
           script:
             - source environment.sh
-            - export SUBAPP_NAME=notifier
+            - export APP_NAME=notifier
             - *docker-load-cache
             - *docker-build
             - *docker-push
 
-    - parallel: &helm-build-deploy
-      - step:
-          name: Helm - Build and Deploy aggregator
-          conditions: *aggregator-condition
-          image: alpine/helm:3.6.3
-          script:
-            - source environment.sh
-            - export SUBAPP_NAME=aggregator
-            - export CHART_FOLDER=apps/${SUBAPP_NAME}/deployment/app-chart
-            - helm lint $CHART_FOLDER
-            - &helm-template >-
-              helm template $APP_NAME-$SUBAPP_NAME $CHART_FOLDER
-              --set image.tag=$DOCKER_ENV_TAG
-              --set environment.near_env=$NEAR_ENV
-              --set environment.near_contract_name=$NEAR_CONTRACT_NAME
-              --set environment.near_token_factory_contract_name=$NEAR_TOKEN_FACTORY_CONTRACT_NAME
-              --set environment.near_bridge_token_factory_contract_name=$NEAR_BRIDGE_TOKEN_FACTORY_CONTRACT_NAME
-              --set environment.wallet_callback_url=$WALLET_CALLBACK_URL
-              --set ingress.host=$K8S_INGRESS_HOST
-              > $APP_NAME-$SUBAPP_NAME-manifest.yml
-            - &k8s-apply
-              pipe: atlassian/aws-eks-kubectl-run:1.4.2
-              variables:
-                AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
-                AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
-                AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
-                CLUSTER_NAME: $EKS_CLUSTER_NAME
-                KUBECTL_COMMAND: 'apply'
-                RESOURCE_PATH: '$APP_NAME-$SUBAPP_NAME-manifest.yml'
-                KUBECTL_ARGS:
-                  - "--namespace=$DEPLOYMENT_NAMESPACE"
-
-      - step:
-          name: Helm - Build and Deploy aggregator-dao
-          conditions: *aggregator-dao-condition
-          image: alpine/helm:3.6.3
-          script:
-            - source environment.sh
-            - export SUBAPP_NAME=aggregator-dao
-            - export CHART_FOLDER=apps/${SUBAPP_NAME}/deployment/app-chart
-            - helm lint $CHART_FOLDER
-            - *helm-template
-            - *k8s-apply
-
-      - step:
-          name: Helm - Build and Deploy api
-          conditions: *api-condition
-          image: alpine/helm:3.6.3
-          script:
-            - source environment.sh
-            - export SUBAPP_NAME=api
-            - export CHART_FOLDER=apps/${SUBAPP_NAME}/deployment/app-chart
-            - helm lint $CHART_FOLDER
-            - *helm-template
-            - *k8s-apply
-
-      - step:
-          name: Helm - Build and Deploy notifier
-          conditions: *notifier-condition
-          image: alpine/helm:3.6.3
-          script:
-            - source environment.sh
-            - export SUBAPP_NAME=notifier
-            - export CHART_FOLDER=apps/${SUBAPP_NAME}/deployment/app-chart
-            - helm lint $CHART_FOLDER
-            - *helm-template
-            - *k8s-apply
+    - step: &helm-build-deploy
+        name: Helm - Build and Deploy
+        image: alpine/helm:3.6.3
+        script:
+          - source environment.sh
+          - mkdir manifests
+          - |
+              for APP_NAME in $UPDATED_APPS
+              do
+                export CHART_FOLDER=apps/${APP_NAME}/deployment/app-chart
+                helm lint $CHART_FOLDER
+                helm template $APP_NAME $CHART_FOLDER \
+                  --set image.tag=$DOCKER_ENV_TAG \
+                  --set environment.near_env=$NEAR_ENV \
+                  --set environment.near_contract_name=$NEAR_CONTRACT_NAME \
+                  --set environment.near_token_factory_contract_name=$NEAR_TOKEN_FACTORY_CONTRACT_NAME \
+                  --set environment.near_bridge_token_factory_contract_name=$NEAR_BRIDGE_TOKEN_FACTORY_CONTRACT_NAME \
+                  --set environment.wallet_callback_url=$WALLET_CALLBACK_URL \
+                  --set ingress.host=$K8S_INGRESS_HOST \
+                  > manifests/$APP_NAME.yml
+              done
+          - cat manifests/*
+          #- pipe: atlassian/aws-eks-kubectl-run:1.4.2
+          #  variables:
+          #    AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+          #    AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+          #    AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
+          #    CLUSTER_NAME: $EKS_CLUSTER_NAME
+          #    KUBECTL_COMMAND: 'apply'
+          #    RESOURCE_PATH: 'manifests'
+          #    KUBECTL_ARGS:
+          #      - "--namespace=$DEPLOYMENT_NAMESPACE"
 
 
 pipelines:
@@ -224,11 +217,16 @@ pipelines:
             - >-
               echo export DOCKER_ENV_TAG=develop-$BITBUCKET_COMMIT >> environment.sh
 
+      - step: *set-aggregator
+      - step: *set-aggregator-dao
+      - step: *set-api
+      - step: *set-notifier
+
       - parallel: *build-test
 
       - parallel: *docker-build-publish
 
-      - parallel:
+      - step:
           <<: *helm-build-deploy
           deployment: Development
 
@@ -240,11 +238,16 @@ pipelines:
             - >-
               echo export DOCKER_ENV_TAG=staging-$BITBUCKET_COMMIT >> environment.sh
 
+      - step: *set-aggregator
+      - step: *set-aggregator-dao
+      - step: *set-api
+      - step: *set-notifier
+
       - parallel: *build-test
 
       - parallel: *docker-build-publish
           
-      - parallel:
+      - step:
           <<: *helm-build-deploy
           deployment: Staging
 
@@ -256,11 +259,16 @@ pipelines:
             - >-
               echo export DOCKER_ENV_TAG=test-$BITBUCKET_COMMIT >> environment.sh
 
+      - step: *set-aggregator
+      - step: *set-aggregator-dao
+      - step: *set-api
+      - step: *set-notifier
+
       - parallel: *build-test
 
       - parallel: *docker-build-publish
 
-      - parallel:
+      - step:
           <<: *helm-build-deploy
           deployment: Test
 
@@ -273,10 +281,15 @@ pipelines:
             - >-
               echo export DOCKER_ENV_TAG=$BITBUCKET_TAG >> environment.sh
 
+      - step: *set-aggregator
+      - step: *set-aggregator-dao
+      - step: *set-api
+      - step: *set-notifier
+
       - parallel: *build-test
 
       - parallel: *docker-build-publish
           
-      - parallel:
+      - step:
           <<: *helm-build-deploy
           deployment: Production

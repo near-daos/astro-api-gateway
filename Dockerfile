@@ -9,8 +9,8 @@ RUN npm install
 
 FROM node:14.16.0-alpine as development
 
-ARG SUBAPP_NAME
-ENV SUBAPP_NAME ${SUBAPP_NAME}
+ARG APP_NAME
+ENV APP_NAME ${APP_NAME}
 
 # requirements
 RUN apk update && apk add curl bash && rm -rf /var/cache/apk/*
@@ -26,7 +26,7 @@ COPY . .
 
 # build application
 RUN npm link webpack && \
-  npm run build $SUBAPP_NAME
+  npm run build $APP_NAME
 
 # remove development dependencies
 # RUN npm prune --production
