@@ -15,6 +15,7 @@ export class ProposalAction {
 
   @ManyToOne(() => Proposal, {
     nullable: true,
+    onDelete: 'CASCADE'
   })
   @JoinColumn({ name: 'proposal_id' })
   proposal: Proposal;
