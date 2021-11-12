@@ -136,6 +136,7 @@ export class TransactionActionHandlerService {
 
   async handleActProposal({
     receiverId,
+    signerId,
     transactionHash,
     args,
     timestamp,
@@ -153,8 +154,10 @@ export class TransactionActionHandlerService {
       castActProposal({
         transactionHash,
         contractId: receiverId,
+        signerId,
         proposal: proposalResponse,
         timestamp,
+        action: args.action
       });
 
     switch (args.action) {

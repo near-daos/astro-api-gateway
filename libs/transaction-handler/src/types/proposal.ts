@@ -1,6 +1,11 @@
 import camelcaseKeys from 'camelcase-keys';
-import { castProposalKind, ProposalDto } from '@sputnik-v2/proposal/dto';
-import { ProposalStatus } from '@sputnik-v2/proposal/types';
+import {
+  buildProposalAction,
+  castProposalKind,
+  ProposalDto,
+} from '@sputnik-v2/proposal/dto';
+import { Action, ProposalStatus } from '@sputnik-v2/proposal/types';
+
 import {
   buildProposalId,
   calcProposalVotePeriodEnd,
@@ -15,7 +20,7 @@ export function castCreateProposal({
   timestamp = getBlockTimestamp(),
 }): ProposalDto {
   const kind = castProposalKind(proposal.kind);
-  return {
+  const proposalDto = {
     ...camelcaseKeys(proposal),
     id: buildProposalId(dao.id, dao.lastProposalId),
     proposalId: dao.lastProposalId,
@@ -35,15 +40,32 @@ export function castCreateProposal({
     transactionHash: transactionHash,
     createTimestamp: timestamp,
   };
+
+  return {
+    ...proposalDto,
+    actions: [
+      buildProposalAction(
+        proposalDto,
+        {
+          accountId: signerId,
+          transactionHash,
+          blockTimestamp: timestamp,
+        },
+        Action.AddProposal,
+      ),
+    ],
+  };
 }
 
 export function castActProposal({
   transactionHash,
   contractId,
+  signerId,
   proposal,
   timestamp = getBlockTimestamp(),
+  action,
 }): ProposalDto {
-  return {
+  const proposalDto = {
     ...camelcaseKeys(proposal),
     id: buildProposalId(contractId, proposal.id),
     proposalId: proposal.id,
@@ -52,5 +74,16 @@ export function castActProposal({
     kind: castProposalKind(proposal.kind),
     updateTransactionHash: transactionHash,
     updateTimestamp: timestamp,
+  };
+
+  return {
+    ...proposalDto,
+    actions: [
+      buildProposalAction(
+        proposalDto,
+        { accountId: signerId, transactionHash, blockTimestamp: timestamp },
+        action,
+      ),
+    ],
   };
 }

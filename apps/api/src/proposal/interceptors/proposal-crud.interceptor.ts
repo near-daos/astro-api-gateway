@@ -18,6 +18,9 @@ export class ProposalCrudRequestInterceptor extends BaseCrudRequestInterceptor {
       'dao.policy': {
         eager: true,
       },
+      actions: {
+        eager: true
+      }
     };
 
     return crudRequest;
