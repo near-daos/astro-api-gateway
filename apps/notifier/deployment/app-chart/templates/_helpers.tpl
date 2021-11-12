@@ -48,7 +48,7 @@ Selector labels
 */}}
 {{- define "sputnik-v2-api.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "sputnik-v2-api.name" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/instance: "sputnik-v2-api"
 {{- end -}}
 
 {{/*
@@ -116,7 +116,7 @@ Selector labels
 */}}
 {{- define "sputnik-v2-aggregator.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "sputnik-v2-aggregator.name" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/instance: "sputnik-v2-api"
 {{- end -}}
 
 {{/*
@@ -185,7 +185,7 @@ Selector labels
 */}}
 {{- define "sputnik-v2-aggregator-dao.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "sputnik-v2-aggregator-dao.name" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/instance: "sputnik-v2-api"
 {{- end -}}
 
 {{/*
@@ -254,7 +254,7 @@ Selector labels
 */}}
 {{- define "sputnik-v2-notifier.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "sputnik-v2-notifier.name" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/instance: "sputnik-v2-api"
 {{- end -}}
 
 {{/*
