@@ -203,6 +203,8 @@ definitions:
               RESOURCE_PATH: 'manifests'
               KUBECTL_ARGS:
                 - "--namespace=$DEPLOYMENT_NAMESPACE"
+        artifacts:
+          - manifests/**
 
 
 pipelines:
