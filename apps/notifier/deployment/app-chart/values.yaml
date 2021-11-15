@@ -7,7 +7,7 @@ replicaCount: 1
 image:
   repository: 398077236708.dkr.ecr.eu-central-1.amazonaws.com
   tag: latest
-  name: sputnik-v2-api
+  name: sputnik-v2-notifier
   pullPolicy: Always
 
 imagePullSecrets: [ ]
