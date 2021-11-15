@@ -53,8 +53,7 @@ runs:
       platforms: linux/amd64
       tags: ${{ steps.meta.outputs.tags }}
       push: true
-      build-args:
-      - APP_NAME: ${{ env.APP_NAME }}
+      build-args: APP_NAME=${{ env.APP_NAME }}
 
   - name: Save Cache
     shell: bash
