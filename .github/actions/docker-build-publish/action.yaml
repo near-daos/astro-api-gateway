@@ -23,7 +23,7 @@ runs:
     uses: docker/metadata-action@v3
     with:
       images: |
-        ${{ env.AWS_ECR_URL }}
+        ${{ env.AWS_ECR_URL }}/sputnik-v2-${{ env.APP_NAME }}
       tags: |
         type=raw,value=latest
         type=raw,value=${{ env.DOCKER_ENV_TAG }}
