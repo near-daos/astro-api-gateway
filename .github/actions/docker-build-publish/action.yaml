@@ -46,9 +46,9 @@ runs:
   - name: Build And Push
     uses: docker/build-push-action@v2
     with:
-      #context: apps/${SUBAPP_NAME}
+      #context: apps/${APP_NAME}
       context: .
-      #file: apps/${SUBAPP_NAME}/Dockerfile
+      #file: apps/${APP_NAME}/Dockerfile
       file: Dockerfile
       platforms: linux/amd64
       tags: ${{ steps.meta.outputs.tags }}

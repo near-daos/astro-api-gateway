@@ -12,4 +12,4 @@ runs:
       yarn install
       yarn test || true
       yarn lint . || true
-      yarn build ${SUBAPP_NAME}
+      yarn build ${APP_NAME}
