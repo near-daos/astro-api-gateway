@@ -1,9 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: sputnik-v2-aggregator-dao-configmap
-data:
-  PORT: "3000"
-  NEST_APP_TYPE: "aggregator-dao"
-  DAO_POLLING_INTERVAL: "{{ .Values.environment.dao_polling_interval }}"
-  PROPOSAL_VOTE_STATUS_UPDATE_INTERVAL: "{{ .Values.environment.proposal_vote_status_update_interval }}"
