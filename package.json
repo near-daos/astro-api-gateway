@@ -8,6 +8,10 @@
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "nest build",
+    "build-api": "nest build api",
+    "build-aggregator": "nest build aggregator",
+    "build-aggregator-dao": "nest build aggregator-dao",
+    "build-notifier": "nest build notifier",
     "format": "prettier --write \"apps/**/*.ts\" \"libs/**/*.ts\"",
     "start-api": "nest start api",
     "start-api:dev": "nest start api --watch",
