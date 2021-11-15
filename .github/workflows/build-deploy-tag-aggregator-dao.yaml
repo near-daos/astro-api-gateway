@@ -1,13 +1,9 @@
 name: Build Deploy Aggregator
 on:
   workflow_dispatch:
-  push:
-    branches:
-    - develop
-    - staging
-    paths:
-    - 'apps/aggregator/**'
-    - 'libs/**'
+  create:
+    tags:
+    - '**'
 
 jobs:
   build-deploy:
@@ -20,15 +16,15 @@ jobs:
       KUBE_CONFIG_DATA:  ${{ secrets.KUBE_CONFIG_DATA }}
     runs-on: ubuntu-latest
     environment:
-      name: ${{ github.ref_name }}
+      name: production
     steps:
     - uses: actions/checkout@v2
     - name: Set Environment
       run: |
-        echo DOCKER_ENV_TAG=${GITHUB_REF##*/}-$GITHUB_SHA >> $GITHUB_ENV
-        echo APP_NAME=aggregator >> $GITHUB_ENV
+        echo DOCKER_ENV_TAG=production-$GITHUB_SHA >> $GITHUB_ENV
+        echo APP_NAME=aggregator-dao >> $GITHUB_ENV
         cat ".github/env.common" >>$GITHUB_ENV
-        cat ".github/env.${GITHUB_REF##*/}" >>$GITHUB_ENV
+        cat ".github/env.production" >>$GITHUB_ENV
 
     - name: Build Test
       uses: ./.github/actions/build-test
