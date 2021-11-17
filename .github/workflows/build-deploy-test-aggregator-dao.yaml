@@ -1,4 +1,4 @@
-name: Build Deploy Aggregator on Test
+name: Build Deploy Aggregator DAO on Test
 on:
   workflow_dispatch:
 

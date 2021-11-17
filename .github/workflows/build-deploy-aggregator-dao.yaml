@@ -1,4 +1,4 @@
-name: Build Deploy Aggregator
+name: Build Deploy Aggregator DAO
 on:
   workflow_dispatch:
   push:
