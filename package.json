@@ -19,6 +19,7 @@
     "start-notifier:dev": "nest start notifier --watch",
     "start": "concurrently \"yarn start-aggregator-dao\" \"yarn start-aggregator\" \"yarn start-api\" \"yarn start-notifier\"",
     "start:dev": "concurrently \"yarn start-aggregator-dao:dev\" \"yarn start-aggregator:dev\" \"yarn start-api:dev\" \"yarn start-notifier:dev\"",
+    "start-migrations": "nest start migrations",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
     "test:watch": "jest --watch",
@@ -147,7 +148,9 @@
       "@sputnik-v2/cache/(.*)": "<rootDir>/libs/cache/src/$1",
       "@sputnik-v2/cache": "<rootDir>/libs/cache/src",
       "@sputnik-v2/transaction-handler/(.*)": "<rootDir>/libs/transaction-handler/src/$1",
-      "@sputnik-v2/transaction-handler": "<rootDir>/libs/transaction-handler/src"
+      "@sputnik-v2/transaction-handler": "<rootDir>/libs/transaction-handler/src",
+      "@sputnik-v2/migrations/(.*)": "<rootDir>/libs/migrations/src/$1",
+      "@sputnik-v2/migrations": "<rootDir>/libs/migrations/src"
     }
   }
 }

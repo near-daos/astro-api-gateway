@@ -95,7 +95,7 @@ export class AggregatorService {
 
     // Last transaction from NEAR Indexer - for the list of DAOs defined
     const nearTx =
-      await this.nearIndexerService.findLastTransactionByContractName(
+      await this.nearIndexerService.findLastTransactionByAccountIds(
         contractName,
         tx?.blockTimestamp,
       );
@@ -117,7 +117,7 @@ export class AggregatorService {
 
     let startTime = new Date().getTime();
     const transactions: Transaction[] =
-      await this.nearIndexerService.findTransactionsByContractName(
+      await this.nearIndexerService.findTransactionsByAccountIds(
         contractName,
         tx?.blockTimestamp,
       );
@@ -406,7 +406,10 @@ export class AggregatorService {
     );
     this.logger.log('Finished Transactions aggregation.');
 
-    await this.purgeRemovedProposals(filteredProposals, enrichedDaos);
+    await this.proposalService.purgeRemovedProposals(
+      filteredProposals,
+      enrichedDaos,
+    );
 
     this.aggregationState.status = AggregationStatus.Success;
   }
@@ -747,46 +750,6 @@ export class AggregatorService {
         createTimestamp: actionReceipt?.transaction?.blockTimestamp,
       };
     });
-  }
-
-  private async purgeRemovedProposals(
-    proposals: ProposalDto[],
-    enrichedDaos: SputnikDaoDto[],
-  ): Promise<void> {
-    try {
-      const proposalIdsByDao = proposals.reduce((acc, cur) => {
-        return {
-          ...acc,
-          [cur.daoId]: [...(acc[cur.daoId] || []), cur.proposalId],
-        };
-      }, {});
-      const removedProposals = [];
-
-      Object.keys(proposalIdsByDao).map((daoId) => {
-        const daoProposalIds = proposalIdsByDao[daoId];
-        const dao = enrichedDaos.find(({ id }) => daoId === id);
-
-        for (let i = 0; i < dao.lastProposalId; i++) {
-          if (!daoProposalIds.includes(i)) {
-            removedProposals.push(buildProposalId(daoId, i));
-          }
-        }
-      });
-
-      if (!removedProposals.length) {
-        return;
-      }
-
-      this.logger.log(`Found removed Proposals: ${removedProposals}`);
-
-      this.logger.log('Purging aggregated Proposals considered as removed...');
-      await Promise.all(
-        removedProposals.map((id) => this.proposalService.remove(id)),
-      );
-      this.logger.log('Successfully purged removed Proposals.');
-    } catch (e) {
-      this.logger.error(e);
-    }
   }
 
   private reduceTransactionsByAccountId(transactions: Transaction[]): {

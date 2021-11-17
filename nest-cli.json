@@ -194,6 +194,15 @@
       "compilerOptions": {
         "tsConfigPath": "libs/transaction-handler/tsconfig.lib.json"
       }
+    },
+    "migrations": {
+      "type": "library",
+      "root": "libs/migrations",
+      "entryFile": "main",
+      "sourceRoot": "libs/migrations/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/migrations/tsconfig.lib.json"
+      }
     }
   }
 }
