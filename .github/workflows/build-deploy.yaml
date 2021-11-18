@@ -43,7 +43,7 @@ jobs:
         for file in ${{ join(steps.changed-files.outputs.modified_files, ' ') }}
         do
           echo "$file was updated, checking if it is libs file"
-          if [[ "$file" =~ "^libs/.*" ]]
+          if [[ "$file" =~ ^libs/.* ]]
           then
             echo "$file matched libs"
             echo "::set-output name=apps::aggregator aggregator-dao api notifier"
@@ -59,7 +59,7 @@ jobs:
           for file in ${{ join(steps.changed-files.outputs.modified_files, ' ') }}
           do
             echo "$file was updated, checking if it is $app file"
-            if [[ "$file" =~ "^apps/$app/.*" ]]
+            if [[ "$file" =~ ^apps/$app/.* ]]
             then
               echo "$file is part of $app"
               export UPDATED_APPS="$UPDATED_APPS $app"
@@ -80,13 +80,13 @@ jobs:
       id: get-environment
       shell: bash
       run: |
-        if [[ "${{ github.ref }}" =~ "^refs/tags.*" ]]
+        if [[ "${{ github.ref }}" =~ ^refs/tags.* ]]
         then
           echo "::set-output name=environment::production"
-        elif [[ "${{ github.ref }}" =~ "^refs/heads/staging" ]]
+        elif [[ "${{ github.ref }}" =~ ^refs/heads/staging ]]
         then
           echo "::set-output name=environment::staging"
-        elif [[ "${{ github.ref }}" =~ "^refs/heads/develop" ]]
+        elif [[ "${{ github.ref }}" =~ ^refs/heads/develop ]]
         then
           echo "::set-output name=environment::develop"
         fi
