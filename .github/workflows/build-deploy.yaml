@@ -5,6 +5,9 @@ on:
       environment:
         required: false
         description: Specify environment to run on. Valid values are develop, test, staging, production
+      apps:
+        required: false
+        default: aggregator aggregator-dao api notifier
   push:
     branches:
     - develop
@@ -40,6 +43,16 @@ jobs:
     - id: updated-apps
       shell: bash
       run: |
+        if [[ "${{ github.event.inputs.apps }}" != "" ]]
+        then
+          echo "List of apps was provided manually: ${{ github.event.inputs.apps }}"
+          echo "::set-output name=apps::${{ github.event.inputs.apps }}"
+          for app in ${{ github.event.inputs.apps }}
+          do
+            echo "::set-output name=$app::true"
+          done
+          exit 0
+        fi
         for file in ${{ join(steps.changed-files.outputs.modified_files, ' ') }}
         do
           echo "$file was updated, checking if it is libs file"
