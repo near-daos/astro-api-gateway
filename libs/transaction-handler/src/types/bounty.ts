@@ -74,3 +74,33 @@ export function castClaimBounty({
     updateTimestamp: timestamp,
   };
 }
+
+export function castDoneBounty({
+  dao,
+  accountId,
+  bounty,
+  bountyData,
+  numberOfClaims,
+  bountyClaims,
+  transactionHash,
+  timestamp = getBlockTimestamp(),
+}): BountyDto {
+  const claims = castBountyClaims({
+    contractId: dao.id,
+    accountId,
+    bountyId: bounty.bountyId,
+    bountyClaims,
+  });
+  return {
+    ...bounty,
+    times: bountyData.times,
+    bountyClaims: bounty.bountyClaims
+      ? bounty.bountyClaims
+          .filter((claim) => claim.accountId !== accountId)
+          .concat(claims)
+      : claims,
+    numberOfClaims: numberOfClaims,
+    updateTransactionHash: transactionHash,
+    updateTimestamp: timestamp,
+  };
+}

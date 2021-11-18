@@ -26,6 +26,7 @@ import {
   castClaimBounty,
   TransactionAction,
   VoteAction,
+  castDoneBounty,
 } from './types';
 
 @Injectable()
@@ -59,6 +60,7 @@ export class TransactionActionHandlerService {
           bounty_claim: this.handleClaimUnclaimBounty.bind(this),
           bounty_giveup: this.handleClaimUnclaimBounty.bind(this),
         },
+        defaultHandler: this.handleUnknownDaoTransaction.bind(this),
       },
     ];
   }
@@ -91,7 +93,9 @@ export class TransactionActionHandlerService {
     const contractHandlers = this.getContractHandlers(action.receiverId);
 
     await PromisePool.for(contractHandlers).process(async (contractHandler) => {
-      const handler = contractHandler.methodHandlers[action.methodName];
+      const handler =
+        contractHandler.methodHandlers[action.methodName] ||
+        contractHandler.defaultHandler;
       if (handler) {
         return handler(action);
       }
@@ -250,6 +254,16 @@ export class TransactionActionHandlerService {
         stakingContract = await daoContract.get_staking_contract();
       }
 
+      if (proposalKindType === ProposalType.BountyDone) {
+        await this.handleDoneBounty({
+          dao,
+          daoContract,
+          proposal,
+          transactionHash,
+          timestamp,
+        });
+      }
+
       if (proposalKindType === ProposalType.AddBounty) {
         await this.handleAddBounty({
           dao,
@@ -317,14 +331,12 @@ export class TransactionActionHandlerService {
     const state = await this.nearApiService.getAccountState(receiverId);
 
     if (!proposal) {
-      this.logger.log(`Removing Proposal: ${proposal.id} due to transaction`);
-      await this.proposalService.create(proposal);
-      this.logger.log(`successfully updated Proposal: ${proposal.id}`);
+      this.logger.log(`Removing Proposal: ${args.id} due to transaction`);
       await this.proposalService.remove(buildProposalId(receiverId, args.id));
     } else {
       this.logger.log(`Updating Proposal: ${proposal.id} due to transaction`);
       await this.proposalService.create(proposal);
-      this.logger.log(`successfully updated Proposal: ${proposal.id}`);
+      this.logger.log(`Successfully updated Proposal: ${proposal.id}`);
     }
 
     this.logger.log(`Updating DAO: ${receiverId} due to transaction`);
@@ -345,6 +357,45 @@ export class TransactionActionHandlerService {
       castAddBounty({ dao, proposal, transactionHash, timestamp }),
     );
     this.logger.log('Successfully stored new Bounty');
+  }
+
+  async handleDoneBounty({
+    dao,
+    daoContract,
+    proposal,
+    transactionHash,
+    timestamp,
+  }) {
+    const { bountyId, receiverId } = proposal.kind.kind;
+    const bounty = await this.bountyService.findOne(
+      buildBountyId(dao.id, bountyId),
+      { relations: ['bountyClaims'] },
+    );
+
+    const bountyData = await daoContract.get_bounty({
+      id: bountyId,
+    });
+    const numberOfClaims = await daoContract.get_bounty_number_of_claims({
+      id: bountyId,
+    });
+    const bountyClaims = await daoContract.get_bounty_claims({
+      account_id: receiverId,
+    });
+
+    this.logger.log(`Updating Bounty: ${bounty.id} due to transaction`);
+    await this.bountyService.create(
+      castDoneBounty({
+        dao,
+        accountId: receiverId,
+        bounty,
+        bountyData,
+        numberOfClaims,
+        bountyClaims,
+        transactionHash,
+        timestamp,
+      }),
+    );
+    this.logger.log(`Bounty successfully updated: ${bounty.id}`);
   }
 
   async handleClaimUnclaimBounty({
@@ -379,6 +430,17 @@ export class TransactionActionHandlerService {
       }),
     );
     this.logger.log(`Bounty successfully updated: ${bounty.id}`);
+  }
+
+  async handleUnknownDaoTransaction({ receiverId }: TransactionAction) {
+    const dao = await this.daoService.findOne(receiverId);
+    const state = await this.nearApiService.getAccountState(receiverId);
+
+    dao.amount = Number(state.amount);
+
+    this.logger.log(`Updating DAO: ${receiverId} due to transaction`);
+    await this.daoService.create({ ...dao });
+    this.logger.log(`DAO successfully updated: ${receiverId}`);
   }
 
   private getContractHandlers(receiverId: string): ContractHandler[] {

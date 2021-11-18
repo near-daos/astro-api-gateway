@@ -11,6 +11,7 @@ import {
 import { TransactionService } from '@sputnik-v2/transaction';
 import { DaoService } from '@sputnik-v2/dao';
 import { TransactionHandlerService } from '@sputnik-v2/transaction-handler';
+import { CacheService } from '@sputnik-v2/cache';
 
 import { DaoAggregatorService } from './dao-aggregator/dao-aggregator.service';
 import { ProposalAggregatorService } from './proposal-aggregator/proposal-aggregator.service';
@@ -31,6 +32,7 @@ export class AggregatorService {
     private readonly proposalAggregatorService: ProposalAggregatorService,
     private readonly bountyAggregatorService: BountyAggregatorService,
     private readonly schedulerRegistry: SchedulerRegistry,
+    private readonly cacheService: CacheService,
   ) {
     const { pollingInterval } = this.configService.get('aggregator');
 
@@ -102,6 +104,9 @@ export class AggregatorService {
 
     this.logger.log('Storing aggregated Transactions...');
     await this.transactionService.createMultiple(transactions);
+
+    // TODO: https://app.clickup.com/t/1ty89nk
+    await this.cacheService.clearCache();
 
     this.isAggregationInProgress = false;
   }

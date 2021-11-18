@@ -6,4 +6,5 @@ export type ContractHandler = {
   methodHandlers: {
     [key: string]: (action: TransactionAction) => Promise<void>;
   };
+  defaultHandler?: (action: TransactionAction) => Promise<void>;
 };

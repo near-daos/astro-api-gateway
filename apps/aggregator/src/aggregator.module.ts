@@ -12,6 +12,7 @@ import { NearIndexerModule } from '@sputnik-v2/near-indexer';
 import { DaoModule } from '@sputnik-v2/dao';
 import { TransactionModule } from '@sputnik-v2/transaction';
 import { TransactionHandlerModule } from '@sputnik-v2/transaction-handler';
+import { HttpCacheModule } from '@sputnik-v2/cache';
 
 import { AggregatorService } from './aggregator.service';
 import { DaoAggregatorModule } from './dao-aggregator/dao-aggregator.module';
@@ -37,6 +38,7 @@ import { BountyAggregatorModule } from './bounty-aggregator/bounty-aggregator.mo
     DaoAggregatorModule,
     ProposalAggregatorModule,
     BountyAggregatorModule,
+    HttpCacheModule,
   ],
   providers: [AggregatorService],
 })
