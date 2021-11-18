@@ -1,6 +1,9 @@
 image: node:14.16.0
 
 definitions:
+  services:
+    docker:
+      memory: 2048
   caches:
     docker-cache: docker-cache
 
@@ -10,81 +13,213 @@ definitions:
         artifacts:
           - environment.sh
 
-    - step: &build-test
-        name: Build and test
-        caches:
-          - node
+    - step: &set-aggregator
+        conditions: &aggregator-condition
+          changesets:
+            includePaths:
+            - "apps/aggregator/**"
+            - "libs/**"
+        name: Check Aggregator Changed
         script:
-          - yarn install
-          - yarn test || true
-          - yarn lint . || true
-          - yarn build
-    
-    - step: &docker-build-publish
-        name: Docker - Build and Publish
-        services:
-          - docker
-        caches:
-          - docker-cache
-        script:
-          - source environment.sh
-          - >-
-            if [[ -f "docker-cache/cache.tar" ]]; then
-              docker load < docker-cache/cache.tar;
-            fi
-          - >-
-            docker build
-            -t $APP_NAME:latest
-            -t $APP_NAME:develop-latest
-            -t $APP_NAME:$DOCKER_ENV_TAG
-            .
-          - >-
-            docker save $(docker images -qa) > docker-cache/cache.tar;
+        - source environment.sh
+        - echo "export UPDATED_APPS='$UPDATED_APPS aggregator'" >> environment.sh
+        artifacts:
+          - environment.sh
 
-          - pipe: atlassian/aws-ecr-push-image:1.4.2
-            variables:
-              AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
-              AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
-              AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
-              IMAGE_NAME: $APP_NAME
-              TAGS: >-
-                latest
-                develop-latest
-                $DOCKER_ENV_TAG
-                
+    - step: &set-aggregator-dao
+        conditions: &aggregator-dao-condition
+          changesets:
+            includePaths:
+            - "apps/aggregator-dao/**"
+            - "libs/**"
+        name: Check Aggregator DAO Changed
+        script:
+        - source environment.sh
+        - echo "export UPDATED_APPS='$UPDATED_APPS aggregator-dao'" >> environment.sh
+        artifacts:
+          - environment.sh
+
+    - step: &set-api
+        conditions: &api-condition
+          changesets:
+            includePaths:
+            - "apps/api/**"
+            - "libs/**"
+        name: Check API Changed
+        script:
+        - source environment.sh
+        - echo "export UPDATED_APPS='$UPDATED_APPS api'" >> environment.sh
+        artifacts:
+          - environment.sh
+
+    - step: &set-notifier
+        conditions: &notifier-condition
+          changesets:
+            includePaths:
+            - "apps/notifier/**"
+            - "libs/**"
+        name: Check Notifier Changed
+        script:
+        - source environment.sh
+        - echo "export UPDATED_APPS='$UPDATED_APPS notifier'" >> environment.sh
+        artifacts:
+          - environment.sh
+
+    - parallel: &build-test
+      - step:
+          conditions: *aggregator-condition
+          name: Build and test aggregator
+          caches:
+            - node
+          script:
+            - yarn install
+            - yarn test || true
+            - yarn lint . || true
+            - yarn build aggregator
+
+      - step:
+          conditions: *aggregator-dao-condition
+          name: Build and test aggregator-dao
+          caches:
+            - node
+          script:
+            - yarn install
+            - yarn test || true
+            - yarn lint . || true
+            - yarn build aggregator-dao
+
+      - step:
+          conditions: *api-condition
+          name: Build and test api
+          caches:
+            - node
+          script:
+            - yarn install
+            - yarn test || true
+            - yarn lint . || true
+            - yarn build api
+
+      - step:
+          conditions: *notifier-condition
+          name: Build and test notifier
+          caches:
+            - node
+          script:
+            - yarn install
+            - yarn test || true
+            - yarn lint . || true
+            - yarn build notifier
+
+    - parallel: &docker-build-publish
+      - step:
+          conditions: *aggregator-condition
+          name: Docker - Build and Publish aggregator
+          <<: &docker-service
+            services:
+            - docker
+            caches:
+            - docker-cache
+          script:
+            - source environment.sh
+            - export APP_NAME=aggregator
+            - &docker-load-cache >-
+              if [[ -f "docker-cache/cache.tar" ]]; then
+                docker load < docker-cache/cache.tar;
+              fi
+            - &docker-build >-
+              docker build
+              --build-arg APP_NAME=$APP_NAME
+              -t sputnik-v2-${APP_NAME}:latest
+              -t sputnik-v2-${APP_NAME}:develop-latest
+              -t sputnik-v2-${APP_NAME}:$DOCKER_ENV_TAG
+              .
+            - >-
+              docker save $(docker images -qa) > docker-cache/cache.tar;
+            - &docker-push
+              pipe: atlassian/aws-ecr-push-image:1.4.2
+              variables:
+                AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+                AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+                AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
+                IMAGE_NAME: sputnik-v2-${APP_NAME}
+                TAGS: >-
+                  latest
+                  develop-latest
+                  $DOCKER_ENV_TAG
+
+      - step:
+          conditions: *aggregator-dao-condition
+          name: Docker - Build and Publish aggregator-dao
+          <<: *docker-service
+          script:
+            - source environment.sh
+            - export APP_NAME=aggregator-dao
+            - *docker-load-cache
+            - *docker-build
+            - *docker-push
+
+      - step:
+          conditions: *api-condition
+          name: Docker - Build and Publish api
+          <<: *docker-service
+          script:
+            - source environment.sh
+            - export APP_NAME=api
+            - *docker-load-cache
+            - *docker-build
+            - *docker-push
+
+      - step:
+          conditions: *notifier-condition
+          name: Docker - Build and Publish notifier
+          <<: *docker-service
+          script:
+            - source environment.sh
+            - export APP_NAME=notifier
+            - *docker-load-cache
+            - *docker-build
+            - *docker-push
+
     - step: &helm-build-deploy
         name: Helm - Build and Deploy
         image: alpine/helm:3.6.3
         script:
           - source environment.sh
-          - export CHART_FOLDER=deployment/app-chart
-          - helm lint $CHART_FOLDER
-          - >-
-            helm template $APP_NAME $CHART_FOLDER
-            --set image.tag=$DOCKER_ENV_TAG
-            --set environment.near_env=$NEAR_ENV
-            --set environment.near_contract_name=$NEAR_CONTRACT_NAME
-            --set environment.near_token_factory_contract_name=$NEAR_TOKEN_FACTORY_CONTRACT_NAME
-            --set environment.near_bridge_token_factory_contract_name=$NEAR_BRIDGE_TOKEN_FACTORY_CONTRACT_NAME
-            --set environment.wallet_callback_url=$WALLET_CALLBACK_URL
-            --set ingress.host=$K8S_INGRESS_HOST
-            > $APP_NAME-manifest.yml
-
-          - pipe: atlassian/aws-eks-kubectl-run:1.4.2
+          - mkdir manifests
+          - |
+              for APP_NAME in $UPDATED_APPS
+              do
+                export CHART_FOLDER=apps/${APP_NAME}/deployment/app-chart
+                helm lint $CHART_FOLDER
+                helm template sputnik-v2-$APP_NAME $CHART_FOLDER \
+                  --set image.tag=$DOCKER_ENV_TAG \
+                  --set environment.near_env=$NEAR_ENV \
+                  --set environment.near_contract_name=$NEAR_CONTRACT_NAME \
+                  --set environment.near_token_factory_contract_name=$NEAR_TOKEN_FACTORY_CONTRACT_NAME \
+                  --set environment.near_bridge_token_factory_contract_name=$NEAR_BRIDGE_TOKEN_FACTORY_CONTRACT_NAME \
+                  --set environment.wallet_callback_url=$WALLET_CALLBACK_URL \
+                  --set ingress.host=$K8S_INGRESS_HOST \
+                  > manifests/$APP_NAME.yml
+              done
+          - pipe: atlassian/aws-eks-kubectl-run:2.2.0
             variables:
               AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
               AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
               AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
               CLUSTER_NAME: $EKS_CLUSTER_NAME
               KUBECTL_COMMAND: 'apply'
-              RESOURCE_PATH: '$APP_NAME-manifest.yml'
+              RESOURCE_PATH: 'manifests'
               KUBECTL_ARGS:
                 - "--namespace=$DEPLOYMENT_NAMESPACE"
+        artifacts:
+          - manifests/**
+          - environment.sh
+
 
 pipelines:
   pull-requests:
     '**':
-      - step: *build-test
+      - parallel: *build-test
 
   branches:
     develop:
@@ -95,9 +230,14 @@ pipelines:
             - >-
               echo export DOCKER_ENV_TAG=develop-$BITBUCKET_COMMIT >> environment.sh
 
-      - step: *build-test
+      - step: *set-aggregator
+      - step: *set-aggregator-dao
+      - step: *set-api
+      - step: *set-notifier
 
-      - step: *docker-build-publish
+      - parallel: *build-test
+
+      - parallel: *docker-build-publish
 
       - step:
           <<: *helm-build-deploy
@@ -111,9 +251,14 @@ pipelines:
             - >-
               echo export DOCKER_ENV_TAG=staging-$BITBUCKET_COMMIT >> environment.sh
 
-      - step: *build-test
+      - step: *set-aggregator
+      - step: *set-aggregator-dao
+      - step: *set-api
+      - step: *set-notifier
 
-      - step: *docker-build-publish
+      - parallel: *build-test
+
+      - parallel: *docker-build-publish
           
       - step:
           <<: *helm-build-deploy
@@ -127,9 +272,14 @@ pipelines:
             - >-
               echo export DOCKER_ENV_TAG=test-$BITBUCKET_COMMIT >> environment.sh
 
-      - step: *build-test
+      - step: *set-aggregator
+      - step: *set-aggregator-dao
+      - step: *set-api
+      - step: *set-notifier
 
-      - step: *docker-build-publish
+      - parallel: *build-test
+
+      - parallel: *docker-build-publish
 
       - step:
           <<: *helm-build-deploy
@@ -144,9 +294,14 @@ pipelines:
             - >-
               echo export DOCKER_ENV_TAG=$BITBUCKET_TAG >> environment.sh
 
-      - step: *build-test
+      - step: *set-aggregator
+      - step: *set-aggregator-dao
+      - step: *set-api
+      - step: *set-notifier
 
-      - step: *docker-build-publish
+      - parallel: *build-test
+
+      - parallel: *docker-build-publish
           
       - step:
           <<: *helm-build-deploy
