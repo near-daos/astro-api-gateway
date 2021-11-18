@@ -1,0 +1,52 @@
+name: Build Deploy API
+on:
+  workflow_dispatch:
+  push:
+    branches:
+    - develop
+    - staging
+    paths:
+    - 'apps/api/**'
+    - 'libs/**'
+
+jobs:
+  build-deploy:
+    name: Build Deploy
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_ECR_URL: ${{ secrets.AWS_ECR_URL }}
+      EKS_CLUSTER_NAME: ${{ secrets.EKS_CLUSTER_NAME }}
+      KUBE_CONFIG_DATA:  ${{ secrets.KUBE_CONFIG_DATA }}
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.ref_name }}
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set Environment
+      run: |
+        echo DOCKER_ENV_TAG=${GITHUB_REF##*/}-$GITHUB_SHA >> $GITHUB_ENV
+        echo APP_NAME=api >> $GITHUB_ENV
+        cat ".github/env.common" >>$GITHUB_ENV
+        cat ".github/env.${GITHUB_REF##*/}" >>$GITHUB_ENV
+
+    - name: Build Test
+      uses: ./.github/actions/build-test
+
+    - name: Docker Build Publish
+      uses: ./.github/actions/docker-build-publish
+
+    - name: Helm Deploy
+      uses: koslib/helm-eks-action@v1.8.0
+      with:
+        command: |
+          export CHART_FOLDER=apps/${APP_NAME}/deployment/app-chart
+          helm lint $CHART_FOLDER
+          helm -n $DEPLOYMENT_NAMESPACE upgrade --install --create-namespace sputnik-v2-$APP_NAME $CHART_FOLDER \
+            --set image.tag=$DOCKER_ENV_TAG \
+            --set environment.near_env=$NEAR_ENV \
+            --set environment.near_contract_name=$NEAR_CONTRACT_NAME \
+            --set environment.near_token_factory_contract_name=$NEAR_TOKEN_FACTORY_CONTRACT_NAME \
+            --set environment.near_bridge_token_factory_contract_name=$NEAR_BRIDGE_TOKEN_FACTORY_CONTRACT_NAME \
+            --set environment.wallet_callback_url=$WALLET_CALLBACK_URL \
+            --set ingress.host=$K8S_INGRESS_HOST
