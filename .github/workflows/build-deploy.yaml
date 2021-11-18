@@ -97,43 +97,84 @@ jobs:
     if: needs.get-updated-apps.outputs.aggregator
     env:
       APP_NAME: aggregator
-    <<: &build-image
-      runs-on: ubuntu-latest
-      needs:
-      - get-updated-apps
-      - get-environment
-      environment:
-        name: ${{ needs.get-environment.outputs.environment }}
-      steps:
-      - uses: actions/checkout@v2
-      - &set-environment name: Set Environment
-        run: |
-          echo DOCKER_ENV_TAG=${{ needs.get-environment.outputs.environment }}-$GITHUB_SHA >> $GITHUB_ENV
-          cat ".github/env.common" >>$GITHUB_ENV
-          cat ".github/env.${{ needs.get-environment.outputs.environment }}" >>$GITHUB_ENV
-      - name: Docker Build Publish
-        uses: ./.github/actions/docker-build-publish
+    runs-on: ubuntu-latest
+    needs:
+    - get-updated-apps
+    - get-environment
+    environment:
+      name: ${{ needs.get-environment.outputs.environment }}
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set Environment
+      run: |
+        echo DOCKER_ENV_TAG=${{ needs.get-environment.outputs.environment }}-$GITHUB_SHA >> $GITHUB_ENV
+        cat ".github/env.common" >>$GITHUB_ENV
+        cat ".github/env.${{ needs.get-environment.outputs.environment }}" >>$GITHUB_ENV
+    - name: Docker Build Publish
+      uses: ./.github/actions/docker-build-publish
 
   build-image-aggregator-dao:
     name: Build Image Aggreagator DAO
     if: needs.get-updated-apps.outputs.aggregator-dao
     env:
       APP_NAME: aggregator-dao
-    <<: *build-image
+    runs-on: ubuntu-latest
+    needs:
+    - get-updated-apps
+    - get-environment
+    environment:
+      name: ${{ needs.get-environment.outputs.environment }}
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set Environment
+      run: |
+        echo DOCKER_ENV_TAG=${{ needs.get-environment.outputs.environment }}-$GITHUB_SHA >> $GITHUB_ENV
+        cat ".github/env.common" >>$GITHUB_ENV
+        cat ".github/env.${{ needs.get-environment.outputs.environment }}" >>$GITHUB_ENV
+    - name: Docker Build Publish
+      uses: ./.github/actions/docker-build-publish
 
   build-image-api:
     name: Build Image API
     if: needs.get-updated-apps.outputs.api
     env:
       APP_NAME: api
-    <<: *build-image
+    runs-on: ubuntu-latest
+    needs:
+    - get-updated-apps
+    - get-environment
+    environment:
+      name: ${{ needs.get-environment.outputs.environment }}
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set Environment
+      run: |
+        echo DOCKER_ENV_TAG=${{ needs.get-environment.outputs.environment }}-$GITHUB_SHA >> $GITHUB_ENV
+        cat ".github/env.common" >>$GITHUB_ENV
+        cat ".github/env.${{ needs.get-environment.outputs.environment }}" >>$GITHUB_ENV
+    - name: Docker Build Publish
+      uses: ./.github/actions/docker-build-publish
 
   build-image-notifier:
     name: Build Image Notifier
     if: needs.get-updated-apps.outputs.notifier
     env:
       APP_NAME: notifier
-    <<: *build-image
+    runs-on: ubuntu-latest
+    needs:
+    - get-updated-apps
+    - get-environment
+    environment:
+      name: ${{ needs.get-environment.outputs.environment }}
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set Environment
+      run: |
+        echo DOCKER_ENV_TAG=${{ needs.get-environment.outputs.environment }}-$GITHUB_SHA >> $GITHUB_ENV
+        cat ".github/env.common" >>$GITHUB_ENV
+        cat ".github/env.${{ needs.get-environment.outputs.environment }}" >>$GITHUB_ENV
+    - name: Docker Build Publish
+      uses: ./.github/actions/docker-build-publish
 
   helm-deploy:
     name: Helm Deploy
@@ -149,7 +190,11 @@ jobs:
       name: ${{ needs.get-environment.outputs.environment }}
     steps:
     - uses: actions/checkout@v2
-    - *set-environment
+    - name: Set Environment
+      run: |
+        echo DOCKER_ENV_TAG=${{ needs.get-environment.outputs.environment }}-$GITHUB_SHA >> $GITHUB_ENV
+        cat ".github/env.common" >>$GITHUB_ENV
+        cat ".github/env.${{ needs.get-environment.outputs.environment }}" >>$GITHUB_ENV
     - name: Helm Deploy
       uses: koslib/helm-eks-action@v1.8.0
       with:
