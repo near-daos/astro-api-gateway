@@ -1,4 +1,4 @@
-name: Build Deploy Aggregator
+name: Build Deploy API
 on:
   workflow_dispatch:
   push:

@@ -142,7 +142,7 @@ export class AggregatorService {
     this.logger.log(`Start aggregation for DAO: ${account.accountId}`);
 
     const daoTransactions =
-      await this.nearIndexerService.findTransactionsByContractName(
+      await this.nearIndexerService.findTransactionsByAccountIds(
         account.accountId,
         tx?.blockTimestamp,
       );

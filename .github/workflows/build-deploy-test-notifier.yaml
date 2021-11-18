@@ -1,4 +1,4 @@
-name: Build Deploy Aggregator on Test
+name: Build Deploy Notifier on Test
 on:
   workflow_dispatch:
 

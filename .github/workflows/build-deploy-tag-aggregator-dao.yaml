@@ -1,7 +1,7 @@
-name: Build Deploy Aggregator
+name: Build Deploy Aggregator DAO on Production
 on:
   workflow_dispatch:
-  create:
+  push:
     tags:
     - '**'
 

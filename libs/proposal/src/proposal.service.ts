@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 import { CrudRequest } from '@nestjsx/crud';
@@ -10,7 +10,7 @@ import {
   Repository,
   UpdateResult,
 } from 'typeorm';
-import { Role } from '@sputnik-v2/dao';
+import { Role, SputnikDaoDto } from '@sputnik-v2/dao';
 
 import { ProposalDto, ProposalResponse } from './dto';
 import { Proposal } from './entities';
@@ -19,9 +19,12 @@ import {
   ProposalStatus,
   ProposalVoteStatus,
 } from './types';
+import { buildProposalId } from '@sputnik-v2/utils';
 
 @Injectable()
 export class ProposalService extends TypeOrmCrudService<Proposal> {
+  private readonly logger = new Logger(ProposalService.name);
+
   constructor(
     @InjectRepository(Proposal)
     private readonly proposalRepository: Repository<Proposal>,
@@ -44,6 +47,10 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
     return Promise.all(
       proposalDtos.map((proposalDto) => this.create(proposalDto)),
     );
+  }
+
+  update(proposal: Proposal): Promise<Proposal> {
+    return this.proposalRepository.save(proposal);
   }
 
   async getMany(req: CrudRequest): Promise<ProposalResponse | Proposal[]> {
@@ -239,5 +246,43 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
 
   async removeMultiple(proposalIds: string[]): Promise<DeleteResult[]> {
     return Promise.all(proposalIds.map((id) => this.remove(id)));
+  }
+
+  public async purgeRemovedProposals(
+    proposals: ProposalDto[],
+    enrichedDaos: SputnikDaoDto[],
+  ): Promise<void> {
+    try {
+      const proposalIdsByDao = proposals.reduce((acc, cur) => {
+        return {
+          ...acc,
+          [cur.daoId]: [...(acc[cur.daoId] || []), cur.proposalId],
+        };
+      }, {});
+      const removedProposals = [];
+
+      Object.keys(proposalIdsByDao).map((daoId) => {
+        const daoProposalIds = proposalIdsByDao[daoId];
+        const dao = enrichedDaos.find(({ id }) => daoId === id);
+
+        for (let i = 0; i < dao.lastProposalId; i++) {
+          if (!daoProposalIds.includes(i)) {
+            removedProposals.push(buildProposalId(daoId, i));
+          }
+        }
+      });
+
+      if (!removedProposals.length) {
+        return;
+      }
+
+      this.logger.log(`Found removed Proposals: ${removedProposals}`);
+
+      this.logger.log('Purging aggregated Proposals considered as removed...');
+      await Promise.all(removedProposals.map((id) => this.remove(id)));
+      this.logger.log('Successfully purged removed Proposals.');
+    } catch (e) {
+      this.logger.error(e);
+    }
   }
 }

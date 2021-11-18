@@ -1,0 +1,23 @@
+name: Test Notifier
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+    - '**'
+    paths:
+    - 'apps/notifier/**'
+    - 'libs/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Build
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set Environment
+      run: |
+         echo APP_NAME=aggregator >> $GITHUB_ENV
+         cat ".github/env.common" >>$GITHUB_ENV
+
+    - name: Build Test
+      uses: ./.github/actions/build-test

@@ -1,4 +1,5 @@
 import { buildProposalActionId } from '@sputnik-v2/utils';
+import { ProposalAction } from '..';
 
 import { Action } from '../types/action';
 
@@ -19,7 +20,7 @@ export const buildProposalAction = (
     blockTimestamp: number;
   },
   action: Action,
-): ProposalActionDto => {
+): ProposalActionDto | ProposalAction => {
   const { accountId, transactionHash, blockTimestamp: timestamp } = tx;
   return {
     id: buildProposalActionId(proposalId, accountId, action),

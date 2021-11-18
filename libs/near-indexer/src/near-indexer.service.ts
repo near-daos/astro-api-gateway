@@ -36,6 +36,18 @@ export class NearIndexerService {
     private connection: Connection,
   ) {}
 
+  firstTransaction(): Promise<Transaction> {
+    return this.transactionRepository.findOne({
+      order: { blockTimestamp: 'ASC' },
+    });
+  }
+
+  lastTransaction(): Promise<Transaction> {
+    return this.transactionRepository.findOne({
+      order: { blockTimestamp: 'DESC' },
+    });
+  }
+
   /**
    * Using parent contract name to retrieve child information since
    * child accounts are built based on parent contract name domain
@@ -82,26 +94,27 @@ export class NearIndexerService {
     ).getMany();
   }
 
-  async findLastTransactionByContractName(
-    contractName: string,
+  /** Pass either single accountId or array of accountIds */
+  async findLastTransactionByAccountIds(
+    accountIds: string | string[],
     fromBlockTimestamp?: number,
   ): Promise<Transaction> {
-    return this.buildAggregationTransactionQuery(
-      contractName,
-      fromBlockTimestamp,
-    )
+    return this.buildAggregationTransactionQuery(accountIds, fromBlockTimestamp)
       .select('transaction.transactionHash')
       .orderBy('transaction.block_timestamp', 'DESC')
       .getOne();
   }
 
-  async findTransactionsByContractName(
-    contractName: string,
+  /** Pass either single accountId or array of accountIds */
+  async findTransactionsByAccountIds(
+    accountIds: string | string[],
     fromBlockTimestamp?: number,
+    toBlockTimestamp?: number,
   ): Promise<Transaction[]> {
     return this.buildAggregationTransactionQuery(
-      contractName,
+      accountIds,
       fromBlockTimestamp,
+      toBlockTimestamp,
     )
       .orderBy('transaction.block_timestamp', 'ASC')
       .getMany();
@@ -284,12 +297,16 @@ export class NearIndexerService {
   }
 
   private buildAggregationTransactionQuery(
-    contractName: string,
+    accountIds: string | string[],
     fromBlockTimestamp?: number,
+    toBlockTimestamp?: number,
   ): SelectQueryBuilder<Transaction> {
     let queryBuilder = this.transactionRepository
       .createQueryBuilder('transaction')
-      .leftJoinAndSelect('transaction.transactionAction', 'transaction_actions')
+      .leftJoinAndSelect(
+        'transaction.transactionAction',
+        'transaction_actions',
+      );
       // .leftJoinAndSelect(
       //   'transaction.receipts',
       //   'receipts',
@@ -302,13 +319,28 @@ export class NearIndexerService {
       //   'action_receipt_actions.receipt_predecessor_account_id = ANY(ARRAY[:...ids]) AND action_receipt_actions.action_kind = :actionKind',
       //   { ids: receiverAccountIds, actionKind: ActionKind.Transfer },
       // )
-      .where('transaction.receiver_account_id LIKE :contractName', {
-        contractName: `%${contractName}`,
-      });
+
+    queryBuilder =
+      accountIds instanceof Array
+        ? queryBuilder.where(
+            'transaction.receiver_account_id = ANY(ARRAY[:...ids])',
+            {
+              ids: accountIds,
+            },
+          )
+        : queryBuilder.where('transaction.receiver_account_id LIKE :id', {
+            id: `%${accountIds}`,
+          });
 
     queryBuilder = fromBlockTimestamp
       ? queryBuilder.andWhere('transaction.block_timestamp >= :from', {
           from: fromBlockTimestamp,
+        })
+      : queryBuilder;
+
+    queryBuilder = toBlockTimestamp
+      ? queryBuilder.andWhere('transaction.block_timestamp <= :to', {
+          to: toBlockTimestamp,
         })
       : queryBuilder;
 
