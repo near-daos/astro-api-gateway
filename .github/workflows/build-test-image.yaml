@@ -47,7 +47,7 @@ jobs:
       uses: docker/build-push-action@v2
       with:
         context: .github/actions/test
-        file: Dockerfile
+        file: .github/actions/test/Dockerfile
         platforms: linux/amd64
         tags: ${{ steps.meta.outputs.tags }}
         push: true
