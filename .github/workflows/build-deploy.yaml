@@ -51,6 +51,7 @@ jobs:
             echo "::set-output name=api::true"
             echo "::set-output name=notifier::true"
             exit 0
+          fi
         done
         for app in aggregator aggregator-dao api notifier
         do
