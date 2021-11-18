@@ -24,15 +24,6 @@
         "tsConfigPath": "apps/aggregator/tsconfig.app.json"
       }
     },
-    "aggregator-dao": {
-      "type": "application",
-      "root": "apps/aggregator-dao",
-      "entryFile": "main",
-      "sourceRoot": "apps/aggregator-dao/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/aggregator-dao/tsconfig.app.json"
-      }
-    },
     "notifier": {
       "type": "application",
       "root": "apps/notifier",

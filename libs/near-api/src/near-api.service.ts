@@ -50,6 +50,10 @@ export class NearApiService {
     return account.state();
   }
 
+  public async getAccountAmount(accountId: string): Promise<string> {
+    return (await this.getAccountState(accountId)).amount;
+  }
+
   public getContract(key: string, id?: string): Contract & any {
     const contract = this.contracts[key];
     const contractId = id || contract?.contractId;

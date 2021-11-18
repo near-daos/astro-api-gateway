@@ -1,6 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import PromisePool from '@supercharge/promise-pool';
 import { ConfigService } from '@nestjs/config';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+
 import { NearApiService } from '@sputnik-v2/near-api';
 import { DaoService } from '@sputnik-v2/dao';
 import {
@@ -8,6 +11,7 @@ import {
   ProposalStatus,
   ProposalType,
 } from '@sputnik-v2/proposal';
+import { Transaction } from '@sputnik-v2/near-indexer';
 import { BountyService } from '@sputnik-v2/bounty';
 import { btoaJSON, buildBountyId, buildProposalId } from '@sputnik-v2/utils';
 
@@ -31,6 +35,8 @@ export class TransactionActionHandlerService {
   private contractHandlers: ContractHandler[];
 
   constructor(
+    @InjectRepository(Transaction)
+    private readonly transactionRepository: Repository<Transaction>,
     private readonly configService: ConfigService,
     private readonly nearApiService: NearApiService,
     private readonly daoService: DaoService,
@@ -71,7 +77,19 @@ export class TransactionActionHandlerService {
   }
 
   async handleTransactionAction(action: TransactionAction) {
+    const tx = await this.transactionRepository.findOne({
+      transactionHash: action.transactionHash,
+    });
+
+    if (tx) {
+      this.logger.log(
+        `Skip transaction ${action.transactionHash}. Already handled`,
+      );
+      return;
+    }
+
     const contractHandlers = this.getContractHandlers(action.receiverId);
+
     await PromisePool.for(contractHandlers).process(async (contractHandler) => {
       const handler = contractHandler.methodHandlers[action.methodName];
       if (handler) {
@@ -157,7 +175,7 @@ export class TransactionActionHandlerService {
         signerId,
         proposal: proposalResponse,
         timestamp,
-        action: args.action
+        action: args.action,
       });
 
     switch (args.action) {

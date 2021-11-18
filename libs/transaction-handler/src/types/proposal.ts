@@ -45,7 +45,7 @@ export function castCreateProposal({
     ...proposalDto,
     actions: [
       buildProposalAction(
-        proposalDto,
+        proposalDto.id,
         {
           accountId: signerId,
           transactionHash,
@@ -80,7 +80,7 @@ export function castActProposal({
     ...proposalDto,
     actions: [
       buildProposalAction(
-        proposalDto,
+        proposalDto.id,
         { accountId: signerId, transactionHash, blockTimestamp: timestamp },
         action,
       ),

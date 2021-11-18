@@ -11,7 +11,6 @@ import {
   ActionReceiptAction,
   Receipt,
 } from './entities';
-import { ActionKind } from './types';
 
 @Injectable()
 export class NearIndexerService {
@@ -189,6 +188,16 @@ export class NearIndexerService {
     return queryBuilder.getMany();
   }
 
+  async findAccountChangeActionsByContractName(
+    contractName: string,
+    fromBlockTimestamp?: number,
+  ): Promise<AccountChange[]> {
+    return this.buildAccountChangeActionQuery(
+      contractName,
+      fromBlockTimestamp,
+    ).getMany();
+  }
+
   // Account Likely Tokens - taken from NEAR Helper Indexer middleware
   // https://github.com/near/near-contract-helper/blob/master/middleware/indexer.js
   async findLikelyTokens(accountId: string): Promise<string[]> {
@@ -327,5 +336,26 @@ export class NearIndexerService {
       : queryBuilder;
 
     return queryBuilder;
+  }
+
+  private buildAccountChangeActionQuery(
+    contractName: string,
+    fromBlockTimestamp?: number,
+  ): SelectQueryBuilder<AccountChange> {
+    return this.accountChangeRepository
+      .createQueryBuilder('account_change')
+      .leftJoinAndSelect('account_change.causedByReceipt', 'receipts')
+      .leftJoinAndSelect('receipts.originatedFromTransaction', 'transactions')
+      .leftJoinAndSelect(
+        'transactions.transactionAction',
+        'transaction_actions',
+      )
+      .where('account_change.affected_account_id like :id', {
+        id: `%${contractName}%`,
+      })
+      .andWhere('account_change.changed_in_block_timestamp > :from', {
+        from: fromBlockTimestamp,
+      })
+      .orderBy('transactions.block_timestamp', 'ASC');
   }
 }

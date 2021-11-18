@@ -40,6 +40,12 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
     });
   }
 
+  createMultiple(proposalDtos: ProposalDto[]): Promise<Proposal[]> {
+    return Promise.all(
+      proposalDtos.map((proposalDto) => this.create(proposalDto)),
+    );
+  }
+
   async getMany(req: CrudRequest): Promise<ProposalResponse | Proposal[]> {
     const proposalResponse = await super.getMany(req);
 
@@ -229,5 +235,9 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
 
   async remove(id: string): Promise<DeleteResult> {
     return await this.proposalRepository.delete({ id });
+  }
+
+  async removeMultiple(proposalIds: string[]): Promise<DeleteResult[]> {
+    return Promise.all(proposalIds.map((id) => this.remove(id)));
   }
 }

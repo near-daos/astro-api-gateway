@@ -1,7 +1,6 @@
 import { buildProposalActionId } from '@sputnik-v2/utils';
 
 import { Action } from '../types/action';
-import { ProposalDto } from './proposal.dto';
 
 export class ProposalActionDto {
   id: string;
@@ -13,7 +12,7 @@ export class ProposalActionDto {
 }
 
 export const buildProposalAction = (
-  proposal: ProposalDto,
+  proposalId: string,
   tx: {
     accountId: string;
     transactionHash: string;
@@ -23,9 +22,9 @@ export const buildProposalAction = (
 ): ProposalActionDto => {
   const { accountId, transactionHash, blockTimestamp: timestamp } = tx;
   return {
-    id: buildProposalActionId(proposal.id, accountId, action),
+    id: buildProposalActionId(proposalId, accountId, action),
     accountId,
-    proposalId: proposal.id,
+    proposalId: proposalId,
     action: action,
     transactionHash,
     timestamp,
