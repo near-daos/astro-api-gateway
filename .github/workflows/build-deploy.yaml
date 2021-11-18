@@ -40,7 +40,7 @@ jobs:
     - id: updated-apps
       shell: bash
       run: |
-        for file in ${{ steps.changed-files.outputs.modified_files }}
+        for file in ${{ join(steps.changed-files.outputs.modified_files, ' ') }}
         do
           echo "$file was updated, checking if it is libs file"
           if [[ "$file" =~ "^libs/.*" ]]
@@ -56,7 +56,7 @@ jobs:
         done
         for app in aggregator aggregator-dao api notifier
         do
-          for file in ${{ steps.changed-files.outputs.modified_files }}
+          for file in ${{ join(steps.changed-files.outputs.modified_files, ' ') }}
           do
             echo "$file was updated, checking if it is $app file"
             if [[ "$file" =~ "^apps/$app/.*" ]]
