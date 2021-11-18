@@ -70,6 +70,7 @@ All reusable modules separated on libs by domains and could be shared between di
   /transaction
   /transaction-handler
   /utils
+  /migrations
 ```
 
 ## Config
