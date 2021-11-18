@@ -183,6 +183,7 @@ jobs:
   helm-deploy:
     name: Helm Deploy
     runs-on: ubuntu-latest
+    if: always()
     needs:
     - get-updated-apps
     - get-environment
