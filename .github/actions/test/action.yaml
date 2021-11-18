@@ -1,0 +1,9 @@
+name: 'Run Tests'
+runs:
+  using: 'docker'
+  image: ${{ env.AWS_ECR_URL }}/jdk-near-cli:jdk-11-node-16
+  entrypoint: /home/test/.gradlew
+  args:
+  - --no-daemon
+  - test
+  - -DincludeTags=all
