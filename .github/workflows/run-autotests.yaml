@@ -42,7 +42,7 @@ jobs:
     - uses: actions/upload-artifact@v2
       with:
         name: test_results
-        path: test-framework/build/reports/**
+        path: test-framework/build/reports/tests/**
 
     - uses: jakejarvis/s3-sync-action@master
       with:
@@ -52,5 +52,5 @@ jobs:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         AWS_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
-        SOURCE_DIR: 'test-framework/build/reports'
+        SOURCE_DIR: 'test-framework/build/reports/tests'
         DEST_DIR: "test-results-${{ github.run_number }}"
