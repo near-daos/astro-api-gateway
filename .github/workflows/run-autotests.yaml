@@ -44,7 +44,7 @@ jobs:
         name: test_results
         path: test-framework/build/reports/tests/**
 
-    - uses: jakejarvis/s3-sync-action@master
+    - uses: jakejarvis/s3-sync-action@v0.5.1
       with:
         args: --acl public-read --follow-symlinks
       env:

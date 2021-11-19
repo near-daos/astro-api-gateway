@@ -231,14 +231,13 @@ jobs:
               --set ingress.host=$K8S_INGRESS_HOST
           done
 
-  run-tests:
-    name: Run Tests
+  run-autotests:
+    name: Run Autotests
     runs-on: ubuntu-latest
     needs:
-    - helm-deploy
+#    - helm-deploy
     - get-environment
-    if: needs.get-environment.outputs.environment == 'develop'
-    steps:
-    - uses: actions/checkout@v2
-    - name: Execute Tests
-      uses: ./.github/actions/test
+    if: needs.get-environment.outputs.environment == 'develop' || needs.get-environment.outputs.environment == 'test'
+    uses: volodymyr-iliashchenko/astro-api-gateway/.github/workflows/run-autotests.yaml
+    with:
+      environment: ${{ needs.get-environment.outputs.environment }}
