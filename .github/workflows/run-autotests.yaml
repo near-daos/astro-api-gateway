@@ -15,11 +15,18 @@ jobs:
   run-tests:
     name: Run Tests
     runs-on: ubuntu-latest
-    if: inputs.environment == 'develop' || inputs.environment == 'test'
     steps:
     - uses: actions/checkout@v2
     - name: Set Environment
       run: |
+        if [[ "${{ github.event.inputs.environment }}" != '' ]]
+        then
+          echo "Environment ${{ github.event.inputs.environment }} was provided manually"
+          echo "ENVIRONMENT=${{ github.event.inputs.environment }}" >>$GITHUB_ENV
+        else
+          echo "Environment ${{ inputs.environment }} was provided by parent workflow"
+          echo "ENVIRONMENT=${{ inputs.environment }}" >>$GITHUB_ENV
+        fi
         cat ".github/env.common" >>$GITHUB_ENV
         cat ".github/env.${{ inputs.environment }}" >>$GITHUB_ENV
     - name: Execute Tests
