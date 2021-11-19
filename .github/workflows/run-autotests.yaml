@@ -23,12 +23,14 @@ jobs:
         then
           echo "Environment ${{ github.event.inputs.environment }} was provided manually"
           echo "ENVIRONMENT=${{ github.event.inputs.environment }}" >>$GITHUB_ENV
+          export ENVIRONMENT=${{ github.event.inputs.environment }}
         else
           echo "Environment ${{ inputs.environment }} was provided by parent workflow"
           echo "ENVIRONMENT=${{ inputs.environment }}" >>$GITHUB_ENV
+          export ENVIRONMENT=${{ inputs.environment }}
         fi
         cat ".github/env.common" >>$GITHUB_ENV
-        cat ".github/env.${{ inputs.environment }}" >>$GITHUB_ENV
+        cat ".github/env.$ENVIRONMENT" >>$GITHUB_ENV
     - name: Execute Tests
       uses: ./.github/actions/test
       with:
