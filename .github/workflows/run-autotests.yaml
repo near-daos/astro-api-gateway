@@ -30,7 +30,11 @@ jobs:
         fi
         cat ".github/env.common" >>$GITHUB_ENV
         cat ".github/env.$ENVIRONMENT" >>$GITHUB_ENV
+
     - name: Execute Tests
       uses: ./.github/actions/test
       with:
         environment: ${{ env.TEST_ENV_NAME }}
+        NEAR_ACCOUNT_ID: ${{ secrets.NEAR_ACCOUNT_ID }}
+        NEAR_PUBLIC_KEY: ${{ secrets.NEAR_PUBLIC_KEY }}
+        NEAR_PRIVATE_KEY: ${{ secrets.NEAR_PRIVATE_KEY }}

@@ -4,6 +4,12 @@ inputs:
     description: Environment to run on. Valid choices are dev, testnet
     default: develop
     required: true
+  NEAR_ACCOUNT_ID:
+    required: true
+  NEAR_PUBLIC_KEY:
+    required: true
+  NEAR_PRIVATE_KEY:
+    required: true
 
 runs:
   using: 'docker'
@@ -17,6 +23,6 @@ runs:
   - -DincludeTags=all
   - -Dtest.env=$INPUT_ENVIRONMENT
   env:
-    NEAR_ACCOUNT_ID: ${{ secrets.NEAR_ACCOUNT_ID }}
-    NEAR_PUBLIC_KEY: ${{ secrets.NEAR_PUBLIC_KEY }}
-    NEAR_PRIVATE_KEY: ${{ secrets.NEAR_PRIVATE_KEY }}
+    NEAR_ACCOUNT_ID: ${{ inputs.NEAR_ACCOUNT_ID }}
+    NEAR_PUBLIC_KEY: ${{ inputs.NEAR_PUBLIC_KEY }}
+    NEAR_PRIVATE_KEY: ${{ inputs.NEAR_PRIVATE_KEY }}
