@@ -26,9 +26,9 @@ export class TransactionActionMapperService {
     );
   }
 
-  async getActionsByNearIndexerTransactions(
+  getActionsByNearIndexerTransactions(
     transactions: Transaction[],
-  ): Promise<TransactionAction[]> {
+  ): TransactionAction[] {
     return transactions.map((tx) => castNearIndexerTransactionAction(tx));
   }
 }

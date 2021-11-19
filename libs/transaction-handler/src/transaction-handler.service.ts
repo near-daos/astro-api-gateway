@@ -25,7 +25,7 @@ export class TransactionHandlerService {
 
   async handleNearIndexerTransactions(transactions: Transaction[]) {
     const actions =
-      await this.transactionActionMapperService.getActionsByNearIndexerTransactions(
+      this.transactionActionMapperService.getActionsByNearIndexerTransactions(
         transactions,
       );
     await this.transactionActionHandlerService.handleTransactionActions(
