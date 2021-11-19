@@ -14,14 +14,20 @@ inputs:
 runs:
   using: 'docker'
   image: public.ecr.aws/c2q4e2i6/jdk-near-cli:latest
-  entrypoint: /github/workspace/test-framework/gradlew
+  #entrypoint: /github/workspace/test-framework/gradlew
+  entrypoint: /bin/bash
   args:
-  - --no-daemon
-  - --project-dir=/github/workspace/test-framework
-  - prepareCreds
-  - test
-  - -DincludeTags=all
-  - -Dtest.env=$INPUT_ENVIRONMENT
+  - -c
+  - | 
+    id
+    pwd
+    env
+#  - --no-daemon
+#  - --project-dir=/github/workspace/test-framework
+#  - prepareCreds
+#  - test
+#  - -DincludeTags=all
+#  - -Dtest.env=$INPUT_ENVIRONMENT
   env:
     NEAR_ACCOUNT_ID: ${{ inputs.NEAR_ACCOUNT_ID }}
     NEAR_PUBLIC_KEY: ${{ inputs.NEAR_PUBLIC_KEY }}
