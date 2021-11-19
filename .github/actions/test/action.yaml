@@ -11,6 +11,7 @@ runs:
   entrypoint: /github/workspace/test-framework/gradlew
   args:
   - --no-daemon
+  - --project-dir=/github/workspace/test-framework
   - test
   - -DincludeTags=all
   - -Dtest.env=$INPUT_ENVIRONMENT
