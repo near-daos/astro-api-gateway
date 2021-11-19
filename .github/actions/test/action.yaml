@@ -4,8 +4,6 @@ inputs:
     description: Environment to run on. Valid choices are dev, testnet
     default: develop
     required: true
-  aws_access_key_id:
-  aws_secret_access_key:
 
 runs:
   using: 'docker'
