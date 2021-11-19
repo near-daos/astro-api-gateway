@@ -233,7 +233,6 @@ jobs:
 
   run-autotests:
     name: Run Autotests
-    runs-on: ubuntu-latest
     needs:
 #    - helm-deploy
     - get-environment
