@@ -73,25 +73,6 @@ allure {
     }
 }
 
-task prepareCreds() {
-    file(System.env.HOME + "/.near-credentials/testnet").mkdirs()
-    System.out.println("Creating file '${System.env.HOME}/.near-credentials/testnet/testnet.json'")
-    System.out.println(""" Content:
-        {
-        "account_id":"${System.env.NEAR_ACCOUNT_ID}",
-        "public_key":"${System.env.NEAR_PUBLIC_KEY}",
-        "private_key":"${System.env.NEAR_PRIVATE_KEY}"
-        }
-    """)
-
-    file(System.env.HOME + "/.near-credentials/testnet/testnet.json").text = """{
-        "account_id":"${System.env.NEAR_ACCOUNT_ID}",
-        "public_key":"${System.env.NEAR_PUBLIC_KEY}",
-        "private_key":"${System.env.NEAR_PRIVATE_KEY}"
-        }
-    """
-}
-
 tasks.named('test') {
     useJUnitPlatform {
         includeTags System.getProperty("includeTags", "all")
