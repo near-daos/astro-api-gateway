@@ -19,6 +19,7 @@ runs:
   - -xc
   - | 
     cd /github/workspace/test-framework
+    mkdir -p $HOME/.near-credentials/testnet
     cat <<- EOF > $HOME/.near-credentials/testnet/${NEAR_ACCOUNT_ID}.json
       {
         "account_id":"${NEAR_ACCOUNT_ID}",
