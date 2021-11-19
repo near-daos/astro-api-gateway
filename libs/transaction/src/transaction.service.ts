@@ -25,9 +25,7 @@ export class TransactionService extends TypeOrmCrudService<Transaction> {
   }
 
   createMultiple(transactions: Transaction[]): Promise<Transaction[]> {
-    return Promise.all(
-      transactions.map((transaction) => this.create(transaction)),
-    );
+    return this.transactionRepository.save(transactions);
   }
 
   lastTransaction(): Promise<Transaction> {
