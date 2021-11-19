@@ -12,6 +12,11 @@ runs:
   args:
   - --no-daemon
   - --project-dir=/github/workspace/test-framework
+  - prepareCreds
   - test
   - -DincludeTags=all
   - -Dtest.env=$INPUT_ENVIRONMENT
+  env:
+    NEAR_ACCOUNT_ID: ${{ secrets.NEAR_ACCOUNT_ID }}
+    NEAR_PUBLIC_KEY: ${{ secrets.NEAR_PUBLIC_KEY }}
+    NEAR_PRIVATE_KEY: ${{ secrets.NEAR_PRIVATE_KEY }}
