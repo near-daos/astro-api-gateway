@@ -47,8 +47,6 @@ jobs:
         registry: public.ecr.aws
         username: ${{ secrets.AWS_ACCESS_KEY_ID }}
         password: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      env:
-        AWS_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
 
     - name: Build And Push
       uses: docker/build-push-action@v2
