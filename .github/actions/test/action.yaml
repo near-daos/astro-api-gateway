@@ -1,4 +1,9 @@
 name: 'Run Tests'
+inputs:
+  environment:
+    description: Environment to run on. Valid choices are dev, testnet
+    default: develop
+    required: true
 runs:
   using: 'docker'
   image: ${{ env.AWS_ECR_URL }}/jdk-near-cli:jdk-11-node-16
@@ -7,3 +12,4 @@ runs:
   - --no-daemon
   - test
   - -DincludeTags=all
+  - -Dtest.env=$INPUT_ENVIRONMENT
