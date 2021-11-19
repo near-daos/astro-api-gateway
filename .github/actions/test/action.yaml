@@ -8,7 +8,7 @@ inputs:
 runs:
   using: 'docker'
   image: public.ecr.aws/c2q4e2i6/jdk-near-cli:latest
-  entrypoint: /github/workspace/test-framework/.gradlew
+  entrypoint: /github/workspace/test-framework/gradlew
   args:
   - --no-daemon
   - test
