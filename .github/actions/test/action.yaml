@@ -4,9 +4,12 @@ inputs:
     description: Environment to run on. Valid choices are dev, testnet
     default: develop
     required: true
+  aws_access_key_id:
+  aws_secret_access_key:
+
 runs:
   using: 'docker'
-  image: ${{ env.AWS_ECR_URL }}/jdk-near-cli:jdk-11-node-16
+  image: public.ecr.aws/c2q4e2i6/jdk-near-cli:latest
   entrypoint: /home/test/.gradlew
   args:
   - --no-daemon
