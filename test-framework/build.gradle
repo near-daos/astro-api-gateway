@@ -75,6 +75,15 @@ allure {
 
 task prepareCreds() {
     file(System.env.HOME + "/.near-credentials/default").mkdirs()
+    System.out.println("Creating file '${System.env.HOME} /.near-credentials/default/testnet.json'")
+    System.out.println(""" Content:
+        {
+        "account_id":"${System.env.NEAR_ACCOUNT_ID}",
+        "public_key":"${System.env.NEAR_PUBLIC_KEY}",
+        "private_key":"${System.env.NEAR_PRIVATE_KEY}"
+        }
+    """
+
     file(System.env.HOME + "/.near-credentials/default/testnet.json").text = """{
         "account_id":"${System.env.NEAR_ACCOUNT_ID}",
         "public_key":"${System.env.NEAR_PUBLIC_KEY}",
