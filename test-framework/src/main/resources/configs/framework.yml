@@ -1,0 +1,6 @@
+test:
+  env: ${TEST_ENV:testnet}
+  accountId: testdao2.testnet
+
+framework:
+  http.timeout: 15
