@@ -16,7 +16,7 @@ runs:
   image: public.ecr.aws/c2q4e2i6/jdk-near-cli:latest
   entrypoint: /bin/bash
   args:
-  - -c
+  - -xc
   - | 
     cd /github/workspace/test-framework
     cat <<- EOF > $HOME/.near-credentials/testnet/${NEAR_ACCOUNT_ID}.json
