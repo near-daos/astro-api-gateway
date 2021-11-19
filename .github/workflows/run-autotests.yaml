@@ -38,3 +38,8 @@ jobs:
         NEAR_ACCOUNT_ID: ${{ secrets.NEAR_ACCOUNT_ID }}
         NEAR_PUBLIC_KEY: ${{ secrets.NEAR_PUBLIC_KEY }}
         NEAR_PRIVATE_KEY: ${{ secrets.NEAR_PRIVATE_KEY }}
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: test_results
+        path: test-framework/build/reports/**
