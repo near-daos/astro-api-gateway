@@ -238,6 +238,6 @@ jobs:
 #    - helm-deploy
     - get-environment
     if: needs.get-environment.outputs.environment == 'develop' || needs.get-environment.outputs.environment == 'test'
-    uses: volodymyr-iliashchenko/astro-api-gateway/.github/workflows/run-autotests.yaml@${{ github.sha }}
+    uses: volodymyr-iliashchenko/astro-api-gateway/.github/workflows/run-autotests.yaml@main
     with:
       environment: ${{ needs.get-environment.outputs.environment }}
