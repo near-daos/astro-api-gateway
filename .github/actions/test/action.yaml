@@ -27,7 +27,7 @@ runs:
         "private_key":"${NEAR_PRIVATE_KEY}"
       }
     EOF
-    ./gradlew --no-daemon test -DincludeTags=all -Dtest.env=$INPUT_ENVIRONMENT
+    ./gradlew --no-daemon test -DincludeTags=all -Dtest.env=$INPUT_ENVIRONMENT || true
   env:
     NEAR_ACCOUNT_ID: ${{ inputs.NEAR_ACCOUNT_ID }}
     NEAR_PUBLIC_KEY: ${{ inputs.NEAR_PUBLIC_KEY }}
