@@ -28,7 +28,6 @@ Main features:
 ## Services
 
 - [Aggregator](./apps/aggregator) - sync blockchain with the Database.
-- [Aggregator DAO](./apps/aggregator-dao) - temporary solution to cover implicit DAO updates that are not covered with Aggregator (is going to be removed in next iterations).
 - [API](./apps/api) - provides a set of API endpoints to view, filter, search, sync etc.
 - [Notifier](./apps/notifier) - simple notification service for sending / subscribing on service events.
 
@@ -46,7 +45,6 @@ All reusable modules separated on libs by domains and could be shared between di
 ```
 /apps
   /aggregator
-  /aggregator-dao
   /api
   /notifier
 ```
@@ -133,6 +131,5 @@ yarn start-dev
 Or run specific service you need:
 
 - Aggregator: `yarn start-aggregator:dev`
-- Aggregator DAO: `yarn start-aggregator-dao:dev`
 - API: `yarn start-api:dev`
 - Notifier: `yarn start-notifier:dev`

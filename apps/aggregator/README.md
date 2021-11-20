@@ -2,21 +2,14 @@
 
 Astro Aggregator App is responsible for synchronization data from DAO Contracts with the Database.
 
-## Aggregation Algorithm v1
+## Aggregation Algorithm
 
-Schedule aggregation with interval defined in `AGGREGATOR_POLLING_INTERVAL` env variable in milliseconds (2 seconds by default):
+After starting microservice runs initial aggregation for all DAOs:
+1. Get list of all DAOs.
+2. For each DAO run aggregation that sync DAO data from NEAR RPC with the Database.
+3. Save all transactions that has been aggregated.
 
-1. Get last transaction stored in service Database.
-2. Get all transactions from Near Indexer DB filtered by DAO ids and made after last saved transaction.
-3. For each updated DAO get DAO data from Contract via Near RPC.
-4. Map data and update service Database.
-
-![Sputnik V2 Aggregation](../../docs/Astro.agregator.v1.png);
-
-
-## Aggregation Algorithm v2
-
-In next iterations Aggregation Algorithm is going to be improved to next one:
+When initial aggregation finished, schedule aggregation with interval defined in `AGGREGATOR_POLLING_INTERVAL` env variable in milliseconds (2 seconds by default):
 
 1. Get last saved transaction.
 2. Get list of all updates from Near Indexer DB by Contract name including arguments.

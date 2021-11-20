@@ -23,6 +23,7 @@ export default class Aggregator {
       this.logger.log('Aggregator Microservice is listening...'),
     );
 
-    app.get(AggregatorService).aggregate();
+    // Run initial aggregation
+    app.get(AggregatorService).aggregateAllDaos();
   }
 }

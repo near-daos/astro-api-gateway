@@ -6,7 +6,7 @@ import { buildRoleId, getBlockTimestamp } from '@sputnik-v2/utils';
 import { castRolePermission } from './role';
 import { castVotePolicy } from './vote-policy';
 
-function castDaoPolicy({ daoId, daoPolicy }) {
+export function castDaoPolicy({ daoId, daoPolicy }) {
   const policy = camelcaseKeys(daoPolicy, { deep: true });
   const roles = daoPolicy.roles.map((role) => ({
     ...castRolePermission(camelcaseKeys(role)),
@@ -19,10 +19,15 @@ function castDaoPolicy({ daoId, daoPolicy }) {
     )
     .map(({ accountIds }) => accountIds)
     .reduce((acc, val) => acc.concat(val), []);
+  const numberOfMembers = roles
+    .filter((role) => role.kind === RoleKindType.Group)
+    .map((group) => group.accountIds)
+    .flat().length;
 
   return {
     council,
     councilSeats: council?.length,
+    numberOfMembers,
     policy: {
       ...policy,
       daoId,

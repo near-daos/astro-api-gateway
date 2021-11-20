@@ -18,4 +18,8 @@ export class BountyService extends TypeOrmCrudService<Bounty> {
   async create(bountyDto: BountyDto): Promise<Bounty> {
     return this.bountyRepository.save(bountyDto);
   }
+
+  async createMultiple(bountyDtos: BountyDto[]): Promise<Bounty[]> {
+    return this.bountyRepository.save(bountyDtos);
+  }
 }

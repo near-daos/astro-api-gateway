@@ -1,7 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { NearApiService } from '@sputnik-v2/near-api';
+import { Transaction } from '@sputnik-v2/near-indexer';
 
-import { castNearTransactionAction, TransactionAction } from './types';
+import {
+  castNearIndexerTransactionAction,
+  castNearTransactionAction,
+  TransactionAction,
+} from './types';
 
 @Injectable()
 export class TransactionActionMapperService {
@@ -19,5 +24,11 @@ export class TransactionActionMapperService {
     return txStatus.transaction.actions.map((action) =>
       castNearTransactionAction(txStatus, action),
     );
+  }
+
+  getActionsByNearIndexerTransactions(
+    transactions: Transaction[],
+  ): TransactionAction[] {
+    return transactions.map((tx) => castNearIndexerTransactionAction(tx));
   }
 }

@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Column, Entity, PrimaryColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
+import { Receipt } from '@sputnik-v2/near-indexer/entities/receipt.entity';
 
 @Entity({ name: 'account_changes' })
 export class AccountChange {
@@ -15,4 +16,9 @@ export class AccountChange {
 
   @Column({ type: 'bigint' })
   changedInBlockTimestamp: number;
+
+  @ApiProperty()
+  @OneToOne((_) => Receipt, { cascade: true })
+  @JoinColumn({ name: 'caused_by_receipt_id' })
+  causedByReceipt: Receipt;
 }

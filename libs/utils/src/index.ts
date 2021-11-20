@@ -27,7 +27,7 @@ export const convertDuration = (duration: number): Date => {
   return epoch;
 };
 
-export const getBlockTimestamp = (date = new Date()) => {
+export const getBlockTimestamp = (date = new Date()): number => {
   // the approximate block timestamp in microseconds - the same way as it's done in indexer
   return date.getTime() * 1000000;
 };

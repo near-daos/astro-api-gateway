@@ -53,6 +53,7 @@ export const nearApiProvider = {
             'get_proposal',
             'get_last_bounty_id',
             'get_bounties',
+            'get_bounty',
             'get_bounty_claims',
             'get_bounty_number_of_claims',
           ],

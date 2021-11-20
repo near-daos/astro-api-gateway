@@ -1,23 +1,23 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ScheduleModule } from '@nestjs/schedule';
-import { ConfigModule } from '@nestjs/config';
-import { DaoModule } from '@sputnik-v2/dao';
-import { ProposalModule } from '@sputnik-v2/proposal';
-import { NearIndexerModule } from '@sputnik-v2/near-indexer';
-import { NearApiModule } from '@sputnik-v2/near-api';
-import { TransactionModule } from '@sputnik-v2/transaction';
-import { SputnikDaoService } from '@sputnik-v2/sputnikdao';
-import { EventModule } from '@sputnik-v2/event';
-import { BountyModule } from '@sputnik-v2/bounty';
-import { TokenModule } from '@sputnik-v2/token';
-import { AggregatorValidationSchema } from '@sputnik-v2/config/validation/aggregator.schema';
+
 import configuration, {
   TypeOrmConfigService,
   validate,
 } from '@sputnik-v2/config/aggregator-config';
+import { AggregatorValidationSchema } from '@sputnik-v2/config/validation';
+import { NearIndexerModule } from '@sputnik-v2/near-indexer';
+import { DaoModule } from '@sputnik-v2/dao';
+import { TransactionModule } from '@sputnik-v2/transaction';
+import { TransactionHandlerModule } from '@sputnik-v2/transaction-handler';
+import { HttpCacheModule } from '@sputnik-v2/cache';
 
 import { AggregatorService } from './aggregator.service';
+import { DaoAggregatorModule } from './dao-aggregator/dao-aggregator.module';
+import { ProposalAggregatorModule } from './proposal-aggregator/proposal-aggregator.module';
+import { BountyAggregatorModule } from './bounty-aggregator/bounty-aggregator.module';
 
 @Module({
   imports: [
@@ -31,15 +31,15 @@ import { AggregatorService } from './aggregator.service';
       useClass: TypeOrmConfigService,
     }),
     ScheduleModule.forRoot(),
-    DaoModule,
-    ProposalModule,
     NearIndexerModule,
-    NearApiModule,
+    DaoModule,
+    TransactionHandlerModule,
     TransactionModule,
-    EventModule,
-    BountyModule,
-    TokenModule,
+    DaoAggregatorModule,
+    ProposalAggregatorModule,
+    BountyAggregatorModule,
+    HttpCacheModule,
   ],
-  providers: [SputnikDaoService, AggregatorService],
+  providers: [AggregatorService],
 })
 export class AggregatorModule {}

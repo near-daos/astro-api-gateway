@@ -43,7 +43,7 @@ export class ProposalActionsMigration implements Migration {
       `Lst available indexer transaction timestamp: ${nearBlockTimestamp}`,
     );
 
-    let chunkSize = 7 * 24 * 60 * 60 * 1000 * 1000 * 1000; // a week
+    const chunkSize = 7 * 24 * 60 * 60 * 1000 * 1000 * 1000; // a week
     const chunks = [];
     let from = new Decimal(blockTimestamp).toNumber();
     while (true) {
@@ -146,7 +146,7 @@ export class ProposalActionsMigration implements Migration {
             )?.action;
 
             return buildProposalAction(
-              proposal,
+              proposal.id,
               { accountId, transactionHash, blockTimestamp },
               action,
             );
@@ -157,7 +157,7 @@ export class ProposalActionsMigration implements Migration {
         ...proposal,
         actions: [
           buildProposalAction(
-            proposal,
+            proposal.id,
             {
               transactionHash: proposal.transactionHash,
               blockTimestamp: proposal.createTimestamp,
