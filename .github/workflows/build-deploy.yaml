@@ -240,3 +240,11 @@ jobs:
     uses: volodymyr-iliashchenko/astro-api-gateway/.github/workflows/run-autotests.yaml@main
     with:
       environment: ${{ needs.get-environment.outputs.environment }}
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      NEAR_ACCOUNT_ID: ${{ secrets.NEAR_ACCOUNT_ID }}
+      NEAR_PUBLIC_KEY: ${{ secrets.NEAR_PUBLIC_KEY }}
+      NEAR_PRIVATE_KEY: ${{ secrets.NEAR_PRIVATE_KEY }}
+      AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+      AWS_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
