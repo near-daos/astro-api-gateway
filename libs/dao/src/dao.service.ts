@@ -40,38 +40,18 @@ export class DaoService extends TypeOrmCrudService<Dao> {
   }
 
   async search(req: CrudRequest, query: string): Promise<Dao[] | DaoResponse> {
-    req.options.query.join = {
-      policy: {
-        eager: true,
-      },
-      'policy.roles': {
-        eager: true,
-      },
-    };
-
-    req.parsed.search = {
-      $and: [
-        {},
-        {
-          $or: [
-            {
-              id: { $contL: query },
-            },
-            {
-              description: { $contL: query },
-            },
-            {
-              config: { $contL: query },
-            },
-            {
-              'policy.roles.accountIds': { $in: [`{${query}}`] },
-            },
-          ],
-        },
-      ],
-    };
-
-    return this.getMany(req);
+    const likeQuery = `%${query.toLowerCase()}%`;
+    const builder = this.daoRepository
+      .createQueryBuilder('dao')
+      .leftJoinAndSelect('dao.policy', 'policy')
+      .leftJoinAndSelect('policy.roles', 'roles')
+      .where(`lower(dao.id) like :likeQuery`, { likeQuery })
+      .orWhere(`lower(dao.config) like :likeQuery`, { likeQuery })
+      .orWhere(`lower(dao.description) like :likeQuery`, { likeQuery })
+      .orWhere(`array_to_string(roles.accountIds, '||') like :likeQuery`, {
+        likeQuery,
+      });
+    return this.doGetMany(builder, req.parsed, req.options);
   }
 
   async getFeed(req: CrudRequest): Promise<DaoFeed[] | DaoFeedResponse> {
