@@ -19,7 +19,7 @@ import {
   ProposalStatus,
   ProposalVoteStatus,
 } from './types';
-import { buildProposalId } from '@sputnik-v2/utils';
+import { buildProposalId, paginate } from '@sputnik-v2/utils';
 
 @Injectable()
 export class ProposalService extends TypeOrmCrudService<Proposal> {
@@ -150,18 +150,10 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
     });
 
     const { offset, limit } = req.parsed;
-    const total = filtered.length;
-    const page = limit ? Math.floor(offset / limit) + 1 : 1;
-    const data = filtered.slice(offset, page * limit);
-    const pageCount = limit && total ? Math.ceil(total / limit) : 1;
 
     const response = {
       ...proposalResponse,
-      data,
-      page,
-      pageCount,
-      count: data.length,
-      total,
+      ...paginate<Proposal>(filtered, limit, offset),
     };
 
     return response;

@@ -12,6 +12,7 @@ import {
 
 import { DaoDto, DaoResponse, DaoFeed, DaoFeedResponse } from './dto';
 import { Dao } from './entities';
+import { paginate } from '@sputnik-v2/utils';
 
 @Injectable()
 export class DaoService extends TypeOrmCrudService<Dao> {
@@ -41,7 +42,7 @@ export class DaoService extends TypeOrmCrudService<Dao> {
 
   async search(req: CrudRequest, query: string): Promise<Dao[] | DaoResponse> {
     const likeQuery = `%${query.toLowerCase()}%`;
-    const builder = this.daoRepository
+    const daos = await this.daoRepository
       .createQueryBuilder('dao')
       .leftJoinAndSelect('dao.policy', 'policy')
       .leftJoinAndSelect('policy.roles', 'roles')
@@ -50,8 +51,18 @@ export class DaoService extends TypeOrmCrudService<Dao> {
       .orWhere(`lower(dao.description) like :likeQuery`, { likeQuery })
       .orWhere(`array_to_string(roles.accountIds, '||') like :likeQuery`, {
         likeQuery,
-      });
-    return this.doGetMany(builder, req.parsed, req.options);
+      })
+      .orderBy(
+        req.parsed.sort.reduce(
+          (options, option) => ({
+            ...options,
+            [`dao.${option.field}`]: option.order,
+          }),
+          {},
+        ),
+      )
+      .getMany();
+    return paginate<Dao>(daos, req.parsed.limit, req.parsed.offset);
   }
 
   async getFeed(req: CrudRequest): Promise<DaoFeed[] | DaoFeedResponse> {
