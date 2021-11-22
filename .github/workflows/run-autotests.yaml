@@ -75,4 +75,4 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         AWS_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
         SOURCE_DIR: 'test-framework/build/reports/tests'
-        DEST_DIR: "test-results-${{ github.run_number }}"
+        DEST_DIR: "test-results-${{ github.workflow }}-${{ github.run_number }}"
