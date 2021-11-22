@@ -1,0 +1,226 @@
+name: Build Deploy All
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        required: false
+        description: Specify environment to run on. Valid values are develop, test, staging, production
+      apps:
+        required: false
+        default: aggregator api notifier
+  push:
+    branches:
+    - develop
+    - staging
+  create:
+    tags:
+    - "**"
+
+env:
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  AWS_ECR_URL: ${{ secrets.AWS_ECR_URL }}
+  EKS_CLUSTER_NAME: ${{ secrets.EKS_CLUSTER_NAME }}
+  KUBE_CONFIG_DATA:  ${{ secrets.KUBE_CONFIG_DATA }}
+
+jobs:
+  get-updated-apps:
+    name: Get Updated Apps
+    runs-on: ubuntu-latest
+    outputs:
+      updated-apps: ${{ steps.updated-apps.outputs.apps }}
+      aggregator: ${{ steps.updated-apps.outputs.aggregator }}
+      api: ${{ steps.updated-apps.outputs.api }}
+      notifier: ${{ steps.updated-apps.outputs.notifier }}
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 2
+    - uses: tj-actions/changed-files@v11.6
+      id: changed-files
+
+    - id: updated-apps
+      shell: bash
+      run: |
+        if [[ "${{ github.event.inputs.apps }}" != "" ]]
+        then
+          echo "List of apps was provided manually: ${{ github.event.inputs.apps }}"
+          echo "::set-output name=apps::${{ github.event.inputs.apps }}"
+          for app in ${{ github.event.inputs.apps }}
+          do
+            echo "::set-output name=$app::true"
+          done
+          exit 0
+        fi
+        for file in ${{ join(steps.changed-files.outputs.modified_files, ' ') }}
+        do
+          echo "$file was updated, checking if it is libs file"
+          if [[ "$file" =~ ^libs/.* ]]
+          then
+            echo "$file matched libs"
+            echo "::set-output name=apps::aggregator api notifier"
+            echo "::set-output name=aggregator::true"
+            echo "::set-output name=api::true"
+            echo "::set-output name=notifier::true"
+            exit 0
+          fi
+        done
+        for app in aggregator api notifier
+        do
+          for file in ${{ join(steps.changed-files.outputs.modified_files, ' ') }}
+          do
+            echo "$file was updated, checking if it is $app file"
+            if [[ "$file" =~ ^apps/$app/.* ]]
+            then
+              echo "$file is part of $app"
+              export UPDATED_APPS="$UPDATED_APPS $app"
+              echo "::set-output name=$app::true"
+              break
+            fi
+          done
+        done
+        echo "::set-output name=apps::$UPDATED_APPS"
+
+  get-environment:
+    name: Get Environment
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.get-environment.outputs.environment }}
+    steps:
+    - name: get environment
+      id: get-environment
+      shell: bash
+      run: |
+        if [[ "${{ github.ref }}" =~ ^refs/tags.* ]]
+        then
+          echo "::set-output name=environment::production"
+        elif [[ "${{ github.ref }}" =~ ^refs/heads/staging ]]
+        then
+          echo "::set-output name=environment::staging"
+        elif [[ "${{ github.ref }}" =~ ^refs/heads/develop ]]
+        then
+          echo "::set-output name=environment::develop"
+        fi
+        if [[ "${{ github.event.inputs.environment }}" != "" ]]
+        then
+          echo "input was provided: ${{ github.event.inputs.environment }}"
+          echo "::set-output name=environment::${{ github.event.inputs.environment }}"
+        fi
+
+  build-image-aggregator:
+    name: Build Image Aggregator
+    if: needs.get-updated-apps.outputs.aggregator
+    env:
+      APP_NAME: aggregator
+    runs-on: ubuntu-latest
+    needs:
+    - get-updated-apps
+    - get-environment
+    environment:
+      name: ${{ needs.get-environment.outputs.environment }}
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set Environment
+      run: |
+        echo DOCKER_ENV_TAG=${{ needs.get-environment.outputs.environment }}-$GITHUB_SHA >> $GITHUB_ENV
+        cat ".github/env.common" >>$GITHUB_ENV
+        cat ".github/env.${{ needs.get-environment.outputs.environment }}" >>$GITHUB_ENV
+    - name: Docker Build Publish
+      uses: ./.github/actions/docker-build-publish
+
+  build-image-api:
+    name: Build Image API
+    if: needs.get-updated-apps.outputs.api
+    env:
+      APP_NAME: api
+    runs-on: ubuntu-latest
+    needs:
+    - get-updated-apps
+    - get-environment
+    environment:
+      name: ${{ needs.get-environment.outputs.environment }}
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set Environment
+      run: |
+        echo DOCKER_ENV_TAG=${{ needs.get-environment.outputs.environment }}-$GITHUB_SHA >> $GITHUB_ENV
+        cat ".github/env.common" >>$GITHUB_ENV
+        cat ".github/env.${{ needs.get-environment.outputs.environment }}" >>$GITHUB_ENV
+    - name: Docker Build Publish
+      uses: ./.github/actions/docker-build-publish
+
+  build-image-notifier:
+    name: Build Image Notifier
+    if: needs.get-updated-apps.outputs.notifier
+    env:
+      APP_NAME: notifier
+    runs-on: ubuntu-latest
+    needs:
+    - get-updated-apps
+    - get-environment
+    environment:
+      name: ${{ needs.get-environment.outputs.environment }}
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set Environment
+      run: |
+        echo DOCKER_ENV_TAG=${{ needs.get-environment.outputs.environment }}-$GITHUB_SHA >> $GITHUB_ENV
+        cat ".github/env.common" >>$GITHUB_ENV
+        cat ".github/env.${{ needs.get-environment.outputs.environment }}" >>$GITHUB_ENV
+    - name: Docker Build Publish
+      uses: ./.github/actions/docker-build-publish
+
+  helm-deploy:
+    name: Helm Deploy
+    runs-on: ubuntu-latest
+    if: always()
+    needs:
+    - get-updated-apps
+    - get-environment
+    - build-image-aggregator
+    - build-image-api
+    - build-image-notifier
+    environment:
+      name: ${{ needs.get-environment.outputs.environment }}
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set Environment
+      run: |
+        echo DOCKER_ENV_TAG=${{ needs.get-environment.outputs.environment }}-$GITHUB_SHA >> $GITHUB_ENV
+        cat ".github/env.common" >>$GITHUB_ENV
+        cat ".github/env.${{ needs.get-environment.outputs.environment }}" >>$GITHUB_ENV
+    - name: Helm Deploy
+      uses: koslib/helm-eks-action@v1.8.0
+      with:
+        command: |
+          for APP_NAME in ${{ needs.get-updated-apps.outputs.updated-apps }}
+          do
+            export CHART_FOLDER=apps/${APP_NAME}/deployment/app-chart
+            helm lint $CHART_FOLDER
+            helm -n $DEPLOYMENT_NAMESPACE upgrade --install --create-namespace sputnik-v2-$APP_NAME $CHART_FOLDER \
+              --set image.tag=$DOCKER_ENV_TAG \
+              --set environment.near_env=$NEAR_ENV \
+              --set environment.near_contract_name=$NEAR_CONTRACT_NAME \
+              --set environment.near_token_factory_contract_name=$NEAR_TOKEN_FACTORY_CONTRACT_NAME \
+              --set environment.near_bridge_token_factory_contract_name=$NEAR_BRIDGE_TOKEN_FACTORY_CONTRACT_NAME \
+              --set environment.wallet_callback_url=$WALLET_CALLBACK_URL \
+              --set ingress.host=$K8S_INGRESS_HOST
+          done
+
+  run-autotests:
+    name: Run Autotests
+    needs:
+    - helm-deploy
+    - get-environment
+    if: needs.get-environment.outputs.environment == 'develop' || needs.get-environment.outputs.environment == 'test'
+    uses: near-daos/astro-api-gateway/.github/workflows/run-autotests.yaml@main
+    with:
+      environment: ${{ needs.get-environment.outputs.environment }}
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      NEAR_ACCOUNT_ID: ${{ secrets.NEAR_ACCOUNT_ID }}
+      NEAR_PUBLIC_KEY: ${{ secrets.NEAR_PUBLIC_KEY }}
+      NEAR_PRIVATE_KEY: ${{ secrets.NEAR_PRIVATE_KEY }}
+      AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+      AWS_REGION: ${{ secrets.AWS_DEFAULT_REGION }}

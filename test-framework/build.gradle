@@ -1,0 +1,97 @@
+buildscript {
+    ext {
+        aspectjVersion = '1.9.4'
+        springVersion = '5.3.5'
+        lombokVersion = '1.18.8'
+        allureVersion = '2.13.9'
+        selenideVersion = '5.20.0'
+        junitVersion = '5.6.2'
+        commonsVersion = '3.12.0'
+        snakeyamlVersion = '1.28'
+        slf4jVersion = '1.7.30'
+        assertjVersion = '3.19.0'
+        okhttpVersion = '4.9.1'
+        jacksonVersion = '2.12.3'
+    }
+}
+
+plugins {
+    id 'java'
+    id 'io.qameta.allure' version '2.8.1'
+    id 'io.freefair.lombok' version '5.3.3.3'
+}
+
+version '1.0'
+group = 'api.app.astrodao.com'
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation "org.aspectj:aspectjweaver:${aspectjVersion}"
+    implementation "org.springframework:spring-context:${springVersion}"
+    implementation "org.springframework:spring-web:${springVersion}"
+    implementation "org.springframework:spring-test:${springVersion}"
+    implementation "org.springframework:spring-aop:${springVersion}"
+    implementation "org.yaml:snakeyaml:${snakeyamlVersion}"
+    implementation "org.slf4j:slf4j-api:${slf4jVersion}"
+    implementation "org.slf4j:slf4j-log4j12:${slf4jVersion}"
+    implementation "org.apache.commons:commons-lang3:${commonsVersion}"
+    implementation "org.assertj:assertj-core:${assertjVersion}"
+    implementation "com.squareup.okhttp3:okhttp:${okhttpVersion}"
+    implementation "com.squareup.okhttp3:okhttp-urlconnection:${okhttpVersion}"
+    implementation "com.fasterxml.jackson.module:jackson-module-parameter-names:${jacksonVersion}"
+    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:${jacksonVersion}"
+    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${jacksonVersion}"
+    implementation "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
+    implementation "com.google.code.gson:gson:2.8.9"
+
+    implementation "io.qameta.allure:allure-java-commons:${allureVersion}"
+
+    implementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
+    implementation "org.junit.jupiter:junit-jupiter-params:${junitVersion}"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
+
+    implementation "javax.annotation:javax.annotation-api:1.3.2"
+    implementation "com.github.javafaker:javafaker:1.0.2"
+    implementation "org.javatuples:javatuples:1.2"
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+allure {
+    version = "${allureVersion}"
+    autoconfigure = true
+    aspectjweaver = true
+    useJUnit5 {
+        version = "${allureVersion}"
+    }
+}
+
+tasks.named('test') {
+    useJUnitPlatform {
+        includeTags System.getProperty("includeTags", "all")
+    }
+
+    testLogging {
+        events "passed", "skipped", "failed"
+        showStandardStreams = true
+    }
+
+    afterSuite { desc, result ->
+        if (!desc.parent) {
+            println "\nTest result: ${result.resultType}"
+            println "Test summary: ${result.testCount} tests, " +
+                    "${result.successfulTestCount} succeeded, " +
+                    "${result.failedTestCount} failed, " +
+                    "${result.skippedTestCount} skipped"
+        }
+    }
+
+    environment "TEST_ENV", System.getProperty("test.env", "testnet")
+}

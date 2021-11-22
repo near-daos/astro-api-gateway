@@ -1,0 +1,25 @@
+# Ignore Intellij stuff
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# Ignore Build and unit tests stuff
+logs/
+target/
+bin/
+obj/
+out/
+
+# Ignore Mac stuff
+.DS_Store
+
+# Ignore stuff
+.allure
+allure-results
+
+# Ignore Gradle project-specific cache directory
+.gradle
+
+# Ignore Gradle build output directory
+build

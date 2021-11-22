@@ -1,0 +1,80 @@
+name: Run Autotests
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        required: false
+        default: develop
+        description: Specify environment to run on. Valid values are develop, test
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        description: Specify environment to run on. Valid values are develop, test
+        type: string
+    secrets:
+      AWS_ACCESS_KEY_ID:
+         required: true
+      AWS_SECRET_ACCESS_KEY:
+         required: true
+      NEAR_ACCOUNT_ID:
+         required: true
+      NEAR_PUBLIC_KEY:
+         required: true
+      NEAR_PRIVATE_KEY:
+         required: true
+      AWS_S3_BUCKET:
+         required: true
+      AWS_REGION:
+         required: true
+
+env:
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+jobs:
+  run-tests:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set Environment
+      id: set_environment
+      run: |
+        if [[ "${{ github.event.inputs.environment }}" != '' ]]
+        then
+          echo "Environment ${{ github.event.inputs.environment }} was provided manually"
+          echo "ENVIRONMENT=${{ github.event.inputs.environment }}" >>$GITHUB_ENV
+          export ENVIRONMENT=${{ github.event.inputs.environment }}
+        else
+          echo "Environment ${{ inputs.environment }} was provided by parent workflow"
+          echo "ENVIRONMENT=${{ inputs.environment }}" >>$GITHUB_ENV
+          export ENVIRONMENT=${{ inputs.environment }}
+        fi
+        cat ".github/env.common" >>$GITHUB_ENV
+        cat ".github/env.$ENVIRONMENT" >>$GITHUB_ENV
+        echo "::set-output name=workflow_name::${GITHUB_WORKFLOW// /-}"
+
+    - name: Execute Tests
+      uses: ./.github/actions/test
+      with:
+        environment: ${{ env.TEST_ENV_NAME }}
+        NEAR_ACCOUNT_ID: ${{ secrets.NEAR_ACCOUNT_ID }}
+        NEAR_PUBLIC_KEY: ${{ secrets.NEAR_PUBLIC_KEY }}
+        NEAR_PRIVATE_KEY: ${{ secrets.NEAR_PRIVATE_KEY }}
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: test_results
+        path: test-framework/build/reports/tests/**
+
+    - uses: jakejarvis/s3-sync-action@v0.5.1
+      with:
+        args: --acl public-read --follow-symlinks
+      env:
+        AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+        SOURCE_DIR: 'test-framework/build/reports/tests'
+        DEST_DIR: "test-results-${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}"
