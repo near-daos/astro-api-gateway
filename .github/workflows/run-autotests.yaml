@@ -39,6 +39,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Set Environment
+      id: set_environment
       run: |
         if [[ "${{ github.event.inputs.environment }}" != '' ]]
         then
@@ -52,6 +53,7 @@ jobs:
         fi
         cat ".github/env.common" >>$GITHUB_ENV
         cat ".github/env.$ENVIRONMENT" >>$GITHUB_ENV
+        echo "::set-env name=workflow_name::${GITHUB_WORKFLOW// /-}"
 
     - name: Execute Tests
       uses: ./.github/actions/test
@@ -75,4 +77,4 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         AWS_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
         SOURCE_DIR: 'test-framework/build/reports/tests'
-        DEST_DIR: "test-results-${{ github.workflow }}-${{ github.run_number }}"
+        DEST_DIR: "test-results-${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}"
