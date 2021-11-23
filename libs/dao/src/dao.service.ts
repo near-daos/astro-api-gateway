@@ -53,7 +53,7 @@ export class DaoService extends TypeOrmCrudService<Dao> {
         likeQuery,
       })
       .orderBy(
-        req.parsed.sort.reduce(
+        req.parsed?.sort?.reduce(
           (options, option) => ({
             ...options,
             [`dao.${option.field}`]: option.order,
