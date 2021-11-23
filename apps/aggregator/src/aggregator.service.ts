@@ -12,56 +12,121 @@ import { TransactionService } from '@sputnik-v2/transaction';
 import { DaoService } from '@sputnik-v2/dao';
 import { TransactionHandlerService } from '@sputnik-v2/transaction-handler';
 import { CacheService } from '@sputnik-v2/cache';
+import { TokenService } from '@sputnik-v2/token';
 
 import { DaoAggregatorService } from './dao-aggregator/dao-aggregator.service';
 import { ProposalAggregatorService } from './proposal-aggregator/proposal-aggregator.service';
 import { BountyAggregatorService } from './bounty-aggregator/bounty-aggregator.service';
+import { AggregatorState } from './aggregator-state/aggregator-state';
+import { TokenAggregatorService } from './token-aggregator/token-aggregator.service';
 
 @Injectable()
 export class AggregatorService {
   private readonly logger = new Logger(AggregatorService.name);
-  private isAggregationInProgress: boolean;
+  private state = new AggregatorState();
 
   constructor(
     private readonly configService: ConfigService,
     private readonly nearIndexerService: NearIndexerService,
     private readonly transactionService: TransactionService,
+    private readonly tokenService: TokenService,
     private readonly daoService: DaoService,
     private readonly transactionHandlerService: TransactionHandlerService,
     private readonly daoAggregatorService: DaoAggregatorService,
     private readonly proposalAggregatorService: ProposalAggregatorService,
     private readonly bountyAggregatorService: BountyAggregatorService,
+    private readonly tokenAggregatorService: TokenAggregatorService,
     private readonly schedulerRegistry: SchedulerRegistry,
     private readonly cacheService: CacheService,
   ) {
-    const { pollingInterval } = this.configService.get('aggregator');
+    const { pollingInterval, tokenPollingInterval } =
+      this.configService.get('aggregator');
 
-    const interval = setInterval(
-      () => this.scheduleAggregation(),
-      pollingInterval,
+    schedulerRegistry.addInterval(
+      'polling',
+      setInterval(() => this.scheduleDaoAggregation(), pollingInterval),
     );
-    schedulerRegistry.addInterval('polling', interval);
+
+    schedulerRegistry.addInterval(
+      'token_polling',
+      setInterval(() => this.scheduleTokenAggregation(), tokenPollingInterval),
+    );
   }
 
-  public async scheduleAggregation(): Promise<void> {
+  public async scheduleDaoAggregation(): Promise<void> {
     try {
-      await this.aggregateNewTransactions();
+      await this.aggregateNewDaoTransactions();
     } catch (error) {
-      this.isAggregationInProgress = false;
+      this.state.stopAggregation('dao');
 
-      this.logger.log(`Aggregation failed with error: ${error}`);
+      this.logger.log(`DAO Aggregation failed with error: ${error}`);
     }
   }
 
-  // Sync service Database with transactions made after last aggregation
-  public async aggregateNewTransactions() {
-    if (this.isAggregationInProgress) {
+  public async scheduleTokenAggregation(): Promise<void> {
+    try {
+      await this.aggregateTokens();
+    } catch (error) {
+      this.state.stopAggregation('token');
+
+      this.logger.log(`Token Aggregation failed with error: ${error}`);
+    }
+  }
+
+  public async aggregateTokens() {
+    if (this.state.isInProgress('token')) {
       return;
     }
 
-    this.logger.log(`Start aggregation...`);
+    this.logger.log(`Start Token aggregation...`);
+    this.state.startAggregation('token');
 
-    this.isAggregationInProgress = true;
+    const lastToken = await this.tokenService.lastToken();
+    const { contractName } = this.configService.get('near');
+    const daoTokenUpdates =
+      await this.nearIndexerService.findLikelyTokenUpdates(
+        `%.${contractName}%`,
+        lastToken.updateTimestamp || lastToken.createTimestamp,
+      );
+
+    if (daoTokenUpdates.length === 0) {
+      this.logger.log(`Skip aggregation for Tokens. No new transactions found`);
+      this.state.stopAggregation('token');
+      return;
+    }
+
+    const uniqueUpdates = daoTokenUpdates.filter((tokenUpdate, index) => {
+      return (
+        index ===
+        daoTokenUpdates.findIndex(
+          ({ token, account }) =>
+            tokenUpdate.token === token && tokenUpdate.account === account,
+        )
+      );
+    });
+
+    this.logger.log(
+      `Found token updates: ${uniqueUpdates.map(({ token }) => token)}`,
+    );
+
+    await this.tokenAggregatorService.aggregateDaoTokenUpdates(uniqueUpdates);
+
+    // TODO: https://app.clickup.com/t/1ty89nk
+    await this.cacheService.clearCache();
+
+    this.logger.log(`Finished Token aggregation`);
+    this.state.stopAggregation('token');
+  }
+
+  // Sync service Database with transactions made after last aggregation
+  public async aggregateNewDaoTransactions() {
+    if (this.state.isInProgress('dao')) {
+      return;
+    }
+
+    this.logger.log(`Start DAO aggregation...`);
+
+    this.state.startAggregation('dao');
 
     const { contractName } = this.configService.get('near');
 
@@ -93,8 +158,8 @@ export class AggregatorService {
       });
 
     if (transactions.length === 0) {
-      this.logger.log('Skip Aggregation. No new transactions found.');
-      this.isAggregationInProgress = false;
+      this.logger.log('Skip DAO Aggregation. No new transactions found.');
+      this.state.stopAggregation('dao');
       return;
     }
 
@@ -108,18 +173,14 @@ export class AggregatorService {
     // TODO: https://app.clickup.com/t/1ty89nk
     await this.cacheService.clearCache();
 
-    this.isAggregationInProgress = false;
+    this.state.stopAggregation('dao');
   }
 
   // Aggregate new transactions for each dao
   public async aggregateAllDaos() {
-    if (this.isAggregationInProgress) {
-      return;
-    }
-
     this.logger.log(`Start all DAO aggregation`);
 
-    this.isAggregationInProgress = true;
+    this.state.startAggregations(['dao', 'token']);
 
     const tx = await this.transactionService.lastTransaction();
     const { contractName } = this.configService.get('near');
@@ -134,7 +195,13 @@ export class AggregatorService {
         async (daoAccount) => await this.aggregateDaoByAccount(daoAccount, tx),
       );
 
-    this.isAggregationInProgress = false;
+    await PromisePool.withConcurrency(5)
+      .for(daoAccounts)
+      .process(
+        async (daoAccount) => await this.aggregateDaoTokens(daoAccount, tx),
+      );
+
+    this.state.stopAggregations(['dao', 'token']);
     this.logger.log(`Finished all DAO aggregation`);
   }
 
@@ -181,6 +248,37 @@ export class AggregatorService {
     } catch (error) {
       this.logger.error(
         `Failed DAO aggregation ${account.accountId}. Error: ${error}`,
+      );
+    }
+  }
+
+  public async aggregateDaoTokens(account: Account, tx?: Transaction) {
+    this.logger.log(`Start aggregation tokens for DAO: ${account.accountId}`);
+
+    try {
+      const daoTokenIds = await this.nearIndexerService.findLikelyTokens(
+        account.accountId,
+      );
+
+      if (daoTokenIds.length === 0) {
+        this.logger.log(
+          `Skip token aggregation for DAO: ${account.accountId}. No tokens found`,
+        );
+        return;
+      }
+
+      await this.tokenAggregatorService.aggregateDaoTokens(
+        account.accountId,
+        daoTokenIds,
+        tx?.blockTimestamp,
+      );
+
+      this.logger.log(
+        `Successfully aggregated DAO: ${account.accountId} Tokens: ${daoTokenIds}`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Failed aggregation DAO: ${account.accountId}. Error: ${error}`,
       );
     }
   }

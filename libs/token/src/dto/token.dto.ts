@@ -1,5 +1,11 @@
 import { TransactionInfo } from '@sputnik-v2/common';
 
+export interface TokenUpdateDto {
+  account: string;
+  token: string;
+  timestamp: number;
+}
+
 export interface TokenMetadataDto {
   decimals: number;
   icon: string;
@@ -10,9 +16,8 @@ export interface TokenMetadataDto {
   symbol: string;
 }
 
-export interface TokenDto extends TransactionInfo {
-  id: string; // transaction_hash
+export interface TokenDto extends TransactionInfo, TokenMetadataDto {
+  id: string;
   ownerId: string;
   totalSupply: string;
-  metadata: TokenMetadataDto;
 }

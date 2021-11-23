@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 import PromisePool from '@supercharge/promise-pool';
 import { NEAR_INDEXER_DB_CONNECTION } from '@sputnik-v2/common';
+import { TokenUpdateDto } from '@sputnik-v2/token';
 import { Connection, Repository, SelectQueryBuilder } from 'typeorm';
 import {
   Account,
@@ -265,6 +266,64 @@ export class NearIndexerService {
     ];
   }
 
+  async findLikelyTokenUpdates(
+    accountId: string,
+    fromBlockTimestamp: number,
+  ): Promise<TokenUpdateDto[]> {
+    const { bridgeTokenFactoryContractName } = this.configService.get('near');
+
+    const received = `
+        select distinct receipt_receiver_account_id as token, args->'args_json'->>'receiver_id' as account, receipt_included_in_block_timestamp as timestamp
+        from action_receipt_actions
+        where args->'args_json'->>'receiver_id' like $1
+            and action_kind = 'FUNCTION_CALL'
+            and args->>'args_json' is not null
+            and args->>'method_name' in ('ft_transfer', 'ft_transfer_call','ft_mint')
+            and receipt_included_in_block_timestamp  > $2
+        limit 100;
+    `;
+
+    const mintedWithBridge = `
+        select distinct receipt_receiver_account_id as token, account_id as account, receipt_included_in_block_timestamp as timestamp from (
+            select args->'args_json'->>'account_id' as account_id, receipt_receiver_account_id, receipt_included_in_block_timestamp
+            from action_receipt_actions
+            where action_kind = 'FUNCTION_CALL' and
+                receipt_predecessor_account_id = $2 and
+                args->>'method_name' = 'mint'
+            and receipt_included_in_block_timestamp > $3
+        ) minted_with_bridge
+        where account_id like $1
+        limit 100;
+    `;
+
+    const calledByUser = `
+        select distinct receipt_receiver_account_id as token, receipt_predecessor_account_id as account, receipt_included_in_block_timestamp as timestamp
+        from action_receipt_actions
+        where receipt_predecessor_account_id like $1
+            and action_kind = 'FUNCTION_CALL'
+            and (args->>'method_name' like 'ft_%' or args->>'method_name' = 'storage_deposit')
+        and receipt_included_in_block_timestamp  > $2
+        limit 100;
+    `;
+
+    const [receivedTokens, mintedWithBridgeTokens, calledByUserTokens] =
+      await Promise.all([
+        this.connection.query(received, [accountId, fromBlockTimestamp]),
+        this.connection.query(mintedWithBridge, [
+          accountId,
+          bridgeTokenFactoryContractName,
+          fromBlockTimestamp,
+        ]),
+        this.connection.query(calledByUser, [accountId, fromBlockTimestamp]),
+      ]);
+
+    return [
+      ...receivedTokens,
+      ...mintedWithBridgeTokens,
+      ...calledByUserTokens,
+    ];
+  }
+
   // Account Likely NFTs - taken from NEAR Helper Indexer middleware
   // https://github.com/near/near-contract-helper/blob/master/middleware/indexer.js
   async findLikelyNFTs(accountId: string): Promise<string[]> {
@@ -307,18 +366,18 @@ export class NearIndexerService {
         'transaction.transactionAction',
         'transaction_actions',
       );
-      // .leftJoinAndSelect(
-      //   'transaction.receipts',
-      //   'receipts',
-      //   'receipts.predecessor_account_id = ANY(ARRAY[:...ids])',
-      //   { ids: receiverAccountIds },
-      // )
-      // .leftJoinAndSelect(
-      //   'receipts.receiptActions',
-      //   'action_receipt_actions',
-      //   'action_receipt_actions.receipt_predecessor_account_id = ANY(ARRAY[:...ids]) AND action_receipt_actions.action_kind = :actionKind',
-      //   { ids: receiverAccountIds, actionKind: ActionKind.Transfer },
-      // )
+    // .leftJoinAndSelect(
+    //   'transaction.receipts',
+    //   'receipts',
+    //   'receipts.predecessor_account_id = ANY(ARRAY[:...ids])',
+    //   { ids: receiverAccountIds },
+    // )
+    // .leftJoinAndSelect(
+    //   'receipts.receiptActions',
+    //   'action_receipt_actions',
+    //   'action_receipt_actions.receipt_predecessor_account_id = ANY(ARRAY[:...ids]) AND action_receipt_actions.action_kind = :actionKind',
+    //   { ids: receiverAccountIds, actionKind: ActionKind.Transfer },
+    // )
 
     queryBuilder =
       accountIds instanceof Array

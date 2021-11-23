@@ -1,4 +1,9 @@
 import { ProposalPurgeMigration } from './proposal-purge.migration';
 import { ProposalActionsMigration } from './proposal-actions.migration';
+import { TokenIdsMigration } from './token-ids.migration';
 
-export default [ProposalPurgeMigration, ProposalActionsMigration];
+export default [
+  ProposalPurgeMigration,
+  ProposalActionsMigration,
+  TokenIdsMigration,
+];

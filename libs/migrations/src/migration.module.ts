@@ -1,20 +1,24 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+
 import { ProposalModule } from '@sputnik-v2/proposal';
 import { NearIndexerModule } from '@sputnik-v2/near-indexer';
 import { NearApiModule } from '@sputnik-v2/near-api';
 import { SputnikDaoService } from '@sputnik-v2/sputnikdao';
-import migrationScripts from './scripts';
 import { ConfigModule } from '@nestjs/config';
 import configuration, {
   TypeOrmConfigService,
 } from '@sputnik-v2/config/aggregator-dao-config';
+import { Token } from '@sputnik-v2/token';
+
+import migrationScripts from './scripts';
 
 @Module({
   imports: [
     TypeOrmModule.forRootAsync({
       useClass: TypeOrmConfigService,
     }),
+    TypeOrmModule.forFeature([Token]),
     ConfigModule.forRoot({
       isGlobal: true,
       load: configuration,

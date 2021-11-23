@@ -6,7 +6,7 @@ import { NEAR_TOKEN_FACTORY_PROVIDER } from '@sputnik-v2/common';
 import { NearTokenFactoryProvider } from '@sputnik-v2/config/near-token-factory';
 import { buildNFTTokenId } from '@sputnik-v2/utils';
 
-import { TokenDto, TokenMetadataDto, NFTTokenDto } from './dto';
+import { TokenMetadataDto, NFTTokenDto } from './dto';
 
 @Injectable()
 export class TokenFactoryService {
@@ -24,24 +24,6 @@ export class TokenFactoryService {
 
     this.factoryContract = factoryContract;
     this.account = account;
-  }
-
-  public async getTokens(tokenIds: string[]): Promise<TokenDto[]> {
-    const tokens = await (tokenIds
-      ? this.getTokensByIds(tokenIds)
-      : this.getTokensList());
-
-    return tokens.map((token: TokenDto) =>
-      camelcaseKeys(token, { deep: true }),
-    );
-  }
-
-  public async getToken(tokenId: string): Promise<TokenDto> {
-    const token = await this.factoryContract.get_token({
-      token_id: tokenId.toLowerCase(),
-    });
-
-    return { ...camelcaseKeys(token, { deep: true }) };
   }
 
   public async getNFTs(tokenOwners: any): Promise<NFTTokenDto[]> {
@@ -113,59 +95,6 @@ export class TokenFactoryService {
     });
 
     return nfts.map((nft: object) => camelcaseKeys(nft, { deep: true }));
-  }
-
-  private async getTokensList(): Promise<TokenDto[]> {
-    try {
-      const numTokens = await this.factoryContract.get_number_of_tokens();
-
-      const chunkSize = 50;
-      const chunkCount = (numTokens - (numTokens % chunkSize)) / chunkSize + 1;
-      const { results: tokens, errors } = await PromisePool.withConcurrency(1)
-        .for([...Array(chunkCount).keys()])
-        .process(
-          async (offset) =>
-            await this.factoryContract.get_tokens({
-              from_index: offset * chunkSize,
-              limit: chunkSize,
-            }),
-        );
-
-      errors?.map((error) => this.logger.error(error));
-
-      return tokens.reduce(
-        (acc: TokenDto[], prop: TokenDto[]) => acc.concat(prop),
-        [],
-      );
-    } catch (error) {
-      this.logger.error(error);
-
-      return Promise.reject(error);
-    }
-  }
-
-  private async getTokensByIds(tokenIds: string[]): Promise<TokenDto[]> {
-    try {
-      const { results: tokens, errors } = await PromisePool.withConcurrency(5)
-        .for(tokenIds)
-        .process(
-          async (tokenId) =>
-            await this.factoryContract.get_token({
-              token_id: tokenId.toLowerCase(),
-            }),
-        );
-
-      errors?.map((error) => this.logger.error(error));
-
-      return tokens.reduce(
-        (acc: TokenDto[], prop: TokenDto[]) => acc.concat(prop),
-        [],
-      );
-    } catch (error) {
-      this.logger.error(error);
-
-      return Promise.reject(error);
-    }
   }
 
   private getFTContract(contractId: string): Contract & any {

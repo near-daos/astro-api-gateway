@@ -59,6 +59,9 @@ export const nearApiProvider = {
           ],
           changeMethods: ['add_proposal', 'act_proposal'],
         },
+        ftToken: {
+          viewMethods: ['ft_balance_of', 'ft_metadata', 'ft_total_supply'],
+        },
       },
     };
   },
