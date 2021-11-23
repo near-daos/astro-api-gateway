@@ -2,6 +2,7 @@ import Decimal from 'decimal.js';
 
 import { DaoDto, Dao } from '@sputnik-v2/dao';
 import { ProposalDto, Proposal } from '@sputnik-v2/proposal';
+import { BaseResponse } from '@sputnik-v2/common';
 
 export const formatTimestamp = (timestamp: number): string => {
   const seconds = Number(timestamp / 1e9);
@@ -95,4 +96,22 @@ export const calcProposalVotePeriodEnd = (
 
 export function isNotNull<T>(arg: T): arg is Exclude<T, null> {
   return arg !== null;
+}
+
+export function paginate<T>(
+  allData: T[],
+  limit: number,
+  offset: number,
+): BaseResponse<T> {
+  const total = allData.length;
+  const page = limit ? Math.floor(offset / limit) + 1 : 1;
+  const data = allData.slice(offset, page * limit);
+  const pageCount = limit && total ? Math.ceil(total / limit) : 1;
+  return {
+    data,
+    page,
+    pageCount,
+    count: data.length,
+    total,
+  };
 }

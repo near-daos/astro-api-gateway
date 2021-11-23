@@ -12,6 +12,7 @@ import {
 
 import { DaoDto, DaoResponse, DaoFeed, DaoFeedResponse } from './dto';
 import { Dao } from './entities';
+import { paginate } from '@sputnik-v2/utils';
 
 @Injectable()
 export class DaoService extends TypeOrmCrudService<Dao> {
@@ -40,38 +41,28 @@ export class DaoService extends TypeOrmCrudService<Dao> {
   }
 
   async search(req: CrudRequest, query: string): Promise<Dao[] | DaoResponse> {
-    req.options.query.join = {
-      policy: {
-        eager: true,
-      },
-      'policy.roles': {
-        eager: true,
-      },
-    };
-
-    req.parsed.search = {
-      $and: [
-        {},
-        {
-          $or: [
-            {
-              id: { $contL: query },
-            },
-            {
-              description: { $contL: query },
-            },
-            {
-              config: { $contL: query },
-            },
-            {
-              'policy.roles.accountIds': { $in: [`{${query}}`] },
-            },
-          ],
-        },
-      ],
-    };
-
-    return this.getMany(req);
+    const likeQuery = `%${query.toLowerCase()}%`;
+    const daos = await this.daoRepository
+      .createQueryBuilder('dao')
+      .leftJoinAndSelect('dao.policy', 'policy')
+      .leftJoinAndSelect('policy.roles', 'roles')
+      .where(`lower(dao.id) like :likeQuery`, { likeQuery })
+      .orWhere(`lower(dao.config) like :likeQuery`, { likeQuery })
+      .orWhere(`lower(dao.description) like :likeQuery`, { likeQuery })
+      .orWhere(`array_to_string(roles.accountIds, '||') like :likeQuery`, {
+        likeQuery,
+      })
+      .orderBy(
+        req.parsed?.sort?.reduce(
+          (options, option) => ({
+            ...options,
+            [`dao.${option.field}`]: option.order,
+          }),
+          {},
+        ),
+      )
+      .getMany();
+    return paginate<Dao>(daos, req.parsed.limit, req.parsed.offset);
   }
 
   async getFeed(req: CrudRequest): Promise<DaoFeed[] | DaoFeedResponse> {
