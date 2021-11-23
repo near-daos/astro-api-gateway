@@ -19,4 +19,5 @@ export class SputnikDaoDto extends TransactionInfo implements DaoDto {
   link: string;
   description: string;
   createdBy: string;
+  metadata?: string;
 }

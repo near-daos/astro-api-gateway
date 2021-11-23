@@ -23,6 +23,7 @@ export function castDao(
       daoPolicy: policy,
     }),
     config,
+    metadata: Buffer.from(config.metadata, 'base64').toString('utf-8'),
     stakingContract,
     totalSupply,
     lastProposalId,

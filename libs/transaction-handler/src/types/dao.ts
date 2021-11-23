@@ -49,6 +49,7 @@ export function castCreateDao({
     id: daoId,
     config: args.config,
     ...castDaoPolicy({ daoId, daoPolicy: args.policy }),
+    metadata: Buffer.from(args.config.metadata, 'base64').toString('utf-8'),
     amount: Number(amount),
     totalSupply: '0',
     lastBountyId: 0,
@@ -96,6 +97,9 @@ export function castActProposalDao({
     ...dao,
     ...daoPolicy,
     config,
+    metadata: config?.metadata
+      ? Buffer.from(config.metadata, 'base64').toString('utf-8')
+      : undefined,
     lastBountyId,
     stakingContract,
     amount: amount && Number(amount),

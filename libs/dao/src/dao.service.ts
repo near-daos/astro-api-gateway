@@ -48,6 +48,7 @@ export class DaoService extends TypeOrmCrudService<Dao> {
       .leftJoinAndSelect('policy.roles', 'roles')
       .where(`lower(dao.id) like :likeQuery`, { likeQuery })
       .orWhere(`lower(dao.config) like :likeQuery`, { likeQuery })
+      .orWhere(`lower(dao.metadata) like :likeQuery`, { likeQuery })
       .orWhere(`lower(dao.description) like :likeQuery`, { likeQuery })
       .orWhere(`array_to_string(roles.accountIds, '||') like :likeQuery`, {
         likeQuery,
