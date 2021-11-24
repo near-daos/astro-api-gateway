@@ -1,6 +1,7 @@
 import { castDaoPolicy } from '@sputnik-v2/transaction-handler';
 import { SputnikDaoDto } from '@sputnik-v2/dao';
 import { Account, Transaction } from '@sputnik-v2/near-indexer';
+import { decodeBase64 } from '@sputnik-v2/utils';
 
 export function castDao(
   daoAccount: Account,
@@ -23,7 +24,7 @@ export function castDao(
       daoPolicy: policy,
     }),
     config,
-    metadata: Buffer.from(config.metadata, 'base64').toString('utf-8'),
+    metadata: decodeBase64(config.metadata),
     stakingContract,
     totalSupply,
     lastProposalId,

@@ -76,9 +76,13 @@ export const buildNFTTokenId = (ownerId: string, tokenId: string) => {
   return `${ownerId}-${tokenId}`;
 };
 
+export const decodeBase64 = (b: string) => {
+  return Buffer.from(b, 'base64').toString('utf-8');
+};
+
 export const btoaJSON = (b: string) => {
   try {
-    return JSON.parse(Buffer.from(b, 'base64').toString('utf-8'));
+    return JSON.parse(decodeBase64(b));
   } catch (e) {}
 };
 

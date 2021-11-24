@@ -1,9 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Dao } from '@sputnik-v2/dao';
-
-import { Migration } from '..';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { Dao } from '@sputnik-v2/dao';
+import { decodeBase64 } from '@sputnik-v2/utils';
+
+import { Migration } from '..';
 
 @Injectable()
 export class DaoMetadataMigration implements Migration {
@@ -24,9 +25,7 @@ export class DaoMetadataMigration implements Migration {
     await this.daoRepository.save(
       daos.map((dao) => ({
         ...dao,
-        metadata: dao.config?.metadata
-          ? Buffer.from(dao.config.metadata, 'base64').toString('utf-8')
-          : '',
+        metadata: dao.config?.metadata ? decodeBase64(dao.config.metadata) : '',
       })),
     );
   }
