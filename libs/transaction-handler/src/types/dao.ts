@@ -1,7 +1,11 @@
 import camelcaseKeys from 'camelcase-keys';
 import { RoleKindType } from '@sputnik-v2/dao/entities';
 import { SputnikDaoDto } from '@sputnik-v2/dao/dto';
-import { buildRoleId, getBlockTimestamp } from '@sputnik-v2/utils';
+import {
+  buildRoleId,
+  decodeBase64,
+  getBlockTimestamp,
+} from '@sputnik-v2/utils';
 
 import { castRolePermission } from './role';
 import { castVotePolicy } from './vote-policy';
@@ -49,6 +53,7 @@ export function castCreateDao({
     id: daoId,
     config: args.config,
     ...castDaoPolicy({ daoId, daoPolicy: args.policy }),
+    metadata: decodeBase64(args.config.metadata),
     amount: Number(amount),
     totalSupply: '0',
     lastBountyId: 0,
@@ -96,6 +101,7 @@ export function castActProposalDao({
     ...dao,
     ...daoPolicy,
     config,
+    metadata: config?.metadata ? decodeBase64(config.metadata) : undefined,
     lastBountyId,
     stakingContract,
     amount: amount && Number(amount),

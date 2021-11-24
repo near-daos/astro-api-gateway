@@ -1,5 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
+import {
+  BeforeInsert,
+  Column,
+  Entity,
+  JoinColumn,
+  OneToOne,
+  PrimaryColumn,
+} from 'typeorm';
 import { TransactionEntity } from '@sputnik-v2/common';
 
 import { DaoConfig } from '../types/dao-config';
@@ -14,6 +21,10 @@ export class Dao extends TransactionEntity {
   @ApiProperty({ type: DaoConfig })
   @Column({ type: 'simple-json' })
   config: DaoConfig;
+
+  @ApiProperty()
+  @Column({ nullable: true, type: 'text' })
+  metadata: string;
 
   @ApiProperty()
   @Column({ type: 'numeric' })

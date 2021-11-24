@@ -9,6 +9,7 @@ import { ConfigModule } from '@nestjs/config';
 import configuration, {
   TypeOrmConfigService,
 } from '@sputnik-v2/config/aggregator-dao-config';
+import { Dao } from '@sputnik-v2/dao';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import configuration, {
       load: configuration,
       envFilePath: ['.env.local', '.env'],
     }),
+    TypeOrmModule.forFeature([Dao]),
     ProposalModule,
     NearIndexerModule,
     NearApiModule,
