@@ -69,7 +69,7 @@ export class AggregatorService {
     } catch (error) {
       this.state.stopAggregation('token');
 
-      this.logger.log(`Token Aggregation failed with error: ${error}`);
+      this.logger.error(`Token Aggregation failed with error: ${error}`);
     }
   }
 

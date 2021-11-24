@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import PromisePool from '@supercharge/promise-pool';
 
 import { NearApiService } from '@sputnik-v2/near-api';
@@ -9,6 +9,8 @@ import { castTokenBalance } from './types/token-balance';
 
 @Injectable()
 export class TokenAggregatorService {
+  private readonly logger = new Logger(TokenAggregatorService.name);
+
   constructor(
     private readonly nearApiService: NearApiService,
     private readonly tokenService: TokenService,
@@ -19,7 +21,7 @@ export class TokenAggregatorService {
   ): Promise<void> {
     const tokenIds = [...new Set(tokenUpdates.map(({ token }) => token))];
 
-    await PromisePool.withConcurrency(5)
+    const { errors: tokenErrors } = await PromisePool.withConcurrency(5)
       .for(tokenIds)
       .process(async (tokenId) => {
         const timestamp = tokenUpdates.find(
@@ -28,11 +30,23 @@ export class TokenAggregatorService {
         return this.aggregateToken(tokenId, timestamp);
       });
 
-    await PromisePool.withConcurrency(5)
+    tokenErrors.forEach((error) => {
+      this.logger.error(
+        `Failed to token aggregation ${error.item} with error: ${error}`,
+      );
+    });
+
+    const { errors: balanceErrors } = await PromisePool.withConcurrency(5)
       .for(tokenUpdates)
       .process(async ({ token, account }) =>
         this.aggregateTokenBalance(token, account),
       );
+
+    balanceErrors.forEach((error) => {
+      this.logger.error(
+        `Failed to token balance aggregation ${error.item.token} with error: ${error}`,
+      );
+    });
   }
 
   public async aggregateDaoTokens(
@@ -40,20 +54,32 @@ export class TokenAggregatorService {
     tokenIds: string[],
     timestamp?: number,
   ): Promise<void> {
-    await PromisePool.withConcurrency(5)
+    const { errors: tokenErrors } = await PromisePool.withConcurrency(5)
       .for(tokenIds)
       .process(async (tokenId) => this.aggregateToken(tokenId, timestamp));
 
-    await PromisePool.withConcurrency(5)
+    tokenErrors.forEach((error) => {
+      this.logger.error(
+        `Failed to token aggregation ${error.item} with error: ${error}`,
+      );
+    });
+
+    const { errors: balanceErrors } = await PromisePool.withConcurrency(5)
       .for(tokenIds)
       .process(async (tokenId) => this.aggregateTokenBalance(tokenId, daoId));
+
+    balanceErrors.forEach((error) => {
+      this.logger.error(
+        `Failed to token balance aggregation ${error.item} with error: ${error}`,
+      );
+    });
   }
 
   public async aggregateToken(
     tokenId: string,
     timestamp?: number,
   ): Promise<void> {
-    const contract = this.nearApiService.getContract('ftToken', tokenId);
+    const contract = this.nearApiService.getContract('fToken', tokenId);
     const metadata = await contract.ft_metadata();
     const totalSupply = await contract.ft_total_supply();
     await this.tokenService.create(
@@ -65,7 +91,7 @@ export class TokenAggregatorService {
     tokenId: string,
     accountId: string,
   ): Promise<void> {
-    const contract = this.nearApiService.getContract('ftToken', tokenId);
+    const contract = this.nearApiService.getContract('fToken', tokenId);
     const balance = await contract.ft_balance_of({ account_id: accountId });
     await this.tokenService.createBalance(
       castTokenBalance(tokenId, accountId, balance),

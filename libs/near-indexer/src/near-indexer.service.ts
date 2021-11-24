@@ -280,7 +280,6 @@ export class NearIndexerService {
             and args->>'args_json' is not null
             and args->>'method_name' in ('ft_transfer', 'ft_transfer_call','ft_mint')
             and receipt_included_in_block_timestamp  > $2
-        limit 100;
     `;
 
     const mintedWithBridge = `
@@ -293,7 +292,6 @@ export class NearIndexerService {
             and receipt_included_in_block_timestamp > $3
         ) minted_with_bridge
         where account_id like $1
-        limit 100;
     `;
 
     const calledByUser = `
@@ -303,7 +301,6 @@ export class NearIndexerService {
             and action_kind = 'FUNCTION_CALL'
             and (args->>'method_name' like 'ft_%' or args->>'method_name' = 'storage_deposit')
         and receipt_included_in_block_timestamp  > $2
-        limit 100;
     `;
 
     const [receivedTokens, mintedWithBridgeTokens, calledByUserTokens] =
