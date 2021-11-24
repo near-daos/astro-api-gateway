@@ -13,6 +13,9 @@ export default class Aggregator {
     const app = await NestFactory.createMicroservice(AggregatorModule, {
       transport: Transport.TCP,
       logger,
+      options: {
+        port: 3001,
+      },
     });
 
     app.useGlobalInterceptors(
@@ -24,6 +27,6 @@ export default class Aggregator {
     );
 
     // Run initial aggregation
-    app.get(AggregatorService).aggregateAllDaos();
+    // app.get(AggregatorService).aggregateAllDaos();
   }
 }

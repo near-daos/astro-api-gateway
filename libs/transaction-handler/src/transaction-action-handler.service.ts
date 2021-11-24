@@ -265,13 +265,14 @@ export class TransactionActionHandlerService {
       }
 
       if (proposalKindType === ProposalType.AddBounty) {
+        lastBountyId = await daoContract.get_last_bounty_id();
         await this.handleAddBounty({
           dao,
           proposal,
+          lastBountyId,
           transactionHash,
           timestamp,
         });
-        lastBountyId = await daoContract.get_last_bounty_id();
       }
     }
 
@@ -351,10 +352,37 @@ export class TransactionActionHandlerService {
     this.logger.log(`DAO successfully updated: ${receiverId}`);
   }
 
-  async handleAddBounty({ dao, proposal, transactionHash, timestamp }) {
+  async handleAddBounty({
+    dao,
+    proposal,
+    lastBountyId,
+    transactionHash,
+    timestamp,
+  }) {
+    const bountyData = proposal.kind?.kind.bounty;
+    const bountyId = await this.findLastBountyId(
+      dao.id,
+      lastBountyId,
+      bountyData,
+    );
+    const bounty = await this.bountyService.findOne({
+      id: buildBountyId(dao.id, bountyId),
+    });
+
+    if (bounty) {
+      this.logger.log('Bounty has already been created');
+      return;
+    }
+
     this.logger.log('Storing new Bounty due to transaction');
     await this.bountyService.create(
-      castAddBounty({ dao, proposal, transactionHash, timestamp }),
+      castAddBounty({
+        dao,
+        bounty: bountyData,
+        bountyId,
+        transactionHash,
+        timestamp,
+      }),
     );
     this.logger.log('Successfully stored new Bounty');
   }
@@ -418,6 +446,9 @@ export class TransactionActionHandlerService {
     const bountyClaims = await daoContract.get_bounty_claims({
       account_id: signerId,
     });
+    const numberOfClaims = await daoContract.get_bounty_number_of_claims({
+      id: bounty.bountyId,
+    });
 
     this.logger.log(`Updating Bounty: ${bounty.id} due to transaction`);
     await this.bountyService.create(
@@ -426,6 +457,7 @@ export class TransactionActionHandlerService {
         accountId: signerId,
         transactionHash,
         bountyClaims,
+        numberOfClaims,
         timestamp,
       }),
     );
@@ -441,6 +473,38 @@ export class TransactionActionHandlerService {
     this.logger.log(`Updating DAO: ${receiverId} due to transaction`);
     await this.daoService.create({ ...dao });
     this.logger.log(`DAO successfully updated: ${receiverId}`);
+  }
+
+  private async findLastBountyId(
+    daoId: string,
+    lastBountyId: number,
+    bountyData,
+  ): Promise<string | undefined> {
+    const daoContract = this.nearApiService.getContract('sputnikDao', daoId);
+    const chunkSize = 50;
+    const chunkCount =
+      (lastBountyId - (lastBountyId % chunkSize)) / chunkSize + 1;
+    let bounties = [];
+
+    for (let i = 0; i < chunkCount; i++) {
+      const bountiesChunk = await daoContract.get_bounties({
+        from_index: chunkSize * i,
+        limit: chunkSize,
+      });
+      bounties = bounties.concat(bountiesChunk);
+    }
+
+    return bounties
+      .reverse()
+      .find(({ description, token, amount, times, max_deadline }) => {
+        return (
+          description === bountyData.description &&
+          token === bountyData.token &&
+          amount === bountyData.amount &&
+          times === bountyData.times &&
+          max_deadline === bountyData.maxDeadline
+        );
+      })?.id;
   }
 
   private getContractHandlers(receiverId: string): ContractHandler[] {
