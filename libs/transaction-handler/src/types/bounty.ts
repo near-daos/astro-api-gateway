@@ -8,14 +8,15 @@ import {
 
 export function castAddBounty({
   dao,
-  proposal,
+  bounty,
+  bountyId,
   transactionHash,
   timestamp = getBlockTimestamp(),
 }): BountyDto {
   return {
-    ...camelcaseKeys(proposal.kind?.kind.bounty),
-    id: buildBountyId(dao.id, dao.lastBountyId),
-    bountyId: dao.lastBountyId,
+    ...camelcaseKeys(bounty),
+    id: buildBountyId(dao.id, bountyId),
+    bountyId: bountyId,
     daoId: dao.id,
     dao: { id: dao.id },
     numberOfClaims: 0,
@@ -54,6 +55,7 @@ export function castClaimBounty({
   accountId,
   transactionHash,
   bountyClaims,
+  numberOfClaims,
   timestamp = getBlockTimestamp(),
 }): BountyDto {
   const claims = castBountyClaims({
@@ -70,6 +72,7 @@ export function castClaimBounty({
           .filter((claim) => claim.accountId !== accountId)
           .concat(claims)
       : claims,
+    numberOfClaims: numberOfClaims,
     updateTransactionHash: transactionHash,
     updateTimestamp: timestamp,
   };
