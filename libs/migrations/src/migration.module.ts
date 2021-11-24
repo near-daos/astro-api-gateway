@@ -10,6 +10,7 @@ import configuration, {
   TypeOrmConfigService,
 } from '@sputnik-v2/config/aggregator-dao-config';
 import { Token } from '@sputnik-v2/token';
+import { Dao } from '@sputnik-v2/dao';
 
 import migrationScripts from './scripts';
 
@@ -18,7 +19,7 @@ import migrationScripts from './scripts';
     TypeOrmModule.forRootAsync({
       useClass: TypeOrmConfigService,
     }),
-    TypeOrmModule.forFeature([Token]),
+    TypeOrmModule.forFeature([Dao, Token]),
     ConfigModule.forRoot({
       isGlobal: true,
       load: configuration,
