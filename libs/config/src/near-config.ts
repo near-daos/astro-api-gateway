@@ -124,8 +124,9 @@ export default registerAs('near', () =>
     env: (process.env.NEAR_ENV as NEAR_ENV) || 'development',
     contractName: process.env.NEAR_CONTRACT_NAME,
     tokenFactoryContractName: process.env.NEAR_TOKEN_FACTORY_CONTRACT_NAME,
-    bridgeTokenFactoryContractName: process.env.NEAR_BRIDGE_TOKEN_FACTORY_CONTRACT_NAME,
+    bridgeTokenFactoryContractName:
+      process.env.NEAR_BRIDGE_TOKEN_FACTORY_CONTRACT_NAME,
     pollingInterval: process.env.AGGREGATOR_POLLING_INTERVAL,
-    daoPollingInterval: process.env.DAO_POLLING_INTERVAL
+    daoPollingInterval: process.env.DAO_POLLING_INTERVAL,
   } as NEAR_CONFIG),
 );

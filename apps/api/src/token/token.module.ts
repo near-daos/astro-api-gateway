@@ -7,6 +7,7 @@ import {
   NFTTokenService,
   NFTTokenMetadata,
   TokenFactoryService,
+  TokenBalance,
 } from '@sputnik-v2/token';
 import { NearIndexerModule } from '@sputnik-v2/near-indexer';
 import { NearApiModule } from '@sputnik-v2/near-api';
@@ -21,7 +22,7 @@ import { TokenNearService } from './token-near.service';
     CacheModule.registerAsync({
       useClass: CacheConfigService,
     }),
-    TypeOrmModule.forFeature([Token, NFTToken, NFTTokenMetadata]),
+    TypeOrmModule.forFeature([Token, TokenBalance, NFTToken, NFTTokenMetadata]),
     HttpModule,
     NearIndexerModule,
     NearApiModule,

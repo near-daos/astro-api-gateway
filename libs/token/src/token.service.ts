@@ -3,42 +3,36 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 import { Repository } from 'typeorm';
 import { CrudRequest } from '@nestjsx/crud';
-import { ConfigService } from '@nestjs/config';
 
-import { Token } from './entities';
-import { TokenDto, TokenResponse } from './dto';
+import { Token, TokenBalance } from './entities';
+import { TokenDto, TokenBalanceDto, TokenResponse } from './dto';
 
 @Injectable()
 export class TokenService extends TypeOrmCrudService<Token> {
   constructor(
     @InjectRepository(Token)
     private readonly tokenRepository: Repository<Token>,
-    private readonly configService: ConfigService,
+    @InjectRepository(TokenBalance)
+    private readonly tokenBalanceRepository: Repository<TokenBalance>,
   ) {
     super(tokenRepository);
   }
 
   async create(tokenDto: TokenDto): Promise<Token> {
-    const { decimals, icon, name, reference, referenceHash, spec, symbol } =
-      tokenDto?.metadata;
+    return this.tokenRepository.save(tokenDto);
+  }
 
-    return this.tokenRepository.save({
-      ...tokenDto,
-      // from token-factory sources: let token_id = args.metadata.symbol.to_ascii_lowercase();
-      id: symbol.toLowerCase(),
-      decimals,
-      icon,
-      name,
-      reference,
-      referenceHash,
-      spec,
-      symbol,
+  async createBalance(tokenBalanceDto: TokenBalanceDto): Promise<TokenBalance> {
+    return this.tokenBalanceRepository.save(tokenBalanceDto);
+  }
+
+  async lastToken(): Promise<Token> {
+    return this.tokenRepository.findOne({
+      order: { updateTimestamp: 'DESC' },
     });
   }
 
   async getMany(req: CrudRequest): Promise<TokenResponse | Token[]> {
-    const { tokenFactoryContractName } = this.configService.get('near');
-
     const tokenResponse = await super.getMany(req);
 
     const tokens =
@@ -46,7 +40,7 @@ export class TokenService extends TypeOrmCrudService<Token> {
 
     (tokenResponse as TokenResponse).data = tokens.map((token) => ({
       ...token,
-      tokenId: `${token.id}.${tokenFactoryContractName}`,
+      tokenId: token.id,
     }));
 
     return tokenResponse;

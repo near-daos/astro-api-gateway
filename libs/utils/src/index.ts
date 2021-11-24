@@ -72,6 +72,10 @@ export const buildSubscriptionId = (
   return `${daoId}-${accountId}`;
 };
 
+export const buildTokenBalanceId = (tokenId: string, accountId: string) => {
+  return `${tokenId}-${accountId}`;
+};
+
 export const buildNFTTokenId = (ownerId: string, tokenId: string) => {
   return `${ownerId}-${tokenId}`;
 };

@@ -12,7 +12,12 @@ import { Proposal, ProposalAction } from '@sputnik-v2/proposal/entities';
 import { Account } from '@sputnik-v2/account/entities';
 import { Dao, Policy, Role } from '@sputnik-v2/dao/entities';
 import { Bounty, BountyClaim } from '@sputnik-v2/bounty/entities';
-import { Token, NFTToken, NFTTokenMetadata } from '@sputnik-v2/token/entities';
+import {
+  Token,
+  NFTToken,
+  NFTTokenMetadata,
+  TokenBalance,
+} from '@sputnik-v2/token/entities';
 
 export default registerAs('db_default', () => ({
   type: 'postgres',
@@ -37,6 +42,7 @@ export default registerAs('db_default', () => ({
     ReceiptAction,
     AccountChange,
     Token,
+    TokenBalance,
     NFTToken,
     NFTTokenMetadata,
   ],

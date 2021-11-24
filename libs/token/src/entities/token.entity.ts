@@ -1,6 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Column, Entity, PrimaryColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
 import { TransactionEntity } from '@sputnik-v2/common';
+
+import { TokenBalance } from './token-balance.entity';
 
 @Entity()
 export class Token extends TransactionEntity {
@@ -51,4 +53,11 @@ export class Token extends TransactionEntity {
 
   @ApiProperty()
   balance?: string;
+
+  @ApiProperty({ type: [TokenBalance] })
+  @OneToMany(() => TokenBalance, (token) => token.tokenId, {
+    cascade: true,
+    persistence: false,
+  })
+  balances: TokenBalance[];
 }
