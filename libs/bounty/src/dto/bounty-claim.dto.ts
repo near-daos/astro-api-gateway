@@ -9,6 +9,7 @@ export class BountyClaimDto extends TransactionInfo {
   startTime: string;
   /// Deadline specified by claimer.
   deadline: string;
+  endTime: string;
   /// Completed?
   completed: boolean;
 }

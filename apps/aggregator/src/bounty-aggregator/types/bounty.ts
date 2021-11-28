@@ -1,5 +1,10 @@
 import camelcaseKeys from 'camelcase-keys';
-import { btoaJSON, buildBountyClaimId, buildBountyId } from '@sputnik-v2/utils';
+import {
+  btoaJSON,
+  buildBountyClaimId,
+  buildBountyId,
+  calculateClaimEndTime,
+} from '@sputnik-v2/utils';
 import { Transaction } from '@sputnik-v2/near-indexer';
 import { Dao } from '@sputnik-v2/dao';
 import {
@@ -16,6 +21,7 @@ export function castBountyClaim(
 ) {
   const claimDto = {
     ...claim,
+    endTime: calculateClaimEndTime(claim.startTime, claim.deadline),
     id: buildBountyClaimId(dao.id, bounty.id, claim.startTime),
     bounty: {
       id: buildBountyId(dao.id, bounty.id),

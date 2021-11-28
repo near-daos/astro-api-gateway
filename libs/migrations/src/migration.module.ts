@@ -11,6 +11,7 @@ import configuration, {
 } from '@sputnik-v2/config/aggregator-dao-config';
 import { Token } from '@sputnik-v2/token';
 import { Dao } from '@sputnik-v2/dao';
+import { BountyClaim } from '@sputnik-v2/bounty';
 
 import migrationScripts from './scripts';
 
@@ -19,7 +20,7 @@ import migrationScripts from './scripts';
     TypeOrmModule.forRootAsync({
       useClass: TypeOrmConfigService,
     }),
-    TypeOrmModule.forFeature([Dao, Token]),
+    TypeOrmModule.forFeature([Dao, Token, BountyClaim]),
     ConfigModule.forRoot({
       isGlobal: true,
       load: configuration,
