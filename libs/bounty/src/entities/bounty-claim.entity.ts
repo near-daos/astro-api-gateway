@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { AfterLoad, Column, Entity, ManyToOne, PrimaryColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryColumn } from 'typeorm';
 import { TransactionEntity } from '@sputnik-v2/common';
 
 import { Bounty } from './bounty.entity';
@@ -30,10 +30,6 @@ export class BountyClaim extends TransactionEntity {
   completed: boolean;
 
   @ApiProperty()
+  @Column({ nullable: true })
   endTime: string;
-
-  @AfterLoad()
-  getEndTime() {
-    this.endTime = (BigInt(this.startTime) + BigInt(this.deadline)).toString();
-  }
 }

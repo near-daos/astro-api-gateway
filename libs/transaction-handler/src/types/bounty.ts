@@ -3,6 +3,7 @@ import { BountyDto, BountyClaimDto } from '@sputnik-v2/bounty/dto';
 import {
   buildBountyClaimId,
   buildBountyId,
+  calculateClaimEndTime,
   getBlockTimestamp,
 } from '@sputnik-v2/utils';
 
@@ -39,6 +40,7 @@ export function castBountyClaims({
       const claim = camelcaseKeys(bountyClaim);
       return {
         ...claim,
+        endTime: calculateClaimEndTime(claim.startTime, claim.deadline),
         id: buildBountyClaimId(contractId, claim.bountyId, claim.startTime),
         accountId,
         bounty: {

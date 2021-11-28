@@ -16,6 +16,7 @@ import {
   buildBountyId,
   buildProposalId,
   buildRoleId,
+  calculateClaimEndTime,
 } from '@sputnik-v2/utils';
 
 import { castRolePermission, castVotePolicy } from './types';
@@ -195,6 +196,7 @@ export class SputnikDaoService {
             .filter((claim) => bounty.id === claim.bountyId)
             .map((claim) => ({
               ...camelcaseKeys(claim),
+              endTime: calculateClaimEndTime(claim.startTime, claim.deadline),
               id: buildBountyClaimId(contractId, bounty.id, claim.startTime),
               bounty: {
                 id: buildBountyId(contractId, bounty.id),

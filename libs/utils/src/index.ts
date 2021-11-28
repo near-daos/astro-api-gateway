@@ -127,3 +127,10 @@ export function paginate<T>(
 export const sleep = async (ms: number) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
+
+export const calculateClaimEndTime = (
+  startTime = '0',
+  deadline = '0',
+): string => {
+  return (BigInt(startTime) + BigInt(deadline)).toString();
+};
