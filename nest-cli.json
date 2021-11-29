@@ -1,5 +1,199 @@
 {
   "collection": "@nestjs/schematics",
-  "sourceRoot": "src",
-  "entryFile": "api"
+  "monorepo": true,
+  "compilerOptions": {
+    "webpack": true,
+    "tsConfigPath": "tsconfig.build.json"
+  },
+  "projects": {
+    "api": {
+      "type": "application",
+      "root": "apps/api",
+      "entryFile": "main",
+      "sourceRoot": "apps/api/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/api/tsconfig.app.json"
+      }
+    },
+    "aggregator": {
+      "type": "application",
+      "root": "apps/aggregator",
+      "entryFile": "main",
+      "sourceRoot": "apps/aggregator/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/aggregator/tsconfig.app.json"
+      }
+    },
+    "notifier": {
+      "type": "application",
+      "root": "apps/notifier",
+      "entryFile": "main",
+      "sourceRoot": "apps/notifier/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/notifier/tsconfig.app.json"
+      }
+    },
+    "config": {
+      "type": "library",
+      "root": "libs/config",
+      "entryFile": "index",
+      "sourceRoot": "libs/config/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/config/tsconfig.lib.json"
+      }
+    },
+    "common": {
+      "type": "library",
+      "root": "libs/common",
+      "entryFile": "index",
+      "sourceRoot": "libs/common/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/common/tsconfig.lib.json"
+      }
+    },
+    "subscriptions": {
+      "type": "library",
+      "root": "libs/subscriptions",
+      "entryFile": "index",
+      "sourceRoot": "libs/subscriptions/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/subscriptions/tsconfig.lib.json"
+      }
+    },
+    "subscription": {
+      "type": "library",
+      "root": "libs/subscription",
+      "entryFile": "index",
+      "sourceRoot": "libs/subscription/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/subscription/tsconfig.lib.json"
+      }
+    },
+    "dao": {
+      "type": "library",
+      "root": "libs/dao",
+      "entryFile": "index",
+      "sourceRoot": "libs/dao/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/dao/tsconfig.lib.json"
+      }
+    },
+    "account": {
+      "type": "library",
+      "root": "libs/account",
+      "entryFile": "index",
+      "sourceRoot": "libs/account/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/account/tsconfig.lib.json"
+      }
+    },
+    "near-indexer": {
+      "type": "library",
+      "root": "libs/near-indexer",
+      "entryFile": "index",
+      "sourceRoot": "libs/near-indexer/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/near-indexer/tsconfig.lib.json"
+      }
+    },
+    "bounty": {
+      "type": "library",
+      "root": "libs/bounty",
+      "entryFile": "index",
+      "sourceRoot": "libs/bounty/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/bounty/tsconfig.lib.json"
+      }
+    },
+    "event": {
+      "type": "library",
+      "root": "libs/event",
+      "entryFile": "index",
+      "sourceRoot": "libs/event/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/event/tsconfig.lib.json"
+      }
+    },
+    "near-api": {
+      "type": "library",
+      "root": "libs/near-api",
+      "entryFile": "index",
+      "sourceRoot": "libs/near-api/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/near-api/tsconfig.lib.json"
+      }
+    },
+    "utils": {
+      "type": "library",
+      "root": "libs/utils",
+      "entryFile": "index",
+      "sourceRoot": "libs/utils/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/utils/tsconfig.lib.json"
+      }
+    },
+    "proposal": {
+      "type": "library",
+      "root": "libs/proposal",
+      "entryFile": "index",
+      "sourceRoot": "libs/proposal/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/proposal/tsconfig.lib.json"
+      }
+    },
+    "sputnikdao": {
+      "type": "library",
+      "root": "libs/sputnikdao",
+      "entryFile": "index",
+      "sourceRoot": "libs/sputnikdao/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/sputnikdao/tsconfig.lib.json"
+      }
+    },
+    "token": {
+      "type": "library",
+      "root": "libs/token",
+      "entryFile": "index",
+      "sourceRoot": "libs/token/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/token/tsconfig.lib.json"
+      }
+    },
+    "transaction": {
+      "type": "library",
+      "root": "libs/transaction",
+      "entryFile": "index",
+      "sourceRoot": "libs/transaction/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/transaction/tsconfig.lib.json"
+      }
+    },
+    "cache": {
+      "type": "library",
+      "root": "libs/cache",
+      "entryFile": "index",
+      "sourceRoot": "libs/cache/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/cache/tsconfig.lib.json"
+      }
+    },
+    "transaction-handler": {
+      "type": "library",
+      "root": "libs/transaction-handler",
+      "entryFile": "index",
+      "sourceRoot": "libs/transaction-handler/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/transaction-handler/tsconfig.lib.json"
+      }
+    },
+    "migrations": {
+      "type": "library",
+      "root": "libs/migrations",
+      "entryFile": "main",
+      "sourceRoot": "libs/migrations/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/migrations/tsconfig.lib.json"
+      }
+    }
+  }
 }

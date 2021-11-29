@@ -14,6 +14,104 @@
     "esModuleInterop": true,
     "lib": [
       "es2019"
-    ]
+    ],
+    "paths": {
+      "@sputnik-v2/config": [
+        "libs/config/src"
+      ],
+      "@sputnik-v2/config/*": [
+        "libs/config/src/*"
+      ],
+      "@sputnik-v2/common": [
+        "libs/common/src"
+      ],
+      "@sputnik-v2/common/*": [
+        "libs/common/src/*"
+      ],
+      "@sputnik-v2/subscription": [
+        "libs/subscription/src"
+      ],
+      "@sputnik-v2/subscription/*": [
+        "libs/subscription/src/*"
+      ],
+      "@sputnik-v2/dao": [
+        "libs/dao/src"
+      ],
+      "@sputnik-v2/dao/*": [
+        "libs/dao/src/*"
+      ],
+      "@sputnik-v2/account": [
+        "libs/account/src"
+      ],
+      "@sputnik-v2/account/*": [
+        "libs/account/src/*"
+      ],
+      "@sputnik-v2/near-indexer": [
+        "libs/near-indexer/src"
+      ],
+      "@sputnik-v2/near-indexer/*": [
+        "libs/near-indexer/src/*"
+      ],
+      "@sputnik-v2/bounty": [
+        "libs/bounty/src"
+      ],
+      "@sputnik-v2/bounty/*": [
+        "libs/bounty/src/*"
+      ],
+      "@sputnik-v2/event": [
+        "libs/event/src"
+      ],
+      "@sputnik-v2/event/*": [
+        "libs/event/src/*"
+      ],
+      "@sputnik-v2/near-api": [
+        "libs/near-api/src"
+      ],
+      "@sputnik-v2/near-api/*": [
+        "libs/near-api/src/*"
+      ],
+      "@sputnik-v2/utils": [
+        "libs/utils/src"
+      ],
+      "@sputnik-v2/utils/*": [
+        "libs/utils/src/*"
+      ],
+      "@sputnik-v2/proposal": [
+        "libs/proposal/src"
+      ],
+      "@sputnik-v2/proposal/*": [
+        "libs/proposal/src/*"
+      ],
+      "@sputnik-v2/sputnikdao": [
+        "libs/sputnikdao/src"
+      ],
+      "@sputnik-v2/sputnikdao/*": [
+        "libs/sputnikdao/src/*"
+      ],
+      "@sputnik-v2/token": [
+        "libs/token/src"
+      ],
+      "@sputnik-v2/token/*": [
+        "libs/token/src/*"
+      ],
+      "@sputnik-v2/transaction": [
+        "libs/transaction/src"
+      ],
+      "@sputnik-v2/transaction/*": [
+        "libs/transaction/src/*"
+      ],
+      "@sputnik-v2/cache": [
+        "libs/cache/src"
+      ],
+      "@sputnik-v2/cache/*": [
+        "libs/cache/src/*"
+      ],
+      "@sputnik-v2/transaction-handler": [
+        "libs/transaction-handler/src"
+      ],
+      "@sputnik-v2/transaction-handler/*": [
+        "libs/transaction-handler/src/*"
+      ]
+    }
   }
 }

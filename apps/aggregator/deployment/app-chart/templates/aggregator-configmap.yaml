@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sputnik-v2-aggregator-configmap
+data:
+  PORT: "3000"
+  NEST_APP_TYPE: aggregator
+  AGGREGATOR_POLLING_INTERVAL: "{{ .Values.environment.aggregator_polling_interval }}"
+  AGGREGATOR_TOKEN_POLLING_INTERVAL: "{{ .Values.environment.aggregator_token_polling_interval }}"

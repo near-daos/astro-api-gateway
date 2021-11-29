@@ -1,14 +1,14 @@
 #!/bin/sh
 
-if [ "$NEST_APP_TYPE" == "aggregator-gross" ]
+if [ "$NEST_APP_TYPE" == "aggregator-dao" ]
 then
-  node dist/aggregator-gross
+  node dist/apps/aggregator-dao/main.js
 elif [ "$NEST_APP_TYPE" == "aggregator" ]
 then
-  node dist/aggregator
+  node dist/apps/aggregator/main.js
 elif [ $NEST_APP_TYPE == "notifier" ]
 then
-  node dist/notifier
+  node dist/apps/notifier/main.js
 else
-  node dist/api
+  node dist/apps/api/main.js
 fi

@@ -1,6 +1,6 @@
 {
   "name": "sputnik-v2-api",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "",
   "author": "",
   "private": true,
@@ -8,23 +8,27 @@
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "nest build",
-    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "start-api": "NEST_APP_TYPE=api nest start",
-    "start-api:dev": "NEST_APP_TYPE=api nest start --watch",
-    "start-aggregator": "NEST_APP_TYPE=aggregator nest start --config aggregator-nest-cli.json",
-    "start-aggregator:dev": "NEST_APP_TYPE=aggregator nest start --watch --config aggregator-nest-cli.json",
-    "start-aggregator-gross": "NEST_APP_TYPE=aggregator-gross nest start --config aggregator-gross-nest-cli.json",
-    "start-aggregator-gross:dev": "NEST_APP_TYPE=aggregator-gross nest start --watch --config aggregator-gross-nest-cli.json",
-    "start-notifier": "NEST_APP_TYPE=notifier nest start --config notifier-nest-cli.json",
-    "start-notifier:dev": "NEST_APP_TYPE=notifier nest start --watch --config notifier-nest-cli.json",
-    "start": "concurrently \"yarn start-aggregator-gross\" \"yarn start-aggregator\" \"yarn start-api\" \"yarn start-notifier\"",
-    "start:dev": "concurrently \"yarn start-aggregator-gross:dev\" \"yarn start-aggregator:dev\" \"yarn start-api:dev\" \"yarn start-notifier:dev\"",
+    "build-api": "nest build api",
+    "build-aggregator": "nest build aggregator",
+    "build-notifier": "nest build notifier",
+    "format": "prettier --write \"apps/**/*.ts\" \"libs/**/*.ts\"",
+    "start-api": "nest start api",
+    "start-api:dev": "nest start api --watch",
+    "start-aggregator": "nest start aggregator",
+    "start-aggregator:dev": "nest start aggregator --watch",
+    "start-notifier": "nest start notifier",
+    "start-notifier:dev": "nest start notifier --watch",
+    "start": "concurrently \"yarn start-aggregator\" \"yarn start-api\" \"yarn start-notifier\"",
+    "start:dev": "concurrently \"yarn start-aggregator:dev\" \"yarn start-api:dev\" \"yarn start-notifier:dev\"",
+    "start-migrations": "nest start migrations",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test-api:e2e": "jest --config ./apps/api/test/jest-e2e.json",
+    "test-aggregator:e2e": "jest --config ./apps/aggregator/test/jest-e2e.json",
+    "test-notifier:e2e": "jest --config ./apps/notifier/test/jest-e2e.json"
   },
   "dependencies": {
     "@hapi/joi": "^17.1.1",
@@ -98,7 +102,7 @@
       "json",
       "ts"
     ],
-    "rootDir": "src",
+    "rootDir": ".",
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
@@ -106,7 +110,47 @@
     "collectCoverageFrom": [
       "**/*.(t|j)s"
     ],
-    "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "coverageDirectory": "./coverage",
+    "testEnvironment": "node",
+    "roots": [
+      "<rootDir>/apps/",
+      "<rootDir>/libs/"
+    ],
+    "moduleNameMapper": {
+      "sputnik-v2/config/(.*)": "<rootDir>/libs/config/src/$1",
+      "sputnik-v2/config": "<rootDir>/libs/config/src",
+      "sputnik-v2/common/(.*)": "<rootDir>/libs/common/src/$1",
+      "sputnik-v2/common": "<rootDir>/libs/common/src",
+      "@sputnik-v2/subscription/(.*)": "<rootDir>/libs/subscription/src/$1",
+      "@sputnik-v2/subscription": "<rootDir>/libs/subscription/src",
+      "@sputnik-v2/dao/(.*)": "<rootDir>/libs/dao/src/$1",
+      "@sputnik-v2/dao": "<rootDir>/libs/dao/src",
+      "@sputnik-v2/account/(.*)": "<rootDir>/libs/account/src/$1",
+      "@sputnik-v2/account": "<rootDir>/libs/account/src",
+      "@sputnik-v2/near-indexer/(.*)": "<rootDir>/libs/near-indexer/src/$1",
+      "@sputnik-v2/near-indexer": "<rootDir>/libs/near-indexer/src",
+      "@sputnik-v2/bounty/(.*)": "<rootDir>/libs/bounty/src/$1",
+      "@sputnik-v2/bounty": "<rootDir>/libs/bounty/src",
+      "@sputnik-v2/event/(.*)": "<rootDir>/libs/event/src/$1",
+      "@sputnik-v2/event": "<rootDir>/libs/event/src",
+      "@sputnik-v2/near-api/(.*)": "<rootDir>/libs/near-api/src/$1",
+      "@sputnik-v2/near-api": "<rootDir>/libs/near-api/src",
+      "@sputnik-v2/utils/(.*)": "<rootDir>/libs/utils/src/$1",
+      "@sputnik-v2/utils": "<rootDir>/libs/utils/src",
+      "@sputnik-v2/proposal/(.*)": "<rootDir>/libs/proposal/src/$1",
+      "@sputnik-v2/proposal": "<rootDir>/libs/proposal/src",
+      "@sputnik-v2/sputnikdao/(.*)": "<rootDir>/libs/sputnikdao/src/$1",
+      "@sputnik-v2/sputnikdao": "<rootDir>/libs/sputnikdao/src",
+      "@sputnik-v2/token/(.*)": "<rootDir>/libs/token/src/$1",
+      "@sputnik-v2/token": "<rootDir>/libs/token/src",
+      "@sputnik-v2/transaction/(.*)": "<rootDir>/libs/transaction/src/$1",
+      "@sputnik-v2/transaction": "<rootDir>/libs/transaction/src",
+      "@sputnik-v2/cache/(.*)": "<rootDir>/libs/cache/src/$1",
+      "@sputnik-v2/cache": "<rootDir>/libs/cache/src",
+      "@sputnik-v2/transaction-handler/(.*)": "<rootDir>/libs/transaction-handler/src/$1",
+      "@sputnik-v2/transaction-handler": "<rootDir>/libs/transaction-handler/src",
+      "@sputnik-v2/migrations/(.*)": "<rootDir>/libs/migrations/src/$1",
+      "@sputnik-v2/migrations": "<rootDir>/libs/migrations/src"
+    }
   }
 }
