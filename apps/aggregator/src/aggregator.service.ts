@@ -13,6 +13,7 @@ import { DaoService } from '@sputnik-v2/dao';
 import { TransactionHandlerService } from '@sputnik-v2/transaction-handler';
 import { CacheService } from '@sputnik-v2/cache';
 import { TokenService } from '@sputnik-v2/token';
+import { ProposalService } from '@sputnik-v2/proposal';
 
 import { DaoAggregatorService } from './dao-aggregator/dao-aggregator.service';
 import { ProposalAggregatorService } from './proposal-aggregator/proposal-aggregator.service';
@@ -31,6 +32,7 @@ export class AggregatorService {
     private readonly transactionService: TransactionService,
     private readonly tokenService: TokenService,
     private readonly daoService: DaoService,
+    private readonly proposalService: ProposalService,
     private readonly transactionHandlerService: TransactionHandlerService,
     private readonly daoAggregatorService: DaoAggregatorService,
     private readonly proposalAggregatorService: ProposalAggregatorService,
@@ -127,6 +129,8 @@ export class AggregatorService {
     this.logger.log(`Start DAO aggregation...`);
 
     this.state.startAggregation('dao');
+
+    await this.proposalService.updateExpiredProposals();
 
     const { contractName } = this.configService.get('near');
 
