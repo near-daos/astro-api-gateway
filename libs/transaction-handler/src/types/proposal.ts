@@ -4,7 +4,11 @@ import {
   castProposalKind,
   ProposalDto,
 } from '@sputnik-v2/proposal/dto';
-import { Action, ProposalStatus } from '@sputnik-v2/proposal/types';
+import {
+  Action,
+  ProposalStatus,
+  ProposalVoteStatus,
+} from '@sputnik-v2/proposal/types';
 
 import {
   buildProposalId,
@@ -30,6 +34,7 @@ export function castCreateProposal({
     kind,
     type: kind.kind.type,
     status: ProposalStatus.InProgress,
+    voteStatus: ProposalVoteStatus.Active,
     voteCounts: {},
     votes: {},
     votePeriodEnd: calcProposalVotePeriodEnd(
