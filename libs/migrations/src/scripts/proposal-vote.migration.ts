@@ -23,7 +23,7 @@ export class ProposalVoteMigration implements Migration {
         ...proposal,
         votePeriodEnd,
         voteStatus:
-          votePeriodEnd < currentTimestamp
+          votePeriodEnd > currentTimestamp
             ? ProposalVoteStatus.Active
             : ProposalVoteStatus.Expired,
       };
