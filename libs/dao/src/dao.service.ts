@@ -40,7 +40,10 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     return this.daoRepository.save(daoDto);
   }
 
-  async search(req: CrudRequest, query: string): Promise<Dao[] | DaoResponse> {
+  async search(
+    req: CrudRequest,
+    query: string,
+  ): Promise<DaoFeed[] | DaoFeedResponse> {
     const likeQuery = `%${query.toLowerCase()}%`;
     const daos = await this.daoRepository
       .createQueryBuilder('dao')
@@ -63,7 +66,10 @@ export class DaoService extends TypeOrmCrudService<Dao> {
         ),
       )
       .getMany();
-    return paginate<Dao>(daos, req.parsed.limit, req.parsed.offset);
+
+    const daoFeed: DaoFeed[] = await this.getDaosFeed(daos);
+
+    return paginate<DaoFeed>(daoFeed, req.parsed.limit, req.parsed.offset);
   }
 
   async getFeed(req: CrudRequest): Promise<DaoFeed[] | DaoFeedResponse> {
@@ -76,22 +82,7 @@ export class DaoService extends TypeOrmCrudService<Dao> {
       return daoFeedResponse as DaoFeedResponse;
     }
 
-    const daoIds: string[] = daos.map(({ id }) => id);
-
-    // TODO: accelerate querying
-    const proposals = await this.proposalService.findProposalsByDaoIds(daoIds);
-
-    const proposalsByDao = proposals?.reduce(
-      (acc, cur) => ({
-        ...acc,
-        [cur.daoId]: [...(acc[cur.daoId] || []), cur],
-      }),
-      {},
-    );
-
-    const daoFeed: DaoFeed[] = daos.map((dao) =>
-      this.buildFeedFromDao(dao, proposalsByDao?.[dao.id]),
-    );
+    const daoFeed: DaoFeed[] = await this.getDaosFeed(daos);
 
     if (daoFeedResponse instanceof Array) {
       return daoFeed;
@@ -109,6 +100,23 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     const proposals = await this.proposalService.findProposalsByDaoIds([id]);
 
     return this.buildFeedFromDao(dao, proposals);
+  }
+
+  async getDaosFeed(daos: Dao[]): Promise<DaoFeed[]> {
+    const daoIds: string[] = daos.map(({ id }) => id);
+    const proposals = await this.proposalService.findProposalsByDaoIds(daoIds);
+
+    const proposalsByDao = proposals?.reduce(
+      (acc, cur) => ({
+        ...acc,
+        [cur.daoId]: [...(acc[cur.daoId] || []), cur],
+      }),
+      {},
+    );
+
+    return daos.map((dao) =>
+      this.buildFeedFromDao(dao, proposalsByDao?.[dao.id]),
+    );
   }
 
   private buildFeedFromDao(dao: Dao, proposals: Proposal[]): DaoFeed {
