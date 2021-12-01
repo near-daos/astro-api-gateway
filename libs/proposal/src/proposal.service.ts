@@ -217,7 +217,6 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
 
   async updateExpiredProposals(): Promise<UpdateResult> {
     const currentTimestamp = new Date().getTime() * 1000 * 1000; // nanoseconds
-
     return this.connection
       .createQueryBuilder()
       .update(Proposal)
@@ -225,7 +224,7 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
         voteStatus: ProposalVoteStatus.Expired,
       })
       .andWhere('status = :status', { status: ProposalStatus.InProgress })
-      .andWhere('votePeriodEnd > :date', {
+      .andWhere('votePeriodEnd < :date', {
         date: currentTimestamp,
       })
       .set({ voteStatus: ProposalVoteStatus.Expired })

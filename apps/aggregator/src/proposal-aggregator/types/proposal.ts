@@ -11,6 +11,7 @@ import {
   castProposalKind,
   ProposalActionDto,
   ProposalDto,
+  ProposalVoteStatus,
 } from '@sputnik-v2/proposal';
 import { Transaction } from '@sputnik-v2/near-indexer';
 
@@ -94,6 +95,7 @@ export function castProposal(
       { submissionTime: proposal.submissionTime },
       dao,
     ),
+    voteStatus: ProposalVoteStatus.Active,
     actions,
     transactionHash: txData?.transactionHash,
     createTimestamp: txData?.blockTimestamp,
