@@ -2,7 +2,10 @@ package api.app.astrodao.com.core.utils;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.TreeCodec;
+import com.fasterxml.jackson.core.TreeNode;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.gson.JsonParser;
@@ -34,5 +37,20 @@ public class JsonUtils {
     @SneakyThrows(JsonProcessingException.class)
     public static String writeValueAsString(Object valueType) {
         return MAPPER.writeValueAsString(valueType);
+    }
+
+    @SneakyThrows(JsonProcessingException.class)
+    public static <T> T treeToValue(TreeNode treeNode, Class<T> valueType) {
+        return MAPPER.treeToValue(treeNode, valueType);
+    }
+
+    public static JsonNode valueToTree(Object map) {
+        return MAPPER.valueToTree(map);
+    }
+
+    @SneakyThrows(JsonProcessingException.class)
+    public static <T> T valueToObject(Object map, Class<T> valueType) {
+        JsonNode jsonNode = MAPPER.valueToTree(map);
+        return MAPPER.treeToValue(jsonNode, valueType);
     }
 }

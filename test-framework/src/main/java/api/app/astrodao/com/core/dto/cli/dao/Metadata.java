@@ -12,6 +12,8 @@ import java.util.List;
 public class Metadata {
     private String flag;
     private String displayName;
+    private String flagCover;
+    private String flagLogo;
     private List<String> links;
 
     public static Metadata decodeMetadata(String metadataBase64) {
