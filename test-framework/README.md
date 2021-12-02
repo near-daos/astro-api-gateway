@@ -15,9 +15,9 @@ This framework is intended to be used for testing of Sputnik v2 API
 5. Select IntelliJ IDEA in Run tests using dropdown
 
 ### Git Configuration (User Settings)
-1. Go to *sputnik-api-test-framework* project folder in CLI (terminal or so)
-2. Enter next command: **git config --local user.name "{Username from Bitbucket}"**
-3. Enter next command: **git config --local user.email {Your email}**
+1. Go to *sputnik-api-gateway* project folder in CLI (terminal or so)
+2. Enter next command: **git config --local user.name "{Username from GitHub}"**
+3. Enter next command: **git config --local user.email {email}**
 
 ### Env (Test Environments)
 - `testnet` - run tests against testnet environment -Dtest.env=testnet (default option)
@@ -28,7 +28,7 @@ This framework is intended to be used for testing of Sputnik v2 API
 - `debug` - runs all tests by setting -DincludeTags=debug
 
 ## How to Run in CLI
-1. Clone project from [repository](https://bitbucket.org/magicpowered/sputnik-api-test-framework/src/master/)
+1. Clone project from [repository](https://github.com/near-daos/astro-api-gateway)
 2. Go to the folder
 3. Execute desired Gradle task from CLI (see examples below)
 

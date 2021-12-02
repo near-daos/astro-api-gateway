@@ -7,4 +7,5 @@ import lombok.Data;
 public class Kind {
     private String type;
     private Config config;
+    private Policy policy;
 }

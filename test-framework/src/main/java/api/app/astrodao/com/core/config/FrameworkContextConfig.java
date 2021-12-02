@@ -1,6 +1,7 @@
 package api.app.astrodao.com.core.config;
 
 import com.github.javafaker.Faker;
+import io.qameta.allure.springweb.AllureRestTemplate;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
 import org.assertj.core.util.Lists;
@@ -21,6 +22,7 @@ import org.springframework.web.util.DefaultUriBuilderFactory;
 
 import java.net.CookieManager;
 import java.net.CookiePolicy;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static org.springframework.http.converter.json.AbstractJsonHttpMessageConverter.DEFAULT_CHARSET;
@@ -72,6 +74,7 @@ public class FrameworkContextConfig {
             }
         }
 
+        template.setInterceptors(List.of(new AllureRestTemplate()));
         template.getMessageConverters().add(textMessageConverter());
         template.setErrorHandler(new DefaultResponseErrorHandler() {
             @Override
