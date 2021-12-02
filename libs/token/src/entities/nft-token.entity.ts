@@ -1,8 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { TransactionEntity } from '@sputnik-v2/common';
-import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToOne,
+  PrimaryColumn,
+} from 'typeorm';
 
 import { NFTTokenMetadata } from './nft-token-metadata.entity';
+import { NFTContract } from './nft-contract.entity';
 
 @Entity()
 export class NFTToken extends TransactionEntity {
@@ -21,6 +29,15 @@ export class NFTToken extends TransactionEntity {
   @ApiProperty()
   @Column({ nullable: true })
   minter: string;
+
+  @ApiProperty()
+  @Column({ nullable: true })
+  contractId: string;
+
+  @ApiProperty()
+  @ManyToOne((_) => NFTContract, { eager: true, cascade: true })
+  @JoinColumn({ name: 'contract_id' })
+  contract: NFTContract;
 
   // Metadata
   @ApiProperty()

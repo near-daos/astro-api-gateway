@@ -91,7 +91,7 @@ export class TokenFactoryService {
     const nfts = await contract.nft_tokens_for_owner({
       account_id: accountId,
       from_index: '0',
-      limit: 1000, //TODO: magic number - no way to find out the limit now
+      limit: 1000,
     });
 
     return nfts.map((nft: object) => camelcaseKeys(nft, { deep: true }));

@@ -17,6 +17,7 @@ import {
   NFTToken,
   NFTTokenMetadata,
   TokenBalance,
+  NFTContract,
 } from '@sputnik-v2/token/entities';
 
 export default registerAs('db_default', () => ({
@@ -43,6 +44,7 @@ export default registerAs('db_default', () => ({
     AccountChange,
     Token,
     TokenBalance,
+    NFTContract,
     NFTToken,
     NFTTokenMetadata,
   ],
