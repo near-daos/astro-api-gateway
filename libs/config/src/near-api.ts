@@ -62,6 +62,9 @@ export const nearApiProvider = {
         fToken: {
           viewMethods: ['ft_balance_of', 'ft_metadata', 'ft_total_supply'],
         },
+        nft: {
+          viewMethods: ['nft_tokens_for_owner', 'nft_metadata'],
+        },
       },
     };
   },
