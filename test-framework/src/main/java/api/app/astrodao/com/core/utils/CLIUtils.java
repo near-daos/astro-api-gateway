@@ -2,6 +2,7 @@ package api.app.astrodao.com.core.utils;
 
 import api.app.astrodao.com.core.exceptions.CLIExecutionNotSuccessful;
 import api.app.astrodao.com.core.exceptions.FailedToExecuteCLICommand;
+import io.qameta.allure.Allure;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
@@ -19,6 +20,8 @@ public class CLIUtils {
         String[] commandToExecute = {"bash", "-l", "-c", command};
         ProcessBuilder builder = new ProcessBuilder(commandToExecute);
 
+        Allure.addAttachment("NEAR CLI Command", "text/plain", command);
+
         Process process;
 
         try {
@@ -31,6 +34,9 @@ public class CLIUtils {
 
         List<String> output = new BufferedReader(new InputStreamReader(process.getInputStream()))
                 .lines().collect(Collectors.toList());
+
+        Allure.addAttachment("NEAR CLI Response", "text/plain",
+                output.stream().collect(Collectors.joining(System.lineSeparator())));
 
         int exitValue = process.exitValue();
         if (exitValue != 0) {

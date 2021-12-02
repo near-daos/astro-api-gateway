@@ -10,6 +10,9 @@ import api.app.astrodao.com.core.dto.cli.proposals.poll.PollProposal;
 import api.app.astrodao.com.core.dto.cli.proposals.poll.PollProposalDto;
 import api.app.astrodao.com.core.dto.cli.proposals.transfer.Transfer;
 import api.app.astrodao.com.core.dto.cli.proposals.transfer.TransferProposalDto;
+import api.app.astrodao.com.core.dto.cli.proposals.view.ViewProposal;
+import api.app.astrodao.com.core.dto.cli.proposals.view.bounty.ViewAddBountyProposal;
+import api.app.astrodao.com.core.dto.cli.proposals.view.transfer.ViewTransferProposal;
 import api.app.astrodao.com.steps.DaoApiSteps;
 import api.app.astrodao.com.steps.NearCLISteps;
 import api.app.astrodao.com.steps.ProposalsApiSteps;
@@ -61,6 +64,12 @@ public class AggregationWithCallbackTests extends BaseTest {
         AddProposalResponse output = nearCLISteps.addProposal(daoName, pollProposalDto, testAccountId, gasValue, deposit);
         String proposalID = String.format("%s-%s", daoName, output.getId());
 
+        ViewProposal viewProposal = nearCLISteps.getProposalById(daoName, output.getId(), ViewProposal.class);
+        proposalsApiSteps.assertDtoValue(viewProposal, ViewProposal::getId, output.getId(), "id");
+        proposalsApiSteps.assertDtoValue(viewProposal, ViewProposal::getProposer, testAccountId, "proposer");
+        proposalsApiSteps.assertDtoValue(viewProposal, ViewProposal::getDescription, pollProposal.getDescription(), "description");
+        proposalsApiSteps.assertDtoValue(viewProposal, ViewProposal::getStatus, "InProgress", "status");
+
         ResponseEntity<String> callbackResponse = transactionsSteps.triggerCallback(testAccountId, output.getTransactionHash());
         proposalsApiSteps.assertResponseStatusCode(callbackResponse, HttpStatus.OK);
 
@@ -68,11 +77,11 @@ public class AggregationWithCallbackTests extends BaseTest {
         proposalsApiSteps.assertResponseStatusCode(responseEntity, HttpStatus.OK);
 
         ProposalDto proposalDto = proposalsApiSteps.getResponseDto(responseEntity, ProposalDto.class);
-        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDaoId, daoName ,"daoId");
-        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getId, proposalID ,"id");
-        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDescription, pollProposal.getDescription() ,"description");
-        proposalsApiSteps.assertDtoValue(proposalDto, p -> p.getKind().getType(), pollProposal.getKind(),"kind/vote");
-        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getStatus, "InProgress","status");
+        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDaoId, daoName, "daoId");
+        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getId, proposalID, "id");
+        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDescription, pollProposal.getDescription(), "description");
+        proposalsApiSteps.assertDtoValue(proposalDto, p -> p.getKind().getType(), pollProposal.getKind(), "kind/vote");
+        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getStatus, "InProgress", "status");
     }
 
     @Test
@@ -93,6 +102,12 @@ public class AggregationWithCallbackTests extends BaseTest {
         AddProposalResponse output = nearCLISteps.addProposal(daoName, transferProposal, testAccountId, gasValue, deposit);
         String proposalID = String.format("%s-%s", daoName, output.getId());
 
+        ViewTransferProposal viewProposal = nearCLISteps.getProposalById(daoName, output.getId(), ViewTransferProposal.class);
+        proposalsApiSteps.assertDtoValue(viewProposal, ViewTransferProposal::getId, output.getId(), "id");
+        proposalsApiSteps.assertDtoValue(viewProposal, ViewTransferProposal::getProposer, testAccountId, "proposer");
+        proposalsApiSteps.assertDtoValue(viewProposal, ViewTransferProposal::getDescription, description, "description");
+        proposalsApiSteps.assertDtoValue(viewProposal, ViewTransferProposal::getStatus, "InProgress", "status");
+
         ResponseEntity<String> callbackResponse = transactionsSteps.triggerCallback(testAccountId, output.getTransactionHash());
         proposalsApiSteps.assertResponseStatusCode(callbackResponse, HttpStatus.OK);
 
@@ -100,11 +115,11 @@ public class AggregationWithCallbackTests extends BaseTest {
         proposalsApiSteps.assertResponseStatusCode(responseEntity, HttpStatus.OK);
 
         ProposalDto proposalDto = proposalsApiSteps.getResponseDto(responseEntity, ProposalDto.class);
-        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDaoId, daoName ,"daoId");
-        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getId, proposalID ,"id");
-        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDescription, description,"description");
-        proposalsApiSteps.assertDtoValue(proposalDto, p -> p.getKind().getType(), "Transfer","kind/vote");
-        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getStatus, "InProgress","status");
+        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDaoId, daoName, "daoId");
+        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getId, proposalID, "id");
+        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDescription, description, "description");
+        proposalsApiSteps.assertDtoValue(proposalDto, p -> p.getKind().getType(), "Transfer", "kind/vote");
+        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getStatus, "InProgress", "status");
     }
 
     @Test
@@ -131,6 +146,12 @@ public class AggregationWithCallbackTests extends BaseTest {
         AddProposalResponse output = nearCLISteps.addProposal(daoName, bountyProposal, testAccountId, gasValue, deposit);
         String proposalID = String.format("%s-%s", daoName, output.getId());
 
+        ViewAddBountyProposal viewProposal = nearCLISteps.getProposalById(daoName, output.getId(), ViewAddBountyProposal.class);
+        proposalsApiSteps.assertDtoValue(viewProposal, ViewAddBountyProposal::getId, output.getId(), "id");
+        proposalsApiSteps.assertDtoValue(viewProposal, ViewAddBountyProposal::getProposer, testAccountId, "proposer");
+        proposalsApiSteps.assertDtoValue(viewProposal, ViewAddBountyProposal::getDescription, description, "description");
+        proposalsApiSteps.assertDtoValue(viewProposal, ViewAddBountyProposal::getStatus, "InProgress", "status");
+
         ResponseEntity<String> callbackResponse = transactionsSteps.triggerCallback(testAccountId, output.getTransactionHash());
         proposalsApiSteps.assertResponseStatusCode(callbackResponse, HttpStatus.OK);
 
@@ -138,11 +159,11 @@ public class AggregationWithCallbackTests extends BaseTest {
         proposalsApiSteps.assertResponseStatusCode(responseEntity, HttpStatus.OK);
 
         ProposalDto proposalDto = proposalsApiSteps.getResponseDto(responseEntity, ProposalDto.class);
-        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDaoId, daoName ,"daoId");
-        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getId, proposalID ,"id");
-        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDescription, description,"description");
-        proposalsApiSteps.assertDtoValue(proposalDto, p -> p.getKind().getType(), "AddBounty","kind/vote");
-        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getStatus, "InProgress","status");
+        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDaoId, daoName, "daoId");
+        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getId, proposalID, "id");
+        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDescription, description, "description");
+        proposalsApiSteps.assertDtoValue(proposalDto, p -> p.getKind().getType(), "AddBounty", "kind/vote");
+        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getStatus, "InProgress", "status");
     }
 
     @Test
@@ -160,9 +181,9 @@ public class AggregationWithCallbackTests extends BaseTest {
         String period = "604800000000000";
         String gracePeriod = "86400000000000";
 
-        Role role = Role.of()
+        Role<KindWithGroup> role = Role.<KindWithGroup>of()
                 .setName("Council")
-                .setKind(RoleKind.of(List.of(testAccountId)))
+                .setKind(KindWithGroup.of(List.of(testAccountId)))
                 .setPermissions(List.of("*:Finalize", "*:AddProposal", "*:VoteApprove", "*:VoteReject", "*:VoteRemove"))
                 .setVotePolicy(VotePolicy.of());
 
@@ -192,6 +213,10 @@ public class AggregationWithCallbackTests extends BaseTest {
 
         NewDAODto newDaoDto = NewDAODto.of(daoName, daoArgs);
         CLIResponse output = nearCLISteps.createNewDao(newDaoDto, testAccountId, gasValue, deposit);
+
+        Config viewConfig = nearCLISteps.getDaoConfig(daoId);
+        daoApiSteps.assertDtoValue(viewConfig, Config::getName, daoName, "name");
+        daoApiSteps.assertDtoValue(viewConfig, Config::getPurpose, daoPurpose, "purpose");
 
         ResponseEntity<String> callbackResponse = transactionsSteps.triggerCallback(testAccountId, output.getTransactionHash());
         proposalsApiSteps.assertResponseStatusCode(callbackResponse, HttpStatus.OK);

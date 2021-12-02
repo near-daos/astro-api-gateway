@@ -5,11 +5,11 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class Role {
+public class Role<T> {
     private String createdAt;
     private String id;
     private String name;
-    private String kind;
+    private T kind;
     private Object balance;
     private Object accountIds;
     private List<String> permissions;

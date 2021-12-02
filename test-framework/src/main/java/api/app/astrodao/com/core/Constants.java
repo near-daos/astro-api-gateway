@@ -11,5 +11,8 @@ public class Constants {
 		public static final String VOTE_FOR_PROPOSAL = "near call %s act_proposal '%s' --account-id %s --gas %s";
 
 		public static final String GET_DAO_CONFIG = "near view %s get_config '{}'";
+		public static final String GET_DAO_POLICY = "near view %s get_policy '{}'";
+		public static final String GET_PROPOSAL_BY_ID = "near view %s get_proposal '%s'";
+		public static final String GET_BOUNTY_BY_ID = "near view %s get_bounty '%s'";
 	}
 }

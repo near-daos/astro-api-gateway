@@ -1,10 +1,15 @@
 package api.app.astrodao.com.core.dto.cli.dao;
 
+import api.app.astrodao.com.core.utils.JsonUtils;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.apache.commons.lang3.SerializationUtils;
 
+import java.io.Serializable;
 import java.util.List;
 
 @JsonPropertyOrder({
@@ -15,8 +20,9 @@ import java.util.List;
         "bounty_bond",
         "bounty_forgiveness_period"
 })
+@Data
 @Accessors(chain = true)
-@Data(staticConstructor = "of")
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Policy {
     @JsonProperty("roles")
     public List<Role> roles;
@@ -30,4 +36,12 @@ public class Policy {
     public String bountyBond;
     @JsonProperty("bounty_forgiveness_period")
     public String bountyForgivenessPeriod;
+
+    public static Policy of() {
+        return new Policy();
+    }
+
+    public static Policy copy(Policy policy) {
+        return JsonUtils.readValue(JsonUtils.writeValueAsString(policy), Policy.class);
+    }
 }
