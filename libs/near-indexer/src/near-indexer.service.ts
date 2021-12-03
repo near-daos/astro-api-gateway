@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 import PromisePool from '@supercharge/promise-pool';
 import { NEAR_INDEXER_DB_CONNECTION } from '@sputnik-v2/common';
-import { TokenUpdateDto } from '@sputnik-v2/token';
+import { NFTTokenUpdateDto, TokenUpdateDto } from '@sputnik-v2/token';
 import { Connection, Repository, SelectQueryBuilder } from 'typeorm';
 import {
   Account,
@@ -336,6 +336,23 @@ export class NearIndexerService {
     const receivedTokens = await this.connection.query(received, [accountId]);
 
     return receivedTokens.map(({ receiver_account_id }) => receiver_account_id);
+  }
+
+  async findLikelyNFTsUpdates(
+    accountId: string,
+    fromBlockTimestamp: number,
+  ): Promise<NFTTokenUpdateDto[]> {
+    const received = `
+        select distinct receipt_receiver_account_id as nft, args->'args_json'->>'receiver_id' as account, receipt_included_in_block_timestamp as timestamp
+        from action_receipt_actions
+        where args->'args_json'->>'receiver_id' like $1
+            and action_kind = 'FUNCTION_CALL'
+            and args->>'args_json' is not null
+            and args->>'method_name' like 'nft_%'
+        and receipt_included_in_block_timestamp  > $2
+    `;
+
+    return this.connection.query(received, [accountId, fromBlockTimestamp]);
   }
 
   async receiptsByAccount(accountId: string): Promise<Receipt[]> {

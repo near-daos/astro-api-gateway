@@ -49,8 +49,9 @@ export function castProposal(
   txs: Transaction[],
   proposal,
 ): ProposalDto {
-  const id = buildProposalId(dao.id, proposal.id);
-  const kind = castProposalKind(proposal.kind);
+  const proposalDto = camelcaseKeys(proposal);
+  const id = buildProposalId(dao.id, proposalDto.id);
+  const kind = castProposalKind(proposalDto.kind);
   const filteredTxs = txs.filter((tx) => tx.transactionAction.args.args_base64);
   const proposalTxs = filteredTxs.filter(
     (tx) => btoaJSON(String(tx.transactionAction.args.args_base64))?.id === id,
@@ -62,9 +63,9 @@ export function castProposal(
     )?.proposal;
     return (
       transactionAction.args.method_name == 'add_proposal' &&
-      proposal.description === txProposal?.description &&
+      proposalDto.description === txProposal?.description &&
       kind.equals(castProposalKind(txProposal?.kind)) &&
-      signerAccountId === proposal.proposer
+      signerAccountId === proposalDto.proposer
     );
   });
   const txUpdateData = proposalTxs[proposalTxs.length - 1] || txData;
@@ -76,7 +77,7 @@ export function castProposal(
         id,
         {
           ...txData,
-          accountId: proposal.proposer,
+          accountId: proposalDto.proposer,
         },
         Action.AddProposal,
       ),
@@ -84,15 +85,15 @@ export function castProposal(
   }
 
   return {
-    ...camelcaseKeys(proposal),
+    ...proposalDto,
     id,
-    proposalId: proposal.id,
+    proposalId: proposalDto.id,
     daoId: dao.id,
     dao: { id: dao.id },
     kind,
     type: kind.kind.type,
     votePeriodEnd: calcProposalVotePeriodEnd(
-      { submissionTime: proposal.submissionTime },
+      { submissionTime: proposalDto.submissionTime },
       dao,
     ),
     voteStatus: ProposalVoteStatus.Active,
