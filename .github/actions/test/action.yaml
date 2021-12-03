@@ -30,7 +30,8 @@ runs:
     mkdir -p build/allure-results/history
     curl http://astro-api-automation.s3-website.eu-central-1.amazonaws.com/history/{categories-trend.json,duration-trend.json,history.json,history-trend.json,retry-trend.json} -O -O -O -O -O
     mv {categories-trend.json,duration-trend.json,history.json,history-trend.json,retry-trend.json} build/allure-results/history/
-    ./gradlew --no-daemon test allureReport -DincludeTags=all -Dtest.env=$INPUT_ENVIRONMENT || true
+    ./gradlew --no-daemon test -DincludeTags=all -Dtest.env=$INPUT_ENVIRONMENT || true
+    ./gradlew --no-daemon allureReport
   env:
     NEAR_ACCOUNT_ID: ${{ inputs.NEAR_ACCOUNT_ID }}
     NEAR_PUBLIC_KEY: ${{ inputs.NEAR_PUBLIC_KEY }}
