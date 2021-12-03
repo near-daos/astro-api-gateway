@@ -54,14 +54,36 @@ export class NFTAggregatorService {
   ): Promise<void> {
     const contract = this.nearApiService.getContract('nft', nftContractId);
     const metadata = await contract.nft_metadata();
-    const nfts = await contract.nft_tokens_for_owner({
-      account_id: daoId,
-      from_index: '0',
-      limit: 1000,
-    });
-
+    const nfts = await this.getNfts(nftContractId, daoId);
     await this.nftTokenService.createMultiple(
       nfts.map((nft) => castNFT(nftContractId, metadata, nft, timestamp)),
     );
+  }
+
+  private async getNfts(
+    nftContractId: string,
+    daoId: string,
+  ): Promise<Array<any>> {
+    const contract = this.nearApiService.getContract('nft', nftContractId);
+    const chunkSize = 100;
+    let nfts = [];
+    let chunk = [];
+    let fromIndex = 0;
+
+    do {
+      try {
+        chunk = await contract.nft_tokens_for_owner({
+          account_id: daoId,
+          from_index: fromIndex.toString(),
+          limit: chunkSize,
+        });
+        fromIndex += chunkSize;
+        nfts = nfts.concat(chunk);
+      } catch (err) {
+        break;
+      }
+    } while (chunk.length === chunkSize);
+
+    return nfts;
   }
 }
