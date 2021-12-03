@@ -65,12 +65,12 @@ jobs:
 
     - uses: actions/upload-artifact@v2
       with:
-        name: test_results
+        name: test_report
         path: test-framework/build/reports/tests/**
 
     - uses: actions/upload-artifact@v2
       with:
-        name: test_build
+        name: allure_report
         path: test-framework/build/reports/allure-report/**
 
     - uses: jakejarvis/s3-sync-action@v0.5.1
@@ -81,8 +81,8 @@ jobs:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         AWS_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
-        SOURCE_DIR: 'test-framework/build/reports/tests'
-        DEST_DIR: "test-results-${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}"
+        SOURCE_DIR: 'test-framework/build/reports'
+        DEST_DIR: "allure-report-${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}"
 
     - uses: jakejarvis/s3-sync-action@v0.5.1
       with:
@@ -92,8 +92,8 @@ jobs:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         AWS_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
-        SOURCE_DIR: 'test-framework/build/reports/allure-report'
-        DEST_DIR: "allure-report-${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}"
+        SOURCE_DIR: 'test-framework/build/allure-results'
+        DEST_DIR: "allure-report-${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/allure-results"
 
     - uses: jakejarvis/s3-sync-action@v0.5.1
       with:
