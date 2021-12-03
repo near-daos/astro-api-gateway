@@ -369,6 +369,24 @@ export class NearIndexerService {
       .getMany();
   }
 
+  async receiptsByAccountToken(
+    accountId: string,
+    tokenId: string,
+  ): Promise<Receipt[]> {
+    return this.receiptRepository
+      .createQueryBuilder('receipt')
+      .leftJoinAndSelect('receipt.receiptActions', 'action_receipt_actions')
+      .where(
+        `receipt.receiver_account_id = :tokenId AND (action_receipt_actions.args->'args_json'->>'receiver_id' = :accountId OR receipt.predecessor_account_id = :accountId)`,
+        {
+          tokenId,
+          accountId,
+        },
+      )
+      .orderBy('included_in_block_timestamp', 'ASC')
+      .getMany();
+  }
+
   private buildAggregationTransactionQuery(
     accountIds: string | string[],
     fromBlockTimestamp?: number,
