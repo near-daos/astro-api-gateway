@@ -43,7 +43,7 @@ RUN ARCH= && dpkgArch="$(dpkg --print-architecture)" \
     && tar -xJf "node-v$NODE_VERSION-linux-$ARCH.tar.xz" -C /usr/local --strip-components=1 --no-same-owner \
     && rm "node-v$NODE_VERSION-linux-$ARCH.tar.xz" SHASUMS256.txt.asc SHASUMS256.txt \
     && apt-mark auto '.*' > /dev/null \
-    && find /usr/local -type f -executable -exec ldd '{}' ';' \
+    && find /usr/local /usr/bin/curl -type f -executable -exec ldd '{}' ';' \
       | awk '/=>/ { print $(NF-1) }' \
       | sort -u \
       | xargs -r dpkg-query --search \
