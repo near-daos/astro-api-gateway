@@ -56,7 +56,9 @@ export class NFTAggregatorService {
     const metadata = await contract.nft_metadata();
     const nfts = await this.getNfts(nftContractId, daoId);
     await this.nftTokenService.createMultiple(
-      nfts.map((nft) => castNFT(nftContractId, metadata, nft, timestamp)),
+      nfts.map((nft) =>
+        castNFT(nftContractId, daoId, metadata, nft, timestamp),
+      ),
     );
   }
 
