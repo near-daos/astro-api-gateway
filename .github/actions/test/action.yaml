@@ -29,7 +29,7 @@ runs:
     EOF
     cat $HOME/.near-credentials/testnet/${NEAR_ACCOUNT_ID}.json
     ./gradlew --no-daemon test allureReport -DincludeTags=all -Dtest.env=$INPUT_ENVIRONMENT || true
-    find ./test-framework/build
+    find build
   env:
     NEAR_ACCOUNT_ID: ${{ inputs.NEAR_ACCOUNT_ID }}
     NEAR_PUBLIC_KEY: ${{ inputs.NEAR_PUBLIC_KEY }}
