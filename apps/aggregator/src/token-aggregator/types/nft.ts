@@ -9,11 +9,12 @@ export function castNFT(
   timestamp = getBlockTimestamp(),
 ): NFTTokenDto {
   const nftToken = camelcaseKeys(nft, { deep: true });
-  const id = buildNFTTokenId(nftContractId, nftToken.id);
+  const tokenId = nftToken.id || nftToken.tokenId;
+  const id = buildNFTTokenId(nftContractId, tokenId);
   return {
     ...nftToken,
     id: id,
-    tokenId: nftToken.id,
+    tokenId: tokenId,
     ownerId: nftToken.ownerId.account || nftToken.ownerId,
     metadata: {
       ...nftToken.metadata,
