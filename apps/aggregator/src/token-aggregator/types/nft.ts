@@ -4,6 +4,7 @@ import { buildNFTTokenId, getBlockTimestamp } from '@sputnik-v2/utils';
 
 export function castNFT(
   nftContractId: string,
+  accountId: string,
   metadata,
   nft,
   timestamp = getBlockTimestamp(),
@@ -14,6 +15,7 @@ export function castNFT(
   return {
     ...nftToken,
     id: id,
+    accountId: accountId,
     tokenId: tokenId,
     ownerId: nftToken.ownerId.account || nftToken.ownerId,
     metadata: {

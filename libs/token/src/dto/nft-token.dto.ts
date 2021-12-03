@@ -88,6 +88,9 @@ export class NFTTokenDto extends TransactionInfo {
   tokenId: string;
 
   @ApiProperty()
+  accountId: string;
+
+  @ApiProperty()
   ownerId: string;
 
   @ApiProperty()
