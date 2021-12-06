@@ -1,6 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { TransactionInfo } from '@sputnik-v2/common';
 
+export interface NFTTokenActionDto {
+  args: any;
+  nft: string;
+  timestamp: number;
+}
+
 export interface NFTTokenUpdateDto {
   account: string;
   nft: string;

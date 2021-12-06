@@ -91,15 +91,20 @@ export class AggregatorService {
       return;
     }
 
+    const lastToken = await this.tokenService.lastToken();
+    const timestamp =
+      this.state.getAggregationTimestamp('token') ||
+      lastToken.updateTimestamp ||
+      lastToken.createTimestamp;
+
     this.logger.log(`Start Token aggregation...`);
     this.state.startAggregation('token');
 
-    const lastToken = await this.tokenService.lastToken();
     const { contractName } = this.configService.get('near');
     const daoTokenUpdates =
       await this.nearIndexerService.findLikelyTokenUpdates(
         `%.${contractName}%`,
-        lastToken.updateTimestamp || lastToken.createTimestamp,
+        timestamp,
       );
 
     if (daoTokenUpdates.length === 0) {
@@ -136,37 +141,53 @@ export class AggregatorService {
       return;
     }
 
+    const lastToken = await this.nftTokenService.lastToken();
+    const timestamp =
+      this.state.getAggregationTimestamp('nft') ||
+      lastToken.updateTimestamp ||
+      lastToken.createTimestamp;
+
     this.logger.log(`Start NFTs aggregation...`);
     this.state.startAggregation('nft');
 
-    const lastToken = await this.nftTokenService.lastToken();
-    const { contractName } = this.configService.get('near');
+    const { contractName, nftFactoryContracts } =
+      this.configService.get('near');
     const daoNFTUpdates = await this.nearIndexerService.findLikelyNFTsUpdates(
-      `%.${contractName}%`,
-      lastToken.updateTimestamp || lastToken.createTimestamp,
+      `%${contractName}%`,
+      timestamp,
     );
+    const whitelistNFTActions =
+      await this.nearIndexerService.findContractsNFTsActions(
+        nftFactoryContracts.map((contractName) => `%.${contractName}%`),
+        timestamp,
+      );
+    const nftUpdates = [
+      ...daoNFTUpdates,
+      ...this.nftAggregatorService.mapNFTActions(whitelistNFTActions),
+    ];
 
-    if (daoNFTUpdates.length === 0) {
+    if (nftUpdates.length === 0) {
       this.logger.log(`Skip aggregation for NFTs. No new transactions found`);
       this.state.stopAggregation('nft');
       return;
     }
 
-    const uniqueUpdates = daoNFTUpdates.filter((tokenUpdate, index) => {
+    const uniqueDaoUpdates = nftUpdates.filter((tokenUpdate, index) => {
       return (
+        tokenUpdate.account.includes(`.${contractName}`) &&
         index ===
-        daoNFTUpdates.findIndex(
-          ({ nft, account }) =>
-            tokenUpdate.nft === nft && tokenUpdate.account === account,
-        )
+          nftUpdates.findIndex(
+            ({ nft, account }) =>
+              tokenUpdate.nft === nft && tokenUpdate.account === account,
+          )
       );
     });
 
     this.logger.log(
-      `Found NFT updates: ${uniqueUpdates.map(({ nft }) => nft)}`,
+      `Found NFT updates: ${uniqueDaoUpdates.map(({ nft }) => nft)}`,
     );
 
-    await this.nftAggregatorService.aggregateDaoNFTUpdates(uniqueUpdates);
+    await this.nftAggregatorService.aggregateDaoNFTUpdates(uniqueDaoUpdates);
 
     // TODO: https://app.clickup.com/t/1ty89nk
     await this.cacheService.clearCache();
@@ -352,9 +373,11 @@ export class AggregatorService {
     this.logger.log(`Start aggregation NFTs for DAO: ${account.accountId}`);
 
     try {
-      const nftIds = await this.nearIndexerService.findLikelyNFTs(
+      const { nftWhitelistContracts } = this.configService.get('near');
+      const nftLikelyIds = await this.nearIndexerService.findLikelyNFTs(
         account.accountId,
       );
+      const nftIds = [...nftLikelyIds, ...nftWhitelistContracts];
 
       if (nftIds.length === 0) {
         this.logger.log(
