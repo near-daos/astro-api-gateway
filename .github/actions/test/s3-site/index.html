@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<!-- Copied from https://github.com/rufuspollock/s3-bucket-listing -->
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Test Results Sputnik DAO</title>
+</head>
+<body>
+  <div id="navigation"></div>
+  <div id="listing"></div>
+
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script type="text/javascript">
+  var S3BL_IGNORE_PATH = false;
+  // var BUCKET_NAME = 'BUCKET';
+  var BUCKET_URL = 'https://astro-api-automation.s3-eu-central-1.amazonaws.com';
+  // var S3B_ROOT_DIR = 'SUBDIR_L1/SUBDIR_L2/';
+  // var S3B_SORT = 'DEFAULT';
+  var EXCLUDE_FILE = [ 'index.html', 'list.js', 'history/'] ;
+  // var AUTO_TITLE = true;
+  // var S3_REGION = 's3'; // for us-east-1
+</script>
+<script type="text/javascript" src="https://astro-api-automation.s3-eu-central-1.amazonaws.com/list.js"></script>
+
+</body>
+</html>
