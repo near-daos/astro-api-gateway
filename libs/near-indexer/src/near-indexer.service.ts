@@ -3,7 +3,11 @@ import { ConfigService } from '@nestjs/config';
 import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 import PromisePool from '@supercharge/promise-pool';
 import { NEAR_INDEXER_DB_CONNECTION } from '@sputnik-v2/common';
-import { NFTTokenUpdateDto, TokenUpdateDto } from '@sputnik-v2/token';
+import {
+  NFTTokenActionDto,
+  NFTTokenUpdateDto,
+  TokenUpdateDto,
+} from '@sputnik-v2/token';
 import { Connection, Repository, SelectQueryBuilder } from 'typeorm';
 import {
   Account,
@@ -353,6 +357,26 @@ export class NearIndexerService {
     `;
 
     return this.connection.query(received, [accountId, fromBlockTimestamp]);
+  }
+
+  async findContractsNFTsActions(
+    contractNames: string[],
+    fromBlockTimestamp: number,
+  ): Promise<NFTTokenActionDto[]> {
+    const received = `
+        select distinct receipt_receiver_account_id as nft, args->'args_json' as args, receipt_included_in_block_timestamp as timestamp
+        from action_receipt_actions
+        where receipt_receiver_account_id like any (array[$1])
+            and action_kind = 'FUNCTION_CALL'
+            and args->>'args_json' is not null
+            and args->>'method_name' like 'nft_%'
+        and receipt_included_in_block_timestamp  > $2
+    `;
+
+    return this.connection.query(received, [
+      contractNames.join(','),
+      fromBlockTimestamp,
+    ]);
   }
 
   async receiptsByAccount(accountId: string): Promise<Receipt[]> {
