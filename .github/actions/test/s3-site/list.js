@@ -299,7 +299,7 @@ function prepareTable(info) {
                     location.pathname + '?prefix=' + encodePath(item.Key);
       } else {
         if (item.keyText.includes('allure')) {
-          item.href = encodePath(item.keyText + 'allure-report')
+          item.href = encodePath(item.keyText + 'allure-report/')
 	} else {
           item.href = encodePath(item.keyText + 'test/');
 	}
