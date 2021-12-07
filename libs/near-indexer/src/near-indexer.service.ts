@@ -16,6 +16,7 @@ import {
   ActionReceiptAction,
   Receipt,
 } from './entities';
+import { getBlockTimestamp } from '@sputnik-v2/utils';
 
 @Injectable()
 export class NearIndexerService {
@@ -397,18 +398,33 @@ export class NearIndexerService {
     accountId: string,
     tokenId: string,
   ): Promise<Receipt[]> {
-    return this.receiptRepository
-      .createQueryBuilder('receipt')
-      .leftJoinAndSelect('receipt.receiptActions', 'action_receipt_actions')
+    const fiveDaysAgo = new Date();
+    fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
+    fiveDaysAgo.setHours(0, 0, 0, 0);
+
+    const actions = await this.actionReceiptActionRepository
+      .createQueryBuilder('action_receipt_actions')
+      .select('receipt_id')
       .where(
-        `receipt.receiver_account_id = :tokenId AND (action_receipt_actions.args->'args_json'->>'receiver_id' = :accountId OR receipt.predecessor_account_id = :accountId)`,
+        `receipt_included_in_block_timestamp > :blockTimestamp AND (receipt_receiver_account_id = :tokenId AND (args->'args_json'->>'receiver_id' = :accountId OR receipt_predecessor_account_id = :accountId))`,
         {
           tokenId,
           accountId,
+          blockTimestamp: getBlockTimestamp(fiveDaysAgo),
         },
       )
-      .orderBy('included_in_block_timestamp', 'ASC')
       .getMany();
+
+    return actions.length > 0
+      ? await this.receiptRepository
+          .createQueryBuilder('receipt')
+          .leftJoinAndSelect('receipt.receiptActions', 'action_receipt_actions')
+          .where('receipt.receipt_id = ANY(ARRAY[:...ids])', {
+            ids: actions.map(({ receiptId }) => receiptId),
+          })
+          .orderBy('included_in_block_timestamp', 'ASC')
+          .getMany()
+      : [];
   }
 
   private buildAggregationTransactionQuery(
