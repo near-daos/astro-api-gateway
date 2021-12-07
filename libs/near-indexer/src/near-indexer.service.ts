@@ -404,7 +404,7 @@ export class NearIndexerService {
 
     const actions = await this.actionReceiptActionRepository
       .createQueryBuilder('action_receipt_actions')
-      .select('receipt_id')
+      .select('action_receipt_actions.receiptId')
       .where(
         `receipt_included_in_block_timestamp > :blockTimestamp AND (receipt_receiver_account_id = :tokenId AND (args->'args_json'->>'receiver_id' = :accountId OR receipt_predecessor_account_id = :accountId))`,
         {
