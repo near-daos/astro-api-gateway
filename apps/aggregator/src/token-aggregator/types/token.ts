@@ -25,6 +25,8 @@ export function castNearToken(price?: string, timestamp = getBlockTimestamp()) {
     symbol: 'NEAR',
     decimals: new Decimal(yoktoNear).toFixed().length - 1,
     price,
+    ownerId: '',
+    totalSupply: '',
     updateTimestamp: timestamp,
   };
 }
