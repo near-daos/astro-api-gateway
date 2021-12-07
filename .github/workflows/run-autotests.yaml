@@ -50,6 +50,7 @@ jobs:
         cat ".github/env.common" >>$GITHUB_ENV
         cat ".github/env.$ENVIRONMENT" >>$GITHUB_ENV
         echo "::set-output name=workflow_name::${GITHUB_WORKFLOW// /-}"
+        echo "::set-output name=environment::${ENVIRONMENT}"
 
     - name: Execute Tests
       uses: ./.github/actions/test
