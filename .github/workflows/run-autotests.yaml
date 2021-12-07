@@ -94,4 +94,4 @@ jobs:
 
     - name: Add Annotation
       run: |
-        echo "::notice title=Allure Report::http://astro-api-automation.s3-website.eu-central-1.amazonaws.com/${{ steps.set_environment.outputs.environment }}/allure-report-${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/allure-report/"
+        echo "::notice title=Test Results::[Allure Report](http://astro-api-automation.s3-website.eu-central-1.amazonaws.com/${{ steps.set_environment.outputs.environment }}/allure-report-${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/allure-report/)"
