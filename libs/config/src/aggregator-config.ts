@@ -14,6 +14,10 @@ const aggregator = registerAs('aggregator', () => ({
     process.env.AGGREGATOR_TOKEN_POLLING_INTERVAL,
     10,
   ),
+  tokenPricesPollingInterval: parseInt(
+    process.env.AGGREGATOR_TOKEN_PRICES_POLLING_INTERVAL,
+    10,
+  ),
 }));
 
 export default [

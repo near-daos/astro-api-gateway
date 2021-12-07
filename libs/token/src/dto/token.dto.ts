@@ -20,4 +20,5 @@ export interface TokenDto extends TransactionInfo, TokenMetadataDto {
   id: string;
   ownerId: string;
   totalSupply: string;
+  price?: string;
 }

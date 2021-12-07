@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 import { Repository } from 'typeorm';
 import { CrudRequest } from '@nestjsx/crud';
+import { NearApiService } from '@sputnik-v2/near-api';
 
 import { Token, TokenBalance } from './entities';
 import { TokenDto, TokenBalanceDto, TokenResponse } from './dto';
@@ -14,11 +15,16 @@ export class TokenService extends TypeOrmCrudService<Token> {
     private readonly tokenRepository: Repository<Token>,
     @InjectRepository(TokenBalance)
     private readonly tokenBalanceRepository: Repository<TokenBalance>,
+    private readonly nearApiService: NearApiService,
   ) {
     super(tokenRepository);
   }
 
   async create(tokenDto: TokenDto): Promise<Token> {
+    return this.tokenRepository.save(tokenDto);
+  }
+
+  async createMultiple(tokenDto: TokenDto[]): Promise<Token[]> {
     return this.tokenRepository.save(tokenDto);
   }
 
@@ -44,5 +50,23 @@ export class TokenService extends TypeOrmCrudService<Token> {
     }));
 
     return tokenResponse;
+  }
+
+  async tokensByAccount(accountId: string): Promise<Token[]> {
+    const tokenBalances = await this.tokenBalanceRepository
+      .createQueryBuilder('tokenBalance')
+      .leftJoinAndSelect('tokenBalance.token', 'token')
+      .where(`tokenBalance.accountId = :accountId`, { accountId })
+      .getMany();
+    const tokens = tokenBalances.map(({ balance, token }) => ({
+      ...token,
+      tokenId: token.id,
+      balance: balance,
+    }));
+
+    const nearToken = await this.tokenRepository.findOne({ id: 'NEAR' });
+    nearToken.balance = await this.nearApiService.getAccountAmount(accountId);
+
+    return [nearToken, ...tokens];
   }
 }

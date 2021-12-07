@@ -1,10 +1,12 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { HttpService, Injectable, Logger } from '@nestjs/common';
 import PromisePool from '@supercharge/promise-pool';
+import { lastValueFrom, map } from 'rxjs';
+import { ConfigService } from '@nestjs/config';
 
 import { NearApiService } from '@sputnik-v2/near-api';
-import { TokenService, TokenUpdateDto } from '@sputnik-v2/token';
+import { Token, TokenService, TokenUpdateDto } from '@sputnik-v2/token';
 
-import { castToken } from './types/token';
+import { castNearToken, castToken } from './types/token';
 import { castTokenBalance } from './types/token-balance';
 
 @Injectable()
@@ -12,8 +14,10 @@ export class TokenAggregatorService {
   private readonly logger = new Logger(TokenAggregatorService.name);
 
   constructor(
+    private readonly configService: ConfigService,
     private readonly nearApiService: NearApiService,
     private readonly tokenService: TokenService,
+    private readonly httpService: HttpService,
   ) {}
 
   public async aggregateDaoTokenUpdates(
@@ -96,5 +100,41 @@ export class TokenAggregatorService {
     await this.tokenService.createBalance(
       castTokenBalance(tokenId, accountId, balance),
     );
+  }
+
+  public async aggregateTokenPrices(): Promise<Token[]> {
+    const { tokenApiUrl } = this.configService.get('near');
+    const tokens = await this.tokenService.find();
+    const tokenPrices = tokenApiUrl
+      ? await lastValueFrom(
+          this.httpService
+            .get(`${tokenApiUrl}/last-tvl`)
+            .pipe(map((res) => res.data)),
+        )
+      : [];
+    const updatedTokens = tokenPrices.reduce((updatedTokens, tokenPrice) => {
+      const token = tokens.find(
+        ({ id }) => tokenPrice?.ftInfo.token_account_id === id,
+      );
+
+      if (token) {
+        token.price = tokenPrice.price;
+        return updatedTokens.concat(token);
+      }
+
+      return updatedTokens;
+    }, []);
+    const nearPrice = await lastValueFrom(
+      this.httpService
+        .get(
+          `https://api.coingecko.com/api/v3/simple/price?ids=near&vs_currencies=usd`,
+        )
+        .pipe(map((res) => res.data)),
+    );
+
+    return this.tokenService.createMultiple([
+      castNearToken(nearPrice.near?.usd),
+      ...updatedTokens,
+    ]);
   }
 }
