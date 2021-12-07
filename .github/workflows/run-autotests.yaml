@@ -58,7 +58,8 @@ jobs:
     - name: Execute Tests
       uses: ./.github/actions/test
       with:
-        environment: ${{ env.TEST_ENV_NAME }}
+        environment: ${{ steps.set_environment.outputs.environment }}
+        env: ${{ env.TEST_ENV_NAME }}
         NEAR_ACCOUNT_ID: ${{ secrets.NEAR_ACCOUNT_ID }}
         NEAR_PUBLIC_KEY: ${{ secrets.NEAR_PUBLIC_KEY }}
         NEAR_PRIVATE_KEY: ${{ secrets.NEAR_PRIVATE_KEY }}
@@ -82,7 +83,7 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         AWS_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
         SOURCE_DIR: 'test-framework/build/reports'
-        DEST_DIR: "allure-report-${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}"
+        DEST_DIR: "${{ steps.set_environment.outputs.environment }}/allure-report-${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}"
 
     - uses: jakejarvis/s3-sync-action@v0.5.1
       with:
@@ -93,4 +94,8 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         AWS_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
         SOURCE_DIR: 'test-framework/build/reports/allure-report/history'
-        DEST_DIR: 'history'
+        DEST_DIR: '${{ steps.set_environment.outputs.environment }}/history'
+
+    - name: Add Annotation
+      run: |
+        echo "::notice title=Allure Report::http://astro-api-automation.s3-website.eu-central-1.amazonaws.com/${{ steps.set_environment.outputs.environment }}/allure-report-${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/allure-report/"
