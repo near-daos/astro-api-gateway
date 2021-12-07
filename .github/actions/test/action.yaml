@@ -1,6 +1,6 @@
 name: 'Run Tests'
 inputs:
-  envronment:
+  environment:
     description: Environment to run on (as appears in githb). Valid choices are develop, test, staging.
     default: develop
     required: true
