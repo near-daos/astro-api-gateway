@@ -66,6 +66,7 @@ export class TokenService extends TypeOrmCrudService<Token> {
 
     const nearToken = await this.tokenRepository.findOne({ id: 'NEAR' });
     nearToken.balance = await this.nearApiService.getAccountAmount(accountId);
+    nearToken.tokenId = '';
 
     return [nearToken, ...tokens];
   }
