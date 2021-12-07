@@ -17,6 +17,7 @@ export type NEAR_CONFIG = {
   tokenFactoryContractName: string;
   bridgeTokenFactoryContractName: string;
   nftWhitelistContracts: string[];
+  tokenApiUrl: string;
 };
 
 export type NearConfig = {
@@ -28,6 +29,7 @@ export type NearConfig = {
   bridgeTokenFactoryContractName: string;
   nftWhitelistContracts: string[];
   nftFactoryContracts: string[];
+  tokenApiUrl: string;
   masterAccount?: string;
   walletUrl?: string;
   helperUrl?: string;
@@ -43,6 +45,7 @@ export const getNearConfig = (nearConfig: NEAR_CONFIG): NearConfig => {
     tokenFactoryContractName,
     bridgeTokenFactoryContractName,
     nftWhitelistContracts,
+    tokenApiUrl,
   } = nearConfig;
 
   switch (env) {
@@ -57,6 +60,7 @@ export const getNearConfig = (nearConfig: NEAR_CONFIG): NearConfig => {
         bridgeTokenFactoryContractName,
         nftWhitelistContracts,
         nftFactoryContracts: ['mintbase1.near'],
+        tokenApiUrl,
         walletUrl: 'https://wallet.near.org',
         helperUrl: 'https://helper.mainnet.near.org',
         explorerUrl: 'https://explorer.mainnet.near.org',
@@ -73,6 +77,7 @@ export const getNearConfig = (nearConfig: NEAR_CONFIG): NearConfig => {
         bridgeTokenFactoryContractName,
         nftWhitelistContracts,
         nftFactoryContracts: ['mintspace2.testnet'],
+        tokenApiUrl,
         walletUrl: 'https://wallet.testnet.near.org',
         helperUrl: 'https://helper.testnet.near.org',
         explorerUrl: 'https://explorer.testnet.near.org',
@@ -88,6 +93,7 @@ export const getNearConfig = (nearConfig: NEAR_CONFIG): NearConfig => {
         bridgeTokenFactoryContractName,
         nftWhitelistContracts,
         nftFactoryContracts: [],
+        tokenApiUrl,
         walletUrl: 'https://wallet.betanet.near.org',
         helperUrl: 'https://helper.betanet.near.org',
         explorerUrl: 'https://explorer.betanet.near.org',
@@ -104,6 +110,7 @@ export const getNearConfig = (nearConfig: NEAR_CONFIG): NearConfig => {
         bridgeTokenFactoryContractName,
         nftWhitelistContracts,
         nftFactoryContracts: [],
+        tokenApiUrl,
       };
     case 'test':
     case 'ci':
@@ -115,6 +122,7 @@ export const getNearConfig = (nearConfig: NEAR_CONFIG): NearConfig => {
         bridgeTokenFactoryContractName,
         nftWhitelistContracts,
         nftFactoryContracts: [],
+        tokenApiUrl,
         masterAccount: 'test.near',
       };
     case 'ci-betanet':
@@ -126,6 +134,7 @@ export const getNearConfig = (nearConfig: NEAR_CONFIG): NearConfig => {
         bridgeTokenFactoryContractName,
         nftWhitelistContracts,
         nftFactoryContracts: [],
+        tokenApiUrl,
         masterAccount: 'test.near',
       };
     default:
@@ -146,5 +155,6 @@ export default registerAs('near', () =>
     daoPollingInterval: process.env.DAO_POLLING_INTERVAL,
     nftWhitelistContracts:
       process.env.NEAR_NFT_WHITELIST_CONTRACTS?.split(',') || [],
+    tokenApiUrl: process.env.NEAR_TOKEN_API_URL,
   } as NEAR_CONFIG),
 );

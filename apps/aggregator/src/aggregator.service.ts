@@ -44,8 +44,11 @@ export class AggregatorService {
     private readonly schedulerRegistry: SchedulerRegistry,
     private readonly cacheService: CacheService,
   ) {
-    const { pollingInterval, tokenPollingInterval } =
-      this.configService.get('aggregator');
+    const {
+      pollingInterval,
+      tokenPollingInterval,
+      tokenPricesPollingInterval,
+    } = this.configService.get('aggregator');
 
     schedulerRegistry.addInterval(
       'polling',
@@ -55,6 +58,14 @@ export class AggregatorService {
     schedulerRegistry.addInterval(
       'token_polling',
       setInterval(() => this.scheduleTokenAggregation(), tokenPollingInterval),
+    );
+
+    schedulerRegistry.addInterval(
+      'token_prices_polling',
+      setInterval(
+        () => this.scheduleTokenPricesAggregation(),
+        tokenPricesPollingInterval,
+      ),
     );
   }
 
@@ -83,6 +94,16 @@ export class AggregatorService {
       this.state.stopAggregation('nft');
 
       this.logger.error(`NFT Aggregation failed with error: ${error}`);
+    }
+  }
+
+  public async scheduleTokenPricesAggregation(): Promise<void> {
+    try {
+      await this.aggregateTokenPrices();
+    } catch (error) {
+      this.state.stopAggregation('token-price');
+
+      this.logger.error(`Token Prices Aggregation failed with error: ${error}`);
     }
   }
 
@@ -134,6 +155,28 @@ export class AggregatorService {
 
     this.logger.log(`Finished Token aggregation`);
     this.state.stopAggregation('token');
+  }
+
+  public async aggregateTokenPrices() {
+    if (this.state.isInProgress('token-price')) {
+      return;
+    }
+
+    this.logger.log(`Start Token Prices aggregation...`);
+    this.state.startAggregation('token-price');
+
+    const updatedTokens =
+      await this.tokenAggregatorService.aggregateTokenPrices();
+
+    this.logger.log(
+      `Aggregate token prices: ${updatedTokens.map(({ id }) => id)}`,
+    );
+
+    // TODO: https://app.clickup.com/t/1ty89nk
+    await this.cacheService.clearCache();
+
+    this.logger.log(`Finished Token Prices aggregation`);
+    this.state.stopAggregation('token-price');
   }
 
   public async aggregateNFTs() {
@@ -260,7 +303,7 @@ export class AggregatorService {
   public async aggregateAllDaos() {
     this.logger.log(`Start all DAO aggregation`);
 
-    this.state.startAggregations(['dao', 'token', 'nft']);
+    this.state.startAggregations(['dao', 'token', 'nft', 'token-price']);
 
     const tx = await this.transactionService.lastTransaction();
     const { contractName } = this.configService.get('near');
@@ -287,7 +330,9 @@ export class AggregatorService {
         async (daoAccount) => await this.aggregateDaoNFTs(daoAccount, tx),
       );
 
-    this.state.stopAggregations(['dao', 'token', 'nft']);
+    await this.tokenAggregatorService.aggregateTokenPrices();
+
+    this.state.stopAggregations(['dao', 'token', 'nft', 'token-price']);
     this.logger.log(`Finished all DAO aggregation`);
   }
 

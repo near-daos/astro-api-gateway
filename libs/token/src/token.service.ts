@@ -22,6 +22,10 @@ export class TokenService extends TypeOrmCrudService<Token> {
     return this.tokenRepository.save(tokenDto);
   }
 
+  async createMultiple(tokenDto: TokenDto[]): Promise<Token[]> {
+    return this.tokenRepository.save(tokenDto);
+  }
+
   async createBalance(tokenBalanceDto: TokenBalanceDto): Promise<TokenBalance> {
     return this.tokenBalanceRepository.save(tokenBalanceDto);
   }
