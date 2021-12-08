@@ -172,7 +172,7 @@ export class DaoService extends TypeOrmCrudService<Dao> {
 
   private calculateDaoFunds(
     dao: Dao,
-    tokenBalances: TokenBalance[],
+    tokenBalances: TokenBalance[] = [],
     nearToken,
   ): number {
     const nearBalance = calculateFunds(
