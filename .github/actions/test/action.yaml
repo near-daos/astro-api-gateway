@@ -1,8 +1,12 @@
 name: 'Run Tests'
 inputs:
   environment:
-    description: Environment to run on. Valid choices are dev, testnet
+    description: Environment to run on (as appears in githb). Valid choices are develop, test, staging.
     default: develop
+    required: true
+  env:
+    description: Environment to run on (as passed to test framework). Valid choices are dev, testnet.
+    default: dev
     required: true
   NEAR_ACCOUNT_ID:
     required: true
@@ -27,9 +31,9 @@ runs:
         "private_key":"${NEAR_PRIVATE_KEY}"
       }
     EOF
-    ./gradlew --no-daemon test -DincludeTags=all -Dtest.env=$INPUT_ENVIRONMENT || true
+    ./gradlew --no-daemon test -DincludeTags=all -Dtest.env=$INPUT_ENV || true
     mkdir -p build/allure-results/history
-    curl http://astro-api-automation.s3-website.eu-central-1.amazonaws.com/history/{categories-trend.json,duration-trend.json,history.json,history-trend.json,retry-trend.json} -O -O -O -O -O
+    curl http://astro-api-automation.s3-website.eu-central-1.amazonaws.com/${INPUT_ENVIRONMENT}/history/{categories-trend.json,duration-trend.json,history.json,history-trend.json,retry-trend.json} -O -O -O -O -O
     mv {categories-trend.json,duration-trend.json,history.json,history-trend.json,retry-trend.json} build/allure-results/history/
     ./gradlew --no-daemon allureReport
   env:
