@@ -134,3 +134,8 @@ export const calculateClaimEndTime = (
 ): string => {
   return (BigInt(startTime) + BigInt(deadline)).toString();
 };
+
+export const calculateFunds = (amount, price, decimals): number => {
+  const value = Number(BigInt(amount) / BigInt(10) ** BigInt(decimals));
+  return value > 0 && price > 0 ? value * price : 0;
+};

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { CrudRequest } from '@nestjsx/crud';
 import { NearApiService } from '@sputnik-v2/near-api';
 
@@ -52,6 +52,18 @@ export class TokenService extends TypeOrmCrudService<Token> {
     return tokenResponse;
   }
 
+  async getNearToken(): Promise<Token> {
+    return this.tokenRepository.findOne({ id: 'NEAR' });
+  }
+
+  async findTokenBalancesByDaoIds(daoIds: string[]): Promise<TokenBalance[]> {
+    return this.tokenBalanceRepository
+      .createQueryBuilder('tokenBalance')
+      .leftJoinAndSelect('tokenBalance.token', 'token')
+      .where(`tokenBalance.accountId = ANY(ARRAY[:...daoIds])`, { daoIds })
+      .getMany();
+  }
+
   async tokensByAccount(accountId: string): Promise<Token[]> {
     const tokenBalances = await this.tokenBalanceRepository
       .createQueryBuilder('tokenBalance')
@@ -64,7 +76,7 @@ export class TokenService extends TypeOrmCrudService<Token> {
       balance: balance,
     }));
 
-    const nearToken = await this.tokenRepository.findOne({ id: 'NEAR' });
+    const nearToken = await this.getNearToken();
     nearToken.balance = await this.nearApiService.getAccountAmount(accountId);
     nearToken.tokenId = '';
 

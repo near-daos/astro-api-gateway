@@ -8,4 +8,7 @@ export class DaoFeed extends Dao {
 
   @ApiProperty()
   activeProposalCount: number;
+
+  @ApiProperty()
+  totalDaoFunds: string;
 }
