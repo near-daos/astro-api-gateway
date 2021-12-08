@@ -6,10 +6,8 @@ import { AccountModule, Account } from '@sputnik-v2/account';
 import { DaoModule, Dao } from '@sputnik-v2/dao';
 import { NotifierValidationSchema } from '@sputnik-v2/config/validation/notifier.schema';
 import configuration from '@sputnik-v2/config/notifier-config';
-import {
-  TypeOrmConfigService,
-  validate,
-} from '@sputnik-v2/config/notifier-config';
+import { validate } from '@sputnik-v2/config/notifier-config';
+import { TypeOrmConfigService } from '@sputnik-v2/config/typeorm-config.service';
 
 import { NotifierController } from './notifier.controller';
 import { NotifierService } from './notifier.service';
