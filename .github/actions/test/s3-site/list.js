@@ -301,7 +301,7 @@ function prepareTable(info) {
         if (item.keyText.includes('allure')) {
           item.href = encodePath(item.keyText + 'allure-report/')
 	} else {
-          item.href = encodePath(item.keyText + 'test/');
+          item.href = encodePath(item.keyText);
 	}
       }
     } else {
