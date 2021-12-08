@@ -398,9 +398,9 @@ export class NearIndexerService {
     accountId: string,
     tokenId: string,
   ): Promise<Receipt[]> {
-    const fiveDaysAgo = new Date();
-    fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
-    fiveDaysAgo.setHours(0, 0, 0, 0);
+    const oneDayAgo = new Date();
+    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+    oneDayAgo.setHours(0, 0, 0, 0);
 
     const actions = await this.actionReceiptActionRepository
       .createQueryBuilder('action_receipt_actions')
@@ -410,7 +410,7 @@ export class NearIndexerService {
         {
           tokenId,
           accountId,
-          blockTimestamp: getBlockTimestamp(fiveDaysAgo),
+          blockTimestamp: getBlockTimestamp(oneDayAgo),
         },
       )
       .getMany();
