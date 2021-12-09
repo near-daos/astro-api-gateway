@@ -1,9 +1,15 @@
+import { getBlockTimestamp } from '@sputnik-v2/utils';
+
 export class AggregatorState {
-  aggregationsInProgress: string[] = [];
+  aggregations: Record<string, { timestamp: number; isInProgress: boolean }> =
+    {};
 
   public startAggregation(name: string) {
     if (!this.isInProgress(name)) {
-      this.aggregationsInProgress.push(name);
+      this.aggregations[name] = {
+        timestamp: getBlockTimestamp(),
+        isInProgress: true,
+      };
     }
   }
 
@@ -12,18 +18,20 @@ export class AggregatorState {
   }
 
   public stopAggregation(name: string) {
-    this.aggregationsInProgress = this.aggregationsInProgress.filter(
-      (n) => n !== name,
-    );
+    if (this.aggregations[name]) {
+      this.aggregations[name].isInProgress = false;
+    }
   }
 
   public stopAggregations(names: string[]) {
-    this.aggregationsInProgress = this.aggregationsInProgress.filter(
-      (name) => !names.includes(name),
-    );
+    names.forEach((name) => this.stopAggregation(name));
   }
 
   public isInProgress(name: string): boolean {
-    return this.aggregationsInProgress.includes(name);
+    return !!this.aggregations[name] && this.aggregations[name].isInProgress;
+  }
+
+  public getAggregationTimestamp(name: string): number | null {
+    return this.aggregations[name] ? this.aggregations[name].timestamp : null;
   }
 }

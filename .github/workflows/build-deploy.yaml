@@ -222,5 +222,3 @@ jobs:
       NEAR_ACCOUNT_ID: ${{ secrets.NEAR_ACCOUNT_ID }}
       NEAR_PUBLIC_KEY: ${{ secrets.NEAR_PUBLIC_KEY }}
       NEAR_PRIVATE_KEY: ${{ secrets.NEAR_PRIVATE_KEY }}
-      AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
-      AWS_REGION: ${{ secrets.AWS_DEFAULT_REGION }}

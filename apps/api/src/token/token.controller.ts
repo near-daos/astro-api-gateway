@@ -77,7 +77,7 @@ export class TokenController {
   async tokensByDao(
     @Param() { accountId }: FindAccountParams,
   ): Promise<Token[]> {
-    return await this.tokenNearService.tokensByAccount(accountId);
+    return await this.tokenService.tokensByAccount(accountId);
   }
 
   @ApiResponse({

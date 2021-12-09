@@ -3,7 +3,11 @@ import { ConfigService } from '@nestjs/config';
 import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 import PromisePool from '@supercharge/promise-pool';
 import { NEAR_INDEXER_DB_CONNECTION } from '@sputnik-v2/common';
-import { NFTTokenUpdateDto, TokenUpdateDto } from '@sputnik-v2/token';
+import {
+  NFTTokenActionDto,
+  NFTTokenUpdateDto,
+  TokenUpdateDto,
+} from '@sputnik-v2/token';
 import { Connection, Repository, SelectQueryBuilder } from 'typeorm';
 import {
   Account,
@@ -12,6 +16,7 @@ import {
   ActionReceiptAction,
   Receipt,
 } from './entities';
+import { getBlockTimestamp } from '@sputnik-v2/utils';
 
 @Injectable()
 export class NearIndexerService {
@@ -355,6 +360,26 @@ export class NearIndexerService {
     return this.connection.query(received, [accountId, fromBlockTimestamp]);
   }
 
+  async findContractsNFTsActions(
+    contractNames: string[],
+    fromBlockTimestamp: number,
+  ): Promise<NFTTokenActionDto[]> {
+    const received = `
+        select distinct receipt_receiver_account_id as nft, args->'args_json' as args, receipt_included_in_block_timestamp as timestamp
+        from action_receipt_actions
+        where receipt_receiver_account_id like any (array[$1])
+            and action_kind = 'FUNCTION_CALL'
+            and args->>'args_json' is not null
+            and args->>'method_name' like 'nft_%'
+        and receipt_included_in_block_timestamp  > $2
+    `;
+
+    return this.connection.query(received, [
+      contractNames.join(','),
+      fromBlockTimestamp,
+    ]);
+  }
+
   async receiptsByAccount(accountId: string): Promise<Receipt[]> {
     return this.receiptRepository
       .createQueryBuilder('receipt')
@@ -367,6 +392,39 @@ export class NearIndexerService {
       )
       .orderBy('included_in_block_timestamp', 'ASC')
       .getMany();
+  }
+
+  async receiptsByAccountToken(
+    accountId: string,
+    tokenId: string,
+  ): Promise<Receipt[]> {
+    const oneDayAgo = new Date();
+    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+    oneDayAgo.setHours(0, 0, 0, 0);
+
+    const actions = await this.actionReceiptActionRepository
+      .createQueryBuilder('action_receipt_actions')
+      .select('action_receipt_actions.receiptId')
+      .where(
+        `receipt_included_in_block_timestamp > :blockTimestamp AND (receipt_receiver_account_id = :tokenId AND (args->'args_json'->>'receiver_id' = :accountId OR receipt_predecessor_account_id = :accountId))`,
+        {
+          tokenId,
+          accountId,
+          blockTimestamp: getBlockTimestamp(oneDayAgo),
+        },
+      )
+      .getMany();
+
+    return actions.length > 0
+      ? await this.receiptRepository
+          .createQueryBuilder('receipt')
+          .leftJoinAndSelect('receipt.receiptActions', 'action_receipt_actions')
+          .where('receipt.receipt_id = ANY(ARRAY[:...ids])', {
+            ids: actions.map(({ receiptId }) => receiptId),
+          })
+          .orderBy('included_in_block_timestamp', 'ASC')
+          .getMany()
+      : [];
   }
 
   private buildAggregationTransactionQuery(

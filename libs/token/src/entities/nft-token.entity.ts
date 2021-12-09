@@ -28,6 +28,10 @@ export class NFTToken extends TransactionEntity {
 
   @ApiProperty()
   @Column({ nullable: true })
+  accountId: string;
+
+  @ApiProperty()
+  @Column({ nullable: true })
   minter: string;
 
   @ApiProperty()
