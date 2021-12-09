@@ -72,12 +72,13 @@ export function castCreateDao({
 
 export function castAddProposalDao({
   dao,
+  lastProposalId,
   transactionHash,
   timestamp = getBlockTimestamp(),
 }): SputnikDaoDto {
   return {
     ...dao,
-    lastProposalId: Number(dao.lastProposalId) + 1,
+    lastProposalId: Number(lastProposalId),
     updateTransactionHash: transactionHash,
     updateTimestamp: timestamp,
   };
