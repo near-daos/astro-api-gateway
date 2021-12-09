@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
-import { In, Repository } from 'typeorm';
+import { IsNull, Not, Repository } from 'typeorm';
 import { CrudRequest } from '@nestjsx/crud';
 import { NearApiService } from '@sputnik-v2/near-api';
 
@@ -34,6 +34,7 @@ export class TokenService extends TypeOrmCrudService<Token> {
 
   async lastToken(): Promise<Token> {
     return this.tokenRepository.findOne({
+      where: { updateTimestamp: Not(IsNull()) },
       order: { updateTimestamp: 'DESC' },
     });
   }

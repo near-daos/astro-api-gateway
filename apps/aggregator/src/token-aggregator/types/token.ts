@@ -19,7 +19,7 @@ export function castToken(
   };
 }
 
-export function castNearToken(price?: string, timestamp = getBlockTimestamp()) {
+export function castNearToken(price?: string) {
   return {
     id: 'NEAR',
     symbol: 'NEAR',
@@ -27,6 +27,5 @@ export function castNearToken(price?: string, timestamp = getBlockTimestamp()) {
     price,
     ownerId: '',
     totalSupply: '',
-    updateTimestamp: timestamp,
   };
 }
