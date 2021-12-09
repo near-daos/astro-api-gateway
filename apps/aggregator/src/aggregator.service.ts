@@ -113,10 +113,7 @@ export class AggregatorService {
     }
 
     const lastToken = await this.tokenService.lastToken();
-    const timestamp =
-      this.state.getAggregationTimestamp('token') ||
-      lastToken.updateTimestamp ||
-      lastToken.createTimestamp;
+    const timestamp = lastToken.updateTimestamp || lastToken.createTimestamp;
 
     this.logger.log(`Start Token aggregation...`);
     this.state.startAggregation('token');
