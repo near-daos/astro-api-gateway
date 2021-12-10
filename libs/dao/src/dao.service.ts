@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 import { CrudRequest } from '@nestjsx/crud';
@@ -99,6 +99,10 @@ export class DaoService extends TypeOrmCrudService<Dao> {
   async getDaoFeed(id: string): Promise<DaoFeed> {
     const dao: Dao = await this.findOne(id);
 
+    if (!dao) {
+      throw new NotFoundException(`DAO with id ${id} not found`);
+    }
+
     const proposals = await this.proposalService.findProposalsByDaoIds([id]);
     const tokenBalances = await this.tokenService.findTokenBalancesByDaoIds([
       id,
@@ -109,6 +113,10 @@ export class DaoService extends TypeOrmCrudService<Dao> {
   }
 
   async getDaosFeed(daos: Dao[]): Promise<DaoFeed[]> {
+    if (daos.length === 0) {
+      return [];
+    }
+
     const daoIds: string[] = daos.map(({ id }) => id);
     const proposals = await this.proposalService.findProposalsByDaoIds(daoIds);
     const tokenBalances = await this.tokenService.findTokenBalancesByDaoIds(
