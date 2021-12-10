@@ -109,6 +109,10 @@ export class DaoService extends TypeOrmCrudService<Dao> {
   }
 
   async getDaosFeed(daos: Dao[]): Promise<DaoFeed[]> {
+    if (daos.length === 0) {
+      return [];
+    }
+
     const daoIds: string[] = daos.map(({ id }) => id);
     const proposals = await this.proposalService.findProposalsByDaoIds(daoIds);
     const tokenBalances = await this.tokenService.findTokenBalancesByDaoIds(
