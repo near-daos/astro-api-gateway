@@ -26,6 +26,7 @@ import {
   WalletCallbackParams,
   FindAccountParams,
   NearDBConnectionErrorFilter,
+  AccountTokenParams,
 } from '@sputnik-v2/common';
 import {
   TransactionResponse,
@@ -106,6 +107,34 @@ export class TransactionController {
     @Param() { accountId }: FindAccountParams,
   ): Promise<Receipt[]> {
     return await this.nearIndexerService.receiptsByAccount(accountId);
+  }
+
+  @ApiResponse({
+    status: 200,
+    description: 'List of Receipts by Account and FT Token',
+    type: Receipt,
+  })
+  @ApiParam({
+    name: 'accountId',
+    type: String,
+  })
+  @ApiParam({
+    name: 'tokenId',
+    type: String,
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
+  @UseInterceptors(HttpCacheInterceptor)
+  @UseFilters(new NearDBConnectionErrorFilter())
+  @Get('/receipts/account-receipts/:accountId/tokens/:tokenId')
+  async receiptsByAccountToken(
+    @Param() { accountId, tokenId }: AccountTokenParams,
+  ): Promise<Receipt[]> {
+    return await this.nearIndexerService.receiptsByAccountToken(
+      accountId,
+      tokenId,
+    );
   }
 
   @Get('/wallet/callback/:accountId')

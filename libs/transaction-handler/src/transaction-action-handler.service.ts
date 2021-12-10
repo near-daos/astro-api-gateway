@@ -133,16 +133,28 @@ export class TransactionActionHandlerService {
     args,
     timestamp,
   }: TransactionAction) {
+    const daoContract = this.nearApiService.getContract(
+      'sputnikDao',
+      receiverId,
+    );
     const daoEntity = await this.daoService.findOne(receiverId);
+    const lastProposalId = await daoContract.get_last_proposal_id();
+    const daoProposal = await this.findLastProposal(
+      receiverId,
+      signerId,
+      lastProposalId,
+      args.proposal,
+    );
     const proposal = castCreateProposal({
       transactionHash,
       signerId,
-      proposal: args.proposal,
+      proposal: daoProposal,
       dao: daoEntity,
       timestamp,
     });
     const dao = castAddProposalDao({
       dao: daoEntity,
+      lastProposalId,
       transactionHash,
       timestamp,
     });
@@ -475,6 +487,7 @@ export class TransactionActionHandlerService {
     this.logger.log(`DAO successfully updated: ${receiverId}`);
   }
 
+  // TODO: Optimize this logic
   private async findLastBountyId(
     daoId: string,
     lastBountyId: number,
@@ -505,6 +518,42 @@ export class TransactionActionHandlerService {
           max_deadline === bountyData.maxDeadline
         );
       })?.id;
+  }
+
+  // TODO: Optimize this logic
+  private async findLastProposal(
+    daoId: string,
+    proposerId: string,
+    lastProposalId: number,
+    proposalData,
+  ) {
+    const daoContract = this.nearApiService.getContract('sputnikDao', daoId);
+    const chunkSize = 50;
+    const chunkCount =
+      (lastProposalId - (lastProposalId % chunkSize)) / chunkSize + 1;
+    let proposals = [];
+
+    // Load all proposals by chunks
+    for (let i = 0; i < chunkCount; i++) {
+      const proposalsChunk = await daoContract.get_proposals({
+        from_index: chunkSize * i,
+        limit: chunkSize,
+      });
+      proposals = proposals.concat(proposalsChunk);
+    }
+
+    return proposals.reverse().find(({ description, proposer, kind }) => {
+      const hasSameKind =
+        typeof kind === 'string'
+          ? kind === proposalData.kind
+          : Object.keys(kind).toString() ===
+            Object.keys(proposalData.kind).toString();
+      return (
+        description === proposalData.description &&
+        proposerId === proposer &&
+        hasSameKind
+      );
+    });
   }
 
   private getContractHandlers(receiverId: string): ContractHandler[] {

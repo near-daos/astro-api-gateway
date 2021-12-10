@@ -4,16 +4,19 @@ import { buildNFTTokenId, getBlockTimestamp } from '@sputnik-v2/utils';
 
 export function castNFT(
   nftContractId: string,
+  accountId: string,
   metadata,
   nft,
   timestamp = getBlockTimestamp(),
 ): NFTTokenDto {
   const nftToken = camelcaseKeys(nft, { deep: true });
-  const id = buildNFTTokenId(nftContractId, nftToken.id);
+  const tokenId = nftToken.id || nftToken.tokenId;
+  const id = buildNFTTokenId(nftContractId, tokenId);
   return {
     ...nftToken,
     id: id,
-    tokenId: nftToken.id,
+    accountId: accountId,
+    tokenId: tokenId,
     ownerId: nftToken.ownerId.account || nftToken.ownerId,
     metadata: {
       ...nftToken.metadata,

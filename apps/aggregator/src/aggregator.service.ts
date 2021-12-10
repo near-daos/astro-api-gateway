@@ -44,8 +44,11 @@ export class AggregatorService {
     private readonly schedulerRegistry: SchedulerRegistry,
     private readonly cacheService: CacheService,
   ) {
-    const { pollingInterval, tokenPollingInterval } =
-      this.configService.get('aggregator');
+    const {
+      pollingInterval,
+      tokenPollingInterval,
+      tokenPricesPollingInterval,
+    } = this.configService.get('aggregator');
 
     schedulerRegistry.addInterval(
       'polling',
@@ -55,6 +58,14 @@ export class AggregatorService {
     schedulerRegistry.addInterval(
       'token_polling',
       setInterval(() => this.scheduleTokenAggregation(), tokenPollingInterval),
+    );
+
+    schedulerRegistry.addInterval(
+      'token_prices_polling',
+      setInterval(
+        () => this.scheduleTokenPricesAggregation(),
+        tokenPricesPollingInterval,
+      ),
     );
   }
 
@@ -86,20 +97,32 @@ export class AggregatorService {
     }
   }
 
+  public async scheduleTokenPricesAggregation(): Promise<void> {
+    try {
+      await this.aggregateTokenPrices();
+    } catch (error) {
+      this.state.stopAggregation('token-price');
+
+      this.logger.error(`Token Prices Aggregation failed with error: ${error}`);
+    }
+  }
+
   public async aggregateTokens() {
     if (this.state.isInProgress('token')) {
       return;
     }
 
+    const lastToken = await this.tokenService.lastToken();
+    const timestamp = lastToken.updateTimestamp || lastToken.createTimestamp;
+
     this.logger.log(`Start Token aggregation...`);
     this.state.startAggregation('token');
 
-    const lastToken = await this.tokenService.lastToken();
     const { contractName } = this.configService.get('near');
     const daoTokenUpdates =
       await this.nearIndexerService.findLikelyTokenUpdates(
         `%.${contractName}%`,
-        lastToken.updateTimestamp || lastToken.createTimestamp,
+        timestamp,
       );
 
     if (daoTokenUpdates.length === 0) {
@@ -131,42 +154,80 @@ export class AggregatorService {
     this.state.stopAggregation('token');
   }
 
+  public async aggregateTokenPrices() {
+    if (this.state.isInProgress('token-price')) {
+      return;
+    }
+
+    this.logger.log(`Start Token Prices aggregation...`);
+    this.state.startAggregation('token-price');
+
+    const updatedTokens =
+      await this.tokenAggregatorService.aggregateTokenPrices();
+
+    this.logger.log(
+      `Aggregate token prices: ${updatedTokens.map(({ id }) => id)}`,
+    );
+
+    // TODO: https://app.clickup.com/t/1ty89nk
+    await this.cacheService.clearCache();
+
+    this.logger.log(`Finished Token Prices aggregation`);
+    this.state.stopAggregation('token-price');
+  }
+
   public async aggregateNFTs() {
     if (this.state.isInProgress('nft')) {
       return;
     }
 
+    const lastToken = await this.nftTokenService.lastToken();
+    const timestamp =
+      this.state.getAggregationTimestamp('nft') ||
+      lastToken.updateTimestamp ||
+      lastToken.createTimestamp;
+
     this.logger.log(`Start NFTs aggregation...`);
     this.state.startAggregation('nft');
 
-    const lastToken = await this.nftTokenService.lastToken();
-    const { contractName } = this.configService.get('near');
+    const { contractName, nftFactoryContracts } =
+      this.configService.get('near');
     const daoNFTUpdates = await this.nearIndexerService.findLikelyNFTsUpdates(
-      `%.${contractName}%`,
-      lastToken.updateTimestamp || lastToken.createTimestamp,
+      `%${contractName}%`,
+      timestamp,
     );
+    const whitelistNFTActions =
+      await this.nearIndexerService.findContractsNFTsActions(
+        nftFactoryContracts.map((contractName) => `%.${contractName}%`),
+        timestamp,
+      );
+    const nftUpdates = [
+      ...daoNFTUpdates,
+      ...this.nftAggregatorService.mapNFTActions(whitelistNFTActions),
+    ];
 
-    if (daoNFTUpdates.length === 0) {
+    if (nftUpdates.length === 0) {
       this.logger.log(`Skip aggregation for NFTs. No new transactions found`);
       this.state.stopAggregation('nft');
       return;
     }
 
-    const uniqueUpdates = daoNFTUpdates.filter((tokenUpdate, index) => {
+    const uniqueDaoUpdates = nftUpdates.filter((tokenUpdate, index) => {
       return (
+        tokenUpdate.account.includes(`.${contractName}`) &&
         index ===
-        daoNFTUpdates.findIndex(
-          ({ nft, account }) =>
-            tokenUpdate.nft === nft && tokenUpdate.account === account,
-        )
+          nftUpdates.findIndex(
+            ({ nft, account }) =>
+              tokenUpdate.nft === nft && tokenUpdate.account === account,
+          )
       );
     });
 
     this.logger.log(
-      `Found NFT updates: ${uniqueUpdates.map(({ nft }) => nft)}`,
+      `Found NFT updates: ${uniqueDaoUpdates.map(({ nft }) => nft)}`,
     );
 
-    await this.nftAggregatorService.aggregateDaoNFTUpdates(uniqueUpdates);
+    await this.nftAggregatorService.aggregateDaoNFTUpdates(uniqueDaoUpdates);
 
     // TODO: https://app.clickup.com/t/1ty89nk
     await this.cacheService.clearCache();
@@ -239,7 +300,7 @@ export class AggregatorService {
   public async aggregateAllDaos() {
     this.logger.log(`Start all DAO aggregation`);
 
-    this.state.startAggregations(['dao', 'token', 'nft']);
+    this.state.startAggregations(['dao', 'token', 'nft', 'token-price']);
 
     const tx = await this.transactionService.lastTransaction();
     const { contractName } = this.configService.get('near');
@@ -266,7 +327,9 @@ export class AggregatorService {
         async (daoAccount) => await this.aggregateDaoNFTs(daoAccount, tx),
       );
 
-    this.state.stopAggregations(['dao', 'token', 'nft']);
+    await this.tokenAggregatorService.aggregateTokenPrices();
+
+    this.state.stopAggregations(['dao', 'token', 'nft', 'token-price']);
     this.logger.log(`Finished all DAO aggregation`);
   }
 
@@ -352,9 +415,11 @@ export class AggregatorService {
     this.logger.log(`Start aggregation NFTs for DAO: ${account.accountId}`);
 
     try {
-      const nftIds = await this.nearIndexerService.findLikelyNFTs(
+      const { nftWhitelistContracts } = this.configService.get('near');
+      const nftLikelyIds = await this.nearIndexerService.findLikelyNFTs(
         account.accountId,
       );
+      const nftIds = [...nftLikelyIds, ...nftWhitelistContracts];
 
       if (nftIds.length === 0) {
         this.logger.log(
