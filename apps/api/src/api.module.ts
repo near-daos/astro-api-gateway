@@ -20,6 +20,8 @@ import { TransactionModule } from './transaction/transaction.module';
 import { AppController } from './api.controller';
 import { WebsocketModule } from './websocket/websocket.module';
 import { WebsocketGateway } from './websocket/websocket.gateway';
+import { EventModule } from '@sputnik-v2/event';
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
   imports: [
@@ -45,6 +47,8 @@ import { WebsocketGateway } from './websocket/websocket.gateway';
     TransactionModule,
     HttpCacheModule,
     WebsocketModule,
+    EventModule,
+    NotificationModule,
   ],
   controllers: [AppController],
   providers: [WebsocketGateway],

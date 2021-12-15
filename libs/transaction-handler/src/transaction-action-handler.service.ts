@@ -13,6 +13,7 @@ import {
 } from '@sputnik-v2/proposal';
 import { Transaction } from '@sputnik-v2/near-indexer';
 import { BountyService } from '@sputnik-v2/bounty';
+import { EventService } from '@sputnik-v2/event';
 import { btoaJSON, buildBountyId, buildProposalId } from '@sputnik-v2/utils';
 
 import {
@@ -43,6 +44,7 @@ export class TransactionActionHandlerService {
     private readonly daoService: DaoService,
     private readonly proposalService: ProposalService,
     private readonly bountyService: BountyService,
+    private readonly eventService: EventService,
   ) {
     const { contractName } = this.configService.get('near');
     this.contractHandlers = [
@@ -102,12 +104,8 @@ export class TransactionActionHandlerService {
     });
   }
 
-  async handleCreateDao({
-    signerId,
-    transactionHash,
-    args,
-    timestamp,
-  }: TransactionAction) {
+  async handleCreateDao(txAction: TransactionAction) {
+    const { signerId, transactionHash, args, timestamp } = txAction;
     const { contractName } = this.configService.get('near');
     const daoArgs = btoaJSON(args.args);
     const daoId = `${args.name}.${contractName}`;
@@ -124,15 +122,12 @@ export class TransactionActionHandlerService {
     this.logger.log(`Storing new DAO: ${daoId} due to transaction`);
     await this.daoService.create(dao);
     this.logger.log(`Successfully stored new DAO: ${daoId}`);
+
+    await this.eventService.sendDaoUpdateNotificationEvent(dao, txAction);
   }
 
-  async handleAddProposal({
-    receiverId,
-    signerId,
-    transactionHash,
-    args,
-    timestamp,
-  }: TransactionAction) {
+  async handleAddProposal(txAction: TransactionAction) {
+    const { receiverId, signerId, transactionHash, args, timestamp } = txAction;
     const daoContract = this.nearApiService.getContract(
       'sputnikDao',
       receiverId,
@@ -166,15 +161,15 @@ export class TransactionActionHandlerService {
     this.logger.log(`Updating DAO: ${receiverId} due to transaction`);
     await this.daoService.create(dao);
     this.logger.log(`DAO successfully updated: ${receiverId}`);
+
+    await this.eventService.sendProposalUpdateNotificationEvent(
+      proposal,
+      txAction,
+    );
   }
 
-  async handleActProposal({
-    receiverId,
-    signerId,
-    transactionHash,
-    args,
-    timestamp,
-  }: TransactionAction) {
+  async handleActProposal(txAction: TransactionAction) {
+    const { receiverId, signerId, transactionHash, args, timestamp } = txAction;
     const dao = await this.daoService.findOne(receiverId);
     const daoContract = this.nearApiService.getContract(
       'sputnikDao',
@@ -230,6 +225,11 @@ export class TransactionActionHandlerService {
         await this.proposalService.create(proposal);
         break;
     }
+
+    await this.eventService.sendProposalUpdateNotificationEvent(
+      proposal,
+      txAction,
+    );
   }
 
   async handleApproveProposal({

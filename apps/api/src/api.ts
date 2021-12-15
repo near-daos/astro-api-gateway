@@ -27,9 +27,9 @@ export default class Api {
     initAdapters(app);
 
     app.connectMicroservice({
-      transport: Transport.RMQ,
+      transport: Transport.REDIS,
       options: {
-        urls: [process.env.RABBITMQ_URL],
+        url: process.env.REDIS_EVENT_URL,
         queue: EVENT_API_QUEUE_NAME,
         queueOptions: {
           durable: true,

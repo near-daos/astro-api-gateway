@@ -15,6 +15,7 @@ import { TransactionHandlerModule } from '@sputnik-v2/transaction-handler';
 import { HttpCacheModule } from '@sputnik-v2/cache';
 import { TokenModule } from '@sputnik-v2/token';
 import { ProposalModule } from '@sputnik-v2/proposal';
+import { EventModule } from '@sputnik-v2/event';
 
 import { AggregatorService } from './aggregator.service';
 import { DaoAggregatorModule } from './dao-aggregator/dao-aggregator.module';
@@ -45,6 +46,7 @@ import { TokenAggregatorModule } from './token-aggregator/token-aggregator.modul
     BountyAggregatorModule,
     TokenAggregatorModule,
     HttpCacheModule,
+    EventModule,
   ],
   providers: [AggregatorService],
 })

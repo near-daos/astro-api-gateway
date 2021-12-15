@@ -111,6 +111,12 @@
       ],
       "@sputnik-v2/transaction-handler/*": [
         "libs/transaction-handler/src/*"
+      ],
+      "@sputnik-v2/notification": [
+        "libs/notification/src"
+      ],
+      "@sputnik-v2/notification/*": [
+        "libs/notification/src/*"
       ]
     }
   }

@@ -11,6 +11,8 @@ export const NEAR_API_PROVIDER = 'NEAR_API_PROVIDER';
 export const EVENT_NOTIFICATION_SERVICE = 'EVENT_NOTIFICATION_SERVICE';
 export const EVENT_NOTIFICATIONS_QUEUE_NAME = 'sputnik-events-notifications';
 export const EVENT_DAO_UPDATE_NOTIFICATION = 'sputnik_dao_update_notification';
+export const EVENT_PROPOSAL_UPDATE_NOTIFICATION =
+  'sputnik_proposal_update_notification';
 
 export const EVENT_API_SERVICE = 'EVENT_API_SERVICE';
 export const EVENT_API_QUEUE_NAME = 'sputnik-events-api';
@@ -18,3 +20,5 @@ export const EVENT_API_DAO_UPDATE = 'dao_update';
 export const EVENT_API_PROPOSAL_UPDATE = 'proposal_update';
 
 export const DB_FOREIGN_KEY_VIOLATION = '23503';
+
+export const PROPOSAL_DESC_SEPARATOR = '$$$$';

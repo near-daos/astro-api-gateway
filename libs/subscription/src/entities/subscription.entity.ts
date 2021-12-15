@@ -2,7 +2,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
 import { BaseEntity } from '@sputnik-v2/common';
 import { Dao } from '@sputnik-v2/dao/entities';
-import { Account } from '@sputnik-v2/account/entities';
 
 @Entity()
 export class Subscription extends BaseEntity {
@@ -16,11 +15,10 @@ export class Subscription extends BaseEntity {
   dao: Dao;
 
   @ApiProperty()
-  @ManyToOne((_) => Account, { eager: true })
-  @JoinColumn({ name: 'account_id' })
-  account: Account;
+  @Column()
+  accountId: string;
 
   @ApiProperty()
   @Column()
-  accountId: string;
+  daoId: string;
 }

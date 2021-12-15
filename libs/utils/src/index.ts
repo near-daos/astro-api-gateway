@@ -1,8 +1,8 @@
 import Decimal from 'decimal.js';
 
 import { DaoDto, Dao } from '@sputnik-v2/dao';
-import { ProposalDto, Proposal } from '@sputnik-v2/proposal';
-import { BaseResponse } from '@sputnik-v2/common';
+import { ProposalDto, Proposal, ProposalVariant } from '@sputnik-v2/proposal';
+import { BaseResponse, PROPOSAL_DESC_SEPARATOR } from '@sputnik-v2/common';
 
 export const formatTimestamp = (timestamp: number): string => {
   const seconds = Number(timestamp / 1e9);
@@ -70,6 +70,24 @@ export const buildSubscriptionId = (
   accountId: string,
 ): string => {
   return `${daoId}-${accountId}`;
+};
+
+export const buildNotificationId = (txHash: string, type: string): string => {
+  return `${type.toLowerCase()}-${txHash.toLowerCase()}`;
+};
+
+export const buildAccountNotificationId = (
+  accountId: string,
+  notificationId: string,
+): string => {
+  return `${accountId}-${notificationId}`;
+};
+
+export const buildAccountNotificationSettingsId = (
+  accountId: string,
+  daoId?: string,
+): string => {
+  return `${accountId}-${daoId || 'all'}`;
 };
 
 export const buildTokenBalanceId = (tokenId: string, accountId: string) => {

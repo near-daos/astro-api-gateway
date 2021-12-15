@@ -16,9 +16,9 @@ import { EventService } from './event.service';
         name: EVENT_NOTIFICATION_SERVICE,
         useFactory: async () => {
           return {
-            transport: Transport.RMQ,
+            transport: Transport.REDIS,
             options: {
-              urls: [process.env.RABBITMQ_URL],
+              url: process.env.REDIS_EVENT_URL,
               queue: EVENT_NOTIFICATIONS_QUEUE_NAME,
             },
           };
@@ -28,9 +28,9 @@ import { EventService } from './event.service';
         name: EVENT_API_SERVICE,
         useFactory: async () => {
           return {
-            transport: Transport.RMQ,
+            transport: Transport.REDIS,
             options: {
-              urls: [process.env.RABBITMQ_URL],
+              url: process.env.REDIS_EVENT_URL,
               queue: EVENT_API_QUEUE_NAME,
             },
           };
