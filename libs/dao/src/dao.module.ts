@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ProposalModule } from '@sputnik-v2/proposal';
+import { ProposalModule } from '@sputnik-v2/proposal/proposal.module';
 import { TokenModule } from '@sputnik-v2/token';
 
 import { Dao, Policy } from './entities';

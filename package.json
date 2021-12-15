@@ -150,7 +150,9 @@
       "@sputnik-v2/transaction-handler/(.*)": "<rootDir>/libs/transaction-handler/src/$1",
       "@sputnik-v2/transaction-handler": "<rootDir>/libs/transaction-handler/src",
       "@sputnik-v2/migrations/(.*)": "<rootDir>/libs/migrations/src/$1",
-      "@sputnik-v2/migrations": "<rootDir>/libs/migrations/src"
+      "@sputnik-v2/migrations": "<rootDir>/libs/migrations/src",
+      "@sputnik-v2/notification/(.*)": "<rootDir>/libs/notification/src/$1",
+      "@sputnik-v2/notification": "<rootDir>/libs/notification/src"
     }
   }
 }

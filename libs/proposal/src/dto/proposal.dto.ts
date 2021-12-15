@@ -30,6 +30,7 @@ export class ProposalDto extends TransactionInfo {
   status: ProposalStatus;
   submissionTime: number;
   kind: ProposalKindDto;
+  type?: ProposalType;
   voteCounts: { [key: string]: number[] };
   votes: {
     [key: string]: Vote;

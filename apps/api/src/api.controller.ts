@@ -5,7 +5,6 @@ import { CacheService } from '@sputnik-v2/cache';
 import {
   EVENT_API_DAO_UPDATE,
   EVENT_API_PROPOSAL_UPDATE,
-  EVENT_DAO_UPDATE_NOTIFICATION,
 } from '@sputnik-v2/common';
 
 import { REDIS_SOCKET_EVENT_EMIT_ALL_NAME } from './websocket/redis-propagator/redis-propagator.constants';
@@ -26,27 +25,27 @@ export class AppController {
     return 'Sputnik v2 API v1.0';
   }
 
-  @EventPattern(EVENT_DAO_UPDATE_NOTIFICATION, Transport.RMQ)
-  async clearCache() {
-    this.logger.log(`Clearing cache on DAO update.`);
-    await this.cacheService.clearCache();
-  }
-
-  @EventPattern(EVENT_API_DAO_UPDATE, Transport.RMQ)
+  @EventPattern(EVENT_API_DAO_UPDATE, Transport.REDIS)
   async onDaoUpdate(data: Record<string, string[]>) {
     this.logger.log('Sending DAO updates to Websocket clients.');
     await this.redisService.publish(REDIS_SOCKET_EVENT_EMIT_ALL_NAME, {
       event: 'dao-update',
       data,
     });
+
+    this.logger.log(`Clearing cache on DAO update.`);
+    await this.cacheService.clearCache();
   }
 
-  @EventPattern(EVENT_API_PROPOSAL_UPDATE, Transport.RMQ)
+  @EventPattern(EVENT_API_PROPOSAL_UPDATE, Transport.REDIS)
   async onProposalUpdate(data: Record<string, string[]>) {
     this.logger.log('Sending Proposal updates to Websocket clients.');
     await this.redisService.publish(REDIS_SOCKET_EVENT_EMIT_ALL_NAME, {
       event: 'proposal-update',
       data,
     });
+
+    this.logger.log(`Clearing cache on Proposal update.`);
+    await this.cacheService.clearCache();
   }
 }

@@ -19,8 +19,7 @@ Main features:
 - Database: **PostgreSQL [PostgreSQL](https://www.postgresql.org/), [TypeORM](https://typeorm.io/)**
 - Near API: **[near-api-js](https://docs.near.org/docs/api/naj-quick-reference)**
 - Indexer: **[NEAR Indexer for Explorer](https://github.com/near/near-indexer-for-explorer)**
-- Caching: **[Redis](https://redis.io/)**
-- Message broker: **[RabbitMQ](https://www.rabbitmq.com/)**
+- Caching/Events: **[Redis](https://redis.io/)**
 - Notifications: **[Firebase Cloud Messaging](https://firebase.google.com/docs/cloud-messaging)**
 - Code quality: **[Eslint](https://eslint.org/), [Prettier](https://prettier.io/)**
 - Build: **[Docker](https://www.docker.com/))**

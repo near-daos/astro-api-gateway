@@ -149,6 +149,14 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     );
   }
 
+  async getDaoMembers(daoId: string): Promise<string[]> {
+    const dao = await this.daoRepository.findOne(daoId);
+    const allMembers = dao.policy.roles.reduce((members, role) => {
+      return members.concat(role.accountIds);
+    }, []);
+    return [...new Set(allMembers)];
+  }
+
   private buildFeedFromDao(
     dao: Dao,
     proposals: Proposal[],
