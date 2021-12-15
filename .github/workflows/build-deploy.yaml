@@ -12,7 +12,7 @@ on:
     branches:
     - develop
     - staging
-  create:
+  push:
     tags:
     - "**"
 
