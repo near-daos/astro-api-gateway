@@ -15,6 +15,9 @@ export class AccountNotificationCrudRequestInterceptor extends BaseCrudRequestIn
       notification: {
         eager: true,
       },
+      'notification.dao': {
+        eager: true,
+      },
     };
 
     return crudRequest;

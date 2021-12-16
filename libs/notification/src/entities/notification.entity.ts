@@ -25,6 +25,10 @@ export class Notification extends BaseEntity {
   targetId: string;
 
   @ApiProperty()
+  @Column({ nullable: true })
+  signerId: string;
+
+  @ApiProperty()
   @Column({ type: 'text' })
   type: NotificationType;
 

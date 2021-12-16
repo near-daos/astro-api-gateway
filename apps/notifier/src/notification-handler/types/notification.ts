@@ -12,6 +12,7 @@ export function castDaoUpdateNotification(
     daoId: data.dao.id,
     targetId: data.dao.id,
     type: type,
+    signerId: data.txAction.signerId,
     metadata: {
       methodName: data.txAction.methodName,
       args: data.txAction.args,
@@ -28,6 +29,7 @@ export function castProposalUpdateNotification(
     id: buildNotificationId(type, String(data.txAction.transactionHash)),
     daoId: data.proposal.daoId,
     targetId: data.proposal.id,
+    signerId: data.txAction.signerId,
     type: type,
     metadata: {
       methodName: data.txAction.methodName,
