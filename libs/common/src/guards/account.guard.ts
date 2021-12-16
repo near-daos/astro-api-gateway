@@ -4,6 +4,7 @@ import {
   ForbiddenException,
   Inject,
   Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import tweetnacl from 'tweetnacl';
 import { PublicKey } from 'near-api-js/lib/utils';
@@ -21,10 +22,21 @@ export class AccountAccessGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest();
-
     const { accountId, publicKey, signature } = req.body as AccountBearer;
+    return this.verifyAccount(accountId, publicKey, signature);
+  }
 
+  async verifyAccount(
+    accountId?: string,
+    publicKey?: string,
+    signature?: string,
+  ): Promise<boolean> {
     const account = await this.near.account(accountId);
+
+    if (!account) {
+      return false;
+    }
+
     const accessKeys = await account.getAccessKeys();
 
     if (!accessKeys.find((key) => key.public_key === publicKey)) {

@@ -16,6 +16,7 @@ export class NotificationService extends TypeOrmCrudService<Notification> {
   }
 
   async create(notificationDto: NotificationDto): Promise<Notification> {
-    return this.notificationRepository.save(notificationDto);
+    const { id } = await this.notificationRepository.save(notificationDto);
+    return this.notificationRepository.findOne(id);
   }
 }
