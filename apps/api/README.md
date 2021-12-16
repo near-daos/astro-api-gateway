@@ -28,7 +28,13 @@ You can connect to the Websocket [socket.io]([https://link](https://www.npmjs.co
 ```javascript
 const WEBSOCKET_HOST = 'https://api.dev.app.astrodao.com';
 
-window.s = io(WEBSOCKET_HOST, {});
+window.s = io(WEBSOCKET_HOST, {
+  query: {
+    accountId: "accountId",
+    publicKey: "publicKey",
+    signature: "signature",
+  }
+});
 ```
 
 Emit the 'heartbeat' event to check liveness of the connection:
@@ -37,11 +43,11 @@ Emit the 'heartbeat' event to check liveness of the connection:
 s.emit('heartbeat', { event: 'heartbeat', data: {} });
 ```
 ----------
-### DAO
+### Notification
 
-#### Subscribe to DAO updates:
+#### Subscribe to All Astro notifications:
 ```javascript
-s.on('dao-update', ({ daos }) => {})
+s.on('notification', ({ notification }) => {})
 ```  
 #### Payload:
 
@@ -49,12 +55,12 @@ Array of [DaoDto](libs/dao/src/dto/dao.dto.ts) objects
 
 ----------
 
-### Proposal
+### Account Notification
 
-#### Subscribe to Proposal updates:
+#### Subscribe to Account Notification updates:
 
 ```javascript
-s.on('proposal-update', ({ proposals }) => {})
+s.on('account-notification', (accountNotification) => {})
 ```
 
 #### Payload:

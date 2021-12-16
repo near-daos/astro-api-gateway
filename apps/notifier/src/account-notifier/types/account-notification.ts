@@ -8,6 +8,7 @@ export function castAccountNotification(
   return {
     id: buildAccountNotificationId(accountId, notification.id),
     notificationId: notification.id,
+    notification,
     accountId: accountId,
     isMuted: false,
     isRead: false,

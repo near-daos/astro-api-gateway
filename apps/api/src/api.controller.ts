@@ -2,12 +2,14 @@ import { Controller, Get, Logger } from '@nestjs/common';
 import { EventPattern, Transport } from '@nestjs/microservices';
 import { ApiExcludeEndpoint } from '@nestjs/swagger';
 import { CacheService } from '@sputnik-v2/cache';
-import {
-  EVENT_API_DAO_UPDATE,
-  EVENT_API_PROPOSAL_UPDATE,
-} from '@sputnik-v2/common';
+import { NewNotificationDto } from '@sputnik-v2/event';
+import { EVENT_NEW_NOTIFICATION } from '@sputnik-v2/common';
+import { AccountNotificationService } from '@sputnik-v2/notification';
 
-import { REDIS_SOCKET_EVENT_EMIT_ALL_NAME } from './websocket/redis-propagator/redis-propagator.constants';
+import {
+  REDIS_SOCKET_EVENT_EMIT_ALL_NAME,
+  REDIS_SOCKET_EVENT_EMIT_AUTHENTICATED_NAME,
+} from './websocket/redis-propagator/redis-propagator.constants';
 import { RedisService } from './websocket/redis/redis.service';
 
 @Controller()
@@ -17,6 +19,7 @@ export class AppController {
   constructor(
     private readonly cacheService: CacheService,
     private readonly redisService: RedisService,
+    private readonly accountNotificationService: AccountNotificationService,
   ) {}
 
   @ApiExcludeEndpoint()
@@ -25,27 +28,21 @@ export class AppController {
     return 'Sputnik v2 API v1.0';
   }
 
-  @EventPattern(EVENT_API_DAO_UPDATE, Transport.REDIS)
-  async onDaoUpdate(data: Record<string, string[]>) {
-    this.logger.log('Sending DAO updates to Websocket clients.');
+  @EventPattern(EVENT_NEW_NOTIFICATION, Transport.REDIS)
+  async onNewNotification(data: NewNotificationDto) {
+    this.logger.log(
+      `Sending new notification ${data.notification.type} to Websocket clients.`,
+    );
     await this.redisService.publish(REDIS_SOCKET_EVENT_EMIT_ALL_NAME, {
-      event: 'dao-update',
-      data,
+      event: 'notification',
+      data: data.notification,
     });
-
-    this.logger.log(`Clearing cache on DAO update.`);
-    await this.cacheService.clearCache();
-  }
-
-  @EventPattern(EVENT_API_PROPOSAL_UPDATE, Transport.REDIS)
-  async onProposalUpdate(data: Record<string, string[]>) {
-    this.logger.log('Sending Proposal updates to Websocket clients.');
-    await this.redisService.publish(REDIS_SOCKET_EVENT_EMIT_ALL_NAME, {
-      event: 'proposal-update',
-      data,
-    });
-
-    this.logger.log(`Clearing cache on Proposal update.`);
-    await this.cacheService.clearCache();
+    await this.redisService.publish(
+      REDIS_SOCKET_EVENT_EMIT_AUTHENTICATED_NAME,
+      {
+        event: 'account-notification',
+        accountEvents: data.accountNotifications,
+      },
+    );
   }
 }

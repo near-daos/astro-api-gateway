@@ -5,10 +5,12 @@ import {
   EVENT_API_SERVICE,
   EVENT_DAO_UPDATE_NOTIFICATION,
   EVENT_PROPOSAL_UPDATE_NOTIFICATION,
+  EVENT_NEW_NOTIFICATION,
 } from '@sputnik-v2/common';
 import { DaoDto } from '@sputnik-v2/dao';
 import { ProposalDto } from '@sputnik-v2/proposal';
 import { TransactionAction } from '@sputnik-v2/transaction-handler';
+import { AccountNotification, Notification } from '@sputnik-v2/notification';
 
 import { BaseMessage } from './messages/base.event';
 
@@ -43,6 +45,20 @@ export class EventService {
       txAction,
     });
     return this.sendEvent(this.notificationEventClient, message);
+  }
+
+  public async sendNewNotificationEvent(
+    notification: Notification,
+    accountNotifications: AccountNotification[],
+  ): Promise<any> {
+    const message = new BaseMessage(EVENT_NEW_NOTIFICATION, {
+      notification,
+      accountNotifications: accountNotifications.map((accountNotification) => ({
+        accountId: accountNotification.accountId,
+        data: accountNotification,
+      })),
+    });
+    return this.sendEvent(this.apiEventClient, message);
   }
 
   private async sendEvent(

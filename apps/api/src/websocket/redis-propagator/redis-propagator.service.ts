@@ -10,6 +10,7 @@ import {
   REDIS_SOCKET_EVENT_EMIT_AUTHENTICATED_NAME,
   REDIS_SOCKET_EVENT_SEND_NAME,
 } from './redis-propagator.constants';
+import { AuthenticatedSocket } from '../socket-state/socket-state.adapter';
 
 @Injectable()
 export class RedisPropagatorService {
@@ -53,11 +54,23 @@ export class RedisPropagatorService {
   private consumeEmitToAuthenticatedEvent = (
     eventInfo: RedisSocketEventEmitDTO,
   ): void => {
-    const { event, data } = eventInfo;
+    const { event, data, accountEvents } = eventInfo;
 
     return this.socketStateService
       .getAll()
-      .forEach((socket) => socket.emit(event, data));
+      .forEach((socket: AuthenticatedSocket) => {
+        if (!Array.isArray(accountEvents)) {
+          socket.emit(event, data);
+        } else {
+          const accountEvent = accountEvents.find(
+            ({ accountId }) => accountId === socket.auth?.accountId,
+          );
+
+          if (accountEvent) {
+            socket.emit(event, accountEvent.data);
+          }
+        }
+      });
   };
 
   public propagateEvent(eventInfo: RedisSocketEventSendDTO): boolean {

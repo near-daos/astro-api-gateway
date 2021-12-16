@@ -1,6 +1,7 @@
 import { INestApplicationContext, WebSocketAdapter } from '@nestjs/common';
 import { IoAdapter } from '@nestjs/platform-socket.io';
 import socketio from 'socket.io';
+import { AccountAccessGuard } from '@sputnik-v2/common';
 import { RedisPropagatorService } from '../redis-propagator/redis-propagator.service';
 
 import { SocketStateService } from './socket-state.service';
@@ -27,22 +28,26 @@ export class SocketStateAdapter extends IoAdapter implements WebSocketAdapter {
     options: socketio.ServerOptions,
   ): socketio.Server {
     const server = super.createIOServer(port, options);
+    const accountAccessGuard = this.app.get(AccountAccessGuard);
     this.redisPropagatorService.injectSocketServer(server);
 
     server.use(async (socket: AuthenticatedSocket, next) => {
-      const token =
-        socket.handshake.query?.token ||
-        socket.handshake.headers?.authorization;
-
-      if (!token) {
-        socket.auth = null;
-
-        // It's okay to have unauthenticaed connections for now
-        return next();
-      }
+      const { accountId, publicKey, signature } = socket.handshake.query || {};
 
       try {
-        //TODO: authenticate here...
+        const isAuthenticated =
+          !!accountId &&
+          (await accountAccessGuard.verifyAccount(
+            String(accountId),
+            String(publicKey.toString()),
+            String(signature.toString()),
+          ));
+
+        if (isAuthenticated) {
+          socket.auth = { accountId: String(accountId) };
+        } else {
+          socket.auth = null;
+        }
 
         return next();
       } catch (e) {
