@@ -54,7 +54,9 @@ export function castProposal(
   const kind = castProposalKind(proposalDto.kind);
   const filteredTxs = txs.filter((tx) => tx.transactionAction.args.args_base64);
   const proposalTxs = filteredTxs.filter(
-    (tx) => btoaJSON(String(tx.transactionAction.args.args_base64))?.id === id,
+    (tx) =>
+      btoaJSON(String(tx.transactionAction.args.args_base64))?.id ===
+      proposalDto.id,
   );
   const txData = filteredTxs.find((tx) => {
     const { signerAccountId, transactionAction } = tx;
