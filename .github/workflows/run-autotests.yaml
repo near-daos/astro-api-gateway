@@ -87,7 +87,7 @@ jobs:
       id: get_pod
       shell: bash
       run: |
-        clean_output=$(printf ${{steps.get_pod.outputs.kubectl-out}} | tr -t "'" "")
+        clean_output=$(printf ${{steps.kubectl.outputs.kubectl-out}} | tr -t "'" "")
         echo "pod name is $clean_output"
         echo "::set-output name=kubectl-out::$clean_output"
 
