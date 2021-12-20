@@ -65,37 +65,49 @@ jobs:
 
     - uses: actions/upload-artifact@v2
       with:
-        name: test_report
-        path: test-framework/build/reports/tests/**
-
-    - uses: actions/upload-artifact@v2
-      with:
         name: allure_report
         path: test-framework/build/reports/allure-report/**
 
-    - uses: jakejarvis/s3-sync-action@v0.5.1
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
       with:
-        args: --acl public-read --follow-symlinks
-      env:
-        AWS_S3_BUCKET: ${{ env.AWS_S3_BUCKET }}
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        AWS_REGION: ${{ env.AWS_DEFAULT_REGION }}
-        SOURCE_DIR: 'test-framework/build/reports'
-        DEST_DIR: "${{ steps.set_environment.outputs.environment }}/allure-report-${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}"
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_DEFAULT_REGION }}
 
-    - uses: jakejarvis/s3-sync-action@v0.5.1
-      with:
-        args: --acl public-read --follow-symlinks
+    - uses: Consensys/kubernetes-action@1.1.0
+      id: kubectl
       env:
-        AWS_S3_BUCKET: ${{ env.AWS_S3_BUCKET }}
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        AWS_REGION: ${{ env.AWS_DEFAULT_REGION }}
-        SOURCE_DIR: 'test-framework/build/reports/allure-report/history'
-        DEST_DIR: '${{ steps.set_environment.outputs.environment }}/history'
+        KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
+      with:
+        args: -n sputnik-v2-development get pods --selector=app.kubernetes.io/instance=automation-report -o jsonpath='{.items[0].metadata.name}'
+
+    - name: Clean Output
+      id: get_pod
+      shell: bash
+      run: |
+        clean_output=$(printf ${{steps.kubectl.outputs.result}} | tr -t "'" "")
+        echo "pod name is $clean_output"
+        echo "::set-output name=kubectl-out::$clean_output"
+
+    - name: Rename Result Directory
+      shell: bash
+      run: |
+        sudo cp -r test-framework/build/reports/allure-report test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}
+
+    - uses: Consensys/kubernetes-action@1.1.0
+      env:
+        KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
+      with:
+        args: cp -n sputnik-v2-development test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }} ${{ steps.get_pod.outputs.kubectl-out }}:/app/${{ steps.set_environment.outputs.environment }}
+
+    - uses: Consensys/kubernetes-action@1.1.0
+      env:
+        KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
+      with:
+        args: cp -n sputnik-v2-development test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/history ${{ steps.get_pod.outputs.kubectl-out }}:/app/${{ steps.set_environment.outputs.environment }}/history
 
     - name: Add Annotation
       run: |
-        echo "::notice title=Allure Report::http://astro-api-automation.s3-website.eu-central-1.amazonaws.com/${{ steps.set_environment.outputs.environment }}/allure-report-${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/allure-report/"
-        echo "::notice title=History for Environment::http://astro-api-automation.s3-website.eu-central-1.amazonaws.com/${{ steps.set_environment.outputs.environment }}/"
+        echo "::notice title=Allure Report::https://automation-report.app.astrodao.com/${{ steps.set_environment.outputs.environment }}/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/"
+        echo "::notice title=History for Environment::https://automation-report.app.astrodao.com/${{ steps.set_environment.outputs.environment }}/"
