@@ -73,17 +73,26 @@ jobs:
         name: allure_report
         path: test-framework/build/reports/allure-report/**
 
-    - uses: actions-hub/kubectl@master
-      env:
-        KUBE_CONFIG: ${{ secrets.KUBE_CONFIG_DATA }}
+    - uses: ianbelcher/eks-kubectl-action@1.3
+      id: get_pod
       with:
-        args: cp -n sputnik-v2-development test-framework/build/reports $(kubectl -n sputnik-v2-development  get pods --selector=app.kubernetes.io/instance=automation-report -o name):/app/${{ steps.set_environment.outputs.environment }}/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}
+        aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws_region: ${{ env.AWS_DEFAULT_REGION }}
+        cluster_name: ${{ secrets.EKS_CLUSTER_NAME }}
+        args: -n sputnik-v2-development get pods --selector=app.kubernetes.io/instance=automation-report -o name
 
-    - uses: actions-hub/kubectl@master
+    - uses: anbelcher/eks-kubectl-action@1.3
       env:
         KUBE_CONFIG: ${{ secrets.KUBE_CONFIG_DATA }}
       with:
-        args: cp -n sputnik-v2-development test-framework/build/reports/allure-report/history $(kubectl -n sputnik-v2-development  get pods --selector=app.kubernetes.io/instance=automation-report -o name):/app/${{ steps.set_environment.outputs.environment }}/history
+        args: cp -n sputnik-v2-development test-framework/build/reports ${{ steps.get_pod.outputs.kubectl-out }}:/app/${{ steps.set_environment.outputs.environment }}/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}
+
+    - uses: anbelcher/eks-kubectl-action@1.3
+      env:
+        KUBE_CONFIG: ${{ secrets.KUBE_CONFIG_DATA }}
+      with:
+        args: cp -n sputnik-v2-development test-framework/build/reports/allure-report/history ${{ steps.get_pod.outputs.kubectl-out }}:/app/${{ steps.set_environment.outputs.environment }}/history
 
     - name: Add Annotation
       run: |
