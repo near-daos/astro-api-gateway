@@ -82,13 +82,13 @@ jobs:
         cluster_name: ${{ secrets.EKS_CLUSTER_NAME }}
         args: -n sputnik-v2-development get pods --selector=app.kubernetes.io/instance=automation-report -o name
 
-    - uses: anbelcher/eks-kubectl-action@1.3
+    - uses: ianbelcher/eks-kubectl-action@1.3
       env:
         KUBE_CONFIG: ${{ secrets.KUBE_CONFIG_DATA }}
       with:
         args: cp -n sputnik-v2-development test-framework/build/reports ${{ steps.get_pod.outputs.kubectl-out }}:/app/${{ steps.set_environment.outputs.environment }}/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}
 
-    - uses: anbelcher/eks-kubectl-action@1.3
+    - uses: ianbelcher/eks-kubectl-action@1.3
       env:
         KUBE_CONFIG: ${{ secrets.KUBE_CONFIG_DATA }}
       with:
