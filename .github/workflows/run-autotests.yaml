@@ -65,11 +65,6 @@ jobs:
 
     - uses: actions/upload-artifact@v2
       with:
-        name: test_report
-        path: test-framework/build/reports/tests/**
-
-    - uses: actions/upload-artifact@v2
-      with:
         name: allure_report
         path: test-framework/build/reports/allure-report/**
 
@@ -98,7 +93,7 @@ jobs:
     - name: Rename Result Directory
       shell: bash
       run: |
-        sudo cp -r test-framework/build/reports test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}
+        sudo cp -r test-framework/build/reports/allure-report test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}
 
     - uses: Consensys/kubernetes-action@1.1.0
       env:
@@ -110,9 +105,9 @@ jobs:
       env:
         KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
       with:
-        args: cp -n sputnik-v2-development test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/allure-report/history ${{ steps.get_pod.outputs.kubectl-out }}:/app/${{ steps.set_environment.outputs.environment }}/history
+        args: cp -n sputnik-v2-development test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/history ${{ steps.get_pod.outputs.kubectl-out }}:/app/${{ steps.set_environment.outputs.environment }}/history
 
     - name: Add Annotation
       run: |
-        echo "::notice title=Allure Report::https://automation-report.app.astrodao.com/${{ steps.set_environment.outputs.environment }}/allure-report-${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/allure-report/"
+        echo "::notice title=Allure Report::https://automation-report.app.astrodao.com/${{ steps.set_environment.outputs.environment }}/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/"
         echo "::notice title=History for Environment::https://automation-report.app.astrodao.com/${{ steps.set_environment.outputs.environment }}/"
