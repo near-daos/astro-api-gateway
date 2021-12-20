@@ -93,7 +93,7 @@ jobs:
     - name: Rename Result Directory
       shell: bash
       run: |
-        cp -r test-framework/build/reports test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}
+        sudo cp -r test-framework/build/reports test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}
 
     - uses: ianbelcher/eks-kubectl-action@1.3
       env:
