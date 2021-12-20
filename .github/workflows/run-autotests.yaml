@@ -80,7 +80,7 @@ jobs:
         aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws_region: ${{ env.AWS_DEFAULT_REGION }}
         cluster_name: ${{ secrets.EKS_CLUSTER_NAME }}
-        args: -n sputnik-v2-development get pods --selector=app.kubernetes.io/instance=automation-report -o name
+        args: -n sputnik-v2-development get pods --selector=app.kubernetes.io/instance=automation-report -o jsonpath='{.items[0].metadata.name}'
 
     - uses: ianbelcher/eks-kubectl-action@1.3
       env:
