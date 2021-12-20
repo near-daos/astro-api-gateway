@@ -82,7 +82,6 @@ jobs:
         cluster_name: ${{ secrets.EKS_CLUSTER_NAME }}
         args: -n sputnik-v2-development get pods --selector=app.kubernetes.io/instance=automation-report -o jsonpath='{.items[0].metadata.name}'
 
-
     - name: Clean Output
       id: get_pod
       shell: bash
@@ -91,17 +90,22 @@ jobs:
         echo "pod name is $clean_output"
         echo "::set-output name=kubectl-out::$clean_output"
 
-    - uses: ianbelcher/eks-kubectl-action@1.3
-      env:
-        KUBE_CONFIG: ${{ secrets.KUBE_CONFIG_DATA }}
-      with:
-        args: cp -n sputnik-v2-development test-framework/build/reports ${{ steps.get_pod.outputs.kubectl-out }}:/app/${{ steps.set_environment.outputs.environment }}/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}
+    - name: Rename Result Directory
+      shell: bash
+      run: |
+        mv test-framework/build/reports test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}
 
     - uses: ianbelcher/eks-kubectl-action@1.3
       env:
         KUBE_CONFIG: ${{ secrets.KUBE_CONFIG_DATA }}
       with:
-        args: cp -n sputnik-v2-development test-framework/build/reports/allure-report/history ${{ steps.get_pod.outputs.kubectl-out }}:/app/${{ steps.set_environment.outputs.environment }}/history
+        args: cp -n sputnik-v2-development test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }} ${{ steps.get_pod.outputs.kubectl-out }}:/app/${{ steps.set_environment.outputs.environment }}
+
+    - uses: ianbelcher/eks-kubectl-action@1.3
+      env:
+        KUBE_CONFIG: ${{ secrets.KUBE_CONFIG_DATA }}
+      with:
+        args: cp -n sputnik-v2-development test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/allure-report/history ${{ steps.get_pod.outputs.kubectl-out }}:/app/${{ steps.set_environment.outputs.environment }}/history
 
     - name: Add Annotation
       run: |
