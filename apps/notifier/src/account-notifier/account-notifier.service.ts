@@ -10,6 +10,7 @@ import {
 } from '@sputnik-v2/notification';
 import { SubscriptionService } from '@sputnik-v2/subscription';
 import { DaoService } from '@sputnik-v2/dao';
+import { getBlockTimestamp } from '@sputnik-v2/utils';
 
 import { castAccountNotification } from './types/account-notification';
 
@@ -32,16 +33,16 @@ export class AccountNotifierService {
       });
     const accountsNotifications = daoSubscribers.reduce(
       (accountsNotifications, accountId) => {
-        if (
-          this.shouldNotifyAccount(
-            accountId,
-            notification,
-            notificationSettings,
-          )
-        ) {
+        const status = this.getNotifyAccountStatus(
+          accountId,
+          notification,
+          notificationSettings,
+        );
+
+        if (status.shouldNotify) {
           return [
             ...accountsNotifications,
-            castAccountNotification(accountId, notification),
+            castAccountNotification(accountId, notification, status.isDisabled),
           ];
         }
 
@@ -64,24 +65,36 @@ export class AccountNotifierService {
     );
   }
 
-  private shouldNotifyAccount(
+  private getNotifyAccountStatus(
     accountId: string,
     notification: Notification,
     notificationSettings: AccountNotificationSettings[],
-  ): boolean {
+  ): { isDisabled: boolean; shouldNotify: boolean } {
     const accountNotificationSettings = notificationSettings.filter(
-      (ns) => ns.accountId === accountId,
+      (ns) =>
+        ns.accountId === accountId &&
+        (!ns.daoId || ns.daoId === notification.daoId),
     );
 
     // If no settings, notify by default
     if (accountNotificationSettings.length === 0) {
-      return true;
+      return { isDisabled: false, shouldNotify: false };
     }
 
-    return accountNotificationSettings.some(
+    const currentTimestamp = getBlockTimestamp();
+    const isDisabled = accountNotificationSettings.some(
       (ans) =>
-        (!ans.daoId || ans.daoId === notification.daoId) &&
-        ans.types.includes(notification.type),
+        (Number(ans.mutedUntilTimestamp) &&
+          ans.mutedUntilTimestamp > currentTimestamp) ||
+        ans.isAllMuted,
     );
+    const shouldNotify = accountNotificationSettings.some((ans) =>
+      ans.types.includes(notification.type),
+    );
+
+    return {
+      isDisabled,
+      shouldNotify,
+    };
   }
 }
