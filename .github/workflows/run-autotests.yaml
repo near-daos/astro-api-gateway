@@ -74,13 +74,22 @@ jobs:
         path: test-framework/build/reports/allure-report/**
 
     - uses: ianbelcher/eks-kubectl-action@1.3
-      id: get_pod
+      id: kubectl
       with:
         aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws_region: ${{ env.AWS_DEFAULT_REGION }}
         cluster_name: ${{ secrets.EKS_CLUSTER_NAME }}
         args: -n sputnik-v2-development get pods --selector=app.kubernetes.io/instance=automation-report -o jsonpath='{.items[0].metadata.name}'
+
+
+    - name: Clean Output
+      id: get_pod
+      shell: bash
+      run: |
+        clean_output=$(printf ${{steps.get_pod.outputs.kubectl-out}} | tr -t "'" "")
+        echo "pod name is $clean_output"
+        echo "::set-output name=kubectl-out::$clean_output"
 
     - uses: ianbelcher/eks-kubectl-action@1.3
       env:
