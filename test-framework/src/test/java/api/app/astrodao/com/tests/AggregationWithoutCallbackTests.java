@@ -103,6 +103,8 @@ public class AggregationWithoutCallbackTests extends BaseTest {
         NewDAODto newDaoDto = NewDAODto.of(daoName, daoArgs);
         CLIResponse cliResponse = nearCLISteps.createNewDao(newDaoDto, testAccountId, gasValue, deposit);
 
+        String ou = nearCLISteps.getTxStatus(cliResponse.getTransactionHash(), testAccountId);
+
         ResponseEntity<String> response = nearCLISteps.waitForAggregation(
                 aggregationTimeout, () -> daoApiSteps.getDAOByID(daoId)
         );

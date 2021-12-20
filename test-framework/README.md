@@ -9,7 +9,7 @@ This framework is intended to be used for testing of Sputnik v2 API
 
 ### Preconditions for running tests from IntelliJ IDEA
 1. Install IntelliJ IDEA.
-2. Clone project from [repository](https://bitbucket.org/magicpowered/sputnik-api-test-framework/src/master/)    
+2. Clone project from [repository](https://github.com/near-daos/astro-api-gateway)    
 3. Open project in IDEA    
 4. Go to Settings / Preferences | Build, Execution, Deployment | Build Tools | Gradle in IntelliJ IDEA
 5. Select IntelliJ IDEA in Run tests using dropdown
@@ -48,3 +48,10 @@ To generate and open report execute command below
  ```bash
  $ ./gradlew allureReport allureServe
  ```
+
+## To generate test coverage report for Swagger
+To generate test coverage report for Swagger execute command below
+ ```bash
+ $ ./gradlew generateCoverage
+ ```
+

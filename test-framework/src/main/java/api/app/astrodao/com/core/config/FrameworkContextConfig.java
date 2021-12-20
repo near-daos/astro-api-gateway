@@ -1,5 +1,6 @@
 package api.app.astrodao.com.core.config;
 
+import api.app.astrodao.com.core.interceptor.SwaggerCoverageV3RestTemplate;
 import com.github.javafaker.Faker;
 import io.qameta.allure.springweb.AllureRestTemplate;
 import lombok.extern.slf4j.Slf4j;
@@ -56,6 +57,7 @@ public class FrameworkContextConfig {
                 .writeTimeout(15, TimeUnit.SECONDS)
                 .followRedirects(true)
                 .followSslRedirects(true)
+                .hostnameVerifier((hostname, session) -> true)
                 .retryOnConnectionFailure(true).build();
     }
 
@@ -74,7 +76,7 @@ public class FrameworkContextConfig {
             }
         }
 
-        template.setInterceptors(List.of(new AllureRestTemplate()));
+        template.setInterceptors(List.of(new SwaggerCoverageV3RestTemplate(), new AllureRestTemplate()));
         template.getMessageConverters().add(textMessageConverter());
         template.setErrorHandler(new DefaultResponseErrorHandler() {
             @Override

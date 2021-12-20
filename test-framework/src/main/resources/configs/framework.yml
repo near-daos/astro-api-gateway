@@ -1,7 +1,7 @@
 test:
   env: ${TEST_ENV:testnet}
   accountId: testdao2.testnet
-  aggregation.timeout: ${TEST_AGG_TIMEOUT:7}
+  aggregation.timeout: ${TEST_AGG_TIMEOUT:15}
 
 framework:
   http.timeout: 15
