@@ -18,10 +18,7 @@ import api.app.astrodao.com.steps.NearCLISteps;
 import api.app.astrodao.com.steps.ProposalsApiSteps;
 import api.app.astrodao.com.steps.TransactionsSteps;
 import com.github.javafaker.Faker;
-import io.qameta.allure.Feature;
-import io.qameta.allure.Severity;
-import io.qameta.allure.SeverityLevel;
-import io.qameta.allure.Story;
+import io.qameta.allure.*;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -51,6 +48,87 @@ public class AggregationWithCallbackTests extends BaseTest {
     private String testAccountId;
 
     @Test
+    @Severity(SeverityLevel.CRITICAL)
+    @Story("User should be able to get newly created DAO via Sputnik v2 API")
+    @DisplayName("User should be able to get newly created DAO via Sputnik v2 API")
+    void userShouldBeAbleToGetNewlyCreatedDaoViaSputnikV2Api() {
+        float deposit = 5F;
+        long gasValue = 100000000000000L;
+        String daoDisplayName = String.format("Test DAO %s", getEpochMillis());
+        String daoName = daoDisplayName.toLowerCase().replaceAll("\\s", "-");
+        String daoId = String.format("%s.sputnikv2.testnet", daoName);
+        String daoPurpose = faker.lorem().characters(20, 30);
+        String bond = "100000000000000000000000";
+        String period = "604800000000000";
+        String gracePeriod = "86400000000000";
+
+        Role<KindWithGroup> role = Role.<KindWithGroup>of()
+                .setName("Council")
+                .setKind(KindWithGroup.of(List.of(testAccountId)))
+                .setPermissions(List.of("*:Finalize", "*:AddProposal", "*:VoteApprove", "*:VoteReject", "*:VoteRemove"))
+                .setVotePolicy(VotePolicy.of());
+
+        DefaultVotePolicy defaultVotePolicy = DefaultVotePolicy.of()
+                .setWeightKind("RoleWeight")
+                .setQuorum("0")
+                .setThreshold(List.of(1, 2));
+
+        Policy policy = Policy.of()
+                .setRoles(List.of(role))
+                .setDefaultVotePolicy(defaultVotePolicy)
+                .setProposalBond(bond)
+                .setProposalPeriod(period)
+                .setBountyBond(bond)
+                .setBountyForgivenessPeriod(period);
+
+        Metadata metadata = Metadata.of().setFlag("c1vdoupozsy28WZc2tm5e").setDisplayName(daoDisplayName);
+        Config config = Config.of(daoName, daoPurpose, metadata);
+
+        DAOArgs daoArgs = DAOArgs.of()
+                .setPurpose(daoPurpose)
+                .setBond(bond)
+                .setVotePeriod(period)
+                .setGracePeriod(gracePeriod)
+                .setPolicy(policy)
+                .setConfig(config);
+
+        NewDAODto newDaoDto = NewDAODto.of(daoName, daoArgs);
+        CLIResponse output = nearCLISteps.createNewDao(newDaoDto, testAccountId, gasValue, deposit);
+
+        Config viewConfig = nearCLISteps.getDaoConfig(daoId);
+        daoApiSteps.assertDtoValue(viewConfig, Config::getName, daoName, "name");
+        daoApiSteps.assertDtoValue(viewConfig, Config::getPurpose, daoPurpose, "purpose");
+
+        ResponseEntity<String> callbackResponse = transactionsSteps.triggerCallback(testAccountId, output.getTransactionHash());
+        proposalsApiSteps.assertResponseStatusCode(callbackResponse, HttpStatus.OK);
+
+        ResponseEntity<String> response = daoApiSteps.getDAOByID(daoId);
+        daoApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
+
+        DAODto daoDto = daoApiSteps.getResponseDto(response, DAODto.class);
+        //daoApiSteps.assertDtoValue(daoDto, DAODto::getIsArchived, Boolean.FALSE, "isArchived");
+        daoApiSteps.assertDtoValue(daoDto, DAODto::getId, daoId, "id");
+        daoApiSteps.assertDtoValue(daoDto, DAODto::getTransactionHash, output.getTransactionHash(), "transactionHash");
+        daoApiSteps.assertDtoValue(daoDto, DAODto::getUpdateTransactionHash, output.getTransactionHash(), "updateTransactionHash");
+        daoApiSteps.assertDtoValue(daoDto, d -> d.getConfig().getName(), daoName, "config/name");
+        daoApiSteps.assertDtoValue(daoDto, d -> d.getConfig().getPurpose(), daoPurpose, "config/purpose");
+        daoApiSteps.assertDtoValue(daoDto, d -> d.getConfig().getMetadata(), config.getMetadata(), "config/metadata");
+        //TODO: Add verification for amount
+        //daoApiSteps.assertDtoValue(daoDto, DAODto::getAmount, "5000071399234288200000000", "amount");
+        daoApiSteps.assertDtoValue(daoDto, DAODto::getCreatedBy, testAccountId, "createdBy");
+        daoApiSteps.assertDtoValue(daoDto, DAODto::getTotalSupply, "0", "totalSupply");
+        daoApiSteps.assertDtoValue(daoDto, DAODto::getNumberOfMembers, 1, "numberOfMembers");
+        daoApiSteps.assertDtoValue(daoDto, d -> d.getPolicy().getProposalBond(), bond, "policy/proposalBond");
+        daoApiSteps.assertDtoValue(daoDto, d -> d.getPolicy().getBountyBond(), bond, "policy/bountyBond");
+        daoApiSteps.assertDtoValue(daoDto, d -> d.getPolicy().getBountyForgivenessPeriod(), period, "policy/bountyForgivenessPeriod");
+        daoApiSteps.assertDtoValue(daoDto, d -> d.getPolicy().getProposalPeriod(), period, "policy/proposalPeriod");
+        daoApiSteps.assertCollectionHasCorrectSize(daoDto.getPolicy().getRoles(), 1);
+        daoApiSteps.assertCollectionsAreEqual(daoDto.getPolicy().getRoles().get(0).getPermissions(), role.getPermissions());
+        daoApiSteps.assertDtoValue(daoDto, d -> d.getPolicy().getRoles().get(0).getName(), role.getName(), "policy/roles[1]/name");
+    }
+
+    @Test
+    @Tag("debugRun")
     @Severity(SeverityLevel.CRITICAL)
     @Story("User should be able to get newly created poll proposal via Sputnik v2 API")
     @DisplayName("User should be able to get newly created poll proposal via Sputnik v2 API")
@@ -164,85 +242,5 @@ public class AggregationWithCallbackTests extends BaseTest {
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDescription, description, "description");
         proposalsApiSteps.assertDtoValue(proposalDto, p -> p.getKind().getType(), "AddBounty", "kind/vote");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getStatus, "InProgress", "status");
-    }
-
-    @Test
-    @Severity(SeverityLevel.CRITICAL)
-    @Story("User should be able to get newly created DAO via Sputnik v2 API")
-    @DisplayName("User should be able to get newly created DAO via Sputnik v2 API")
-    void userShouldBeAbleToGetNewlyCreatedDaoViaSputnikV2Api() {
-        float deposit = 5F;
-        long gasValue = 100000000000000L;
-        String daoDisplayName = String.format("Test DAO %s", getEpochMillis());
-        String daoName = daoDisplayName.toLowerCase().replaceAll("\\s", "-");
-        String daoId = String.format("%s.sputnikv2.testnet", daoName);
-        String daoPurpose = faker.lorem().characters(20, 30);
-        String bond = "100000000000000000000000";
-        String period = "604800000000000";
-        String gracePeriod = "86400000000000";
-
-        Role<KindWithGroup> role = Role.<KindWithGroup>of()
-                .setName("Council")
-                .setKind(KindWithGroup.of(List.of(testAccountId)))
-                .setPermissions(List.of("*:Finalize", "*:AddProposal", "*:VoteApprove", "*:VoteReject", "*:VoteRemove"))
-                .setVotePolicy(VotePolicy.of());
-
-        DefaultVotePolicy defaultVotePolicy = DefaultVotePolicy.of()
-                .setWeightKind("RoleWeight")
-                .setQuorum("0")
-                .setThreshold(List.of(1, 2));
-
-        Policy policy = Policy.of()
-                .setRoles(List.of(role))
-                .setDefaultVotePolicy(defaultVotePolicy)
-                .setProposalBond(bond)
-                .setProposalPeriod(period)
-                .setBountyBond(bond)
-                .setBountyForgivenessPeriod(period);
-
-        Metadata metadata = Metadata.of().setFlag("c1vdoupozsy28WZc2tm5e").setDisplayName(daoDisplayName);
-        Config config = Config.of(daoName, daoPurpose, metadata);
-
-        DAOArgs daoArgs = DAOArgs.of()
-                .setPurpose(daoPurpose)
-                .setBond(bond)
-                .setVotePeriod(period)
-                .setGracePeriod(gracePeriod)
-                .setPolicy(policy)
-                .setConfig(config);
-
-        NewDAODto newDaoDto = NewDAODto.of(daoName, daoArgs);
-        CLIResponse output = nearCLISteps.createNewDao(newDaoDto, testAccountId, gasValue, deposit);
-
-        Config viewConfig = nearCLISteps.getDaoConfig(daoId);
-        daoApiSteps.assertDtoValue(viewConfig, Config::getName, daoName, "name");
-        daoApiSteps.assertDtoValue(viewConfig, Config::getPurpose, daoPurpose, "purpose");
-
-        ResponseEntity<String> callbackResponse = transactionsSteps.triggerCallback(testAccountId, output.getTransactionHash());
-        proposalsApiSteps.assertResponseStatusCode(callbackResponse, HttpStatus.OK);
-
-        ResponseEntity<String> response = daoApiSteps.getDAOByID(daoId);
-        daoApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
-
-        DAODto daoDto = daoApiSteps.getResponseDto(response, DAODto.class);
-        //daoApiSteps.assertDtoValue(daoDto, DAODto::getIsArchived, Boolean.FALSE, "isArchived");
-        daoApiSteps.assertDtoValue(daoDto, DAODto::getId, daoId, "id");
-        daoApiSteps.assertDtoValue(daoDto, DAODto::getTransactionHash, output.getTransactionHash(), "transactionHash");
-        daoApiSteps.assertDtoValue(daoDto, DAODto::getUpdateTransactionHash, output.getTransactionHash(), "updateTransactionHash");
-        daoApiSteps.assertDtoValue(daoDto, d -> d.getConfig().getName(), daoName, "config/name");
-        daoApiSteps.assertDtoValue(daoDto, d -> d.getConfig().getPurpose(), daoPurpose, "config/purpose");
-        daoApiSteps.assertDtoValue(daoDto, d -> d.getConfig().getMetadata(), config.getMetadata(), "config/metadata");
-        //TODO: Add verification for amount
-        //daoApiSteps.assertDtoValue(daoDto, DAODto::getAmount, "5000071399234288200000000", "amount");
-        daoApiSteps.assertDtoValue(daoDto, DAODto::getCreatedBy, testAccountId, "createdBy");
-        daoApiSteps.assertDtoValue(daoDto, DAODto::getTotalSupply, "0", "totalSupply");
-        daoApiSteps.assertDtoValue(daoDto, DAODto::getNumberOfMembers, 1, "numberOfMembers");
-        daoApiSteps.assertDtoValue(daoDto, d -> d.getPolicy().getProposalBond(), bond, "policy/proposalBond");
-        daoApiSteps.assertDtoValue(daoDto, d -> d.getPolicy().getBountyBond(), bond, "policy/bountyBond");
-        daoApiSteps.assertDtoValue(daoDto, d -> d.getPolicy().getBountyForgivenessPeriod(), period, "policy/bountyForgivenessPeriod");
-        daoApiSteps.assertDtoValue(daoDto, d -> d.getPolicy().getProposalPeriod(), period, "policy/proposalPeriod");
-        daoApiSteps.assertCollectionHasCorrectSize(daoDto.getPolicy().getRoles(), 1);
-        daoApiSteps.assertCollectionsAreEqual(daoDto.getPolicy().getRoles().get(0).getPermissions(), role.getPermissions());
-        daoApiSteps.assertDtoValue(daoDto, d -> d.getPolicy().getRoles().get(0).getName(), role.getName(), "policy/roles[1]/name");
     }
 }

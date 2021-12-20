@@ -126,4 +126,13 @@ public class NearCLISteps {
 
         return ActProposalNearCliResponse.fillDto(nearCliConsoleOutput);
     }
+
+    @Step("Call NEAR CLI method 'tx-status' for transaction")
+    public String getTxStatus(String tx, String accountId) {
+        String command = String.format(GET_TX_STATUS, tx, accountId);
+        List<String> output = CLIUtils.execute(command);
+
+        output.removeIf(p -> p.contains(String.format("Transaction %s:", accountId)));
+        return String.join(EMPTY, System.lineSeparator());
+    }
 }
