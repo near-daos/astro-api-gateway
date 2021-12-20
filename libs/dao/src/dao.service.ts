@@ -4,16 +4,18 @@ import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 import { CrudRequest } from '@nestjsx/crud';
 import { Repository } from 'typeorm';
 import {
-  ProposalService,
-  ProposalVoteStatus,
-  ProposalStatus,
   Proposal,
+  ProposalService,
+  ProposalStatus,
+  ProposalVoteStatus,
 } from '@sputnik-v2/proposal';
 import { calculateFunds, paginate } from '@sputnik-v2/utils';
 import { TokenBalance, TokenService } from '@sputnik-v2/token';
+import { DaoVariant } from '@sputnik-v2/dao/types';
 
-import { DaoDto, DaoResponse, DaoFeed, DaoFeedResponse } from './dto';
-import { Dao } from './entities';
+import { DaoDto, DaoFeed, DaoFeedResponse, DaoResponse } from './dto';
+import { Dao, RoleKindType } from './entities';
+import { WeightKind } from '@sputnik-v2/sputnikdao';
 
 @Injectable()
 export class DaoService extends TypeOrmCrudService<Dao> {
@@ -215,5 +217,35 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     }, 0);
 
     return Number(nearBalance) + Number(tokenBalance);
+  }
+
+  public getDaoVariant(dao: DaoDto): DaoVariant {
+    const canEveryoneAddProposal = dao.policy.roles.some(
+      (role) =>
+        role.kind === RoleKindType.Everyone &&
+        role.permissions.includes('*:AddProposal'),
+    );
+    const hasTokensVotingPower = dao.policy.roles.some(
+      (role) => role.votePolicy?.['*.*']?.weightKind === WeightKind.TokenWeight,
+    );
+    const hasCouncil = dao.policy.roles.some((role) => role.name === 'Council');
+
+    if (!canEveryoneAddProposal && !hasTokensVotingPower && !hasCouncil) {
+      return DaoVariant.Club;
+    }
+
+    if (canEveryoneAddProposal && !hasTokensVotingPower && hasCouncil) {
+      return DaoVariant.Foundation;
+    }
+
+    if (!canEveryoneAddProposal && hasTokensVotingPower && hasCouncil) {
+      return DaoVariant.Corporation;
+    }
+
+    if (!canEveryoneAddProposal && !hasTokensVotingPower && hasCouncil) {
+      return DaoVariant.Cooperative;
+    }
+
+    return DaoVariant.Custom;
   }
 }

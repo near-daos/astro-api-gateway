@@ -53,10 +53,12 @@ export class EventService {
   ): Promise<any> {
     const message = new BaseMessage(EVENT_NEW_NOTIFICATION, {
       notification,
-      accountNotifications: accountNotifications.map((accountNotification) => ({
-        accountId: accountNotification.accountId,
-        data: accountNotification,
-      })),
+      accountNotifications: accountNotifications
+        .filter(({ isMuted }) => isMuted)
+        .map((accountNotification) => ({
+          accountId: accountNotification.accountId,
+          data: accountNotification,
+        })),
     });
     return this.sendEvent(this.apiEventClient, message);
   }

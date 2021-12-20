@@ -10,6 +10,7 @@ import {
   NotificationService,
   NotificationType,
 } from '@sputnik-v2/notification';
+import { DaoService, DaoVariant } from '@sputnik-v2/dao';
 import { ProposalService } from '@sputnik-v2/proposal';
 
 import {
@@ -22,6 +23,7 @@ export class NotificationHandlerService {
   constructor(
     private readonly notificationService: NotificationService,
     private readonly proposalService: ProposalService,
+    private readonly daoService: DaoService,
   ) {}
 
   async handleDaoUpdateNotification(
@@ -50,7 +52,20 @@ export class NotificationHandlerService {
     data: DaoUpdateDto,
   ): NotificationType | null {
     if (data.txAction.methodName === 'create') {
-      return NotificationType.CustomDaoCreation;
+      const daoVariant = this.daoService.getDaoVariant(data.dao);
+
+      switch (daoVariant) {
+        case DaoVariant.Club:
+          return NotificationType.ClubDaoCreation;
+        case DaoVariant.Foundation:
+          return NotificationType.FoundationDaoCreation;
+        case DaoVariant.Corporation:
+          return NotificationType.CorporationDaoCreation;
+        case DaoVariant.Cooperative:
+          return NotificationType.CooperativeDaoCreation;
+        case DaoVariant.Custom:
+          return NotificationType.CustomDaoCreation;
+      }
     }
     return null;
   }
