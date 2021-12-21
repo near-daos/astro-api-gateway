@@ -90,10 +90,24 @@ jobs:
         echo "pod name is $clean_output"
         echo "::set-output name=kubectl-out::$clean_output"
 
-    - name: Rename Result Directory
+    - name: Generate Upload Bundle
       shell: bash
       run: |
-        sudo cp -r test-framework/build/reports/allure-report test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}
+        if [ "${ACTIONS_RUNNER_DEBUG:-}" = "true" ]; then
+          find ./
+          set -x
+        fi
+        sudo mkdir test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}
+        sudo cp -r test-framework/build/reports/allure-report test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/
+        sudo cp -r test-framework/build/swagger-coverage-output test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/
+        sudo find test-framework/build -name swagger-coverage-report.html -exec cp '{}' test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/swagger-coverage-output/index.html \;
+        sudo find test-framework/build -name swagger-coverage-results.json -exec cp '{}' test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/swagger-coverage-output/ \;
+        cat .github/actions/test/reports-site/HEADER.html.template | envsubst | sudo tee test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/HEADER.html
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: coverage_report
+        path: test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/swagger-coverage-output/**
 
     - uses: Consensys/kubernetes-action@1.1.0
       env:
@@ -105,9 +119,10 @@ jobs:
       env:
         KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
       with:
-        args: cp -n sputnik-v2-development test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/history ${{ steps.get_pod.outputs.kubectl-out }}:/app/${{ steps.set_environment.outputs.environment }}/history
+        args: cp -n sputnik-v2-development test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/allure-report/history ${{ steps.get_pod.outputs.kubectl-out }}:/app/${{ steps.set_environment.outputs.environment }}/history
 
     - name: Add Annotation
       run: |
-        echo "::notice title=Allure Report::https://automation-report.app.astrodao.com/${{ steps.set_environment.outputs.environment }}/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/"
+        echo "::notice title=Allure Report::https://automation-report.app.astrodao.com/${{ steps.set_environment.outputs.environment }}/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/allure-report"
+        echo "::notice title=Coverage Report::https://automation-report.app.astrodao.com/${{ steps.set_environment.outputs.environment }}/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/swagger-coverage-output"
         echo "::notice title=History for Environment::https://automation-report.app.astrodao.com/${{ steps.set_environment.outputs.environment }}/"
