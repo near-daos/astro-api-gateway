@@ -107,7 +107,7 @@ jobs:
     - uses: actions/upload-artifact@v2
       with:
         name: coverage_report
-        path: test-framework/swagger-coverage-output/**
+        path: test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/swagger-coverage-output/**
 
     - uses: Consensys/kubernetes-action@1.1.0
       env:
