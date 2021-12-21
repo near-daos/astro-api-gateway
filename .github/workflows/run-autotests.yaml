@@ -98,10 +98,13 @@ jobs:
     - name: Generate Upload Bundle
       shell: bash
       run: |
-        find ./
+        if [ "${ACTIONS_RUNNER_DEBUG:-}" = "true" ]; then
+          find ./
+          set -x
+        fi
         sudo mkdir test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}
         sudo cp -r test-framework/build/reports/allure-report test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/
-        sudo cp -r test-framework/swagger-coverage-output test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/
+        sudo cp -r test-framework/build/swagger-coverage-output test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/
 
     - uses: Consensys/kubernetes-action@1.1.0
       env:
