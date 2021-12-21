@@ -22,6 +22,7 @@ import {
   EntityQuery,
   QueryFailedErrorFilter,
   FindAccountParams,
+  FindOneParams,
 } from '@sputnik-v2/common';
 import {
   TokenService,
@@ -32,6 +33,7 @@ import {
   NFTTokenService,
   NFTTokenDto,
 } from '@sputnik-v2/token';
+import { AssetsNftEvent } from '@sputnik-v2/near-indexer';
 
 import { NFTTokenCrudRequestInterceptor } from './interceptors/nft-token-crud.interceptor';
 import { TokenNearService } from './token-near.service';
@@ -113,5 +115,22 @@ export class TokenController {
     @Param() { accountId }: FindAccountParams,
   ): Promise<NFTTokenDto[]> {
     return await this.tokenNearService.nftsByAccount(accountId);
+  }
+
+  @ApiParam({
+    name: 'id',
+    type: String,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List of Non-Fungible Token Events',
+    type: AssetsNftEvent,
+    isArray: true,
+  })
+  @UseInterceptors(HttpCacheInterceptor, NFTTokenCrudRequestInterceptor)
+  @UseFilters(new QueryFailedErrorFilter())
+  @Get('/nfts/:id/events')
+  async nftEvents(@Param() { id }: FindOneParams): Promise<AssetsNftEvent[]> {
+    return await this.nftTokenService.getTokenEvents(id);
   }
 }
