@@ -102,6 +102,7 @@ jobs:
         sudo cp -r test-framework/build/swagger-coverage-output test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/
         sudo find test-framework/build -name swagger-coverage-report.html -exec cp '{}' test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/swagger-coverage-output/index.html \;
         sudo find test-framework/build -name swagger-coverage-results.json -exec cp '{}' test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/swagger-coverage-output/ \;
+        sudo envsubst < .github/actions/test/reports-site/HEADER.html.template > test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/HEADER.html
 
     - uses: actions/upload-artifact@v2
       with:
