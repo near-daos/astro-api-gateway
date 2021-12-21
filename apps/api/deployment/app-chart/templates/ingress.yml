@@ -17,5 +17,8 @@ spec:
       paths:
         - path: /
           backend:
-            serviceName: {{ include "sputnik-v2-api.fullname" . }}
-            servicePort: 80
+            service:
+              name: {{ include "sputnik-v2-api.fullname" . }}
+              port:
+                number: 80
+          pathType: ImplementationSpecific
