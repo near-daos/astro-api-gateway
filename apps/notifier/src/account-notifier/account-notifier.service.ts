@@ -78,7 +78,7 @@ export class AccountNotifierService {
 
     // If no settings, notify by default
     if (accountNotificationSettings.length === 0) {
-      return { isDisabled: false, shouldNotify: false };
+      return { isDisabled: false, shouldNotify: true };
     }
 
     const currentTimestamp = getBlockTimestamp();
