@@ -105,6 +105,8 @@ jobs:
         sudo mkdir test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}
         sudo cp -r test-framework/build/reports/allure-report test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/
         sudo cp -r test-framework/build/swagger-coverage-output test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/
+        sudo cp -r test-framework/build/swagger-coverage-commandline-1.4.4/bin/swagger-coverage-report.html test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/swagger-coverage-output/
+        sudo cp -r test-framework/build/swagger-coverage-commandline-1.4.4/bin/swagger-coverage-results.json test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/swagger-coverage-output/
 
     - uses: Consensys/kubernetes-action@1.1.0
       env:
