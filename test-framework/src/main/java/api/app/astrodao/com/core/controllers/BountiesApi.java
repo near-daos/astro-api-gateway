@@ -29,4 +29,17 @@ public class BountiesApi {
 
         return httpClient.get(builder.toUriString(), new HttpEntity<>(httpHeaders), String.class);
     }
+
+    public ResponseEntity<String> getBounties(String sort, int limit, int offset) {
+        HttpHeaders httpHeaders = httpClient.getBasicHeaders();
+        httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(apiUrl);
+        builder.pathSegment("bounties");
+        builder.queryParam("sort", sort);
+        builder.queryParam("limit", limit);
+        builder.queryParam("offset", offset);
+
+        return httpClient.get(builder.toUriString(), new HttpEntity<>(httpHeaders), String.class);
+    }
 }

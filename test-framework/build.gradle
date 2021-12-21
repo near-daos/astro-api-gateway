@@ -5,7 +5,7 @@ buildscript {
         lombokVersion = '1.18.8'
         allureVersion = '2.16.1'
         selenideVersion = '5.20.0'
-        junitVersion = '5.6.2'
+        junitVersion = '5.8.1'
         commonsVersion = '3.12.0'
         snakeyamlVersion = '1.28'
         slf4jVersion = '1.7.30'
@@ -19,6 +19,7 @@ plugins {
     id 'java'
     id 'io.qameta.allure' version '2.8.1'
     id 'io.freefair.lombok' version '5.3.3.3'
+    id "de.undercouch.download" version "4.1.2"
 }
 
 version '1.0'
@@ -60,6 +61,10 @@ dependencies {
     implementation "javax.annotation:javax.annotation-api:1.3.2"
     implementation "com.github.javafaker:javafaker:1.0.2"
     implementation "org.javatuples:javatuples:1.2"
+
+    implementation "com.github.viclovsky:swagger-coverage-commons:1.4.4"
+    implementation "io.swagger.core.v3:swagger-models:2.1.11"
+    implementation "io.swagger:swagger-models:1.6.3"
 }
 
 tasks.withType(JavaCompile) {
@@ -96,4 +101,40 @@ tasks.named('test') {
     }
 
     environment "TEST_ENV", System.getProperty("test.env", "testnet")
+}
+
+task downloadSwaggerSpec(type: Download) {
+    src "https://api.${System.getProperty("test.env", "testnet")}.app.astrodao.com/docs-json"
+    dest new File("${buildDir}/spec.json")
+}
+
+task downloadCliForCoverage(type: Download) {
+    src "https://github.com/viclovsky/swagger-coverage/releases/download/1.4.4/swagger-coverage-1.4.4.zip"
+    dest new File("${buildDir}/swagger-coverage-commandline.zip")
+}
+
+task unzipCoverageCli(type: Copy) {
+    def zipFile = file("${buildDir}/swagger-coverage-commandline.zip")
+    def outputDir = file(buildDir)
+
+    from zipTree(zipFile)
+    into outputDir
+
+    doLast {
+        project.logger.lifecycle('Swagger-coverage-commandline zip file was unpacked')
+    }
+}
+
+task generateCoverage(type: Exec) {
+    workingDir "${buildDir}/swagger-coverage-commandline-1.4.4/bin"
+
+    commandLine "./swagger-coverage-commandline", "-s", "../../spec.json", "-i", "../../swagger-coverage-output"
+}
+
+unzipCoverageCli {
+    dependsOn tasks.named("downloadCliForCoverage"), tasks.named("downloadSwaggerSpec")
+}
+
+generateCoverage {
+    dependsOn tasks.named("unzipCoverageCli")
 }

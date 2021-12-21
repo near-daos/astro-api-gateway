@@ -10,7 +10,7 @@ public class ActProposalNearCliResponse {
 
 	public static ActProposalNearCliResponse fillDto(List<String> nearCliConsoleOutput) {
 		ActProposalNearCliResponse actProposalNearCliResponse = ActProposalNearCliResponse.of();
-		actProposalNearCliResponse.setTransactionHash(nearCliConsoleOutput.get(2).split(" ")[2]);
+		actProposalNearCliResponse.setTransactionHash(nearCliConsoleOutput.get(1).split(" ")[2]);
 
 		return actProposalNearCliResponse;
 	}
