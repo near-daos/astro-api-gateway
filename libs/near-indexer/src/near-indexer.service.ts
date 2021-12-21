@@ -392,9 +392,8 @@ export class NearIndexerService {
       .createQueryBuilder('nftEvent')
       .where('nftEvent.emitted_by_contract_account_id = :contractId', {
         contractId,
-        tokenId,
       })
-      .andWhere('nftEvent.token_id = :tokenId', { contractId, tokenId })
+      .andWhere('nftEvent.token_id = :tokenId', { tokenId })
       .orderBy('emitted_at_block_timestamp', 'DESC')
       .getMany();
   }
