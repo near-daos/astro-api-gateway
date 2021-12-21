@@ -9,6 +9,7 @@ import {
   Transaction,
   TransactionAction,
   ActionReceiptAction,
+  AssetsNftEvent,
 } from '@sputnik-v2/near-indexer/entities';
 
 export default registerAs(`db_${NEAR_INDEXER_DB_CONNECTION}`, () => ({
@@ -26,6 +27,7 @@ export default registerAs(`db_${NEAR_INDEXER_DB_CONNECTION}`, () => ({
     TransactionAction,
     ActionReceiptAction,
     AccountChange,
+    AssetsNftEvent,
   ],
   synchronize: false,
   namingStrategy: new SnakeNamingStrategy(),

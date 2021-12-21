@@ -1,17 +1,20 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 import { Repository } from 'typeorm';
+import { CrudRequest } from '@nestjsx/crud';
+
+import { AssetsNftEvent, NearIndexerService } from '@sputnik-v2/near-indexer';
 
 import { NFTToken } from './entities';
 import { NFTTokenDto, NFTTokenResponse } from './dto';
-import { CrudRequest } from '@nestjsx/crud';
 
 @Injectable()
 export class NFTTokenService extends TypeOrmCrudService<NFTToken> {
   constructor(
     @InjectRepository(NFTToken)
     private readonly nftTokenRepository: Repository<NFTToken>,
+    private readonly nearIndexerService: NearIndexerService,
   ) {
     super(nftTokenRepository);
   }
@@ -33,5 +36,18 @@ export class NFTTokenService extends TypeOrmCrudService<NFTToken> {
   async getMany(req: CrudRequest): Promise<NFTTokenResponse | NFTToken[]> {
     req.options.query.join.contract = { eager: true };
     return super.getMany(req);
+  }
+
+  async getTokenEvents(id: string): Promise<AssetsNftEvent[]> {
+    const nftToken = await this.nftTokenRepository.findOne(id);
+
+    if (!nftToken) {
+      throw new NotFoundException(`NFT with id ${id} not found`);
+    }
+
+    return this.nearIndexerService.findNFTEvents(
+      nftToken.contractId,
+      nftToken.tokenId || '0',
+    );
   }
 }
