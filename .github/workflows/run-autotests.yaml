@@ -68,6 +68,11 @@ jobs:
         name: allure_report
         path: test-framework/build/reports/allure-report/**
 
+    - uses: actions/upload-artifact@v2
+      with:
+        name: coverage_report
+        path: test-framework/swagger-coverage-output/**
+
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
@@ -90,10 +95,13 @@ jobs:
         echo "pod name is $clean_output"
         echo "::set-output name=kubectl-out::$clean_output"
 
-    - name: Rename Result Directory
+    - name: Generate Upload Bundle
       shell: bash
       run: |
-        sudo cp -r test-framework/build/reports/allure-report test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}
+        find ./
+        sudo mkdir test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}
+        sudo cp -r test-framework/build/reports/allure-report test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/
+        sudo cp -r test-framework/swagger-coverage-output test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/
 
     - uses: Consensys/kubernetes-action@1.1.0
       env:
@@ -105,9 +113,10 @@ jobs:
       env:
         KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
       with:
-        args: cp -n sputnik-v2-development test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/history ${{ steps.get_pod.outputs.kubectl-out }}:/app/${{ steps.set_environment.outputs.environment }}/history
+        args: cp -n sputnik-v2-development test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/allure-report/history ${{ steps.get_pod.outputs.kubectl-out }}:/app/${{ steps.set_environment.outputs.environment }}/history
 
     - name: Add Annotation
       run: |
-        echo "::notice title=Allure Report::https://automation-report.app.astrodao.com/${{ steps.set_environment.outputs.environment }}/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/"
+        echo "::notice title=Allure Report::https://automation-report.app.astrodao.com/${{ steps.set_environment.outputs.environment }}/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/allure-report"
+        echo "::notice title=Coverage Report::https://automation-report.app.astrodao.com/${{ steps.set_environment.outputs.environment }}/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/test-coverage"
         echo "::notice title=History for Environment::https://automation-report.app.astrodao.com/${{ steps.set_environment.outputs.environment }}/"
