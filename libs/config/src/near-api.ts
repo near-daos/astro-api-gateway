@@ -24,7 +24,7 @@ export const nearApiProvider = {
     const { contractName, providerUrl } = config;
 
     const account = await near.account(contractName);
-    const provider = new providers.JsonRpcProvider(providerUrl);
+    const provider = new providers.JsonRpcProvider({ url: providerUrl });
 
     return {
       near,

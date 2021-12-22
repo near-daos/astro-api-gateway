@@ -22,6 +22,7 @@ import { WebsocketModule } from './websocket/websocket.module';
 import { WebsocketGateway } from './websocket/websocket.gateway';
 import { EventModule } from '@sputnik-v2/event';
 import { NotificationModule } from './notification/notification.module';
+import { CommentModule } from './comment/comment.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { NotificationModule } from './notification/notification.module';
     WebsocketModule,
     EventModule,
     NotificationModule,
+    CommentModule,
   ],
   controllers: [AppController],
   providers: [WebsocketGateway],

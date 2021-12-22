@@ -6,11 +6,13 @@ import {
   EVENT_DAO_UPDATE_NOTIFICATION,
   EVENT_PROPOSAL_UPDATE_NOTIFICATION,
   EVENT_NEW_NOTIFICATION,
+  EVENT_NEW_COMMENT,
 } from '@sputnik-v2/common';
 import { DaoDto } from '@sputnik-v2/dao';
 import { ProposalDto } from '@sputnik-v2/proposal';
 import { TransactionAction } from '@sputnik-v2/transaction-handler';
 import { AccountNotification, Notification } from '@sputnik-v2/notification';
+import { Comment } from '@sputnik-v2/comment';
 
 import { BaseMessage } from './messages/base.event';
 
@@ -50,16 +52,21 @@ export class EventService {
   public async sendNewNotificationEvent(
     notification: Notification,
     accountNotifications: AccountNotification[],
-  ): Promise<any> {
+  ): Promise<void> {
     const message = new BaseMessage(EVENT_NEW_NOTIFICATION, {
       notification,
       accountNotifications: accountNotifications
-        .filter(({ isMuted }) => isMuted)
+        .filter(({ isMuted }) => !isMuted)
         .map((accountNotification) => ({
           accountId: accountNotification.accountId,
           data: accountNotification,
         })),
     });
+    return this.sendEvent(this.apiEventClient, message);
+  }
+
+  public async sendNewCommentEvent(comment: Comment): Promise<void> {
+    const message = new BaseMessage(EVENT_NEW_COMMENT, { comment });
     return this.sendEvent(this.apiEventClient, message);
   }
 

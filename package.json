@@ -58,7 +58,7 @@
     "class-validator": "^0.13.1",
     "firebase-admin": "^9.10.0",
     "ioredis": "^4.14.1",
-    "near-api-js": "^0.42.0",
+    "near-api-js": "^0.44.0",
     "object-hash": "^2.2.0",
     "parse-redis-url-simple": "^1.0.2",
     "pg": "^8.6.0",
@@ -68,8 +68,7 @@
     "socket.io": "^4.2.0",
     "swagger-ui-express": "^4.1.6",
     "typeorm": "^0.2.34",
-    "typeorm-naming-strategies": "^2.0.0",
-    "tweetnacl": "^1.0.3"
+    "typeorm-naming-strategies": "^2.0.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^7.6.0",
@@ -152,7 +151,9 @@
       "@sputnik-v2/migrations/(.*)": "<rootDir>/libs/migrations/src/$1",
       "@sputnik-v2/migrations": "<rootDir>/libs/migrations/src",
       "@sputnik-v2/notification/(.*)": "<rootDir>/libs/notification/src/$1",
-      "@sputnik-v2/notification": "<rootDir>/libs/notification/src"
+      "@sputnik-v2/notification": "<rootDir>/libs/notification/src",
+      "@sputnik-v2/comment/(.*)": "<rootDir>/libs/comment/src/$1",
+      "@sputnik-v2/comment": "<rootDir>/libs/comment/src"
     }
   }
 }
