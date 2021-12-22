@@ -19,22 +19,22 @@ export class CommentReportService extends TypeOrmCrudService<CommentReport> {
     super(commentReportRepository);
   }
 
-  async create(deleteVoteDto: CommentReportDto): Promise<CommentReport> {
-    const { commentId, accountId, reason } = deleteVoteDto;
-    const deleteVote = await this.commentReportRepository.save({
+  async create(commentReportDto: CommentReportDto): Promise<CommentReport> {
+    const { commentId, accountId, reason } = commentReportDto;
+    const commentReport = await this.commentReportRepository.save({
       id: buildCommentReportId(commentId, accountId),
       accountId,
       commentId,
       reason,
     });
-    const deleteVotes = await this.commentReportRepository.find({
+    const commentReports = await this.commentReportRepository.find({
       commentId: commentId,
     });
 
-    if (deleteVotes.length === COMMENT_DELETE_VOTES_REQUIRED) {
+    if (commentReports.length === COMMENT_DELETE_VOTES_REQUIRED) {
       await this.commentService.deleteById(commentId);
     }
 
-    return deleteVote;
+    return commentReport;
   }
 }
