@@ -123,6 +123,6 @@ jobs:
 
     - name: Add Annotation
       run: |
-        echo "::notice title=Allure Report::https://automation-report.app.astrodao.com/${{ steps.set_environment.outputs.environment }}/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/allure-report"
-        echo "::notice title=Coverage Report::https://automation-report.app.astrodao.com/${{ steps.set_environment.outputs.environment }}/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/swagger-coverage-output"
+        echo "::notice title=Allure Report::https://automation-report.app.astrodao.com/${{ steps.set_environment.outputs.environment }}/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/allure-report/"
+        echo "::notice title=Coverage Report::https://automation-report.app.astrodao.com/${{ steps.set_environment.outputs.environment }}/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/swagger-coverage-output/"
         echo "::notice title=History for Environment::https://automation-report.app.astrodao.com/${{ steps.set_environment.outputs.environment }}/"
