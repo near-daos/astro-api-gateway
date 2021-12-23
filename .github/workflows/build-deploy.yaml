@@ -193,6 +193,7 @@ jobs:
       uses: koslib/helm-eks-action@v1.8.0
       with:
         command: |
+          set -x
           for APP_NAME in ${{ needs.get-updated-apps.outputs.updated-apps }}
           do
             export CHART_FOLDER=apps/${APP_NAME}/deployment/app-chart
@@ -207,11 +208,25 @@ jobs:
               --set ingress.host=$K8S_INGRESS_HOST
           done
 
+  # experimental sleep to nail down issue with tests failing after deploy
+  wait-for-aggregator:
+    name: Wait For Aggregator
+    runs-on: ubuntu-latest
+    if: needs.get-environment.outputs.environment == 'develop' || needs.get-environment.outputs.environment == 'test'
+    needs:
+    - helm-deploy
+    - get-environment
+    steps:
+    - name: sleep
+      run: |
+        sleep 300
+
   run-autotests:
     name: Run Autotests
     needs:
     - helm-deploy
     - get-environment
+    - wait-for-aggregator
     if: needs.get-environment.outputs.environment == 'develop' || needs.get-environment.outputs.environment == 'test'
     uses: near-daos/astro-api-gateway/.github/workflows/run-autotests.yaml@develop
     with:
