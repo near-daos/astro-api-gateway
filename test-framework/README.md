@@ -12,7 +12,8 @@ This framework is intended to be used for testing of Sputnik v2 API
 2. Clone project from [repository](https://github.com/near-daos/astro-api-gateway)    
 3. Open project in IDEA    
 4. Go to Settings / Preferences | Build, Execution, Deployment | Build Tools | Gradle in IntelliJ IDEA
-5. Select IntelliJ IDEA in Run tests using dropdown
+5. Generate Open API models in CLI by executing following command: `./gradlew clean generateOpenApiModels`
+6. Select IntelliJ IDEA in Run tests using dropdown
 
 ### Git Configuration (User Settings)
 1. Go to *sputnik-api-gateway* project folder in CLI (terminal or so)
