@@ -193,6 +193,7 @@ jobs:
       uses: koslib/helm-eks-action@v1.8.0
       with:
         command: |
+          set -x
           for APP_NAME in ${{ needs.get-updated-apps.outputs.updated-apps }}
           do
             export CHART_FOLDER=apps/${APP_NAME}/deployment/app-chart
