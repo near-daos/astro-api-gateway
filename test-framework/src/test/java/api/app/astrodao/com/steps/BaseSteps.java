@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
@@ -50,12 +51,36 @@ public abstract class BaseSteps {
                 .containsIgnoringCase(expectedValue);
     }
 
+    @Step("User sees '{fieldName}' filed has value")
+    public <T, V> void assertDtoHasValue(T dto, Function<T, V> valueExtractor, String fieldName) {
+        assertThat(valueExtractor.apply(dto))
+                .as(String.format("'%s' field must contain value.", fieldName))
+                .isNotNull();
+    }
+
     @Step("User sees '{fieldName}' field has '{expectedValue}' value")
     public <T, D> void assertDtoValue(T dto, Function<T, D> valueExtractor,
-                                           D expectedValue, String fieldName) {
+                                      D expectedValue, String fieldName) {
         assertThat(valueExtractor.apply(dto))
                 .as(String.format("'%s' field must contain value.", fieldName))
                 .isEqualTo(expectedValue);
+    }
+
+    @Step("User sees '{fieldName}' field value greater than '{greaterThanValue}' value")
+    public <T, Integer> void assertDtoValueGreaterThan(T dto, Function<T, Integer> valueExtractor,
+                                                       Integer greaterThanValue, String fieldName) {
+        assertThat((int) valueExtractor.apply(dto))
+                .as(String.format("'%s' field value must be greater than '%s'.", fieldName, greaterThanValue))
+                .isGreaterThanOrEqualTo((int) greaterThanValue);
+    }
+
+    @Step("User sees '{fieldName}' fields has value in a collection")
+    public <T> void assertCollectionElementsHasValue(Collection<T> actual,
+                                                     Predicate<? super T> predicate, String fieldName) {
+        assertThat(actual)
+                .as(String.format("'%s' field should have value in collection.", fieldName))
+                .filteredOn(predicate)
+                .hasSize(actual.size());
     }
 
     @Step("User sees '{fieldName}' field has no value")

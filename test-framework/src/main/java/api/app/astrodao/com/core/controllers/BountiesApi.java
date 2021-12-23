@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Collections;
+import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
@@ -30,15 +31,13 @@ public class BountiesApi {
         return httpClient.get(builder.toUriString(), new HttpEntity<>(httpHeaders), String.class);
     }
 
-    public ResponseEntity<String> getBounties(String sort, int limit, int offset) {
+    public ResponseEntity<String> getBounties(Map<String, Object> queryParams) {
         HttpHeaders httpHeaders = httpClient.getBasicHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(apiUrl);
         builder.pathSegment("bounties");
-        builder.queryParam("sort", sort);
-        builder.queryParam("limit", limit);
-        builder.queryParam("offset", offset);
+        queryParams.forEach((key, value) -> builder.queryParam(key, value));
 
         return httpClient.get(builder.toUriString(), new HttpEntity<>(httpHeaders), String.class);
     }

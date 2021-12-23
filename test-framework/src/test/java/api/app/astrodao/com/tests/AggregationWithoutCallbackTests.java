@@ -51,6 +51,9 @@ public class AggregationWithoutCallbackTests extends BaseTest {
     @Value("${test.accountId}")
     private String testAccountId;
 
+    @Value("${test.dao}")
+    private String testDao;
+
     @Value("${test.aggregation.timeout}")
     private int aggregationTimeout;
 
