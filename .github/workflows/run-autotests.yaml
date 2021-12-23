@@ -25,6 +25,8 @@ on:
          required: true
       NEAR_PRIVATE_KEY:
          required: true
+      KUBE_CONFIG_DATA:
+         required: true
 
 env:
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}

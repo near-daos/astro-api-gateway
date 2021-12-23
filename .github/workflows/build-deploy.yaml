@@ -237,3 +237,4 @@ jobs:
       NEAR_ACCOUNT_ID: ${{ secrets.NEAR_ACCOUNT_ID }}
       NEAR_PUBLIC_KEY: ${{ secrets.NEAR_PUBLIC_KEY }}
       NEAR_PRIVATE_KEY: ${{ secrets.NEAR_PRIVATE_KEY }}
+      KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
