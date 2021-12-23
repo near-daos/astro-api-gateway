@@ -18,6 +18,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { CrudRequest, ParsedRequest } from '@nestjsx/crud';
+import { ThrottlerGuard } from '@nestjs/throttler';
 
 import {
   AccountAccessGuard,
@@ -75,6 +76,7 @@ export class CommentsController {
     description:
       'Account <accountId> identity is invalid - public key / bad signature/public key size / Invalid signature',
   })
+  @UseGuards(ThrottlerGuard)
   @UseGuards(AccountAccessGuard)
   @Post('/')
   async create(@Body() commentDto: CommentDto): Promise<Comment> {

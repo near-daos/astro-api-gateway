@@ -1,5 +1,5 @@
 import { CacheModule, Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ApiValidationSchema } from '@sputnik-v2/config/validation/api.schema';
 import configuration, {
@@ -8,6 +8,7 @@ import configuration, {
 } from '@sputnik-v2/config/api-config';
 import { CacheConfigService } from '@sputnik-v2/config/api-config';
 import { HttpCacheModule } from '@sputnik-v2/cache';
+import { ThrottlerModule, ThrottlerModuleOptions } from '@nestjs/throttler';
 
 import { AccountModule } from './account/account.module';
 import { BountyModule } from './bounty/bounty.module';
@@ -37,6 +38,16 @@ import { CommentModule } from './comment/comment.module';
     }),
     TypeOrmModule.forRootAsync({
       useClass: TypeOrmConfigService,
+    }),
+    ThrottlerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService): ThrottlerModuleOptions => {
+        return {
+          ttl: configService.get('api.rateTtl'),
+          limit: configService.get('api.rateLimit'),
+        };
+      },
     }),
     AccountModule,
     BountyModule,
