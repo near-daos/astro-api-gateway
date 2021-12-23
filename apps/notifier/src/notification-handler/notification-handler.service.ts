@@ -1,13 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import {
-  ProposalStatus,
-  ProposalType,
-  ProposalVariant,
-} from '@sputnik-v2/proposal/types';
+import { ProposalStatus, ProposalType } from '@sputnik-v2/proposal/types';
 import { DaoUpdateDto, ProposalUpdateDto } from '@sputnik-v2/event';
 import {
   Notification,
   NotificationService,
+  NotificationStatus,
   NotificationType,
 } from '@sputnik-v2/notification';
 import { DaoService, DaoVariant } from '@sputnik-v2/dao';
@@ -16,6 +13,7 @@ import { ProposalService } from '@sputnik-v2/proposal';
 import {
   castDaoUpdateNotification,
   castProposalUpdateNotification,
+  NotificationAction,
 } from './types/notification';
 
 @Injectable()
@@ -29,10 +27,10 @@ export class NotificationHandlerService {
   async handleDaoUpdateNotification(
     data: DaoUpdateDto,
   ): Promise<Notification | null> {
-    const notificationType = this.getDaoUpdateNotificationType(data);
-    return notificationType
+    const notificationAction = this.getDaoUpdateNotificationAction(data);
+    return notificationAction
       ? this.notificationService.create(
-          castDaoUpdateNotification(data, notificationType),
+          castDaoUpdateNotification(data, notificationAction),
         )
       : null;
   }
@@ -40,96 +38,134 @@ export class NotificationHandlerService {
   async handleProposalUpdateNotification(
     data: ProposalUpdateDto,
   ): Promise<Notification | null> {
-    const notificationType = this.getProposalUpdateNotificationType(data);
-    return notificationType
+    const notificationAction = this.getProposalUpdateNotificationAction(data);
+    return notificationAction
       ? this.notificationService.create(
-          castProposalUpdateNotification(data, notificationType),
+          castProposalUpdateNotification(data, notificationAction),
         )
       : null;
   }
 
-  private getDaoUpdateNotificationType(
+  private getDaoUpdateNotificationAction(
     data: DaoUpdateDto,
-  ): NotificationType | null {
+  ): NotificationAction | null {
     if (data.txAction.methodName === 'create') {
       const daoVariant = this.daoService.getDaoVariant(data.dao);
 
       switch (daoVariant) {
         case DaoVariant.Club:
-          return NotificationType.ClubDaoCreation;
+          return {
+            type: NotificationType.ClubDao,
+            status: NotificationStatus.Created,
+          };
         case DaoVariant.Foundation:
-          return NotificationType.FoundationDaoCreation;
+          return {
+            type: NotificationType.FoundationDao,
+            status: NotificationStatus.Created,
+          };
         case DaoVariant.Corporation:
-          return NotificationType.CorporationDaoCreation;
+          return {
+            type: NotificationType.CorporationDao,
+            status: NotificationStatus.Created,
+          };
         case DaoVariant.Cooperative:
-          return NotificationType.CooperativeDaoCreation;
-        case DaoVariant.Custom:
-          return NotificationType.CustomDaoCreation;
+          return {
+            type: NotificationType.CooperativeDao,
+            status: NotificationStatus.Created,
+          };
+        default:
+          return {
+            type: NotificationType.CustomDao,
+            status: NotificationStatus.Created,
+          };
       }
     }
+    return null;
+  }
+
+  private getProposalUpdateNotificationAction(
+    data: ProposalUpdateDto,
+  ): NotificationAction | null {
+    const type = this.getProposalUpdateNotificationType(data);
+
+    if (!type) {
+      return null;
+    }
+
+    // Create Proposal
+    if (data.txAction.methodName === 'add_proposal') {
+      return {
+        type,
+        status: NotificationStatus.Created,
+      };
+    }
+
+    // Approved Proposal
+    if (
+      data.txAction.methodName === 'act_proposal' &&
+      data.proposal.status === ProposalStatus.Approved
+    ) {
+      return {
+        type,
+        status: NotificationStatus.Approved,
+      };
+    }
+
+    // Rejected Proposal
+    if (
+      data.txAction.methodName === 'act_proposal' &&
+      data.proposal.status === ProposalStatus.Rejected
+    ) {
+      return {
+        type,
+        status: NotificationStatus.Rejected,
+      };
+    }
+
+    // Removed Proposal
+    if (
+      data.txAction.methodName === 'act_proposal' &&
+      data.proposal.status === ProposalStatus.Removed
+    ) {
+      return {
+        type,
+        status: NotificationStatus.Removed,
+      };
+    }
+
     return null;
   }
 
   private getProposalUpdateNotificationType(
     data: ProposalUpdateDto,
   ): NotificationType | null {
-    // Create Proposal
-    if (data.txAction.methodName === 'add_proposal') {
-      switch (data.proposal.type) {
-        case ProposalType.Transfer:
-          return NotificationType.TransferProposalCreation;
+    switch (data.proposal.kind?.kind.type) {
+      case ProposalType.AddMemberToRole:
+        return NotificationType.AddMemberToRole;
 
-        case ProposalType.AddBounty:
-          return NotificationType.BountyProposalCreation;
+      case ProposalType.RemoveMemberFromRole:
+        return NotificationType.RemoveMemberFromRole;
 
-        case ProposalType.BountyDone:
-          return NotificationType.BountyDoneProposalCreation;
+      case ProposalType.FunctionCall:
+        return NotificationType.FunctionCall;
 
-        case ProposalType.Vote:
-          return NotificationType.PollProposalCreation;
-      }
-    }
+      case ProposalType.Transfer:
+        return NotificationType.Transfer;
 
-    // Approve Proposal
-    if (
-      data.txAction.methodName === 'act_proposal' &&
-      data.proposal.status === ProposalStatus.Approved
-    ) {
-      const proposalVariant = this.proposalService.getProposalVariant(
-        data.proposal,
-      );
+      case ProposalType.ChangePolicy:
+        return NotificationType.ChangePolicy;
 
-      switch (proposalVariant) {
-        case ProposalVariant.ProposeChangeDaoName:
-          return NotificationType.DaoNameUpdated;
+      case ProposalType.ChangeConfig:
+        return NotificationType.ChangeConfig;
 
-        case ProposalVariant.ProposeChangeDaoPurpose:
-          return NotificationType.DaoPurposeUpdated;
+      case ProposalType.AddBounty:
+        return NotificationType.AddBounty;
 
-        case ProposalVariant.ProposeChangeDaoLinks:
-          return NotificationType.DaoLinksUpdated;
+      case ProposalType.BountyDone:
+        return NotificationType.BountyDone;
 
-        case ProposalVariant.ProposeChangeDaoLegalInfo:
-          return NotificationType.DaoLegalUpdated;
-
-        case ProposalVariant.ProposeChangeDaoFlag:
-          return NotificationType.DaoFlagUpdated;
-
-        case ProposalVariant.ProposeChangeBonds:
-          return NotificationType.DaoDeadlinesUpdated;
-
-        case ProposalVariant.ProposeChangeVotingPolicy:
-          return NotificationType.DaoRulesUpdated;
-
-        case ProposalVariant.ProposeCreateGroup:
-          return NotificationType.DaoGroupAdded;
-
-        case ProposalVariant.ProposeAddMember:
-          return NotificationType.DaoMembersAdded;
-
-        case ProposalVariant.ProposeRemoveMember:
-          return NotificationType.DaoMemberRemoved;
-      }
+      case ProposalType.Vote:
+        return NotificationType.Vote;
     }
 
     return null;
