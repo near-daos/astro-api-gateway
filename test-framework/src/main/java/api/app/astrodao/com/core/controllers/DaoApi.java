@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Collections;
+import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
@@ -26,6 +27,17 @@ public class DaoApi {
 
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(apiUrl);
         builder.pathSegment("daos", daoId);
+
+        return httpClient.get(builder.toUriString(), new HttpEntity<>(httpHeaders), String.class);
+    }
+
+    public ResponseEntity<String> getDaos(Map<String, Object> queryParams) {
+        HttpHeaders httpHeaders = httpClient.getBasicHeaders();
+        httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(apiUrl);
+        builder.pathSegment("daos");
+        queryParams.forEach((key, value) -> builder.queryParam(key, value));
 
         return httpClient.get(builder.toUriString(), new HttpEntity<>(httpHeaders), String.class);
     }

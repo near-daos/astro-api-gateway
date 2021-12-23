@@ -6,6 +6,8 @@ import io.qameta.allure.Step;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 
+import java.util.Map;
+
 @Steps
 @RequiredArgsConstructor
 public class DaoApiSteps extends BaseSteps {
@@ -14,5 +16,10 @@ public class DaoApiSteps extends BaseSteps {
     @Step("Getting DAO by it's ID")
     public ResponseEntity<String> getDAOByID(String daoId) {
         return daoApi.getDaoByID(daoId);
+    }
+
+    @Step("Getting DAOs with '{queryParams}' query params")
+    public ResponseEntity<String> getDaos(Map<String, Object> queryParams) {
+        return daoApi.getDaos(queryParams);
     }
 }

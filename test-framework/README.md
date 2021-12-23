@@ -40,7 +40,7 @@ This framework is intended to be used for testing of Sputnik v2 API
  $ ./gradlew clean test -DincludeTags=all -Dtest.env=testnet
  ```
  ```bash
- $ ./gradlew clean test -DincludeTags=debug -Dtest.env=dev
+ $ ./gradlew clean test -DincludeTags=all -Dtest.env=dev
  ```
 
 ## Test Reports

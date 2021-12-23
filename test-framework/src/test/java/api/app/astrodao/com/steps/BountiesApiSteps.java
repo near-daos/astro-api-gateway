@@ -6,18 +6,20 @@ import io.qameta.allure.Step;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 
+import java.util.Map;
+
 @Steps
 @RequiredArgsConstructor
 public class BountiesApiSteps extends BaseSteps {
     private final BountiesApi bountiesApi;
 
     @Step("Getting bounty by bounty ID")
-    public ResponseEntity<String> getBountyByID(String proposalId) {
-        return bountiesApi.getBountyByID(proposalId);
+    public ResponseEntity<String> getBountyByID(String bountyId) {
+        return bountiesApi.getBountyByID(bountyId);
     }
 
-    @Step("Getting bounties")
-    public ResponseEntity<String> getBounties(String sort, int limit, int offset) {
-        return bountiesApi.getBounties(sort, limit, offset);
+    @Step("Getting bounties with '{queryParams}' query params")
+    public ResponseEntity<String> getBounties(Map<String, Object> queryParams) {
+        return bountiesApi.getBounties(queryParams);
     }
 }
