@@ -1,6 +1,8 @@
 import {
+  AfterLoad,
   Column,
   Entity,
+  getManager,
   JoinColumn,
   ManyToOne,
   OneToMany,
@@ -99,10 +101,16 @@ export class Proposal extends TransactionEntity {
   actions: ProposalAction[];
 
   @ApiProperty()
-  @Column({ type: 'int', default: 0 })
-  commentsCount: number;
-
-  @ApiProperty()
   @Column({ type: 'bigint', nullable: true })
   votePeriodEnd: number;
+
+  commentsCount: number;
+
+  @AfterLoad()
+  async generateMainPath(): Promise<void> {
+    this.commentsCount = await getManager()
+      .createQueryBuilder(Comment, 'comment')
+      .where({ proposalId: this.id, isArchived: false })
+      .getCount();
+  }
 }

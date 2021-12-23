@@ -40,26 +40,15 @@ export class CommentService extends TypeOrmCrudService<Comment> {
       daoId: proposal.daoId,
     });
 
-    await this.proposalService.update({
-      ...proposal,
-      commentsCount: proposal.commentsCount + 1,
-    });
     await this.eventService.sendNewCommentEvent(comment);
 
     return comment;
   }
 
   async delete(comment: Comment): Promise<Comment> {
-    const proposal = await this.proposalService.findOne(comment.proposalId);
-
     if (comment.isArchived) {
       return comment;
     }
-
-    await this.proposalService.update({
-      ...proposal,
-      commentsCount: proposal.commentsCount - 1,
-    });
 
     return this.commentRepository.save({
       ...comment,
