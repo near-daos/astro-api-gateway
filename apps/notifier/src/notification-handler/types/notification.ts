@@ -34,6 +34,13 @@ export function castProposalUpdateNotification(
     metadata: {
       methodName: data.txAction.methodName,
       args: data.txAction.args,
+      proposal: {
+        id: data.proposal.id,
+        proposer: data.proposal.proposer,
+        description: data.proposal.description,
+        kind: data.proposal.kind?.kind,
+        votes: data.proposal.votes,
+      },
     },
     timestamp: data.txAction.timestamp,
   };

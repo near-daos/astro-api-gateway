@@ -191,7 +191,7 @@ export class TransactionActionHandlerService {
 
     switch (args.action) {
       case VoteAction.VoteApprove:
-        return this.handleApproveProposal({
+        await this.handleApproveProposal({
           dao,
           daoContract,
           proposal,
@@ -199,15 +199,17 @@ export class TransactionActionHandlerService {
           transactionHash,
           timestamp,
         });
+        break;
 
       case VoteAction.VoteReject:
-        return this.handleRejectProposal({
+        await this.handleRejectProposal({
           dao,
           proposal,
           receiverId,
           transactionHash,
           timestamp,
         });
+        break;
 
       case VoteAction.RemoveProposal:
       case VoteAction.VoteRemove:
