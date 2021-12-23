@@ -98,6 +98,13 @@ export const buildNFTTokenId = (ownerId: string, tokenId: string) => {
   return `${ownerId}-${tokenId}`;
 };
 
+export const buildCommentReportId = (
+  commentId: number,
+  accountId: string,
+): string => {
+  return `${commentId}-${accountId.toLowerCase()}`;
+};
+
 export const decodeBase64 = (b: string) => {
   return Buffer.from(b, 'base64').toString('utf-8');
 };

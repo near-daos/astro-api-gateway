@@ -159,6 +159,15 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     return [...new Set(allMembers)];
   }
 
+  public async getCouncil(daoId: string): Promise<string[]> {
+    const dao = await this.daoRepository.findOne(daoId);
+    const councilRole = dao.policy.roles.find(
+      ({ name, kind }) =>
+        String(name).toLowerCase() === 'council' && kind === RoleKindType.Group,
+    );
+    return councilRole?.accountIds || [];
+  }
+
   private buildFeedFromDao(
     dao: Dao,
     proposals: Proposal[],

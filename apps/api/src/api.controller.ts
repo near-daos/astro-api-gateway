@@ -2,9 +2,12 @@ import { Controller, Get, Logger } from '@nestjs/common';
 import { EventPattern, Transport } from '@nestjs/microservices';
 import { ApiExcludeEndpoint } from '@nestjs/swagger';
 import { CacheService } from '@sputnik-v2/cache';
-import { NewNotificationDto } from '@sputnik-v2/event';
-import { EVENT_NEW_NOTIFICATION } from '@sputnik-v2/common';
-import { AccountNotificationService } from '@sputnik-v2/notification';
+import { NewNotificationDto, NewCommentDto } from '@sputnik-v2/event';
+import {
+  EVENT_DELETE_COMMENT,
+  EVENT_NEW_COMMENT,
+  EVENT_NEW_NOTIFICATION,
+} from '@sputnik-v2/common';
 
 import {
   REDIS_SOCKET_EVENT_EMIT_ALL_NAME,
@@ -19,7 +22,6 @@ export class AppController {
   constructor(
     private readonly cacheService: CacheService,
     private readonly redisService: RedisService,
-    private readonly accountNotificationService: AccountNotificationService,
   ) {}
 
   @ApiExcludeEndpoint()
@@ -44,5 +46,27 @@ export class AppController {
         accountEvents: data.accountNotifications,
       },
     );
+  }
+
+  @EventPattern(EVENT_NEW_COMMENT, Transport.REDIS)
+  async onNewComment(data: NewCommentDto) {
+    this.logger.log(
+      `Sending new comment ${data.comment.id} to Websocket clients.`,
+    );
+    await this.redisService.publish(REDIS_SOCKET_EVENT_EMIT_ALL_NAME, {
+      event: 'comment',
+      data: data.comment,
+    });
+  }
+
+  @EventPattern(EVENT_DELETE_COMMENT, Transport.REDIS)
+  async onDeleteComment(data: NewCommentDto) {
+    this.logger.log(
+      `Sending removed comment ${data.comment.id} to Websocket clients.`,
+    );
+    await this.redisService.publish(REDIS_SOCKET_EVENT_EMIT_ALL_NAME, {
+      event: 'comment-removed',
+      data: data.comment,
+    });
   }
 }
