@@ -7,6 +7,7 @@ import {
   EVENT_PROPOSAL_UPDATE_NOTIFICATION,
   EVENT_NEW_NOTIFICATION,
   EVENT_NEW_COMMENT,
+  EVENT_DELETE_COMMENT,
 } from '@sputnik-v2/common';
 import { DaoDto } from '@sputnik-v2/dao';
 import { ProposalDto } from '@sputnik-v2/proposal';
@@ -67,6 +68,11 @@ export class EventService {
 
   public async sendNewCommentEvent(comment: Comment): Promise<void> {
     const message = new BaseMessage(EVENT_NEW_COMMENT, { comment });
+    return this.sendEvent(this.apiEventClient, message);
+  }
+
+  public async sendDeleteCommentEvent(comment: Comment): Promise<void> {
+    const message = new BaseMessage(EVENT_DELETE_COMMENT, { comment });
     return this.sendEvent(this.apiEventClient, message);
   }
 

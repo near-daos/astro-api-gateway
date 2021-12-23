@@ -50,10 +50,14 @@ export class CommentService extends TypeOrmCrudService<Comment> {
       return comment;
     }
 
-    return this.commentRepository.save({
+    const deletedComment = await this.commentRepository.save({
       ...comment,
       isArchived: true,
     });
+
+    await this.eventService.sendDeleteCommentEvent(deletedComment);
+
+    return deletedComment;
   }
 
   async deleteById(commentId: string | number): Promise<Comment> {
