@@ -1,4 +1,4 @@
-import { NotificationType } from '../types';
+import { NotificationStatus, NotificationType } from '../types';
 
 export interface NotificationDto {
   id: string;
@@ -6,6 +6,7 @@ export interface NotificationDto {
   targetId: string;
   signerId: string;
   type: NotificationType;
+  status?: NotificationStatus;
   metadata: Record<string, unknown>;
   timestamp: number;
 }

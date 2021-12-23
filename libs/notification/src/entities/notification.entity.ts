@@ -3,7 +3,7 @@ import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
 import { Dao } from '@sputnik-v2/dao/entities/dao.entity';
 import { BaseEntity } from '@sputnik-v2/common';
 
-import { NotificationType } from '../types/notification-type';
+import { NotificationType, NotificationStatus } from '../types';
 
 @Entity()
 export class Notification extends BaseEntity {
@@ -31,6 +31,10 @@ export class Notification extends BaseEntity {
   @ApiProperty()
   @Column({ type: 'text' })
   type: NotificationType;
+
+  @ApiProperty()
+  @Column({ type: 'text', nullable: true })
+  status: NotificationStatus;
 
   @ApiProperty()
   @Column({ type: 'simple-json' })
