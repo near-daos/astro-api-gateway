@@ -107,7 +107,7 @@ export class Proposal extends TransactionEntity {
   commentsCount: number;
 
   @AfterLoad()
-  async generateMainPath(): Promise<void> {
+  async countComments(): Promise<void> {
     this.commentsCount = await getManager()
       .createQueryBuilder(Comment, 'comment')
       .where({ proposalId: this.id, isArchived: false })
