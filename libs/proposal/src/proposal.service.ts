@@ -52,7 +52,7 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
     );
   }
 
-  update(proposal: Proposal): Promise<Proposal> {
+  update(proposal: Partial<Proposal>): Promise<Proposal> {
     return this.proposalRepository.save(proposal);
   }
 
