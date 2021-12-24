@@ -101,3 +101,5 @@ environment:
   dao_polling_interval: "2000"
   proposal_vote_status_update_interval: "2000"
   wallet_callback_url: ""
+  api_rate_ttl: "60"
+  api_rate_limit: "5"
