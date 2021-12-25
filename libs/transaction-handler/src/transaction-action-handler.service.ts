@@ -204,6 +204,7 @@ export class TransactionActionHandlerService {
       case VoteAction.VoteReject:
         await this.handleRejectProposal({
           dao,
+          daoContract,
           proposal,
           receiverId,
           transactionHash,
@@ -215,6 +216,7 @@ export class TransactionActionHandlerService {
       case VoteAction.VoteRemove:
         await this.handleRemoveProposal({
           dao,
+          daoContract,
           proposal,
           receiverId,
           transactionHash,
@@ -272,7 +274,7 @@ export class TransactionActionHandlerService {
         await this.handleDoneBounty({
           dao,
           daoContract,
-          proposal,
+          proposalKind: proposal.kind.kind,
           transactionHash,
           timestamp,
         });
@@ -312,12 +314,27 @@ export class TransactionActionHandlerService {
 
   async handleRejectProposal({
     dao,
+    daoContract,
     proposal,
     receiverId,
     transactionHash,
     timestamp,
   }) {
     const state = await this.nearApiService.getAccountState(receiverId);
+    const proposalKindType = proposal.kind?.kind.type;
+
+    if (
+      proposal.status === ProposalStatus.Rejected &&
+      proposalKindType === ProposalType.BountyDone
+    ) {
+      await this.handleDoneBounty({
+        dao,
+        daoContract,
+        proposalKind: proposal.kind.kind,
+        transactionHash,
+        timestamp,
+      });
+    }
 
     this.logger.log(`Updating Proposal: ${proposal.id} due to transaction`);
     await this.proposalService.create(proposal);
@@ -337,6 +354,7 @@ export class TransactionActionHandlerService {
 
   async handleRemoveProposal({
     dao,
+    daoContract,
     proposal,
     receiverId,
     transactionHash,
@@ -346,8 +364,22 @@ export class TransactionActionHandlerService {
     const state = await this.nearApiService.getAccountState(receiverId);
 
     if (!proposal) {
+      const proposalId = buildProposalId(receiverId, args.id);
+      const proposalEntity = await this.proposalService.findOne(proposalId);
+      const proposalKindType = proposalEntity?.kind?.type;
+
+      if (proposalKindType === ProposalType.BountyDone) {
+        await this.handleDoneBounty({
+          dao,
+          daoContract,
+          proposalKind: proposalEntity?.kind,
+          transactionHash,
+          timestamp,
+        });
+      }
+
       this.logger.log(`Removing Proposal: ${args.id} due to transaction`);
-      await this.proposalService.remove(buildProposalId(receiverId, args.id));
+      await this.proposalService.remove(proposalId);
     } else {
       this.logger.log(`Updating Proposal: ${proposal.id} due to transaction`);
       await this.proposalService.create(proposal);
@@ -404,11 +436,11 @@ export class TransactionActionHandlerService {
   async handleDoneBounty({
     dao,
     daoContract,
-    proposal,
+    proposalKind,
     transactionHash,
     timestamp,
   }) {
-    const { bountyId, receiverId } = proposal.kind.kind;
+    const { bountyId, receiverId } = proposalKind;
     const bounty = await this.bountyService.findOne(
       buildBountyId(dao.id, bountyId),
       { relations: ['bountyClaims'] },
