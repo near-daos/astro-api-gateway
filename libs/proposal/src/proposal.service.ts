@@ -47,8 +47,13 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
   }
 
   createMultiple(proposalDtos: ProposalDto[]): Promise<Proposal[]> {
-    return Promise.all(
-      proposalDtos.map((proposalDto) => this.create(proposalDto)),
+    return this.proposalRepository.save(
+      proposalDtos.map((proposalDto) => {
+        return {
+          ...proposalDto,
+          kind: proposalDto.kind.kind,
+        };
+      }),
     );
   }
 
