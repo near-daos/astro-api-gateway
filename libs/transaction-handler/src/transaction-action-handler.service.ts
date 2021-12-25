@@ -204,6 +204,7 @@ export class TransactionActionHandlerService {
       case VoteAction.VoteReject:
         await this.handleRejectProposal({
           dao,
+          daoContract,
           proposal,
           receiverId,
           transactionHash,
@@ -313,12 +314,26 @@ export class TransactionActionHandlerService {
 
   async handleRejectProposal({
     dao,
+    daoContract,
     proposal,
     receiverId,
     transactionHash,
     timestamp,
   }) {
     const state = await this.nearApiService.getAccountState(receiverId);
+    const proposalKindType = proposal.kind?.kind.type;
+
+    if (proposal.status === ProposalStatus.Rejected) {
+      if (proposalKindType === ProposalType.BountyDone) {
+        await this.handleDoneBounty({
+          dao,
+          daoContract,
+          proposalKind: proposal.kind.kind,
+          transactionHash,
+          timestamp,
+        });
+      }
+    }
 
     this.logger.log(`Updating Proposal: ${proposal.id} due to transaction`);
     await this.proposalService.create(proposal);
