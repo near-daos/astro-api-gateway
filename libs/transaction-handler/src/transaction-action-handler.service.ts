@@ -323,16 +323,17 @@ export class TransactionActionHandlerService {
     const state = await this.nearApiService.getAccountState(receiverId);
     const proposalKindType = proposal.kind?.kind.type;
 
-    if (proposal.status === ProposalStatus.Rejected) {
-      if (proposalKindType === ProposalType.BountyDone) {
-        await this.handleDoneBounty({
-          dao,
-          daoContract,
-          proposalKind: proposal.kind.kind,
-          transactionHash,
-          timestamp,
-        });
-      }
+    if (
+      proposal.status === ProposalStatus.Rejected &&
+      proposalKindType === ProposalType.BountyDone
+    ) {
+      await this.handleDoneBounty({
+        dao,
+        daoContract,
+        proposalKind: proposal.kind.kind,
+        transactionHash,
+        timestamp,
+      });
     }
 
     this.logger.log(`Updating Proposal: ${proposal.id} due to transaction`);
