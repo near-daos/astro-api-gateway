@@ -13,7 +13,7 @@ export class CommentReport extends BaseEntity {
   @Column()
   commentId: number;
 
-  @ManyToOne((_) => Comment, {
+  @ManyToOne(() => Comment, {
     nullable: false,
     onDelete: 'CASCADE',
   })

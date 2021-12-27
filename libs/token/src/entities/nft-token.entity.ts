@@ -39,13 +39,13 @@ export class NFTToken extends TransactionEntity {
   contractId: string;
 
   @ApiProperty()
-  @ManyToOne((_) => NFTContract, { eager: true, cascade: true })
+  @ManyToOne(() => NFTContract, { eager: true, cascade: true })
   @JoinColumn({ name: 'contract_id' })
   contract: NFTContract;
 
   // Metadata
   @ApiProperty()
-  @OneToOne((_) => NFTTokenMetadata, { eager: true, cascade: true })
+  @OneToOne(() => NFTTokenMetadata, { eager: true, cascade: true })
   @JoinColumn({ name: 'id' })
   metadata: NFTTokenMetadata;
 }
