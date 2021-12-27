@@ -18,7 +18,7 @@ export class AccountChange {
   changedInBlockTimestamp: number;
 
   @ApiProperty()
-  @OneToOne((_) => Receipt, { cascade: true })
+  @OneToOne(() => Receipt, { cascade: true })
   @JoinColumn({ name: 'caused_by_receipt_id' })
   causedByReceipt: Receipt;
 }

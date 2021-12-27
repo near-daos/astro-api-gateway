@@ -36,7 +36,7 @@ export class Proposal extends TransactionEntity {
   daoId: string;
 
   @ApiProperty()
-  @ManyToOne((_) => Dao, { eager: true })
+  @ManyToOne(() => Dao, { eager: true })
   @JoinColumn({ name: 'dao_id' })
   dao: Dao;
 

@@ -10,7 +10,7 @@ export class Subscription extends BaseEntity {
   id: string;
 
   @ApiProperty()
-  @ManyToOne((_) => Dao, { eager: true })
+  @ManyToOne(() => Dao, { eager: true })
   @JoinColumn({ name: 'dao_id' })
   dao: Dao;
 

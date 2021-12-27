@@ -29,7 +29,7 @@ export class Receipt {
   @Column()
   originatedFromTransactionHash: string;
 
-  @ManyToOne((_) => Transaction, (transaction) => transaction.receipts)
+  @ManyToOne(() => Transaction, (transaction) => transaction.receipts)
   @JoinColumn({ name: 'originated_from_transaction_hash' })
   originatedFromTransaction: Transaction;
 
@@ -38,7 +38,7 @@ export class Receipt {
   includedInBlockTimestamp: number;
 
   @ApiProperty({ type: [ReceiptAction] })
-  @OneToMany((_) => ReceiptAction, (receiptAction) => receiptAction.receipt, {
+  @OneToMany(() => ReceiptAction, (receiptAction) => receiptAction.receipt, {
     cascade: true,
     nullable: true,
   })

@@ -7,6 +7,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import {
+  ApiBody,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiParam,
@@ -44,6 +45,7 @@ export class AccountController {
     name: 'id',
     type: String,
   })
+  @ApiBody({ type: AccountDeleteDto })
   @ApiResponse({
     status: 200,
     description: 'OK',
@@ -56,10 +58,7 @@ export class AccountController {
       'Account <accountId> identity is invalid - public key / bad signature/public key size / Invalid signature',
   })
   @Delete('/:id')
-  remove(
-    @Param() { id }: DeleteOneParams,
-    @Body() accountDeleteDto: AccountDeleteDto,
-  ): Promise<void> {
+  remove(@Param() { id }: DeleteOneParams): Promise<void> {
     return this.accountService.remove(id);
   }
 }
