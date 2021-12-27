@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
-import { Repository } from 'typeorm';
+import { IsNull, Not, Repository } from 'typeorm';
 import { CrudRequest } from '@nestjsx/crud';
 
 import { AssetsNftEvent, NearIndexerService } from '@sputnik-v2/near-indexer';
@@ -29,6 +29,7 @@ export class NFTTokenService extends TypeOrmCrudService<NFTToken> {
 
   async lastToken(): Promise<NFTToken> {
     return this.nftTokenRepository.findOne({
+      where: { updateTimestamp: Not(IsNull()) },
       order: { updateTimestamp: 'DESC' },
     });
   }
