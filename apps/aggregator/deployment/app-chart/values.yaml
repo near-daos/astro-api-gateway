@@ -72,13 +72,12 @@ service:
 ingress:
   host: "sputnik-v2-api-host"
 
-# resources:
-#   limits:
-#     cpu: 300m
-#     memory: 400Mi
-#   requests:
-#     cpu: 200m
-#     memory: 300Mi
+resources:
+  limits:
+    memory: 200Mi
+  requests:
+    cpu: 50m
+    memory: 100Mi
 
 nodeSelector: {}
 
