@@ -10,9 +10,11 @@ export class SocketStateService {
   }
 
   public getAll(): Socket[] {
-    const all = [];
+    let all = [];
 
-    this.socketState.forEach((sockets) => all.push(sockets));
+    this.socketState.forEach((sockets) => {
+      all = all.concat(sockets);
+    });
 
     return all;
   }

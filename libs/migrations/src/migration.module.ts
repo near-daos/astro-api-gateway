@@ -10,8 +10,9 @@ import configuration, {
   TypeOrmConfigService,
 } from '@sputnik-v2/config/aggregator-dao-config';
 import { Token } from '@sputnik-v2/token';
-import { Dao } from '@sputnik-v2/dao';
+import { Dao, DaoModule } from '@sputnik-v2/dao';
 import { BountyClaim } from '@sputnik-v2/bounty';
+import { AccountNotificationSettings } from '@sputnik-v2/notification';
 
 import migrationScripts from './scripts';
 
@@ -20,12 +21,18 @@ import migrationScripts from './scripts';
     TypeOrmModule.forRootAsync({
       useClass: TypeOrmConfigService,
     }),
-    TypeOrmModule.forFeature([Dao, Token, BountyClaim]),
+    TypeOrmModule.forFeature([
+      Dao,
+      Token,
+      BountyClaim,
+      AccountNotificationSettings,
+    ]),
     ConfigModule.forRoot({
       isGlobal: true,
       load: configuration,
       envFilePath: ['.env.local', '.env'],
     }),
+    DaoModule,
     ProposalModule,
     NearIndexerModule,
     NearApiModule,

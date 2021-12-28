@@ -28,14 +28,10 @@ export class BaseValidationSchema {
   @IsString()
   @IsNotEmpty()
   NEAR_CONTRACT_NAME: string;
-  
-  @IsString()
-  @IsNotEmpty()
-  NEAR_TOKEN_FACTORY_CONTRACT_NAME: string;
 
   @IsString()
   @IsNotEmpty()
-  RABBITMQ_URL: string;
+  NEAR_TOKEN_FACTORY_CONTRACT_NAME: string;
 
   @IsString()
   @IsNotEmpty()

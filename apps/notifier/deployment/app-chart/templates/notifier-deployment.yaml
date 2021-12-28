@@ -43,7 +43,9 @@ spec:
           - secretRef:
               name: firebase-secret
           - secretRef:
-              name: rabbitmq-secret
+              name: redis-secret
+          - secretRef:
+              name: near-indexer-db-secret
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}

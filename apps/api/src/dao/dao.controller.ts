@@ -30,15 +30,11 @@ import {
 } from '@sputnik-v2/dao';
 
 import { DaoCrudRequestInterceptor } from './interceptors/dao-crud.interceptor';
-import { DaoNearService } from './dao-near.service';
 
 @ApiTags('DAO')
 @Controller('/daos')
 export class DaoController {
-  constructor(
-    private readonly daoService: DaoService,
-    private readonly daoNearService: DaoNearService,
-  ) {}
+  constructor(private readonly daoService: DaoService) {}
 
   @ApiResponse({
     status: 200,

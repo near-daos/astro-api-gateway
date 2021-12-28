@@ -1,6 +1,8 @@
 import {
+  AfterLoad,
   Column,
   Entity,
+  getManager,
   JoinColumn,
   ManyToOne,
   OneToMany,
@@ -10,6 +12,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { TransactionEntity } from '@sputnik-v2/common';
 import { Dao } from '@sputnik-v2/dao/entities';
 import { Vote } from '@sputnik-v2/sputnikdao/types';
+import { Comment } from '@sputnik-v2/comment/entities';
 
 import { ProposalKind } from '../dto/proposal-kind.dto';
 import { ProposalKindSwaggerDto } from '../dto/proposal-kind-swagger.dto';
@@ -100,4 +103,14 @@ export class Proposal extends TransactionEntity {
   @ApiProperty()
   @Column({ type: 'bigint', nullable: true })
   votePeriodEnd: number;
+
+  commentsCount: number;
+
+  @AfterLoad()
+  async countComments(): Promise<void> {
+    this.commentsCount = await getManager()
+      .createQueryBuilder(Comment, 'comment')
+      .where({ proposalId: this.id, isArchived: false })
+      .getCount();
+  }
 }

@@ -3,12 +3,17 @@ import { ClientProxy } from '@nestjs/microservices';
 import {
   EVENT_NOTIFICATION_SERVICE,
   EVENT_API_SERVICE,
-  EVENT_API_DAO_UPDATE,
-  EVENT_API_PROPOSAL_UPDATE,
   EVENT_DAO_UPDATE_NOTIFICATION,
+  EVENT_PROPOSAL_UPDATE_NOTIFICATION,
+  EVENT_NEW_NOTIFICATION,
+  EVENT_NEW_COMMENT,
+  EVENT_DELETE_COMMENT,
 } from '@sputnik-v2/common';
 import { DaoDto } from '@sputnik-v2/dao';
 import { ProposalDto } from '@sputnik-v2/proposal';
+import { TransactionAction } from '@sputnik-v2/transaction-handler';
+import { AccountNotification, Notification } from '@sputnik-v2/notification';
+import { Comment } from '@sputnik-v2/comment';
 
 import { BaseMessage } from './messages/base.event';
 
@@ -23,27 +28,52 @@ export class EventService {
     private readonly apiEventClient: ClientProxy,
   ) {}
 
-  public async sendDaoUpdateNotificationEvent(daoIds: string[]): Promise<any> {
-    const message = new BaseMessage(EVENT_DAO_UPDATE_NOTIFICATION, { daoIds });
-
-    return Promise.all([
-      this.sendEvent(this.notificationEventClient, message),
-      this.sendEvent(this.apiEventClient, message),
-    ]);
+  public async sendDaoUpdateNotificationEvent(
+    dao: DaoDto,
+    txAction: TransactionAction,
+  ): Promise<any> {
+    const message = new BaseMessage(EVENT_DAO_UPDATE_NOTIFICATION, {
+      dao,
+      txAction,
+    });
+    return this.sendEvent(this.notificationEventClient, message);
   }
 
-  public async sendDaoUpdates(daos: DaoDto[]): Promise<any> {
-    return this.sendEvent(
-      this.apiEventClient,
-      new BaseMessage(EVENT_API_DAO_UPDATE, { daos }),
-    );
+  public async sendProposalUpdateNotificationEvent(
+    proposal: ProposalDto,
+    txAction: TransactionAction,
+  ): Promise<any> {
+    const message = new BaseMessage(EVENT_PROPOSAL_UPDATE_NOTIFICATION, {
+      proposal,
+      txAction,
+    });
+    return this.sendEvent(this.notificationEventClient, message);
   }
 
-  public async sendProposalUpdates(proposals: ProposalDto[]): Promise<any> {
-    return this.sendEvent(
-      this.apiEventClient,
-      new BaseMessage(EVENT_API_PROPOSAL_UPDATE, { proposals }),
-    );
+  public async sendNewNotificationEvent(
+    notification: Notification,
+    accountNotifications: AccountNotification[],
+  ): Promise<void> {
+    const message = new BaseMessage(EVENT_NEW_NOTIFICATION, {
+      notification,
+      accountNotifications: accountNotifications
+        .filter(({ isMuted }) => !isMuted)
+        .map((accountNotification) => ({
+          accountId: accountNotification.accountId,
+          data: accountNotification,
+        })),
+    });
+    return this.sendEvent(this.apiEventClient, message);
+  }
+
+  public async sendNewCommentEvent(comment: Comment): Promise<void> {
+    const message = new BaseMessage(EVENT_NEW_COMMENT, { comment });
+    return this.sendEvent(this.apiEventClient, message);
+  }
+
+  public async sendDeleteCommentEvent(comment: Comment): Promise<void> {
+    const message = new BaseMessage(EVENT_DELETE_COMMENT, { comment });
+    return this.sendEvent(this.apiEventClient, message);
   }
 
   private async sendEvent(

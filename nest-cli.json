@@ -194,6 +194,24 @@
       "compilerOptions": {
         "tsConfigPath": "libs/migrations/tsconfig.lib.json"
       }
+    },
+    "notification": {
+      "type": "library",
+      "root": "libs/notification",
+      "entryFile": "index",
+      "sourceRoot": "libs/notification/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/notification/tsconfig.lib.json"
+      }
+    },
+    "comment": {
+      "type": "library",
+      "root": "libs/comment",
+      "entryFile": "index",
+      "sourceRoot": "libs/comment/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/comment/tsconfig.lib.json"
+      }
     }
   }
 }

@@ -10,7 +10,8 @@ import {
   Repository,
   UpdateResult,
 } from 'typeorm';
-import { Role, SputnikDaoDto } from '@sputnik-v2/dao';
+import { SputnikDaoDto } from '@sputnik-v2/dao/dto';
+import { Role } from '@sputnik-v2/dao/entities';
 
 import { ProposalDto, ProposalResponse } from './dto';
 import { Proposal } from './entities';
@@ -18,8 +19,10 @@ import {
   ProposalTypeToContractType,
   ProposalStatus,
   ProposalVoteStatus,
+  ProposalVariant,
 } from './types';
 import { buildProposalId, paginate } from '@sputnik-v2/utils';
+import { PROPOSAL_DESC_SEPARATOR } from '@sputnik-v2/common';
 
 @Injectable()
 export class ProposalService extends TypeOrmCrudService<Proposal> {
@@ -44,12 +47,17 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
   }
 
   createMultiple(proposalDtos: ProposalDto[]): Promise<Proposal[]> {
-    return Promise.all(
-      proposalDtos.map((proposalDto) => this.create(proposalDto)),
+    return this.proposalRepository.save(
+      proposalDtos.map((proposalDto) => {
+        return {
+          ...proposalDto,
+          kind: proposalDto.kind.kind,
+        };
+      }),
     );
   }
 
-  update(proposal: Proposal): Promise<Proposal> {
+  update(proposal: Partial<Proposal>): Promise<Proposal> {
     return this.proposalRepository.save(proposal);
   }
 
@@ -275,5 +283,11 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
     } catch (e) {
       this.logger.error(e);
     }
+  }
+
+  public getProposalVariant(proposal: ProposalDto) {
+    return Object.values(ProposalVariant).find((variant) =>
+      proposal.description.includes(`${PROPOSAL_DESC_SEPARATOR}${variant}`),
+    );
   }
 }

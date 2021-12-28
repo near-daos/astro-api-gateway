@@ -6,6 +6,7 @@ import {
   Delete,
   BadRequestException,
   UseGuards,
+  Get,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -26,11 +27,11 @@ import {
   AccountAccessGuard,
   DeleteOneParams,
   DB_FOREIGN_KEY_VIOLATION,
+  FindAccountParams,
 } from '@sputnik-v2/common';
 
 @ApiTags('Subscriptions')
 @Controller('subscriptions')
-@UseGuards(AccountAccessGuard)
 export class SubscriptionsController {
   constructor(private readonly subscriptionService: SubscriptionService) {}
 
@@ -45,6 +46,7 @@ export class SubscriptionsController {
     description:
       'Account <accountId> identity is invalid - public key / bad signature/public key size / Invalid signature',
   })
+  @UseGuards(AccountAccessGuard)
   @Post('/')
   async create(
     @Body() addSubscriptionDto: SubscriptionDto,
@@ -63,6 +65,23 @@ export class SubscriptionsController {
   }
 
   @ApiParam({
+    name: 'accountId',
+    type: String,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List of Subscriptions by Account',
+    type: Subscription,
+  })
+  @ApiBadRequestResponse({ description: 'Invalid Account ID' })
+  @Get('/account-subscriptions/:accountId')
+  getAccountSubscriptions(
+    @Param() { accountId }: FindAccountParams,
+  ): Promise<Subscription[]> {
+    return this.subscriptionService.getAccountSubscriptions(accountId);
+  }
+
+  @ApiParam({
     name: 'id',
     type: String,
   })
@@ -77,6 +96,7 @@ export class SubscriptionsController {
     description:
       'Account <accountId> identity is invalid - public key / bad signature/public key size / Invalid signature',
   })
+  @UseGuards(AccountAccessGuard)
   @Delete('/:id')
   remove(
     @Param() { id }: DeleteOneParams,

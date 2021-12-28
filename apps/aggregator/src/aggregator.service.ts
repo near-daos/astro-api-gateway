@@ -182,10 +182,7 @@ export class AggregatorService {
     }
 
     const lastToken = await this.nftTokenService.lastToken();
-    const timestamp =
-      this.state.getAggregationTimestamp('nft') ||
-      lastToken.updateTimestamp ||
-      lastToken.createTimestamp;
+    const timestamp = lastToken.updateTimestamp || lastToken.createTimestamp;
 
     this.logger.log(`Start NFTs aggregation...`);
     this.state.startAggregation('nft');

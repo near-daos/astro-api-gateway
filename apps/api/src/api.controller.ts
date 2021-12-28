@@ -2,13 +2,17 @@ import { Controller, Get, Logger } from '@nestjs/common';
 import { EventPattern, Transport } from '@nestjs/microservices';
 import { ApiExcludeEndpoint } from '@nestjs/swagger';
 import { CacheService } from '@sputnik-v2/cache';
+import { NewNotificationDto, NewCommentDto } from '@sputnik-v2/event';
 import {
-  EVENT_API_DAO_UPDATE,
-  EVENT_API_PROPOSAL_UPDATE,
-  EVENT_DAO_UPDATE_NOTIFICATION,
+  EVENT_DELETE_COMMENT,
+  EVENT_NEW_COMMENT,
+  EVENT_NEW_NOTIFICATION,
 } from '@sputnik-v2/common';
 
-import { REDIS_SOCKET_EVENT_EMIT_ALL_NAME } from './websocket/redis-propagator/redis-propagator.constants';
+import {
+  REDIS_SOCKET_EVENT_EMIT_ALL_NAME,
+  REDIS_SOCKET_EVENT_EMIT_AUTHENTICATED_NAME,
+} from './websocket/redis-propagator/redis-propagator.constants';
 import { RedisService } from './websocket/redis/redis.service';
 
 @Controller()
@@ -26,27 +30,43 @@ export class AppController {
     return 'Sputnik v2 API v1.0';
   }
 
-  @EventPattern(EVENT_DAO_UPDATE_NOTIFICATION, Transport.RMQ)
-  async clearCache() {
-    this.logger.log(`Clearing cache on DAO update.`);
-    await this.cacheService.clearCache();
+  @EventPattern(EVENT_NEW_NOTIFICATION, Transport.REDIS)
+  async onNewNotification(data: NewNotificationDto) {
+    this.logger.log(
+      `Sending new notification ${data.notification.type} to Websocket clients.`,
+    );
+    await this.redisService.publish(REDIS_SOCKET_EVENT_EMIT_ALL_NAME, {
+      event: 'notification',
+      data: data.notification,
+    });
+    await this.redisService.publish(
+      REDIS_SOCKET_EVENT_EMIT_AUTHENTICATED_NAME,
+      {
+        event: 'account-notification',
+        accountEvents: data.accountNotifications,
+      },
+    );
   }
 
-  @EventPattern(EVENT_API_DAO_UPDATE, Transport.RMQ)
-  async onDaoUpdate(data: Record<string, string[]>) {
-    this.logger.log('Sending DAO updates to Websocket clients.');
+  @EventPattern(EVENT_NEW_COMMENT, Transport.REDIS)
+  async onNewComment(data: NewCommentDto) {
+    this.logger.log(
+      `Sending new comment ${data.comment.id} to Websocket clients.`,
+    );
     await this.redisService.publish(REDIS_SOCKET_EVENT_EMIT_ALL_NAME, {
-      event: 'dao-update',
-      data,
+      event: 'comment',
+      data: data.comment,
     });
   }
 
-  @EventPattern(EVENT_API_PROPOSAL_UPDATE, Transport.RMQ)
-  async onProposalUpdate(data: Record<string, string[]>) {
-    this.logger.log('Sending Proposal updates to Websocket clients.');
+  @EventPattern(EVENT_DELETE_COMMENT, Transport.REDIS)
+  async onDeleteComment(data: NewCommentDto) {
+    this.logger.log(
+      `Sending removed comment ${data.comment.id} to Websocket clients.`,
+    );
     await this.redisService.publish(REDIS_SOCKET_EVENT_EMIT_ALL_NAME, {
-      event: 'proposal-update',
-      data,
+      event: 'comment-removed',
+      data: data.comment,
     });
   }
 }

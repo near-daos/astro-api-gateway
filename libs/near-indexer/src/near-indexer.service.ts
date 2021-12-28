@@ -15,6 +15,7 @@ import {
   AccountChange,
   ActionReceiptAction,
   Receipt,
+  AssetsNftEvent,
 } from './entities';
 import { getBlockTimestamp } from '@sputnik-v2/utils';
 
@@ -37,6 +38,9 @@ export class NearIndexerService {
 
     @InjectRepository(AccountChange, NEAR_INDEXER_DB_CONNECTION)
     private readonly accountChangeRepository: Repository<AccountChange>,
+
+    @InjectRepository(AssetsNftEvent, NEAR_INDEXER_DB_CONNECTION)
+    private readonly assetsNftEventRepository: Repository<AssetsNftEvent>,
 
     @InjectConnection(NEAR_INDEXER_DB_CONNECTION)
     private connection: Connection,
@@ -378,6 +382,20 @@ export class NearIndexerService {
       contractNames.join(','),
       fromBlockTimestamp,
     ]);
+  }
+
+  async findNFTEvents(
+    contractId: string,
+    tokenId: string,
+  ): Promise<AssetsNftEvent[]> {
+    return this.assetsNftEventRepository
+      .createQueryBuilder('nftEvent')
+      .where('nftEvent.emitted_by_contract_account_id = :contractId', {
+        contractId,
+      })
+      .andWhere('nftEvent.token_id = :tokenId', { tokenId })
+      .orderBy('emitted_at_block_timestamp', 'DESC')
+      .getMany();
   }
 
   async receiptsByAccount(accountId: string): Promise<Receipt[]> {

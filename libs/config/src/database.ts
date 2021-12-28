@@ -19,6 +19,12 @@ import {
   TokenBalance,
   NFTContract,
 } from '@sputnik-v2/token/entities';
+import {
+  AccountNotification,
+  AccountNotificationSettings,
+  Notification,
+} from '@sputnik-v2/notification/entities';
+import { Comment, CommentReport } from '@sputnik-v2/comment/entities';
 
 export default registerAs('db_default', () => ({
   type: 'postgres',
@@ -47,6 +53,11 @@ export default registerAs('db_default', () => ({
     NFTContract,
     NFTToken,
     NFTTokenMetadata,
+    Notification,
+    AccountNotification,
+    AccountNotificationSettings,
+    Comment,
+    CommentReport,
   ],
   synchronize: true,
   migrationsTableName: 'migration_table',
