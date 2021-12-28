@@ -5,6 +5,7 @@ import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 
 import { AccountNotificationDto, UpdateAccountNotificationDto } from './dto';
 import { AccountNotification } from './entities';
+import { UpdateResult } from 'typeorm/query-builder/result/UpdateResult';
 
 @Injectable()
 export class AccountNotificationService extends TypeOrmCrudService<AccountNotification> {
@@ -40,35 +41,27 @@ export class AccountNotificationService extends TypeOrmCrudService<AccountNotifi
     });
   }
 
-  async readAccountNotifications(
-    accountId: string,
-  ): Promise<AccountNotification[]> {
-    const accountNotifications = await this.accountNotificationRepository.find({
-      accountId,
-      isRead: false,
-    });
-
-    return this.accountNotificationRepository.save(
-      accountNotifications.map((accountNotification) => ({
-        ...accountNotification,
-        isRead: true,
-      })),
-    );
+  async readAccountNotifications(accountId: string): Promise<UpdateResult> {
+    return this.accountNotificationRepository
+      .createQueryBuilder()
+      .update()
+      .set({ isRead: true })
+      .where({
+        accountId,
+        isRead: false,
+      })
+      .execute();
   }
 
-  async archiveAccountNotifications(
-    accountId: string,
-  ): Promise<AccountNotification[]> {
-    const accountNotifications = await this.accountNotificationRepository.find({
-      accountId,
-      isArchived: false,
-    });
-
-    return this.accountNotificationRepository.save(
-      accountNotifications.map((accountNotification) => ({
-        ...accountNotification,
-        isArchived: true,
-      })),
-    );
+  async archiveAccountNotifications(accountId: string): Promise<UpdateResult> {
+    return this.accountNotificationRepository
+      .createQueryBuilder()
+      .update()
+      .set({ isArchived: true })
+      .where({
+        accountId,
+        isArchived: false,
+      })
+      .execute();
   }
 }
