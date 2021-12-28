@@ -39,4 +39,36 @@ export class AccountNotificationService extends TypeOrmCrudService<AccountNotifi
       isArchived: updateDto.isArchived,
     });
   }
+
+  async readAccountNotifications(
+    accountId: string,
+  ): Promise<AccountNotification[]> {
+    const accountNotifications = await this.accountNotificationRepository.find({
+      accountId,
+      isRead: false,
+    });
+
+    return this.accountNotificationRepository.save(
+      accountNotifications.map((accountNotification) => ({
+        ...accountNotification,
+        isRead: true,
+      })),
+    );
+  }
+
+  async archiveAccountNotifications(
+    accountId: string,
+  ): Promise<AccountNotification[]> {
+    const accountNotifications = await this.accountNotificationRepository.find({
+      accountId,
+      isArchived: false,
+    });
+
+    return this.accountNotificationRepository.save(
+      accountNotifications.map((accountNotification) => ({
+        ...accountNotification,
+        isArchived: true,
+      })),
+    );
+  }
 }
