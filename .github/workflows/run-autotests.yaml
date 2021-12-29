@@ -38,7 +38,14 @@ jobs:
     name: Run Tests
     runs-on: ubuntu-latest
     steps:
+
     - uses: actions/checkout@v2
+      if: env.GITHUB_WORKFLOW == "Run Autotests"
+    - uses: actions/checkout@v2
+      with:
+        ref: develop
+      if: env.GITHUB_WORKFLOW != "Run Autotests"
+
     - name: Set Environment
       id: set_environment
       run: |
