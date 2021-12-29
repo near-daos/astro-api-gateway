@@ -4,7 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProposalModule } from '@sputnik-v2/proposal';
 import { NearIndexerModule } from '@sputnik-v2/near-indexer';
 import { NearApiModule } from '@sputnik-v2/near-api';
-import { SputnikDaoService } from '@sputnik-v2/sputnikdao';
+import { SputnikModule } from '@sputnik-v2/sputnikdao';
 import { ConfigModule } from '@nestjs/config';
 import configuration, {
   TypeOrmConfigService,
@@ -36,7 +36,8 @@ import migrationScripts from './scripts';
     ProposalModule,
     NearIndexerModule,
     NearApiModule,
+    SputnikModule,
   ],
-  providers: [SputnikDaoService, ...migrationScripts],
+  providers: [...migrationScripts],
 })
 export class MigrationModule {}

@@ -11,7 +11,6 @@ import {
 } from '@sputnik-v2/token';
 import { NearIndexerModule } from '@sputnik-v2/near-indexer';
 import { NearApiModule } from '@sputnik-v2/near-api';
-import { SputnikDaoService } from '@sputnik-v2/sputnikdao';
 import { CacheConfigService } from '@sputnik-v2/config/api-config';
 
 import { TokenController } from './token.controller';
@@ -31,7 +30,6 @@ import { TokenNearService } from './token-near.service';
     TokenService,
     NFTTokenService,
     TokenNearService,
-    SputnikDaoService,
     TokenFactoryService,
   ],
   controllers: [TokenController],

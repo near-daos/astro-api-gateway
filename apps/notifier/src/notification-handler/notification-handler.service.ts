@@ -8,8 +8,7 @@ import {
   NotificationType,
 } from '@sputnik-v2/notification';
 import { DaoService, DaoVariant } from '@sputnik-v2/dao';
-import { ProposalService } from '@sputnik-v2/proposal';
-import { Action } from '@sputnik-v2/sputnikdao';
+import { ProposalService, Action } from '@sputnik-v2/proposal';
 
 import {
   castDaoUpdateNotification,

@@ -1,31 +1,18 @@
 import { Contract } from 'near-api-js';
 import { Injectable, Logger } from '@nestjs/common';
-import { castProposalKind, ProposalDto } from '@sputnik-v2/proposal';
-import PromisePool from '@supercharge/promise-pool';
-import {
-  PolicyDto,
-  DaoConfig,
-  SputnikDaoDto,
-  RoleKindType,
-} from '@sputnik-v2/dao';
-import camelcaseKeys from 'camelcase-keys';
-import { BountyDto, BountyClaimDto } from '@sputnik-v2/bounty';
+
 import { NearApiService } from '@sputnik-v2/near-api';
+import PromisePool from '@supercharge/promise-pool';
+
+import { DaoInfo } from './types';
 import {
-  buildBountyClaimId,
-  buildBountyId,
-  buildProposalId,
-  buildRoleId,
-  calculateClaimEndTime,
-} from '@sputnik-v2/utils';
+  BOUNTY_REQUEST_CHUNK_SIZE,
+  PROPOSAL_REQUEST_CHUNK_SIZE,
+} from './constants';
 
-import { castRolePermission, castVotePolicy } from './types';
-import { PROPOSAL_REQUEST_CHUNK_SIZE } from './constants';
-
-// Please note that SputnikDaoService is going to be removed in next iterations
 @Injectable()
-export class SputnikDaoService {
-  private readonly logger = new Logger(SputnikDaoService.name);
+export class SputnikService {
+  private readonly logger = new Logger(SputnikService.name);
 
   private factoryContract!: Contract & any;
 
@@ -33,264 +20,138 @@ export class SputnikDaoService {
     this.factoryContract = nearApiService.getContract('sputnikDaoFactory');
   }
 
-  public async getDaoIds(): Promise<string[]> {
-    return await this.factoryContract.get_dao_list();
-  }
-
-  public async getDaoList(daoIds: string[]): Promise<SputnikDaoDto[]> {
-    const list: string[] =
-      daoIds || (await this.factoryContract.get_dao_list());
-
-    const { results: daos, errors } = await PromisePool.withConcurrency(5)
-      .for(list)
-      .process(async (daoId) => await this.getDaoById(daoId));
-
-    return daos;
-  }
-
-  public async getProposals(daoIds: string[]): Promise<ProposalDto[]> {
-    const ids: string[] = daoIds || (await this.factoryContract.getDaoIds());
-
-    const { results: proposals, errors } = await PromisePool.withConcurrency(5)
-      .for(ids)
-      .process(async (daoId) => await this.getProposalsByDao(daoId));
-
-    return proposals.reduce((acc, prop) => acc.concat(prop), []);
-  }
-
-  public async getProposal(
-    contractId: string,
-    proposalId: number,
-  ): Promise<ProposalDto> {
-    const contract = this.nearApiService.getContract('sputnikDao', contractId);
-    const proposal = await contract.get_proposal({ id: proposalId });
-
-    return this.proposalResponseToDTO(contractId, proposal);
-  }
-
-  public async getProposalsByDao(contractId: string): Promise<ProposalDto[]> {
-    try {
-      const contract = this.nearApiService.getContract(
-        'sputnikDao',
-        contractId,
-      );
-
-      //TODO: check when no proposals
-      // Taking into account that proposal ID is sequential,
-      // considering that last proposal id is the proposal count
-      // for the given DAO
-      const lastProposalId = await contract.get_last_proposal_id();
-
-      const chunkSize = PROPOSAL_REQUEST_CHUNK_SIZE;
-      const chunkCount =
-        (lastProposalId - (lastProposalId % chunkSize)) / chunkSize + 1;
-      const { results: proposals, errors } = await PromisePool.withConcurrency(
-        1,
-      )
-        .for([...Array(chunkCount).keys()])
-        .process(
-          async (offset) =>
-            await contract.get_proposals({
-              from_index: offset * chunkSize,
-              limit: chunkSize,
-            }),
-        );
-
-      return proposals
-        .reduce((acc: any[], prop: any[]) => acc.concat(prop), [])
-        .map((proposal: any) =>
-          this.proposalResponseToDTO(contractId, proposal),
-        );
-    } catch (error) {
-      this.logger.error(error);
-
-      return Promise.reject(error);
-    }
-  }
-
-  public async getBounties(
-    daoIds: string[],
-    accountIds: string[],
-  ): Promise<BountyDto[]> {
-    const ids: string[] = daoIds || (await this.factoryContract.getDaoIds());
-
-    const { results: bounties, errors } = await PromisePool.withConcurrency(5)
-      .for(ids)
-      .process(async (daoId) => await this.getBountiesByDao(daoId, accountIds));
-
-    return bounties.reduce((acc, prop) => acc.concat(prop), []);
-  }
-
-  public async getBountiesByDao(
-    contractId: string,
-    accountIds: string[],
-  ): Promise<BountyDto[]> {
-    try {
-      const contract = this.nearApiService.getContract(
-        'sputnikDao',
-        contractId,
-      );
-
-      // Taking into account that bounty ID is sequential,
-      // considering that last bounty id is the bounty count
-      // for the given DAO
-      const lastBountyId = await contract.get_last_bounty_id();
-
-      const chunkSize = PROPOSAL_REQUEST_CHUNK_SIZE;
-      const chunkCount =
-        (lastBountyId - (lastBountyId % chunkSize)) / chunkSize + 1;
-      const { results, errors } = await PromisePool.withConcurrency(1)
-        .for([...Array(chunkCount).keys()])
-        .process(
-          async (offset) =>
-            await contract.get_bounties({
-              from_index: offset * chunkSize,
-              limit: chunkSize,
-            }),
-        );
-
-      const bounties = results.reduce(
-        (acc: BountyDto[], prop: BountyDto[]) => acc.concat(prop),
-        [],
-      );
-
-      const { results: numClaims } = await PromisePool.withConcurrency(5)
-        .for(bounties.map(({ id }) => id))
-        .process(async (bountyId) => {
-          const numClaims = await contract.get_bounty_number_of_claims({
-            id: bountyId,
-          });
-
-          return { numClaims, bountyId };
-        });
-
-      const { results: claims } = await PromisePool.withConcurrency(5)
-        .for(accountIds)
-        .process(async (accountId) => {
-          const bountyClaims = await contract.get_bounty_claims({
-            account_id: accountId,
-          });
-
-          return bountyClaims.map((claim) => ({
-            ...camelcaseKeys(claim),
-            accountId,
-          }));
-        });
-
-      const bountyClaims = claims.reduce(
-        (acc: BountyClaimDto[], prop: BountyClaimDto[]) => acc.concat(prop),
-        [],
-      );
-
-      return bounties.map((bounty: BountyDto) => {
-        return {
-          ...camelcaseKeys(bounty),
-          id: buildBountyId(contractId, bounty.id),
-          bountyId: bounty.id,
-          daoId: contractId,
-          dao: { id: contractId },
-          numberOfClaims: numClaims.find(
-            ({ bountyId }) => bountyId === bounty.id,
-          )?.numClaims,
-          bountyClaims: bountyClaims
-            .filter((claim) => bounty.id === claim.bountyId)
-            .map((claim) => ({
-              ...camelcaseKeys(claim),
-              endTime: calculateClaimEndTime(claim.startTime, claim.deadline),
-              id: buildBountyClaimId(contractId, bounty.id, claim.startTime),
-              bounty: {
-                id: buildBountyId(contractId, bounty.id),
-                bountyId: bounty.id,
-              },
-            })),
-        };
-      });
-    } catch (error) {
-      this.logger.error(error);
-
-      return Promise.reject(error);
-    }
-  }
-
-  public async getAccountAmount(accountId: string): Promise<string> {
-    const state = await this.nearApiService.getAccountState(accountId);
-    return state.amount;
-  }
-
-  public async getDaoById(daoId: string): Promise<SputnikDaoDto | null> {
-    const contract = this.nearApiService.getContract('sputnikDao', daoId);
-
-    const daoEnricher = {
-      config: async (): Promise<DaoConfig> => contract.get_config(),
-      policy: async (): Promise<PolicyDto> => contract.get_policy(),
-      stakingContract: async (): Promise<string> =>
-        contract.get_staking_contract(),
-      amount: async (): Promise<string> => this.getAccountAmount(daoId),
-      totalSupply: async (): Promise<string> =>
-        contract.delegation_total_supply(),
-      lastProposalId: async (): Promise<string> =>
-        contract.get_last_proposal_id(),
-      lastBountyId: async (): Promise<string> => contract.get_last_bounty_id(),
+  public async getDaoInfo(daoId: string): Promise<DaoInfo> {
+    const daoContract = this.nearApiService.getContract('sputnikDao', daoId);
+    const config = await daoContract.get_config();
+    const policy = await daoContract.get_policy();
+    const stakingContract = await daoContract.get_staking_contract();
+    const totalSupply = await daoContract.delegation_total_supply();
+    const lastProposalId = await daoContract.get_last_proposal_id();
+    const lastBountyId = await daoContract.get_last_bounty_id();
+    const amount = await this.nearApiService.getAccountAmount(daoId);
+    return {
+      config,
+      policy,
+      stakingContract,
+      totalSupply,
+      lastProposalId,
+      lastBountyId,
+      amount,
     };
+  }
 
-    const dao = new SputnikDaoDto();
+  public async getProposalsByDaoId(daoId: string, lastProposalId: number) {
+    const daoContract = this.nearApiService.getContract('sputnikDao', daoId);
+    const chunkSize = PROPOSAL_REQUEST_CHUNK_SIZE;
+    const chunkCount =
+      (lastProposalId - (lastProposalId % chunkSize)) / chunkSize + 1;
+    let proposals = [];
 
-    const { errors } = await PromisePool.withConcurrency(3)
-      .for(Object.keys(daoEnricher))
-      .process(async (detailKey) => {
-        dao[detailKey] = await daoEnricher[detailKey](daoId);
+    // Load all proposals by chunks
+    for (let i = 0; i < chunkCount; i++) {
+      const proposalsChunk = await daoContract.get_proposals({
+        from_index: chunkSize * i,
+        limit: chunkSize,
+      });
+      proposals = proposals.concat(proposalsChunk);
+    }
 
-        return dao[detailKey];
+    return proposals;
+  }
+
+  public async findLastProposal(
+    daoId: string,
+    lastProposalId: number,
+    proposalData,
+  ) {
+    const proposals = await this.getProposalsByDaoId(daoId, lastProposalId);
+
+    for (let i = proposals.length - 1; i >= 0; i--) {
+      if (this.compareProposals(proposals[i], proposalData)) {
+        return proposals[i];
+      }
+    }
+
+    return null;
+  }
+
+  public async getBountiesByDaoId(daoId: string, lastBountyId: number) {
+    const daoContract = this.nearApiService.getContract('sputnikDao', daoId);
+    const chunkSize = BOUNTY_REQUEST_CHUNK_SIZE;
+    const chunkCount =
+      (lastBountyId - (lastBountyId % chunkSize)) / chunkSize + 1;
+    let bounties = [];
+
+    // Load all bounties by chunks
+    for (let i = 0; i < chunkCount; i++) {
+      const bountiesChunk = await daoContract.get_bounties({
+        from_index: chunkSize * i,
+        limit: chunkSize,
+      });
+      bounties = bounties.concat(bountiesChunk);
+    }
+
+    await PromisePool.withConcurrency(5)
+      .for(bounties)
+      .process(async (bounty) => {
+        bounty.numberOfClaims = await daoContract.get_bounty_number_of_claims({
+          id: bounty.id,
+        });
       });
 
-    if (errors && errors.length) {
-      errors.map((error) => this.logger.error(error));
-
-      return Promise.reject(`Unable to enrich DAO with id ${daoId}`);
-    }
-
-    const roles = dao.policy.roles.map((role) => ({
-      ...castRolePermission(camelcaseKeys(role)),
-      id: buildRoleId(daoId, role.name),
-      policy: { daoId },
-    }));
-
-    const policy = camelcaseKeys(dao.policy, { deep: true });
-
-    const council = roles
-      .filter(
-        ({ name, kind }) => 'council' === name && RoleKindType.Group === kind,
-      )
-      .map(({ accountIds }) => accountIds)
-      .reduce((acc, val) => acc.concat(val), []);
-
-    return {
-      ...dao,
-      id: daoId,
-      policy: {
-        ...policy,
-        daoId,
-        defaultVotePolicy: castVotePolicy(policy.defaultVotePolicy),
-        roles,
-      },
-      council,
-      councilSeats: council?.length,
-    };
+    return bounties;
   }
 
-  private proposalResponseToDTO(
-    contractId: string,
-    proposal: any,
-  ): ProposalDto {
-    const kind = castProposalKind(proposal.kind);
-    return {
-      ...camelcaseKeys(proposal),
-      id: buildProposalId(contractId, proposal.id),
-      proposalId: proposal.id,
-      daoId: contractId,
-      dao: { id: contractId },
-      kind,
-      type: kind.kind.type,
-    };
+  public async getBountyClaims(daoId: string, accountIds: string[]) {
+    const daoContract = this.nearApiService.getContract('sputnikDao', daoId);
+    const { results: claims } = await PromisePool.withConcurrency(2)
+      .for(accountIds)
+      .process(async (accountId) => {
+        const bountyClaims = await daoContract.get_bounty_claims({
+          account_id: accountId,
+        });
+
+        return bountyClaims.map((claim) => ({
+          ...claim,
+          accountId,
+        }));
+      });
+
+    return claims.flat();
+  }
+
+  public async findLastBounty(daoId: string, lastBountyId: number, bountyData) {
+    const bounties = await this.getBountiesByDaoId(daoId, lastBountyId);
+
+    for (let i = bounties.length - 1; i >= 0; i--) {
+      if (this.compareBounties(bounties[i], bountyData)) {
+        return bounties[i];
+      }
+    }
+
+    return null;
+  }
+
+  private compareProposals(proposal1, proposal2): boolean {
+    const hasSameKind =
+      typeof proposal1.kind === 'string'
+        ? proposal1.kind === proposal2.kind
+        : Object.keys(proposal1.kind).toString() ===
+          Object.keys(proposal2.kind).toString();
+    return (
+      proposal1.description === proposal2.description &&
+      proposal1.proposer === proposal2.proposer &&
+      hasSameKind
+    );
+  }
+
+  private compareBounties(bounty1, bounty2): boolean {
+    return (
+      bounty1.description === bounty2.description &&
+      bounty1.token === bounty2.token &&
+      bounty1.amount === bounty2.amount &&
+      bounty1.times === bounty2.times &&
+      bounty1.max_deadline === bounty2.maxDeadline
+    );
   }
 }

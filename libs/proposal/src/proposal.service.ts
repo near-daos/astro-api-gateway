@@ -19,10 +19,8 @@ import {
   ProposalTypeToContractType,
   ProposalStatus,
   ProposalVoteStatus,
-  ProposalVariant,
 } from './types';
-import { buildProposalId, paginate } from '@sputnik-v2/utils';
-import { PROPOSAL_DESC_SEPARATOR } from '@sputnik-v2/common';
+import { paginate } from '@sputnik-v2/utils';
 
 @Injectable()
 export class ProposalService extends TypeOrmCrudService<Proposal> {
@@ -245,49 +243,5 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
 
   async removeMultiple(proposalIds: string[]): Promise<DeleteResult[]> {
     return Promise.all(proposalIds.map((id) => this.remove(id)));
-  }
-
-  public async purgeRemovedProposals(
-    proposals: ProposalDto[],
-    enrichedDaos: SputnikDaoDto[],
-  ): Promise<void> {
-    try {
-      const proposalIdsByDao = proposals.reduce((acc, cur) => {
-        return {
-          ...acc,
-          [cur.daoId]: [...(acc[cur.daoId] || []), cur.proposalId],
-        };
-      }, {});
-      const removedProposals = [];
-
-      Object.keys(proposalIdsByDao).map((daoId) => {
-        const daoProposalIds = proposalIdsByDao[daoId];
-        const dao = enrichedDaos.find(({ id }) => daoId === id);
-
-        for (let i = 0; i < dao.lastProposalId; i++) {
-          if (!daoProposalIds.includes(i)) {
-            removedProposals.push(buildProposalId(daoId, i));
-          }
-        }
-      });
-
-      if (!removedProposals.length) {
-        return;
-      }
-
-      this.logger.log(`Found removed Proposals: ${removedProposals}`);
-
-      this.logger.log('Purging aggregated Proposals considered as removed...');
-      await Promise.all(removedProposals.map((id) => this.remove(id)));
-      this.logger.log('Successfully purged removed Proposals.');
-    } catch (e) {
-      this.logger.error(e);
-    }
-  }
-
-  public getProposalVariant(proposal: ProposalDto) {
-    return Object.values(ProposalVariant).find((variant) =>
-      proposal.description.includes(`${PROPOSAL_DESC_SEPARATOR}${variant}`),
-    );
   }
 }

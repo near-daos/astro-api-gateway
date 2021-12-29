@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
 
-import { NearApiModule } from '@sputnik-v2/near-api';
+import { SputnikModule } from '@sputnik-v2/sputnikdao';
 import { BountyModule } from '@sputnik-v2/bounty';
 import { TransactionModule } from '@sputnik-v2/transaction';
 
 import { BountyAggregatorService } from './bounty-aggregator.service';
 
 @Module({
-  imports: [NearApiModule, BountyModule, TransactionModule],
+  imports: [SputnikModule, BountyModule, TransactionModule],
   providers: [BountyAggregatorService],
   exports: [BountyAggregatorService],
 })
