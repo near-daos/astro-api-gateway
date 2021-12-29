@@ -7,7 +7,6 @@ on:
 jobs:
   run-autotests:
     name: Run Autotests
-    needs:
     uses: near-daos/astro-api-gateway/.github/workflows/run-autotests.yaml@develop
     with:
       environment: develop
