@@ -12,6 +12,7 @@ on:
     inputs:
       environment:
         required: true
+        default: develop
         description: Specify environment to run on. Valid values are develop, test
         type: string
     secrets:
