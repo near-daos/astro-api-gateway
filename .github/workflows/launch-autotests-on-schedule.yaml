@@ -4,6 +4,7 @@ on:
   schedule:
   - cron: '0 6 * * *'
 
+jobs:
   run-autotests:
     name: Run Autotests
     needs:
