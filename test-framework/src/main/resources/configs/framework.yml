@@ -6,4 +6,4 @@ test:
   aggregation.timeout: ${TEST_AGG_TIMEOUT:15}
 
 framework:
-  http.timeout: 15
+  http.timeout: 20

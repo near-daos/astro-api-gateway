@@ -22,4 +22,14 @@ public class DaoApiSteps extends BaseSteps {
     public ResponseEntity<String> getDaos(Map<String, Object> queryParams) {
         return daoApi.getDaos(queryParams);
     }
+
+    @Step("Getting DAOs feed with '{queryParams}' query params")
+    public ResponseEntity<String> getDaosFeed(Map<String, Object> queryParams) {
+        return daoApi.getDaosFeed(queryParams);
+    }
+
+    @Step("Getting feed for '{id}' DAO")
+    public ResponseEntity<String> getDaoFeed(String id) {
+        return daoApi.getDaoFeed(id);
+    }
 }
