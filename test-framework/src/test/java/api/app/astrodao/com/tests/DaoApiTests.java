@@ -10,10 +10,7 @@ import io.qameta.allure.Severity;
 import io.qameta.allure.SeverityLevel;
 import io.qameta.allure.Story;
 import lombok.RequiredArgsConstructor;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Tags;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +19,7 @@ import java.util.Map;
 
 @Tags({@Tag("all"), @Tag("daoApiTests")})
 @Feature("DAO API TESTS")
+@DisplayName("DAO API TESTS")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class DaoApiTests extends BaseTest {
     private final DaoApiSteps daoApiSteps;

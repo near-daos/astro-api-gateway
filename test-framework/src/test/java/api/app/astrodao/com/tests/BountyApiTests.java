@@ -8,6 +8,7 @@ import io.qameta.allure.Severity;
 import io.qameta.allure.SeverityLevel;
 import io.qameta.allure.Story;
 import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
@@ -19,6 +20,7 @@ import java.util.Map;
 
 @Tags({@Tag("all"), @Tag("bountyApiTests")})
 @Feature("BOUNTY API TESTS")
+@DisplayName("BOUNTY API TESTS")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class BountyApiTests extends BaseTest {
     private final BountiesApiSteps bountiesApiSteps;
