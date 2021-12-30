@@ -83,16 +83,7 @@ export class SubscriptionsController {
   async getAccountSubscriptions(
     @Param() { accountId }: FindAccountParams,
   ): Promise<Subscription[]> {
-    const subscriptions =
-      await this.subscriptionService.getAccountSubscriptions(accountId);
-
-    if (!subscriptions || subscriptions.length === 0) {
-      throw new NotFoundException(
-        `Account subscriptions for ${accountId} not found`,
-      );
-    }
-
-    return subscriptions;
+    return this.subscriptionService.getAccountSubscriptions(accountId);
   }
 
   @ApiParam({
