@@ -1,3 +1,4 @@
+import { DaoInfo } from '@sputnik-v2/sputnikdao';
 import { castDaoPolicy } from '@sputnik-v2/transaction-handler';
 import { SputnikDaoDto } from '@sputnik-v2/dao';
 import { Account, Transaction } from '@sputnik-v2/near-indexer';
@@ -14,7 +15,7 @@ export function castDao(
     lastProposalId,
     lastBountyId,
     amount,
-  },
+  }: DaoInfo,
 ): SputnikDaoDto {
   const txUpdate = txs[txs.length - 1];
   return {

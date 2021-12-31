@@ -4,7 +4,6 @@ import PromisePool from '@supercharge/promise-pool';
 import { lastValueFrom, map } from 'rxjs';
 import { TokenFactoryService, NFTTokenDto } from '@sputnik-v2/token';
 import { NearIndexerService } from '@sputnik-v2/near-indexer';
-import { SputnikDaoService } from '@sputnik-v2/sputnikdao';
 
 @Injectable()
 export class TokenNearService {
@@ -14,7 +13,6 @@ export class TokenNearService {
     private readonly configService: ConfigService,
     private readonly httpService: HttpService,
     private readonly nearIndexerService: NearIndexerService,
-    private readonly sputnikDaoService: SputnikDaoService,
     private readonly tokenFactoryService: TokenFactoryService,
   ) {}
 

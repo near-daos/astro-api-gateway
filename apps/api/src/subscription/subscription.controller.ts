@@ -7,7 +7,6 @@ import {
   BadRequestException,
   UseGuards,
   Get,
-  NotFoundException,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -74,9 +73,6 @@ export class SubscriptionsController {
     status: 200,
     description: 'List of Subscriptions by Account',
     type: Subscription,
-  })
-  @ApiNotFoundResponse({
-    description: 'Account subscriptions for <accountId> not found',
   })
   @ApiBadRequestResponse({ description: 'Invalid Account ID' })
   @Get('/account-subscriptions/:accountId')
