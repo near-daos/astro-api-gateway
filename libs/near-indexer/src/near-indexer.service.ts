@@ -143,12 +143,15 @@ export class NearIndexerService {
             'action_receipt_action.transaction',
             'transactions',
           )
-          .where(
-            "action_receipt_action.args->'args_json'->>'receiver_id' = :id and action_kind = 'FUNCTION_CALL' and action_receipt_action.args->>'args_json' is not null and args->>'method_name' like 'nft_%'",
+          .where("action_kind = 'FUNCTION_CALL'")
+          .andWhere("action_receipt_action.args->>'args_json' is not null")
+          .andWhere(
+            "action_receipt_action.args->'args_json'->>'receiver_id' = :id",
             {
               id,
             },
-          );
+          )
+          .andWhere("args->>'method_name' like 'nft_%'");
 
         queryBuilder = fromBlockTimestamp
           ? queryBuilder.andWhere('transaction.block_timestamp >= :from', {
