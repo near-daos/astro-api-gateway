@@ -57,12 +57,8 @@ export class TokenService extends TypeOrmCrudService<Token> {
     return this.tokenRepository.findOne({ id: 'NEAR' });
   }
 
-  async findTokenBalancesByDaoIds(daoIds: string[]): Promise<TokenBalance[]> {
-    return this.tokenBalanceRepository
-      .createQueryBuilder('tokenBalance')
-      .leftJoinAndSelect('tokenBalance.token', 'token')
-      .where(`tokenBalance.accountId = ANY(ARRAY[:...daoIds])`, { daoIds })
-      .getMany();
+  async tokenBalancesByAccount(accountId: string): Promise<TokenBalance[]> {
+    return this.tokenBalanceRepository.find({ accountId });
   }
 
   async tokensByAccount(accountId: string): Promise<Token[]> {
