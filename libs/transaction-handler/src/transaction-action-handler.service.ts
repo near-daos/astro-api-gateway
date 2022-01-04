@@ -122,7 +122,7 @@ export class TransactionActionHandlerService {
     });
 
     this.logger.log(`Storing new DAO: ${daoId} due to transaction`);
-    await this.daoService.create(dao);
+    await this.daoService.saveWithFunds(dao);
     this.logger.log(`Successfully stored new DAO: ${daoId}`);
 
     await this.eventService.sendDaoUpdateNotificationEvent(dao, txAction);
@@ -163,7 +163,7 @@ export class TransactionActionHandlerService {
     this.logger.log(`Successfully stored Proposal: ${proposal.id}`);
 
     this.logger.log(`Updating DAO: ${receiverId} due to transaction`);
-    await this.daoService.create(dao);
+    await this.daoService.saveWithProposalCount(dao);
     this.logger.log(`DAO successfully updated: ${receiverId}`);
 
     await this.eventService.sendProposalUpdateNotificationEvent(
@@ -301,7 +301,7 @@ export class TransactionActionHandlerService {
     this.logger.log(`Proposal successfully updated: ${proposal.id}`);
 
     this.logger.log(`Updating DAO: ${receiverId} due to transaction`);
-    await this.daoService.create(
+    await this.daoService.saveWithAdditionalFields(
       castActProposalDao({
         dao,
         amount: state.amount,
@@ -345,7 +345,7 @@ export class TransactionActionHandlerService {
     this.logger.log(`Proposal successfully updated: ${proposal.id}`);
 
     this.logger.log(`Updating DAO: ${receiverId} due to transaction`);
-    await this.daoService.create(
+    await this.daoService.saveWithProposalCount(
       castActProposalDao({
         dao,
         amount: state.amount,
@@ -391,7 +391,7 @@ export class TransactionActionHandlerService {
     }
 
     this.logger.log(`Updating DAO: ${receiverId} due to transaction`);
-    await this.daoService.create(
+    await this.daoService.saveWithProposalCount(
       castActProposalDao({
         dao,
         amount: state.amount,
@@ -522,7 +522,7 @@ export class TransactionActionHandlerService {
     dao.amount = Number(state.amount);
 
     this.logger.log(`Updating DAO: ${receiverId} due to transaction`);
-    await this.daoService.create({ ...dao });
+    await this.daoService.saveWithFunds({ ...dao });
     this.logger.log(`DAO successfully updated: ${receiverId}`);
   }
 

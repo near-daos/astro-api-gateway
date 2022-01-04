@@ -8,4 +8,5 @@ data:
   AGGREGATOR_POLLING_INTERVAL: "{{ .Values.environment.aggregator_polling_interval }}"
   AGGREGATOR_TOKEN_POLLING_INTERVAL: "{{ .Values.environment.aggregator_token_polling_interval }}"
   AGGREGATOR_TOKEN_PRICES_POLLING_INTERVAL: "{{ .Values.environment.aggregator_token_prices_polling_interval }}"
+  AGGREGATOR_DAO_STATUS_POLLING_INTERVAL: "{{ .Values.environment.aggregator_dao_status_polling_interval }}"
   NEAR_TOKEN_API_URL: "{{ .Values.environment.near_token_api_url }}"

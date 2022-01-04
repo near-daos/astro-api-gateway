@@ -1,6 +1,6 @@
 import { TransactionInfo } from '@sputnik-v2/common';
 
-import { DaoConfig } from '../types/dao-config';
+import { DaoConfig, DaoStatus } from '../types';
 import { PolicyDto } from './policy.dto';
 
 export interface DaoDto extends TransactionInfo {
@@ -15,4 +15,5 @@ export interface DaoDto extends TransactionInfo {
   description: string;
   createdBy: string;
   metadata?: string;
+  status?: DaoStatus;
 }

@@ -7,10 +7,10 @@ import {
   DeleteResult,
   FindConditions,
   In,
+  LessThan,
+  Not,
   Repository,
-  UpdateResult,
 } from 'typeorm';
-import { SputnikDaoDto } from '@sputnik-v2/dao/dto';
 import { Role } from '@sputnik-v2/dao/entities';
 
 import { ProposalDto, ProposalResponse } from './dto';
@@ -165,6 +165,18 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
     return response;
   }
 
+  public async getDaoProposalCount(daoId: string): Promise<number> {
+    return this.proposalRepository.count({ daoId });
+  }
+
+  public async getDaoActiveProposalCount(daoId: string): Promise<number> {
+    return this.proposalRepository.count({
+      daoId,
+      status: ProposalStatus.InProgress,
+      voteStatus: Not(ProposalVoteStatus.Expired),
+    });
+  }
+
   async search(
     req: CrudRequest,
     query: string,
@@ -221,20 +233,19 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
     return this.proposalRepository.find({ where });
   }
 
-  async updateExpiredProposals(): Promise<UpdateResult> {
+  async updateExpiredProposals(): Promise<Proposal[]> {
     const currentTimestamp = new Date().getTime() * 1000 * 1000; // nanoseconds
-    return this.connection
-      .createQueryBuilder()
-      .update(Proposal)
-      .where('voteStatus != :voteStatus', {
+    const expiredProposals = await this.proposalRepository.find({
+      voteStatus: Not(ProposalVoteStatus.Expired),
+      status: ProposalStatus.InProgress,
+      votePeriodEnd: LessThan(currentTimestamp),
+    });
+    return this.proposalRepository.save(
+      expiredProposals.map((proposal) => ({
+        ...proposal,
         voteStatus: ProposalVoteStatus.Expired,
-      })
-      .andWhere('status = :status', { status: ProposalStatus.InProgress })
-      .andWhere('votePeriodEnd < :date', {
-        date: currentTimestamp,
-      })
-      .set({ voteStatus: ProposalVoteStatus.Expired })
-      .execute();
+      })),
+    );
   }
 
   async remove(id: string): Promise<DeleteResult> {

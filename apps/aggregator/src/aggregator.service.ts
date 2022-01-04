@@ -48,6 +48,7 @@ export class AggregatorService {
       pollingInterval,
       tokenPollingInterval,
       tokenPricesPollingInterval,
+      daoStatusPollingInterval,
     } = this.configService.get('aggregator');
 
     schedulerRegistry.addInterval(
@@ -65,6 +66,14 @@ export class AggregatorService {
       setInterval(
         () => this.scheduleTokenPricesAggregation(),
         tokenPricesPollingInterval,
+      ),
+    );
+
+    schedulerRegistry.addInterval(
+      'dao_status_polling',
+      setInterval(
+        () => this.scheduleDaoStatusAggregation(),
+        daoStatusPollingInterval,
       ),
     );
   }
@@ -104,6 +113,16 @@ export class AggregatorService {
       this.state.stopAggregation('token-price');
 
       this.logger.error(`Token Prices Aggregation failed with error: ${error}`);
+    }
+  }
+
+  public async scheduleDaoStatusAggregation(): Promise<void> {
+    try {
+      await this.aggregateDaoStatuses();
+    } catch (error) {
+      this.state.stopAggregation('dao-status');
+
+      this.logger.error(`DAO Status Aggregation failed with error: ${error}`);
     }
   }
 
@@ -147,6 +166,10 @@ export class AggregatorService {
 
     await this.tokenAggregatorService.aggregateDaoTokenUpdates(uniqueUpdates);
 
+    await this.daoAggregatorService.aggregateDaoFunds([
+      ...new Set(uniqueUpdates.map(({ account }) => account)),
+    ]);
+
     // TODO: https://app.clickup.com/t/1ty89nk
     await this.cacheService.clearCache();
 
@@ -168,6 +191,9 @@ export class AggregatorService {
     this.logger.log(
       `Aggregate token prices: ${updatedTokens.map(({ id }) => id)}`,
     );
+
+    await this.daoAggregatorService.aggregateDaoFunds();
+    this.logger.log(`DAO Funds updated`);
 
     // TODO: https://app.clickup.com/t/1ty89nk
     await this.cacheService.clearCache();
@@ -233,6 +259,21 @@ export class AggregatorService {
     this.state.stopAggregation('nft');
   }
 
+  public async aggregateDaoStatuses() {
+    if (this.state.isInProgress('dao-status')) {
+      return;
+    }
+
+    this.logger.log(`Start Dao Status aggregation...`);
+    this.state.startAggregation('dao-status');
+
+    await this.daoAggregatorService.aggregateDaoStatuses();
+    await this.cacheService.clearCache();
+
+    this.logger.log(`Finished Dao Status aggregation`);
+    this.state.stopAggregation('dao-status');
+  }
+
   // Sync service Database with transactions made after last aggregation
   public async aggregateNewDaoTransactions() {
     if (this.state.isInProgress('dao')) {
@@ -243,7 +284,7 @@ export class AggregatorService {
 
     this.state.startAggregation('dao');
 
-    await this.proposalService.updateExpiredProposals();
+    await this.proposalAggregatorService.updateExpiredProposals();
 
     const { contractName } = this.configService.get('near');
 
@@ -297,7 +338,13 @@ export class AggregatorService {
   public async aggregateAllDaos() {
     this.logger.log(`Start all DAO aggregation`);
 
-    this.state.startAggregations(['dao', 'token', 'nft', 'token-price']);
+    this.state.startAggregations([
+      'dao',
+      'token',
+      'nft',
+      'token-price',
+      'dao-status',
+    ]);
 
     const tx = await this.transactionService.lastTransaction();
     const { contractName } = this.configService.get('near');
@@ -326,7 +373,13 @@ export class AggregatorService {
 
     await this.tokenAggregatorService.aggregateTokenPrices();
 
-    this.state.stopAggregations(['dao', 'token', 'nft', 'token-price']);
+    this.state.stopAggregations([
+      'dao',
+      'token',
+      'nft',
+      'token-price',
+      'dao-status',
+    ]);
     this.logger.log(`Finished all DAO aggregation`);
   }
 
@@ -365,6 +418,7 @@ export class AggregatorService {
         dao,
         daoTransactions,
       );
+      await this.daoAggregatorService.aggregateDaoAdditionalFields(dao);
 
       this.logger.log('Storing aggregated Transactions...');
       await this.transactionService.createMultiple(daoTransactions);

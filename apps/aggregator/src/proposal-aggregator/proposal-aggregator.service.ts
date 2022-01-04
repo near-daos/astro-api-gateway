@@ -1,17 +1,19 @@
 import { Injectable } from '@nestjs/common';
 
 import { SputnikService } from '@sputnik-v2/sputnikdao';
-import { Dao } from '@sputnik-v2/dao';
+import { Dao, DaoService } from '@sputnik-v2/dao';
 import { Transaction } from '@sputnik-v2/near-indexer';
 import { Proposal, ProposalService } from '@sputnik-v2/proposal';
 
 import { castProposal } from './types/proposal';
+import PromisePool from '@supercharge/promise-pool';
 
 @Injectable()
 export class ProposalAggregatorService {
   constructor(
     private readonly sputnikService: SputnikService,
     private readonly proposalService: ProposalService,
+    private readonly daoService: DaoService,
   ) {}
 
   public async aggregateProposalsByDao(
@@ -39,5 +41,21 @@ export class ProposalAggregatorService {
     }
 
     return this.proposalService.createMultiple(proposalDtos);
+  }
+
+  public async updateExpiredProposals(): Promise<Proposal[]> {
+    const expiredProposals =
+      await this.proposalService.updateExpiredProposals();
+    const daoIds = [...new Set(expiredProposals.map(({ daoId }) => daoId))];
+
+    if (daoIds.length) {
+      await PromisePool.withConcurrency(10)
+        .for(daoIds)
+        .process((daoId) =>
+          this.daoService.saveWithProposalCount({ id: daoId }),
+        );
+    }
+
+    return expiredProposals;
   }
 }
