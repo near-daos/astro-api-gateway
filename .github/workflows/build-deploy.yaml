@@ -122,8 +122,8 @@ jobs:
     - name: Set Environment
       run: |
         echo DOCKER_ENV_TAG=${{ needs.get-environment.outputs.environment }}-$GITHUB_SHA >> $GITHUB_ENV
-        cat ".github/env.common" >>$GITHUB_ENV
-        cat ".github/env.${{ needs.get-environment.outputs.environment }}" >>$GITHUB_ENV
+        cat ".github/env.common" | grep -E -v '^\ *#' >>$GITHUB_ENV
+        cat ".github/env.${{ needs.get-environment.outputs.environment }}" | grep -E -v '^\ *#' >>$GITHUB_ENV
     - name: Docker Build Publish
       uses: ./.github/actions/docker-build-publish
 
@@ -143,8 +143,8 @@ jobs:
     - name: Set Environment
       run: |
         echo DOCKER_ENV_TAG=${{ needs.get-environment.outputs.environment }}-$GITHUB_SHA >> $GITHUB_ENV
-        cat ".github/env.common" >>$GITHUB_ENV
-        cat ".github/env.${{ needs.get-environment.outputs.environment }}" >>$GITHUB_ENV
+        cat ".github/env.common" | grep -E -v '^\ *#' >>$GITHUB_ENV
+        cat ".github/env.${{ needs.get-environment.outputs.environment }}" | grep -E -v '^\ *#' >>$GITHUB_ENV
     - name: Docker Build Publish
       uses: ./.github/actions/docker-build-publish
 
@@ -164,8 +164,8 @@ jobs:
     - name: Set Environment
       run: |
         echo DOCKER_ENV_TAG=${{ needs.get-environment.outputs.environment }}-$GITHUB_SHA >> $GITHUB_ENV
-        cat ".github/env.common" >>$GITHUB_ENV
-        cat ".github/env.${{ needs.get-environment.outputs.environment }}" >>$GITHUB_ENV
+        cat ".github/env.common" | grep -E -v '^\ *#' >>$GITHUB_ENV
+        cat ".github/env.${{ needs.get-environment.outputs.environment }}" | grep -E -v '^\ *#' >>$GITHUB_ENV
     - name: Docker Build Publish
       uses: ./.github/actions/docker-build-publish
 
@@ -186,8 +186,8 @@ jobs:
     - name: Set Environment
       run: |
         echo DOCKER_ENV_TAG=${{ needs.get-environment.outputs.environment }}-$GITHUB_SHA >> $GITHUB_ENV
-        cat ".github/env.common" >>$GITHUB_ENV
-        cat ".github/env.${{ needs.get-environment.outputs.environment }}" >>$GITHUB_ENV
+        cat ".github/env.common" | grep -E -v '^\ *#' >>$GITHUB_ENV
+        cat ".github/env.${{ needs.get-environment.outputs.environment }}" | grep -E -v '^\ *#' >>$GITHUB_ENV
     - name: Helm Deploy
       uses: koslib/helm-eks-action@v1.8.0
       with:
