@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { In } from 'typeorm';
 import PromisePool from '@supercharge/promise-pool';
 import { ReturnValue } from '@supercharge/promise-pool/dist/return-value';
 
@@ -35,9 +34,7 @@ export class DaoAggregatorService {
   public async aggregateDaoFunds(
     daoIds?: string[],
   ): Promise<ReturnValue<Dao, Dao>> {
-    const daos = daoIds
-      ? await this.daoService.find({ id: In(daoIds) })
-      : await this.daoService.find();
+    const daos = await this.daoService.findByIds(daoIds);
 
     return PromisePool.withConcurrency(10)
       .for(daos)

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 import { CrudRequest } from '@nestjsx/crud';
-import { Connection, Repository } from 'typeorm';
+import { Connection, In, Repository } from 'typeorm';
 import {
   Proposal,
   ProposalService,
@@ -40,6 +40,12 @@ export class DaoService extends TypeOrmCrudService<Dao> {
       })
       .orderBy('dao.createTimestamp', 'DESC')
       .getMany();
+  }
+
+  async findByIds(daoIds?: string[]): Promise<Dao[]> {
+    return daoIds
+      ? await this.daoRepository.find({ id: In(daoIds) })
+      : await this.daoRepository.find();
   }
 
   async create(daoDto: DaoDto): Promise<Dao> {
@@ -187,11 +193,7 @@ export class DaoService extends TypeOrmCrudService<Dao> {
       )
       .getCount();
 
-    if (activeProposalCount > 0) {
-      return DaoStatus.Active;
-    } else {
-      return DaoStatus.Inactive;
-    }
+    return activeProposalCount > 0 ? DaoStatus.Active : DaoStatus.Inactive;
   }
 
   public async calculateDaoFunds(
