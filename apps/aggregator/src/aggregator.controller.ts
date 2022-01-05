@@ -13,8 +13,10 @@ export class AggregatorController {
   constructor(private readonly aggregatorService: AggregatorService) {}
 
   @EventPattern(EVENT_TRIGGER_DAO_AGGREGATION, Transport.REDIS)
-  async triggerDaoAggregation(data: TriggerDaoAggregationDto) {
-    this.logger.log(`Triggered aggregation for DAO: ${data.daoId}`);
-    await this.aggregatorService.aggregateDaoById(data.daoId);
+  async triggerDaoAggregation({ daoId, accountId }: TriggerDaoAggregationDto) {
+    this.logger.log(
+      `Triggered aggregation for DAO: ${daoId}, triggered by account: ${accountId}`,
+    );
+    await this.aggregatorService.aggregateDaoById(daoId);
   }
 }

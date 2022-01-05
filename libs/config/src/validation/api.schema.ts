@@ -16,4 +16,8 @@ export class ApiValidationSchema extends NearDatabaseValidationSchema {
 
   @IsNumber()
   REDIS_HTTP_CACHE_TTL: number;
+
+  @IsString()
+  @IsNotEmpty()
+  ADMIN_ACCOUNTS: string;
 }

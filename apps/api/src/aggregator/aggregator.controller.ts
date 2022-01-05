@@ -1,7 +1,12 @@
-import { Controller, Post, Param } from '@nestjs/common';
+import { Controller, Post, Param, UseGuards, Body } from '@nestjs/common';
 import { ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { FindOneParams } from '@sputnik-v2/common';
+import {
+  AccountAccessGuard,
+  AccountBearer,
+  AdminGuard,
+  FindOneParams,
+} from '@sputnik-v2/common';
 import { EventService } from '@sputnik-v2/event';
 
 @ApiTags('Aggregator')
@@ -18,8 +23,12 @@ export class AggregatorController {
     status: 201,
     description: 'Aggregation Triggered',
   })
+  @UseGuards(AccountAccessGuard, AdminGuard)
   @Post('/aggregate-dao/:id')
-  async createCommentReport(@Param() { id }: FindOneParams): Promise<void> {
-    return this.eventService.sendTriggerDaoAggregationEvent(id);
+  async createCommentReport(
+    @Param() { id }: FindOneParams,
+    @Body() body: AccountBearer,
+  ): Promise<void> {
+    return this.eventService.sendTriggerDaoAggregationEvent(id, body.accountId);
   }
 }

@@ -80,9 +80,13 @@ export class EventService {
     return this.sendEvent(this.apiEventClient, message);
   }
 
-  public async sendTriggerDaoAggregationEvent(daoId: string): Promise<void> {
+  public async sendTriggerDaoAggregationEvent(
+    daoId: string,
+    accountId: string,
+  ): Promise<void> {
     const message = new BaseMessage(EVENT_TRIGGER_DAO_AGGREGATION, {
       daoId,
+      accountId,
     });
     return this.sendEvent(this.aggregatorEventClient, message);
   }
