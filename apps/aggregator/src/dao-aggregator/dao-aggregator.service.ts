@@ -6,7 +6,7 @@ import { SputnikService } from '@sputnik-v2/sputnikdao';
 import { Account, Transaction } from '@sputnik-v2/near-indexer';
 import { Dao, DaoService } from '@sputnik-v2/dao';
 
-import { castDao } from './types/dao';
+import { castDao, castDaoById } from './types/dao';
 
 @Injectable()
 export class DaoAggregatorService {
@@ -21,6 +21,11 @@ export class DaoAggregatorService {
   ): Promise<Dao> {
     const daoInfo = await this.sputnikService.getDaoInfo(daoAccount.accountId);
     return this.daoService.create(castDao(daoAccount, txs, daoInfo));
+  }
+
+  public async aggregateDaoById(daoId: string): Promise<Dao> {
+    const daoInfo = await this.sputnikService.getDaoInfo(daoId);
+    return this.daoService.create(castDaoById(daoId, daoInfo));
   }
 
   public async aggregateDaoStatuses(): Promise<ReturnValue<Dao, Dao>> {

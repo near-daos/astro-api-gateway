@@ -48,7 +48,7 @@ export class DaoService extends TypeOrmCrudService<Dao> {
       : await this.daoRepository.find();
   }
 
-  async create(daoDto: DaoDto): Promise<Dao> {
+  async create(daoDto: Partial<DaoDto>): Promise<Dao> {
     return this.daoRepository.save(daoDto);
   }
 

@@ -494,4 +494,30 @@ export class AggregatorService {
       );
     }
   }
+
+  public async aggregateDaoById(daoId: string) {
+    const aggregationName = `dao-${daoId}`;
+
+    if (this.state.isInProgress(aggregationName)) {
+      this.logger.log(`Skip DAO aggregation. Already in progress`);
+      return;
+    }
+
+    this.logger.log(`Start aggregation for DAO: ${daoId}`);
+
+    this.state.startAggregation(aggregationName);
+
+    try {
+      const dao = await this.daoAggregatorService.aggregateDaoById(daoId);
+      await this.proposalAggregatorService.aggregateProposalsByDao(dao, []);
+      await this.bountyAggregatorService.aggregateBountiesByDao(dao, []);
+      await this.daoAggregatorService.aggregateDaoAdditionalFields(dao);
+
+      this.logger.log(`Successfully aggregated DAO: ${daoId}`);
+    } catch (error) {
+      this.logger.error(`Failed DAO aggregation ${daoId}. Error: ${error}`);
+    }
+
+    this.state.stopAggregation(aggregationName);
+  }
 }
