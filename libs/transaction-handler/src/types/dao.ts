@@ -23,10 +23,14 @@ export function castDaoPolicy({ daoId, daoPolicy }) {
     )
     .map(({ accountIds }) => accountIds)
     .reduce((acc, val) => acc.concat(val), []);
-  const numberOfMembers = roles
-    .filter((role) => role.kind === RoleKindType.Group)
-    .map((group) => group.accountIds)
-    .flat().length;
+  const numberOfMembers = [
+    ...new Set(
+      roles
+        .filter((role) => role.kind === RoleKindType.Group)
+        .map((group) => group.accountIds)
+        .flat(),
+    ),
+  ].length;
 
   return {
     council,
