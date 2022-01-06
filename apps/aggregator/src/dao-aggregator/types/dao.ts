@@ -44,3 +44,31 @@ export function castDao(
     ).size,
   };
 }
+
+export function castDaoById(
+  daoId: string,
+  {
+    config,
+    policy,
+    stakingContract,
+    totalSupply,
+    lastProposalId,
+    lastBountyId,
+    amount,
+  }: DaoInfo,
+): Partial<SputnikDaoDto> {
+  return {
+    id: daoId,
+    ...castDaoPolicy({
+      daoId: daoId,
+      daoPolicy: policy,
+    }),
+    config,
+    metadata: decodeBase64(config.metadata),
+    stakingContract,
+    totalSupply,
+    lastProposalId,
+    lastBountyId,
+    amount: Number(amount),
+  };
+}

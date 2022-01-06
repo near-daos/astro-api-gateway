@@ -16,9 +16,13 @@ export const EVENT_PROPOSAL_UPDATE_NOTIFICATION =
 export const EVENT_NEW_NOTIFICATION = 'sputnik_dao_new_notification';
 export const EVENT_NEW_COMMENT = 'sputnik_dao_new_comment';
 export const EVENT_DELETE_COMMENT = 'sputnik_dao_delete_comment';
+export const EVENT_TRIGGER_DAO_AGGREGATION = 'sputnik_dao_trigger_aggregation';
 
 export const EVENT_API_SERVICE = 'EVENT_API_SERVICE';
 export const EVENT_API_QUEUE_NAME = 'sputnik-events-api';
+
+export const EVENT_AGGREGATOR_SERVICE = 'EVENT_AGGREGATOR_SERVICE';
+export const EVENT_AGGREGATOR_QUEUE_NAME = 'sputnik-events-aggregator';
 
 export const DB_FOREIGN_KEY_VIOLATION = '23503';
 

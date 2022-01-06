@@ -17,11 +17,12 @@ import { TokenModule } from '@sputnik-v2/token';
 import { ProposalModule } from '@sputnik-v2/proposal';
 import { EventModule } from '@sputnik-v2/event';
 
-import { AggregatorService } from './aggregator.service';
 import { DaoAggregatorModule } from './dao-aggregator/dao-aggregator.module';
 import { ProposalAggregatorModule } from './proposal-aggregator/proposal-aggregator.module';
 import { BountyAggregatorModule } from './bounty-aggregator/bounty-aggregator.module';
 import { TokenAggregatorModule } from './token-aggregator/token-aggregator.module';
+import { AggregatorService } from './aggregator.service';
+import { AggregatorController } from './aggregator.controller';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { TokenAggregatorModule } from './token-aggregator/token-aggregator.modul
     HttpCacheModule,
     EventModule,
   ],
+  controllers: [AggregatorController],
   providers: [AggregatorService],
 })
 export class AggregatorModule {}

@@ -21,7 +21,13 @@ export class AccountAccessGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest();
     const { accountId, publicKey, signature } = req.body as AccountBearer;
-    return this.verifyAccount(accountId, publicKey, signature);
+    req.accountId = accountId;
+    req.isAuthenticated = await this.verifyAccount(
+      accountId,
+      publicKey,
+      signature,
+    );
+    return req.isAuthenticated;
   }
 
   async verifyAccount(

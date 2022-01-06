@@ -9,6 +9,7 @@ import configuration, {
 import { CacheConfigService } from '@sputnik-v2/config/api-config';
 import { HttpCacheModule } from '@sputnik-v2/cache';
 import { ThrottlerModule, ThrottlerModuleOptions } from '@nestjs/throttler';
+import { EventModule } from '@sputnik-v2/event';
 
 import { AccountModule } from './account/account.module';
 import { BountyModule } from './bounty/bounty.module';
@@ -21,9 +22,9 @@ import { TransactionModule } from './transaction/transaction.module';
 import { AppController } from './api.controller';
 import { WebsocketModule } from './websocket/websocket.module';
 import { WebsocketGateway } from './websocket/websocket.gateway';
-import { EventModule } from '@sputnik-v2/event';
 import { NotificationModule } from './notification/notification.module';
 import { CommentModule } from './comment/comment.module';
+import { AggregatorModule } from './aggregator/aggregator.module';
 
 @Module({
   imports: [
@@ -62,6 +63,7 @@ import { CommentModule } from './comment/comment.module';
     EventModule,
     NotificationModule,
     CommentModule,
+    AggregatorModule,
   ],
   controllers: [AppController],
   providers: [WebsocketGateway],

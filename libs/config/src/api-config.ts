@@ -23,6 +23,7 @@ const api = registerAs('api', () => {
     rateTtl: parseInt(process.env.API_RATE_TTL, 10) || 60,
     rateLimit: parseInt(process.env.API_RATE_LIMIT, 10) || 5,
     walletCallbackUrl: process.env.WALLET_CALLBACK_URL,
+    admins: process.env.ADMIN_ACCOUNTS.split(','),
     redisHost,
     redisPort,
     redisDB,
