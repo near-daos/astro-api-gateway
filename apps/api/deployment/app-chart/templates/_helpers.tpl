@@ -281,7 +281,6 @@ Create the name of the service account to use
 {{- if regexMatch "([0-9]+)[Gg][Ii]$" $size -}}
 {{- $size = mul (mustRegexReplaceAll "([0-9]+)[Gg][Ii]" $size "$1") 1024 -}}
 {{- end -}}
-{{- printf  (typeOf $size) -}}
 {{- if regexMatch "([0-9]+)[Gg]$" $size -}}
 {{- $size = mul (mustRegexReplaceAll "([0-9]+)[Gg]" $size "$1") 976 -}}
 {{- end -}}
