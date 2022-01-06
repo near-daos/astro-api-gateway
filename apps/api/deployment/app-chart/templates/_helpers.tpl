@@ -270,7 +270,7 @@ Create the name of the service account to use
 
 
 {{- define "node.maxOldSpaceSize" -}}
-{{/* get memory limit and set max old space size equal to it minus 100Mb for other aras */}}
+{{/* get memory limit and set max old space size equal to it minus 100Mb for other areas */}}
 {{- $size := toString .Values.resources.limits.memory -}}
 {{- if regexMatch "([0-9]+)[Mm][Ii]$" $size -}}
 {{- $size = mustRegexReplaceAll "([0-9]+)[Mm][Ii]" $size "$1" -}}
