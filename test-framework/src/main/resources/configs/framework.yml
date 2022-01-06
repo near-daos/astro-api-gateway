@@ -2,8 +2,8 @@ test:
   env: ${TEST_ENV:dev}
   accountId: testdao2.testnet
 #  accountId: automation-01.testnet
-  dao: test-dao-1640080131167.sputnikv2.testnet
-  aggregation.timeout: ${TEST_AGG_TIMEOUT:15}
+  dao: test-dao-1641395769436.sputnikv2.testnet
+  aggregation.timeout: ${TEST_AGG_TIMEOUT:20}
 
 framework:
   http.timeout: 20
