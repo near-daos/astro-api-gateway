@@ -141,14 +141,13 @@ public class AggregationWithoutCallbackTests extends BaseTest {
     @Story("User should be able to get newly created poll proposal via Sputnik v2 API")
     @DisplayName("User should be able to get newly created poll proposal via Sputnik v2 API")
     void userShouldBeAbleToGetNewlyCreatedPollProposalViaSputnikV2Api() {
-        String daoName = "testdao3-near-cli-example.sputnikv2.testnet";
         long gasValue = 100000000000000L;
         float deposit = 0.1F;
         PollProposal pollProposal = PollProposal.of(String.format("Poll created with NEAR CLI %s", getEpochMillis()), "Vote");
         PollProposalDto pollProposalDto = PollProposalDto.of(pollProposal);
 
-        AddProposalResponse output = nearCLISteps.addProposal(daoName, pollProposalDto, testAccountId, gasValue, deposit);
-        String proposalID = String.format("%s-%s", daoName, output.getId());
+        AddProposalResponse output = nearCLISteps.addProposal(testDao, pollProposalDto, testAccountId, gasValue, deposit);
+        String proposalID = String.format("%s-%s", testDao, output.getId());
 
         ResponseEntity<String> responseEntity = nearCLISteps.waitForAggregation(
                 aggregationTimeout, () -> proposalsApiSteps.getProposalByID(proposalID)
@@ -156,7 +155,7 @@ public class AggregationWithoutCallbackTests extends BaseTest {
         proposalsApiSteps.assertResponseStatusCode(responseEntity, HttpStatus.OK);
 
         ProposalDto proposalDto = proposalsApiSteps.getResponseDto(responseEntity, ProposalDto.class);
-        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDaoId, daoName, "daoId");
+        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDaoId, testDao, "daoId");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getId, proposalID, "id");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDescription, pollProposal.getDescription(), "description");
         proposalsApiSteps.assertDtoValue(proposalDto, p -> p.getKind().getType(), pollProposal.getKind(), "kind/vote");
@@ -168,7 +167,6 @@ public class AggregationWithoutCallbackTests extends BaseTest {
     @Story("User should be able to get newly created transfer proposal via Sputnik v2 API")
     @DisplayName("User should be able to get newly created transfer proposal via Sputnik v2 API")
     void userShouldBeAbleToGetNewlyCreatedTransferProposalViaSputnikV2Api() {
-        String daoName = "testdao3-near-cli-example.sputnikv2.testnet";
         long gasValue = 100000000000000L;
         float deposit = 0.1F;
         String receiverId = "roman-account.testnet";
@@ -178,8 +176,8 @@ public class AggregationWithoutCallbackTests extends BaseTest {
         Transfer transfer = Transfer.of().setReceiverId(receiverId).setAmount(amount).setTokenId(EMPTY);
         TransferProposalDto transferProposal = TransferProposalDto.of(description, transfer);
 
-        AddProposalResponse output = nearCLISteps.addProposal(daoName, transferProposal, testAccountId, gasValue, deposit);
-        String proposalID = String.format("%s-%s", daoName, output.getId());
+        AddProposalResponse output = nearCLISteps.addProposal(testDao, transferProposal, testAccountId, gasValue, deposit);
+        String proposalID = String.format("%s-%s", testDao, output.getId());
 
         ResponseEntity<String> responseEntity = nearCLISteps.waitForAggregation(
                 aggregationTimeout, () -> proposalsApiSteps.getProposalByID(proposalID)
@@ -187,7 +185,7 @@ public class AggregationWithoutCallbackTests extends BaseTest {
         proposalsApiSteps.assertResponseStatusCode(responseEntity, HttpStatus.OK);
 
         ProposalDto proposalDto = proposalsApiSteps.getResponseDto(responseEntity, ProposalDto.class);
-        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDaoId, daoName, "daoId");
+        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDaoId, testDao, "daoId");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getId, proposalID, "id");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDescription, description, "description");
         proposalsApiSteps.assertDtoValue(proposalDto, p -> p.getKind().getType(), "Transfer", "kind/vote");
@@ -199,7 +197,6 @@ public class AggregationWithoutCallbackTests extends BaseTest {
     @Story("User should be able to get newly created add bounty proposal via Sputnik v2 API")
     @DisplayName("User should be able to get newly created add bounty proposal via Sputnik v2 API")
     void userShouldBeAbleToGetNewlyCreatedAddBountyProposalViaSputnikV2Api() {
-        String daoName = "testdao3-near-cli-example.sputnikv2.testnet";
         long gasValue = 100000000000000L;
         float deposit = 0.1F;
         String description = "Google for YouTube trends in 2021 Q4" + getEpochMillis();
@@ -215,8 +212,8 @@ public class AggregationWithoutCallbackTests extends BaseTest {
                 .setKind(Kind.of(AddBounty.of(bounty)));
         BountyProposalDto bountyProposal = BountyProposalDto.of(proposal);
 
-        AddProposalResponse output = nearCLISteps.addProposal(daoName, bountyProposal, testAccountId, gasValue, deposit);
-        String proposalID = String.format("%s-%s", daoName, output.getId());
+        AddProposalResponse output = nearCLISteps.addProposal(testDao, bountyProposal, testAccountId, gasValue, deposit);
+        String proposalID = String.format("%s-%s", testDao, output.getId());
 
         ResponseEntity<String> responseEntity = nearCLISteps.waitForAggregation(
                 aggregationTimeout, () -> proposalsApiSteps.getProposalByID(proposalID)
@@ -224,7 +221,7 @@ public class AggregationWithoutCallbackTests extends BaseTest {
         proposalsApiSteps.assertResponseStatusCode(responseEntity, HttpStatus.OK);
 
         ProposalDto proposalDto = proposalsApiSteps.getResponseDto(responseEntity, ProposalDto.class);
-        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDaoId, daoName, "daoId");
+        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDaoId, testDao, "daoId");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getId, proposalID, "id");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDescription, description, "description");
         proposalsApiSteps.assertDtoValue(proposalDto, p -> p.getKind().getType(), "AddBounty", "kind/vote");
@@ -236,12 +233,11 @@ public class AggregationWithoutCallbackTests extends BaseTest {
     @Story("User should be able to get newly created change config (new name update) proposal via Sputnik v2 API")
     @DisplayName("User should be able to get newly created change config proposal via Sputnik v2 API")
     void userShouldBeAbleToGetNewlyCreatedChangeConfigNameUpdateProposalViaSputnikV2Api() {
-        String daoName = "testdao3-near-cli-example.sputnikv2.testnet";
         long gasValue = 100000000000000L;
         float deposit = 0.1F;
-        String description = String.format("Changing name for %s %s", daoName, getEpochMillis());
+        String description = String.format("Changing name for %s %s", testDao, getEpochMillis());
 
-        Config config = nearCLISteps.getDaoConfig(daoName);
+        Config config = nearCLISteps.getDaoConfig(testDao);
         Metadata decodedMetadata = Metadata.decodeMetadata(config.getMetadata());
 
         String newDisplayName = String.format("Updated name test DAO %s", getEpochMillis());
@@ -252,8 +248,8 @@ public class AggregationWithoutCallbackTests extends BaseTest {
         Config newConfig = Config.of(config.getName(), config.getPurpose(), updatedMetadata);
         ChangeConfigDto changeConfig = ChangeConfigDto.of(description, newConfig);
 
-        AddProposalResponse output = nearCLISteps.addProposal(daoName, changeConfig, testAccountId, gasValue, deposit);
-        String proposalID = String.format("%s-%s", daoName, output.getId());
+        AddProposalResponse output = nearCLISteps.addProposal(testDao, changeConfig, testAccountId, gasValue, deposit);
+        String proposalID = String.format("%s-%s", testDao, output.getId());
 
         ResponseEntity<String> responseEntity = nearCLISteps.waitForAggregation(
                 aggregationTimeout, () -> proposalsApiSteps.getProposalByID(proposalID)
@@ -263,7 +259,7 @@ public class AggregationWithoutCallbackTests extends BaseTest {
         ProposalDto proposalDto = proposalsApiSteps.getResponseDto(responseEntity, ProposalDto.class);
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getTransactionHash, output.getTransactionHash(), "transactionHash");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getProposer, testAccountId, "proposer");
-        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDaoId, daoName, "daoId");
+        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDaoId, testDao, "daoId");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getId, proposalID, "id");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDescription, description, "description");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getType, "ChangeConfig", "type");
@@ -279,19 +275,18 @@ public class AggregationWithoutCallbackTests extends BaseTest {
     @Story("User should be able to get newly created change config (new purpose update) proposal via Sputnik v2 API")
     @DisplayName("User should be able to get newly created change config (new purpose update) proposal via Sputnik v2 API")
     void userShouldBeAbleToGetNewlyCreatedChangeConfigPurposeUpdateProposalViaSputnikV2Api() {
-        String daoName = "testdao3-near-cli-example.sputnikv2.testnet";
         long gasValue = 100000000000000L;
         float deposit = 0.1F;
-        String description = String.format("Changing purpose for %s %s", daoName, getEpochMillis());
+        String description = String.format("Changing purpose for %s %s", testDao, getEpochMillis());
 
-        Config config = nearCLISteps.getDaoConfig(daoName);
+        Config config = nearCLISteps.getDaoConfig(testDao);
 
         String newPurpose = String.format("New purpose %s", getEpochMillis());
         Config newConfig = Config.of(config.getName(), newPurpose, config.getMetadata());
         ChangeConfigDto changeConfig = ChangeConfigDto.of(description, newConfig);
 
-        AddProposalResponse output = nearCLISteps.addProposal(daoName, changeConfig, testAccountId, gasValue, deposit);
-        String proposalID = String.format("%s-%s", daoName, output.getId());
+        AddProposalResponse output = nearCLISteps.addProposal(testDao, changeConfig, testAccountId, gasValue, deposit);
+        String proposalID = String.format("%s-%s", testDao, output.getId());
 
         ResponseEntity<String> responseEntity = nearCLISteps.waitForAggregation(
                 aggregationTimeout, () -> proposalsApiSteps.getProposalByID(proposalID)
@@ -301,7 +296,7 @@ public class AggregationWithoutCallbackTests extends BaseTest {
         ProposalDto proposalDto = proposalsApiSteps.getResponseDto(responseEntity, ProposalDto.class);
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getTransactionHash, output.getTransactionHash(), "transactionHash");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getProposer, testAccountId, "proposer");
-        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDaoId, daoName, "daoId");
+        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDaoId, testDao, "daoId");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getId, proposalID, "id");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDescription, description, "description");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getType, "ChangeConfig", "type");
@@ -317,12 +312,11 @@ public class AggregationWithoutCallbackTests extends BaseTest {
     @Story("User should be able to get newly created change config (links update) proposal via Sputnik v2 API")
     @DisplayName("User should be able to get newly created change config (links update) proposal via Sputnik v2 API")
     void userShouldBeAbleToGetNewlyCreatedChangeConfigLinksUpdateProposalViaSputnikV2Api() {
-        String daoName = "testdao3-near-cli-example.sputnikv2.testnet";
         long gasValue = 100000000000000L;
         float deposit = 0.1F;
-        String description = String.format("Changing name for %s %s", daoName, getEpochMillis());
+        String description = String.format("Changing name for %s %s", testDao, getEpochMillis());
 
-        Config config = nearCLISteps.getDaoConfig(daoName);
+        Config config = nearCLISteps.getDaoConfig(testDao);
         Metadata decodedMetadata = Metadata.decodeMetadata(config.getMetadata());
 
         Metadata updatedMetadata = Metadata.of()
@@ -332,8 +326,8 @@ public class AggregationWithoutCallbackTests extends BaseTest {
         Config newConfig = Config.of(config.getName(), config.getPurpose(), updatedMetadata);
         ChangeConfigDto changeConfig = ChangeConfigDto.of(description, newConfig);
 
-        AddProposalResponse output = nearCLISteps.addProposal(daoName, changeConfig, testAccountId, gasValue, deposit);
-        String proposalID = String.format("%s-%s", daoName, output.getId());
+        AddProposalResponse output = nearCLISteps.addProposal(testDao, changeConfig, testAccountId, gasValue, deposit);
+        String proposalID = String.format("%s-%s", testDao, output.getId());
 
         ResponseEntity<String> responseEntity = nearCLISteps.waitForAggregation(
                 aggregationTimeout, () -> proposalsApiSteps.getProposalByID(proposalID)
@@ -343,7 +337,7 @@ public class AggregationWithoutCallbackTests extends BaseTest {
         ProposalDto proposalDto = proposalsApiSteps.getResponseDto(responseEntity, ProposalDto.class);
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getTransactionHash, output.getTransactionHash(), "transactionHash");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getProposer, testAccountId, "proposer");
-        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDaoId, daoName, "daoId");
+        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDaoId, testDao, "daoId");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getId, proposalID, "id");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDescription, description, "description");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getType, "ChangeConfig", "type");
@@ -359,20 +353,19 @@ public class AggregationWithoutCallbackTests extends BaseTest {
     @Story("User should be able to get newly created change policy proposal (proposal bound update) via Sputnik v2 API")
     @DisplayName("User should be able to get newly created change policy proposal (proposal bound update) via Sputnik v2 API")
     void getNewlyCreatedChangePolicyProposalProposalBoundUpdateViaSputnikV2Api() {
-        String daoName = "testdao3-near-cli-example.sputnikv2.testnet";
         long gasValue = 100000000000000L;
         float deposit = 0.1F;
-        String description = String.format("Changing policy (new proposal bond) for %s %s", daoName, getEpochMillis());
+        String description = String.format("Changing policy (new proposal bond) for %s %s", testDao, getEpochMillis());
 
-        Policy daoPolicy = nearCLISteps.getDaoPolicy(daoName);
+        Policy daoPolicy = nearCLISteps.getDaoPolicy(testDao);
 
         Policy newPolicy = Policy.copy(daoPolicy)
                 .setProposalBond("150000000000000000000000"); //0.15 NEAR
 
         ChangePolicyDto changePolicy = ChangePolicyDto.of(description, newPolicy);
 
-        AddProposalResponse output = nearCLISteps.addProposal(daoName, changePolicy, testAccountId, gasValue, deposit);
-        String proposalID = String.format("%s-%s", daoName, output.getId());
+        AddProposalResponse output = nearCLISteps.addProposal(testDao, changePolicy, testAccountId, gasValue, deposit);
+        String proposalID = String.format("%s-%s", testDao, output.getId());
 
         ResponseEntity<String> responseEntity = nearCLISteps.waitForAggregation(
                 aggregationTimeout, () -> proposalsApiSteps.getProposalByID(proposalID)
@@ -382,7 +375,7 @@ public class AggregationWithoutCallbackTests extends BaseTest {
         ProposalDto proposalDto = proposalsApiSteps.getResponseDto(responseEntity, ProposalDto.class);
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getTransactionHash, output.getTransactionHash(), "transactionHash");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getProposer, testAccountId, "proposer");
-        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDaoId, daoName, "daoId");
+        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDaoId, testDao, "daoId");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getId, proposalID, "id");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDescription, description, "description");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getType, "ChangePolicy", "type");
@@ -399,20 +392,19 @@ public class AggregationWithoutCallbackTests extends BaseTest {
     @Story("User should be able to get newly created change policy proposal (proposal period update) via Sputnik v2 API")
     @DisplayName("User should be able to get newly created change policy proposal (proposal period update) via Sputnik v2 API")
     void getNewlyCreatedChangePolicyProposalProposalBoundPeriodUpdateViaSputnikV2Api() {
-        String daoName = "testdao3-near-cli-example.sputnikv2.testnet";
         long gasValue = 100000000000000L;
         float deposit = 0.1F;
-        String description = String.format("Changing policy (new proposal period) for %s %s", daoName, getEpochMillis());
+        String description = String.format("Changing policy (new proposal period) for %s %s", testDao, getEpochMillis());
 
-        Policy daoPolicy = nearCLISteps.getDaoPolicy(daoName);
+        Policy daoPolicy = nearCLISteps.getDaoPolicy(testDao);
 
         Policy newPolicy = Policy.copy(daoPolicy)
                 .setProposalPeriod("259200000000000"); //3 days
 
         ChangePolicyDto changePolicy = ChangePolicyDto.of(description, newPolicy);
 
-        AddProposalResponse output = nearCLISteps.addProposal(daoName, changePolicy, testAccountId, gasValue, deposit);
-        String proposalID = String.format("%s-%s", daoName, output.getId());
+        AddProposalResponse output = nearCLISteps.addProposal(testDao, changePolicy, testAccountId, gasValue, deposit);
+        String proposalID = String.format("%s-%s", testDao, output.getId());
 
         ResponseEntity<String> responseEntity = nearCLISteps.waitForAggregation(
                 aggregationTimeout, () -> proposalsApiSteps.getProposalByID(proposalID)
@@ -422,7 +414,7 @@ public class AggregationWithoutCallbackTests extends BaseTest {
         ProposalDto proposalDto = proposalsApiSteps.getResponseDto(responseEntity, ProposalDto.class);
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getTransactionHash, output.getTransactionHash(), "transactionHash");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getProposer, testAccountId, "proposer");
-        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDaoId, daoName, "daoId");
+        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDaoId, testDao, "daoId");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getId, proposalID, "id");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDescription, description, "description");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getType, "ChangePolicy", "type");
@@ -439,20 +431,19 @@ public class AggregationWithoutCallbackTests extends BaseTest {
     @Story("User should be able to get newly created change policy proposal (bounty bond update) via Sputnik v2 API")
     @DisplayName("User should be able to get newly created change policy proposal (bounty bond update) via Sputnik v2 API")
     void getNewlyCreatedChangePolicyProposalBountyBondUpdateViaSputnikV2Api() {
-        String daoName = "testdao3-near-cli-example.sputnikv2.testnet";
         long gasValue = 100000000000000L;
         float deposit = 0.1F;
-        String description = String.format("Changing policy (new bounty bond) for %s %s", daoName, getEpochMillis());
+        String description = String.format("Changing policy (new bounty bond) for %s %s", testDao, getEpochMillis());
 
-        Policy daoPolicy = nearCLISteps.getDaoPolicy(daoName);
+        Policy daoPolicy = nearCLISteps.getDaoPolicy(testDao);
 
         Policy newPolicy = Policy.copy(daoPolicy)
                 .setBountyBond("150000000000000000000000"); //0.15 NEAR
 
         ChangePolicyDto changePolicy = ChangePolicyDto.of(description, newPolicy);
 
-        AddProposalResponse output = nearCLISteps.addProposal(daoName, changePolicy, testAccountId, gasValue, deposit);
-        String proposalID = String.format("%s-%s", daoName, output.getId());
+        AddProposalResponse output = nearCLISteps.addProposal(testDao, changePolicy, testAccountId, gasValue, deposit);
+        String proposalID = String.format("%s-%s", testDao, output.getId());
 
         ResponseEntity<String> responseEntity = nearCLISteps.waitForAggregation(
                 aggregationTimeout, () -> proposalsApiSteps.getProposalByID(proposalID)
@@ -462,7 +453,7 @@ public class AggregationWithoutCallbackTests extends BaseTest {
         ProposalDto proposalDto = proposalsApiSteps.getResponseDto(responseEntity, ProposalDto.class);
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getTransactionHash, output.getTransactionHash(), "transactionHash");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getProposer, testAccountId, "proposer");
-        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDaoId, daoName, "daoId");
+        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDaoId, testDao, "daoId");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getId, proposalID, "id");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDescription, description, "description");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getType, "ChangePolicy", "type");
@@ -479,20 +470,19 @@ public class AggregationWithoutCallbackTests extends BaseTest {
     @Story("User should be able to get newly created change policy proposal (bounty forgiveness period update) via Sputnik v2 API")
     @DisplayName("User should be able to get newly created change policy proposal (bounty forgiveness period update) via Sputnik v2 API")
     void getNewlyCreatedChangePolicyProposalProposalBountyForgivenessPeriodUpdateViaSputnikV2Api() {
-        String daoName = "testdao3-near-cli-example.sputnikv2.testnet";
         long gasValue = 100000000000000L;
         float deposit = 0.1F;
-        String description = String.format("Changing policy (new bounty forgiveness period update) for %s %s", daoName, getEpochMillis());
+        String description = String.format("Changing policy (new bounty forgiveness period update) for %s %s", testDao, getEpochMillis());
 
-        Policy daoPolicy = nearCLISteps.getDaoPolicy(daoName);
+        Policy daoPolicy = nearCLISteps.getDaoPolicy(testDao);
 
         Policy newPolicy = Policy.copy(daoPolicy)
                 .setBountyForgivenessPeriod("259200000000000"); //3 days
 
         ChangePolicyDto changePolicy = ChangePolicyDto.of(description, newPolicy);
 
-        AddProposalResponse output = nearCLISteps.addProposal(daoName, changePolicy, testAccountId, gasValue, deposit);
-        String proposalID = String.format("%s-%s", daoName, output.getId());
+        AddProposalResponse output = nearCLISteps.addProposal(testDao, changePolicy, testAccountId, gasValue, deposit);
+        String proposalID = String.format("%s-%s", testDao, output.getId());
 
         ResponseEntity<String> responseEntity = nearCLISteps.waitForAggregation(
                 aggregationTimeout, () -> proposalsApiSteps.getProposalByID(proposalID)
@@ -502,7 +492,7 @@ public class AggregationWithoutCallbackTests extends BaseTest {
         ProposalDto proposalDto = proposalsApiSteps.getResponseDto(responseEntity, ProposalDto.class);
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getTransactionHash, output.getTransactionHash(), "transactionHash");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getProposer, testAccountId, "proposer");
-        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDaoId, daoName, "daoId");
+        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDaoId, testDao, "daoId");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getId, proposalID, "id");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDescription, description, "description");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getType, "ChangePolicy", "type");
@@ -519,10 +509,9 @@ public class AggregationWithoutCallbackTests extends BaseTest {
     @Story("User should be able vote to approve and reject proposals")
     @DisplayName("User should be able vote to approve and reject proposals")
     @Description("Create proposals and vote 'VoteApprove', 'VoteReject'")
-    @CsvSource({"approve proposal, VoteApprove, Approved",
-                "fail proposal, VoteReject, Rejected"})
+    @CsvSource({"approve proposal, VoteApprove, Approved"})
+//                "fail proposal, VoteReject, Rejected"})
     void userShouldBeAbleToVoteForProposal(String purpose, String voteAction, String proposalStatus) {
-        String daoName = "testdao3-near-cli-example.sputnikv2.testnet";
         long gasValue = 100000000000000L;
         float deposit = 0.1F;
         String description = String.format("Autotest - vote to %s. Poll created with NEAR CLI %s",
@@ -531,10 +520,10 @@ public class AggregationWithoutCallbackTests extends BaseTest {
         PollProposalDto pollProposalDto = PollProposalDto.of(pollProposal);
 
         AddProposalResponse addProposalNearCliResponse = nearCLISteps.addProposal(
-                daoName, pollProposalDto, testAccountId, gasValue, deposit);
+                testDao, pollProposalDto, testAccountId, gasValue, deposit);
 
         Integer proposalIndexId = addProposalNearCliResponse.getId();
-        String proposalID = String.format("%s-%s", daoName, proposalIndexId);
+        String proposalID = String.format("%s-%s", testDao, proposalIndexId);
 
         ResponseEntity<String> response = nearCLISteps.waitForAggregation(
                 aggregationTimeout, () -> proposalsApiSteps.getProposalByID(proposalID)
@@ -542,7 +531,7 @@ public class AggregationWithoutCallbackTests extends BaseTest {
         proposalsApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
         VoteDto voteDto = VoteDto.of(proposalIndexId, voteAction);
-        nearCLISteps.voteForProposal(daoName, voteDto, testAccountId, gasValue);
+        nearCLISteps.voteForProposal(testDao, voteDto, testAccountId, gasValue);
 
         nearCLISteps.waitForAggregation(aggregationTimeout);
 
@@ -560,7 +549,6 @@ public class AggregationWithoutCallbackTests extends BaseTest {
     @DisplayName("User should be able vote to remove proposal")
     @Description("User should be able to create proposal and vote 'VoteRemove' for it")
     void userShouldBeAbleToVoteToApproveProposal() {
-        String daoName = "testdao3-near-cli-example.sputnikv2.testnet";
         long gasValue = 100000000000000L;
         float deposit = 0.1F;
 
@@ -570,10 +558,10 @@ public class AggregationWithoutCallbackTests extends BaseTest {
         PollProposalDto pollProposalDto = PollProposalDto.of(pollProposal);
 
         AddProposalResponse addProposalNearCliResponse = nearCLISteps.addProposal(
-                daoName, pollProposalDto, testAccountId, gasValue, deposit);
+                testDao, pollProposalDto, testAccountId, gasValue, deposit);
 
         Integer proposalIndexId = addProposalNearCliResponse.getId();
-        String proposalID = String.format("%s-%s", daoName, proposalIndexId);
+        String proposalID = String.format("%s-%s", testDao, proposalIndexId);
 
         ResponseEntity<String> response = nearCLISteps.waitForAggregation(
                 aggregationTimeout, () -> proposalsApiSteps.getProposalByID(proposalID)
@@ -581,7 +569,7 @@ public class AggregationWithoutCallbackTests extends BaseTest {
         proposalsApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
         VoteDto voteDto = VoteDto.of(proposalIndexId, "VoteRemove");
-        nearCLISteps.voteForProposal(daoName, voteDto, testAccountId, gasValue);
+        nearCLISteps.voteForProposal(testDao, voteDto, testAccountId, gasValue);
 
         response = nearCLISteps.waitForAggregation(
                 aggregationTimeout, () -> proposalsApiSteps.getProposalByID(proposalID), HttpStatus.BAD_REQUEST

@@ -108,6 +108,7 @@ tasks.named('test') {
     }
 
     environment "TEST_ENV", System.getProperty("test.env", "testnet")
+    environment "TEST_AGG_TIMEOUT", System.getProperty("test.agg.timeout", "20")
 }
 
 task generateOpenApiModels(type: org.openapitools.generator.gradle.plugin.tasks.GenerateTask) {
