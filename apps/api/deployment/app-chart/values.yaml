@@ -100,5 +100,6 @@ environment:
   # 12 hours
   aggregator_dao_status_polling_interval: "43200000"
   wallet_callback_url: ""
+  admin_accounts: ""
   api_rate_ttl: "60"
   api_rate_limit: "5"
