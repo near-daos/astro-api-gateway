@@ -43,10 +43,10 @@ export class ProposalAggregatorService {
     return this.proposalService.createMultiple(proposalDtos);
   }
 
-  public async updateExpiredProposals(): Promise<Proposal[]> {
-    const expiredProposals =
-      await this.proposalService.updateExpiredProposals();
-    const daoIds = [...new Set(expiredProposals.map(({ daoId }) => daoId))];
+  public async updateExpiredProposals(): Promise<void> {
+    const daoIds = await this.proposalService.getExpiredProposalDaoIds();
+
+    await this.proposalService.updateExpiredProposals();
 
     if (daoIds.length) {
       await PromisePool.withConcurrency(10)
@@ -55,7 +55,5 @@ export class ProposalAggregatorService {
           this.daoService.saveWithProposalCount({ id: daoId }),
         );
     }
-
-    return expiredProposals;
   }
 }
