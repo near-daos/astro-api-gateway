@@ -509,8 +509,8 @@ public class AggregationWithoutCallbackTests extends BaseTest {
     @Story("User should be able vote to approve and reject proposals")
     @DisplayName("User should be able vote to approve and reject proposals")
     @Description("Create proposals and vote 'VoteApprove', 'VoteReject'")
-    @CsvSource({"approve proposal, VoteApprove, Approved"})
-//                "fail proposal, VoteReject, Rejected"})
+    @CsvSource({"approve proposal, VoteApprove, Approved",
+                "fail proposal, VoteReject, Rejected"})
     void userShouldBeAbleToVoteForProposal(String purpose, String voteAction, String proposalStatus) {
         long gasValue = 100000000000000L;
         float deposit = 0.1F;
