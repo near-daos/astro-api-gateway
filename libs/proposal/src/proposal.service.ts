@@ -223,6 +223,14 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
     return this.proposalRepository.find({ where });
   }
 
+  async findDaoVoters(daoId: string) {
+    return this.proposalRepository
+      .createQueryBuilder('proposal')
+      .select('proposal.votes')
+      .where('proposal.daoId = :daoId', { daoId })
+      .getMany();
+  }
+
   async updateExpiredProposals(): Promise<UpdateResult> {
     const currentTimestamp = new Date().getTime() * 1000 * 1000; // nanoseconds
     return this.connection
