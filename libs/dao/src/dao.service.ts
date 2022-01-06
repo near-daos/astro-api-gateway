@@ -13,7 +13,7 @@ import { calculateFunds, getBlockTimestamp, paginate } from '@sputnik-v2/utils';
 import { TokenService } from '@sputnik-v2/token';
 import { DaoStatus, DaoVariant } from '@sputnik-v2/dao/types';
 
-import { DaoDto, DaoResponse } from './dto';
+import { DaoDto, DaoMemberVote, DaoResponse } from './dto';
 import { Dao, RoleKindType } from './entities';
 import { WeightKind } from '@sputnik-v2/sputnikdao';
 
@@ -81,10 +81,10 @@ export class DaoService extends TypeOrmCrudService<Dao> {
 
   async getDaoMembers(daoId: string): Promise<string[]> {
     const dao = await this.daoRepository.findOne(daoId);
-    const allMembers = dao.policy.roles.reduce((members, role) => {
+    const allMembers = dao?.policy?.roles.reduce((members, role) => {
       return members.concat(role.accountIds);
     }, []);
-    return [...new Set(allMembers)];
+    return [...new Set(allMembers)].filter((accountId) => accountId);
   }
 
   public async getCouncil(daoId: string): Promise<string[]> {
@@ -224,5 +224,15 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     }, 0);
 
     return Number(nearBalance) + Number(tokenBalance);
+  }
+
+  public async getDaoMemberVotes(daoId: string): Promise<DaoMemberVote[]> {
+    const daoMembers = await this.getDaoMembers(daoId);
+    const proposalVoters = await this.proposalService.findDaoVoters(daoId);
+    return daoMembers.map((accountId) => ({
+      accountId,
+      voteCount: proposalVoters.filter(({ votes }) => !!votes[accountId])
+        .length,
+    }));
   }
 }

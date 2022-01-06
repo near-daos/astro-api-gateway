@@ -21,7 +21,7 @@ import {
   QueryFailedErrorFilter,
   FindAccountParams,
 } from '@sputnik-v2/common';
-import { DaoService, Dao, DaoResponse } from '@sputnik-v2/dao';
+import { DaoService, Dao, DaoResponse, DaoMemberVote } from '@sputnik-v2/dao';
 
 import { DaoCrudRequestInterceptor } from './interceptors/dao-crud.interceptor';
 
@@ -86,5 +86,22 @@ export class DaoController {
     }
 
     return dao;
+  }
+
+  @ApiParam({
+    name: 'id',
+    type: String,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'DAO Members',
+    type: DaoMemberVote,
+    isArray: true,
+  })
+  @ApiBadRequestResponse({ description: 'Invalid Dao ID' })
+  @UseInterceptors(HttpCacheInterceptor)
+  @Get('/:id/members')
+  async daoMembers(@Param() { id }: FindOneParams): Promise<DaoMemberVote[]> {
+    return this.daoService.getDaoMemberVotes(id);
   }
 }
