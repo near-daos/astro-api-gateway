@@ -13,15 +13,21 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { ParsedRequest, CrudRequest } from '@nestjsx/crud';
+import { CrudRequest, ParsedRequest } from '@nestjsx/crud';
 import {
+  EntityQuery,
+  FindAccountParams,
   FindOneParams,
   HttpCacheInterceptor,
-  EntityQuery,
   QueryFailedErrorFilter,
-  FindAccountParams,
 } from '@sputnik-v2/common';
-import { DaoService, Dao, DaoResponse, DaoMemberVote } from '@sputnik-v2/dao';
+import {
+  Dao,
+  DaoMemberVote,
+  DaoResponse,
+  DaoService,
+  DaoStatus,
+} from '@sputnik-v2/dao';
 
 import { DaoCrudRequestInterceptor } from './interceptors/dao-crud.interceptor';
 
@@ -63,7 +69,7 @@ export class DaoController {
   async daosByAccountId(
     @Param() { accountId }: FindAccountParams,
   ): Promise<Dao[] | DaoResponse> {
-    return await this.daoService.findAccountDaos(accountId);
+    return await this.daoService.findAccountDaos(accountId, DaoStatus.Disabled);
   }
 
   @ApiParam({
