@@ -103,3 +103,4 @@ environment:
   admin_accounts: ""
   api_rate_ttl: "60"
   api_rate_limit: "5"
+  admin_accounts: "vhorin-dev.near"
