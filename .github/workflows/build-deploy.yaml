@@ -207,6 +207,7 @@ jobs:
               --set environment.near_token_api_url=$NEAR_TOKEN_API_URL \
               --set environment.api_rate_ttl=$API_RATE_TTL \
               --set environment.api_rate_limit=$API_RATE_LIMIT \
+              --set environment.admin_accounts=$ADMIN_ACCOUNTS \
               --set ingress.host=$K8S_INGRESS_HOST
           done
 
