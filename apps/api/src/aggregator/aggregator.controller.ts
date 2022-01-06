@@ -25,7 +25,7 @@ export class AggregatorController {
   })
   @UseGuards(AccountAccessGuard, AdminGuard)
   @Post('/aggregate-dao/:id')
-  async createCommentReport(
+  async triggerDaoAggregation(
     @Param() { id }: FindOneParams,
     @Body() body: AccountBearer,
   ): Promise<void> {
