@@ -10,6 +10,7 @@ import {
   LessThan,
   Not,
   Repository,
+  UpdateResult,
 } from 'typeorm';
 import { Role } from '@sputnik-v2/dao/entities';
 
@@ -233,19 +234,39 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
     return this.proposalRepository.find({ where });
   }
 
-  async updateExpiredProposals(): Promise<Proposal[]> {
-    const currentTimestamp = new Date().getTime() * 1000 * 1000; // nanoseconds
-    const expiredProposals = await this.proposalRepository.find({
-      voteStatus: Not(ProposalVoteStatus.Expired),
-      status: ProposalStatus.InProgress,
-      votePeriodEnd: LessThan(currentTimestamp),
-    });
-    return this.proposalRepository.save(
-      expiredProposals.map((proposal) => ({
-        ...proposal,
+  async getExpiredProposalDaoIds(): Promise<string[]> {
+    const currentTimestamp = new Date().getTime() * 1000 * 1000;
+    const proposals = await this.proposalRepository
+      .createQueryBuilder('proposal')
+      .select('proposal.daoId')
+      .distinctOn(['proposal.daoId'])
+      .where('proposal.voteStatus != :voteStatus', {
         voteStatus: ProposalVoteStatus.Expired,
-      })),
-    );
+      })
+      .andWhere('proposal.status = :status', {
+        status: ProposalStatus.InProgress,
+      })
+      .andWhere('proposal.votePeriodEnd < :date', {
+        date: currentTimestamp,
+      })
+      .getMany();
+    return proposals.map(({ daoId }) => daoId);
+  }
+
+  async updateExpiredProposals(): Promise<UpdateResult> {
+    const currentTimestamp = new Date().getTime() * 1000 * 1000; // nanoseconds
+    return this.connection
+      .createQueryBuilder()
+      .update(Proposal)
+      .where('voteStatus != :voteStatus', {
+        voteStatus: ProposalVoteStatus.Expired,
+      })
+      .andWhere('status = :status', { status: ProposalStatus.InProgress })
+      .andWhere('votePeriodEnd < :date', {
+        date: currentTimestamp,
+      })
+      .set({ voteStatus: ProposalVoteStatus.Expired })
+      .execute();
   }
 
   async remove(id: string): Promise<DeleteResult> {
