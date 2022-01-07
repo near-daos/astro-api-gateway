@@ -3,6 +3,7 @@ kind: ConfigMap
 metadata:
   name: sputnik-v2-aggregator-configmap
 data:
+  NODE_OPTIONS: ' --max-old-space-size={{ include "node.maxOldSpaceSize" . }} '
   PORT: "3000"
   NEST_APP_TYPE: aggregator
   AGGREGATOR_POLLING_INTERVAL: "{{ .Values.environment.aggregator_polling_interval }}"

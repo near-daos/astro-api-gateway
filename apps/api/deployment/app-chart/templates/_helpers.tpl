@@ -267,3 +267,23 @@ Create the name of the service account to use
     {{ default "default" .Values.serviceAccount.name }}
 {{- end -}}
 {{- end -}}
+
+
+{{- define "node.maxOldSpaceSize" -}}
+{{/* get memory limit and set max old space size equal to it minus 200Mb for other areas */}}
+{{- $size := toString .Values.resources.limits.memory -}}
+{{- if regexMatch "([0-9]+)[Mm][Ii]$" $size -}}
+{{- $size = mustRegexReplaceAll "([0-9]+)[Mm][Ii]" $size "$1" -}}
+{{- end -}}
+{{- if regexMatch "([0-9]+)[Mm]$" $size -}}
+{{- $size = mul (mustRegexReplaceAll "([0-9]+)[Mm]" $size "$1") 0.976 -}}
+{{- end -}}
+{{- if regexMatch "([0-9]+)[Gg][Ii]$" $size -}}
+{{- $size = mul (mustRegexReplaceAll "([0-9]+)[Gg][Ii]" $size "$1") 1024 -}}
+{{- end -}}
+{{- if regexMatch "([0-9]+)[Gg]$" $size -}}
+{{- $size = mul (mustRegexReplaceAll "([0-9]+)[Gg]" $size "$1") 976 -}}
+{{- end -}}
+{{- $size = toString (sub (int $size) 200) -}}
+{{- printf  $size -}}
+{{- end -}}
