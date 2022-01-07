@@ -30,10 +30,7 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     super(daoRepository);
   }
 
-  async findAccountDaos(
-    accountId: string,
-    status: DaoStatus,
-  ): Promise<Dao[] | DaoResponse> {
+  async findAccountDaos(accountId: string): Promise<Dao[] | DaoResponse> {
     return await this.daoRepository
       .createQueryBuilder('dao')
       .leftJoinAndSelect('dao.policy', 'policy')
@@ -41,7 +38,7 @@ export class DaoService extends TypeOrmCrudService<Dao> {
       .andWhere(`:accountId = ANY(roles.accountIds)`, {
         accountId,
       })
-      .andWhere('dao.status != :status', { status })
+      .andWhere('dao.status != :status', { status: DaoStatus.Disabled })
       .orderBy('dao.createTimestamp', 'DESC')
       .getMany();
   }

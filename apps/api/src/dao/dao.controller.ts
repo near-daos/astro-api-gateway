@@ -21,13 +21,7 @@ import {
   HttpCacheInterceptor,
   QueryFailedErrorFilter,
 } from '@sputnik-v2/common';
-import {
-  Dao,
-  DaoMemberVote,
-  DaoResponse,
-  DaoService,
-  DaoStatus,
-} from '@sputnik-v2/dao';
+import { Dao, DaoMemberVote, DaoResponse, DaoService } from '@sputnik-v2/dao';
 
 import { DaoCrudRequestInterceptor } from './interceptors/dao-crud.interceptor';
 
@@ -69,7 +63,7 @@ export class DaoController {
   async daosByAccountId(
     @Param() { accountId }: FindAccountParams,
   ): Promise<Dao[] | DaoResponse> {
-    return await this.daoService.findAccountDaos(accountId, DaoStatus.Disabled);
+    return await this.daoService.findAccountDaos(accountId);
   }
 
   @ApiParam({
