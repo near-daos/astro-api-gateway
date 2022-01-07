@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CrudRequest, MergedCrudOptions } from '@nestjsx/crud';
 import { RequestQueryParser } from '@nestjsx/crud-request';
 import { BaseCrudRequestInterceptor } from '@sputnik-v2/common';
+import { DaoStatus } from '@sputnik-v2/dao';
 
 @Injectable()
 export class DaoCrudRequestInterceptor extends BaseCrudRequestInterceptor {
@@ -19,6 +20,9 @@ export class DaoCrudRequestInterceptor extends BaseCrudRequestInterceptor {
         eager: true,
       },
     };
+    crudRequest.parsed.search['$and'].push({
+      status: { $ne: DaoStatus.Disabled },
+    });
 
     return crudRequest;
   }

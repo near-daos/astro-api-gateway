@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 import { CrudRequest } from '@nestjsx/crud';
-import { Connection, In, Repository } from 'typeorm';
+import { Connection, In, Not, Repository } from 'typeorm';
 import {
   Proposal,
   ProposalService,
@@ -38,8 +38,13 @@ export class DaoService extends TypeOrmCrudService<Dao> {
       .andWhere(`:accountId = ANY(roles.accountIds)`, {
         accountId,
       })
+      .andWhere('dao.status != :status', { status: DaoStatus.Disabled })
       .orderBy('dao.createTimestamp', 'DESC')
       .getMany();
+  }
+
+  async findById(id: string): Promise<Dao> {
+    return this.daoRepository.findOne({ id, status: Not(DaoStatus.Disabled) });
   }
 
   async findByIds(daoIds?: string[]): Promise<Dao[]> {

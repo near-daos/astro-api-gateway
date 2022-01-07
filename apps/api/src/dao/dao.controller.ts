@@ -13,15 +13,15 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { ParsedRequest, CrudRequest } from '@nestjsx/crud';
+import { CrudRequest, ParsedRequest } from '@nestjsx/crud';
 import {
+  EntityQuery,
+  FindAccountParams,
   FindOneParams,
   HttpCacheInterceptor,
-  EntityQuery,
   QueryFailedErrorFilter,
-  FindAccountParams,
 } from '@sputnik-v2/common';
-import { DaoService, Dao, DaoResponse, DaoMemberVote } from '@sputnik-v2/dao';
+import { Dao, DaoMemberVote, DaoResponse, DaoService } from '@sputnik-v2/dao';
 
 import { DaoCrudRequestInterceptor } from './interceptors/dao-crud.interceptor';
 
@@ -79,7 +79,7 @@ export class DaoController {
   @UseInterceptors(HttpCacheInterceptor)
   @Get('/:id')
   async daoById(@Param() { id }: FindOneParams): Promise<Dao> {
-    const dao: Dao = await this.daoService.findOne(id);
+    const dao: Dao = await this.daoService.findById(id);
 
     if (!dao) {
       throw new BadRequestException('Invalid Dao ID');
