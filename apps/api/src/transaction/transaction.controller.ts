@@ -11,35 +11,21 @@ import {
 import {
   ApiBadRequestResponse,
   ApiParam,
-  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { Response } from 'express';
 import querystring, { ParsedUrlQueryInput } from 'querystring';
 import { ConfigService } from '@nestjs/config';
-import { ParsedRequest, CrudRequest } from '@nestjsx/crud';
 import {
   HttpCacheInterceptor,
-  QueryFailedErrorFilter,
-  TransactionQuery,
   WalletCallbackParams,
   FindAccountParams,
   NearDBConnectionErrorFilter,
   AccountTokenParams,
 } from '@sputnik-v2/common';
-import {
-  TransactionResponse,
-  TransactionService,
-} from '@sputnik-v2/transaction';
-import {
-  Receipt,
-  Transaction,
-  NearIndexerService,
-} from '@sputnik-v2/near-indexer';
-
-import { TransactionCrudRequestInterceptor } from './interceptors/transaction-crud.interceptor';
-import { TransferCrudRequestInterceptor } from './interceptors/transfer-crud.interceptor';
+import { TransactionService } from '@sputnik-v2/transaction';
+import { Receipt, NearIndexerService } from '@sputnik-v2/near-indexer';
 
 @ApiTags('Transactions')
 @Controller('/transactions')
@@ -51,42 +37,6 @@ export class TransactionController {
     private readonly transactionService: TransactionService,
     private readonly nearIndexerService: NearIndexerService,
   ) {}
-
-  @ApiResponse({
-    status: 200,
-    description: 'List of aggregated Transactions',
-    type: TransactionResponse,
-  })
-  @ApiBadRequestResponse({
-    description: 'Bad Request Response based on the query params set',
-  })
-  @UseInterceptors(HttpCacheInterceptor, TransactionCrudRequestInterceptor)
-  @UseFilters(new QueryFailedErrorFilter())
-  @ApiQuery({ type: TransactionQuery })
-  @Get('/')
-  async transactions(
-    @ParsedRequest() query: CrudRequest,
-  ): Promise<Transaction[] | TransactionResponse> {
-    return await this.transactionService.getMany(query);
-  }
-
-  @ApiResponse({
-    status: 200,
-    description: 'List of aggregated Transactions of kind TRANSFER',
-    type: TransactionResponse,
-  })
-  @ApiBadRequestResponse({
-    description: 'Bad Request Response based on the query params set',
-  })
-  @UseInterceptors(HttpCacheInterceptor, TransferCrudRequestInterceptor)
-  @UseFilters(new QueryFailedErrorFilter())
-  @ApiQuery({ type: TransactionQuery })
-  @Get('/transfers')
-  async transfers(
-    @ParsedRequest() query: CrudRequest,
-  ): Promise<Transaction[] | TransactionResponse> {
-    return await this.transactionService.getMany(query);
-  }
 
   @ApiResponse({
     status: 200,

@@ -31,12 +31,10 @@ import {
   NFTToken,
   NFTTokenResponse,
   NFTTokenService,
-  NFTTokenDto,
 } from '@sputnik-v2/token';
 import { AssetsNftEvent } from '@sputnik-v2/near-indexer';
 
 import { NFTTokenCrudRequestInterceptor } from './interceptors/nft-token-crud.interceptor';
-import { TokenNearService } from './token-near.service';
 
 @ApiTags('Token')
 @Controller('/tokens')
@@ -44,7 +42,6 @@ export class TokenController {
   constructor(
     private readonly tokenService: TokenService,
     private readonly nftTokenService: NFTTokenService,
-    private readonly tokenNearService: TokenNearService,
   ) {}
 
   @ApiResponse({
@@ -98,23 +95,6 @@ export class TokenController {
     @ParsedRequest() query: CrudRequest,
   ): Promise<NFTToken[] | NFTTokenResponse> {
     return await this.nftTokenService.getMany(query);
-  }
-
-  @ApiParam({
-    name: 'accountId',
-    type: String,
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'List of Non-Fungible Tokens by Account',
-    type: NFTTokenDto,
-  })
-  @ApiBadRequestResponse({ description: 'Invalid Dao ID' })
-  @Get('/nfts/account-nfts/:accountId')
-  async nftsByDao(
-    @Param() { accountId }: FindAccountParams,
-  ): Promise<NFTTokenDto[]> {
-    return await this.tokenNearService.nftsByAccount(accountId);
   }
 
   @ApiParam({

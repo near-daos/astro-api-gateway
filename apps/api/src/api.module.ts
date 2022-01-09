@@ -11,7 +11,6 @@ import { HttpCacheModule } from '@sputnik-v2/cache';
 import { ThrottlerModule, ThrottlerModuleOptions } from '@nestjs/throttler';
 import { EventModule } from '@sputnik-v2/event';
 
-import { AccountModule } from './account/account.module';
 import { BountyModule } from './bounty/bounty.module';
 import { DaoModule } from './dao/dao.module';
 import { ProposalModule } from './proposal/proposal.module';
@@ -50,7 +49,6 @@ import { AggregatorModule } from './aggregator/aggregator.module';
         };
       },
     }),
-    AccountModule,
     BountyModule,
     DaoModule,
     ProposalModule,
