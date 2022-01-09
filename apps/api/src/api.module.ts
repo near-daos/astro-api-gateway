@@ -25,6 +25,7 @@ import { WebsocketGateway } from './websocket/websocket.gateway';
 import { NotificationModule } from './notification/notification.module';
 import { CommentModule } from './comment/comment.module';
 import { AggregatorModule } from './aggregator/aggregator.module';
+import { MetricsModule } from './metrics/metrics.module';
 
 @Module({
   imports: [
@@ -64,6 +65,7 @@ import { AggregatorModule } from './aggregator/aggregator.module';
     NotificationModule,
     CommentModule,
     AggregatorModule,
+    MetricsModule,
   ],
   controllers: [AppController],
   providers: [WebsocketGateway],
