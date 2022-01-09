@@ -9,6 +9,7 @@ import {
 
 import { castRolePermission } from './role';
 import { castVotePolicy } from './vote-policy';
+import { DaoStatus } from '@sputnik-v2/dao';
 
 export function castDaoPolicy({ daoId, daoPolicy }) {
   const policy = camelcaseKeys(daoPolicy, { deep: true });
@@ -59,6 +60,7 @@ export function castCreateDao({
     ...castDaoPolicy({ daoId, daoPolicy: args.policy }),
     metadata: decodeBase64(args.config.metadata),
     amount: Number(amount),
+    status: DaoStatus.Active,
     totalSupply: '0',
     lastBountyId: 0,
     lastProposalId: 0,

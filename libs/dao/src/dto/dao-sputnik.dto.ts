@@ -1,4 +1,5 @@
 import { TransactionInfo } from '@sputnik-v2/common';
+import { DaoStatus } from '@sputnik-v2/dao/types';
 
 import { DaoConfig } from '../types/dao-config';
 import { DaoDto } from './dao.dto';
@@ -12,6 +13,7 @@ export class SputnikDaoDto extends TransactionInfo implements DaoDto {
   lastProposalId: number;
   stakingContract: string;
   policy: PolicyDto;
+  status?: DaoStatus;
   amount: number;
   council: string[];
   councilSeats: number;
