@@ -14,7 +14,6 @@ import { NearApiModule } from '@sputnik-v2/near-api';
 import { CacheConfigService } from '@sputnik-v2/config/api-config';
 
 import { TokenController } from './token.controller';
-import { TokenNearService } from './token-near.service';
 
 @Module({
   imports: [
@@ -26,12 +25,7 @@ import { TokenNearService } from './token-near.service';
     NearIndexerModule,
     NearApiModule,
   ],
-  providers: [
-    TokenService,
-    NFTTokenService,
-    TokenNearService,
-    TokenFactoryService,
-  ],
+  providers: [TokenService, NFTTokenService, TokenFactoryService],
   controllers: [TokenController],
   exports: [TokenService, NFTTokenService],
 })

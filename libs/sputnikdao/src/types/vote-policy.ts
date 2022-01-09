@@ -44,7 +44,7 @@ export function castVotePolicy(policy: unknown): VotePolicy | null {
 
   const { threshold, weightKind, quorum } = (policy as any) || {};
 
-  let votePolicy = {
+  const votePolicy = {
     weightKind,
     quorum,
   };

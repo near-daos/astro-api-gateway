@@ -54,7 +54,8 @@ export class DaoController {
   })
   @ApiResponse({
     status: 200,
-    description: 'Sputnik DAO',
+    description: 'List of Sputnik DAOs by Account',
+    isArray: true,
     type: Dao,
   })
   @ApiBadRequestResponse({ description: 'Invalid accountId' })

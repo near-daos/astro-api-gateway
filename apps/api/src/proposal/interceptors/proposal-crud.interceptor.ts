@@ -19,8 +19,8 @@ export class ProposalCrudRequestInterceptor extends BaseCrudRequestInterceptor {
         eager: true,
       },
       actions: {
-        eager: true
-      }
+        eager: true,
+      },
     };
 
     return crudRequest;
