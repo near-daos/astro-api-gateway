@@ -5,6 +5,7 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
     cert-manager.io/cluster-issuer: "letsencrypt-development"
+    nginx.org/websocket-services: {{ include "sputnik-v2-api.fullname" . }}
 spec:
   ingressClassName: nginx
   tls:
