@@ -89,6 +89,13 @@ version:
   commit: latest
   branch: develop
 
+monitoring:
+  metrics:
+    enabled: true
+    endpoints:
+    - path: /api/v1/metrics
+      port: api
+
 environment:
   near_env: "testnet"
   near_contract_name: "sputnikv2.testnet"
