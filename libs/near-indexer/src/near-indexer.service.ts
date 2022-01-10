@@ -533,6 +533,7 @@ export class NearIndexerService {
         'transactions.transactionAction',
         'transaction_actions',
       )
+      .leftJoinAndSelect('receipts.receiptActions', 'action_receipt_actions')
       .where('account_change.affected_account_id like :id', {
         id: `%${contractName}%`,
       })

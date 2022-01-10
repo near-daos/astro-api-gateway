@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import { Transaction } from '@sputnik-v2/near-indexer';
+import { AccountChange } from '@sputnik-v2/near-indexer';
 
 import { TransactionActionMapperService } from './transaction-action-mapper.service';
 import { TransactionActionHandlerService } from './transaction-action-handler.service';
@@ -23,10 +23,10 @@ export class TransactionHandlerService {
     );
   }
 
-  async handleNearIndexerTransactions(transactions: Transaction[]) {
+  async handleNearIndexerAccountChanges(accountChanges: AccountChange[]) {
     const actions =
-      this.transactionActionMapperService.getActionsByNearIndexerTransactions(
-        transactions,
+      this.transactionActionMapperService.getActionsByNearIndexerAccountChanges(
+        accountChanges,
       );
     await this.transactionActionHandlerService.handleTransactionActions(
       actions,

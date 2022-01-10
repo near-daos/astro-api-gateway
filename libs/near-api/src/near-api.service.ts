@@ -1,5 +1,4 @@
 import { Account, Contract, Near } from 'near-api-js';
-import { Provider } from 'near-api-js/lib/providers';
 import { Inject, Injectable } from '@nestjs/common';
 import { NEAR_API_PROVIDER } from '@sputnik-v2/common';
 import { NearApiContract, NearApiProvider } from '@sputnik-v2/config/near-api';
@@ -8,6 +7,8 @@ import {
   NearAccountState,
   NearTransactionStatus,
   castTransactionAction,
+  NearProvider,
+  castTransactionReceipt,
 } from './types';
 
 @Injectable()
@@ -18,7 +19,7 @@ export class NearApiService {
 
   private account: Account;
 
-  private provider: Provider;
+  private provider: NearProvider;
 
   constructor(
     @Inject(NEAR_API_PROVIDER)
@@ -28,7 +29,7 @@ export class NearApiService {
 
     this.near = near;
     this.account = account;
-    this.provider = provider;
+    this.provider = provider as NearProvider;
     this.contracts = contracts;
   }
 
@@ -36,11 +37,15 @@ export class NearApiService {
     transactionHash: string,
     accountId: string,
   ): Promise<NearTransactionStatus> {
-    const txStatus = await this.provider.txStatus(transactionHash, accountId);
+    const txStatus = await this.provider.sendJsonRpc<NearTransactionStatus>(
+      'EXPERIMENTAL_tx_status',
+      [transactionHash, accountId],
+    );
 
     txStatus.transaction.actions = txStatus.transaction.actions.map(
       castTransactionAction,
     );
+    txStatus.receipts = txStatus.receipts.map(castTransactionReceipt);
 
     return txStatus;
   }

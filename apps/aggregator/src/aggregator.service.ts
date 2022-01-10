@@ -295,38 +295,39 @@ export class AggregatorService {
         lastTx?.blockTimestamp,
       );
 
-    // Map account changes to list of unique transactions made after last transaction
-    const transactions = accountChangeActions
-      .map(
-        (accountChange) =>
-          accountChange.causedByReceipt.originatedFromTransaction,
-      )
-      .filter(({ transactionHash, blockTimestamp }, index) => {
-        const isAfterLastTx =
-          !lastTx?.blockTimestamp || blockTimestamp > lastTx?.blockTimestamp;
-        return (
-          isAfterLastTx &&
-          index ===
-            accountChangeActions.findIndex(
-              (accountChange) =>
-                accountChange.causedByReceipt.originatedFromTransaction
-                  .transactionHash === transactionHash,
-            )
-        );
-      });
+    // Filter account changes made after last transaction
+    const newAccountChanges = accountChangeActions.filter((ac, i) => {
+      const { transactionHash, blockTimestamp } =
+        ac.causedByReceipt.originatedFromTransaction;
+      const isAfterLastTx =
+        !lastTx?.blockTimestamp || blockTimestamp > lastTx?.blockTimestamp;
+      return (
+        isAfterLastTx &&
+        i ===
+          accountChangeActions.findIndex(
+            (ac) =>
+              ac.causedByReceipt.originatedFromTransaction.transactionHash ===
+              transactionHash,
+          )
+      );
+    });
 
-    if (transactions.length === 0) {
-      this.logger.log('Skip DAO Aggregation. No new transactions found.');
+    if (newAccountChanges.length === 0) {
+      this.logger.log('Skip DAO Aggregation. No changes found.');
       this.state.stopAggregation('dao');
       return;
     }
 
-    await this.transactionHandlerService.handleNearIndexerTransactions(
-      transactions,
+    await this.transactionHandlerService.handleNearIndexerAccountChanges(
+      newAccountChanges,
     );
 
     this.logger.log('Storing aggregated Transactions...');
-    await this.transactionService.createMultiple(transactions);
+    await this.transactionService.createMultiple(
+      newAccountChanges.map(
+        (ac) => ac.causedByReceipt.originatedFromTransaction,
+      ),
+    );
 
     // TODO: https://app.clickup.com/t/1ty89nk
     await this.cacheService.clearCache();
