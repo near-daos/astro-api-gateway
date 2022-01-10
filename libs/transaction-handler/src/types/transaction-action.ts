@@ -1,8 +1,8 @@
 import {
-  NearTransactionStatus,
   NearTransactionAction,
+  NearTransactionReceipt,
 } from '@sputnik-v2/near-api/types';
-import { Transaction } from '@sputnik-v2/near-indexer/entities';
+import { Receipt, ReceiptAction } from '@sputnik-v2/near-indexer/entities';
 import { getBlockTimestamp } from '@sputnik-v2/utils';
 
 export type TransactionAction = {
@@ -16,14 +16,15 @@ export type TransactionAction = {
 };
 
 export function castNearTransactionAction(
-  txStatus: NearTransactionStatus,
+  transactionHash: string,
+  receipt: NearTransactionReceipt,
   action: NearTransactionAction,
   timestamp = getBlockTimestamp(),
 ): TransactionAction {
   return {
-    receiverId: txStatus.transaction.receiver_id,
-    signerId: txStatus.transaction.signer_id,
-    transactionHash: txStatus.transaction.hash,
+    transactionHash,
+    receiverId: receipt.receiver_id,
+    signerId: receipt.predecessor_id,
     methodName: action.FunctionCall?.methodName,
     args: action.FunctionCall?.args,
     deposit: action.Transfer?.deposit || action.FunctionCall?.deposit,
@@ -31,16 +32,17 @@ export function castNearTransactionAction(
   };
 }
 
-export function castNearIndexerTransactionAction(
-  tx: Transaction,
+export function castNearIndexerReceiptAction(
+  receipt: Receipt,
+  ac: ReceiptAction,
 ): TransactionAction {
   return {
-    receiverId: tx.receiverAccountId,
-    signerId: tx.signerAccountId,
-    transactionHash: tx.transactionHash,
-    methodName: tx.transactionAction?.args?.method_name as string,
-    args: tx.transactionAction?.args?.args_json,
-    deposit: (tx.transactionAction?.args?.deposit as string) || '0',
-    timestamp: tx.blockTimestamp,
+    receiverId: ac.receiptReceiverAccountId,
+    signerId: ac.receiptPredecessorAccountId,
+    transactionHash: receipt.originatedFromTransaction.transactionHash,
+    methodName: ac?.args?.method_name as string,
+    args: ac?.args?.args_json,
+    deposit: (ac?.args?.deposit as string) || '0',
+    timestamp: receipt.originatedFromTransaction.blockTimestamp,
   };
 }
