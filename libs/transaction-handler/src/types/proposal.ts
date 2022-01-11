@@ -27,7 +27,7 @@ export function castCreateProposal({
   const proposalDto = {
     ...camelcaseKeys(proposal),
     id: buildProposalId(dao.id, proposal.id),
-    proposalId: dao.lastProposalId,
+    proposalId: proposal.id,
     daoId: dao.id,
     dao: { id: dao.id },
     proposer: signerId,
