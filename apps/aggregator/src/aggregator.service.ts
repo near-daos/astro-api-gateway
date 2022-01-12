@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { SchedulerRegistry, Cron, CronExpression } from '@nestjs/schedule';
+import { SchedulerRegistry, Cron } from '@nestjs/schedule';
 import PromisePool from '@supercharge/promise-pool';
 
 import {
