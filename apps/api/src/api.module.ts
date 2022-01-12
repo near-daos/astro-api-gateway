@@ -25,6 +25,7 @@ import { NotificationModule } from './notification/notification.module';
 import { CommentModule } from './comment/comment.module';
 import { AggregatorModule } from './aggregator/aggregator.module';
 import { MetricsModule } from './metrics/metrics.module';
+import { StatsModule } from './stats/stats.module';
 
 @Module({
   imports: [
@@ -64,6 +65,7 @@ import { MetricsModule } from './metrics/metrics.module';
     CommentModule,
     AggregatorModule,
     MetricsModule,
+    StatsModule,
   ],
   controllers: [AppController],
   providers: [WebsocketGateway],

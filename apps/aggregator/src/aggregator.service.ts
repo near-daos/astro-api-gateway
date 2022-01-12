@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { SchedulerRegistry } from '@nestjs/schedule';
+import { SchedulerRegistry, Cron, CronExpression } from '@nestjs/schedule';
 import PromisePool from '@supercharge/promise-pool';
 
 import {
@@ -21,6 +21,7 @@ import { BountyAggregatorService } from './bounty-aggregator/bounty-aggregator.s
 import { AggregatorState } from './aggregator-state/aggregator-state';
 import { TokenAggregatorService } from './token-aggregator/token-aggregator.service';
 import { NFTAggregatorService } from './token-aggregator/nft-aggregator.service';
+import { StatsAggregatorService } from './stats-aggregator/stats-aggregator.service';
 
 @Injectable()
 export class AggregatorService {
@@ -41,6 +42,7 @@ export class AggregatorService {
     private readonly bountyAggregatorService: BountyAggregatorService,
     private readonly tokenAggregatorService: TokenAggregatorService,
     private readonly nftAggregatorService: NFTAggregatorService,
+    private readonly statsAggregatorService: StatsAggregatorService,
     private readonly schedulerRegistry: SchedulerRegistry,
     private readonly cacheService: CacheService,
   ) {
@@ -123,6 +125,18 @@ export class AggregatorService {
       this.state.stopAggregation('dao-status');
 
       this.logger.error(`DAO Status Aggregation failed with error: ${error}`);
+    }
+  }
+
+  // Every day at 23:55
+  @Cron('55 23 * * *')
+  public async handleDaoStatsCronAggregation(): Promise<void> {
+    try {
+      await this.aggregateDaoStats();
+    } catch (error) {
+      this.state.stopAggregation('dao-stats');
+
+      this.logger.error(`DAO Stats Aggregation failed with error: ${error}`);
     }
   }
 
@@ -272,6 +286,21 @@ export class AggregatorService {
 
     this.logger.log(`Finished Dao Status aggregation`);
     this.state.stopAggregation('dao-status');
+  }
+
+  public async aggregateDaoStats() {
+    if (this.state.isInProgress('dao-stats')) {
+      return;
+    }
+
+    this.logger.log(`Start Dao Stats aggregation...`);
+    this.state.startAggregation('dao-stats');
+
+    await this.statsAggregatorService.aggregateAllDaoStats();
+    await this.cacheService.clearCache();
+
+    this.logger.log(`Finished Dao Stats aggregation`);
+    this.state.stopAggregation('dao-stats');
   }
 
   // Sync service Database with transactions made after last aggregation
