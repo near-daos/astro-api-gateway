@@ -25,6 +25,7 @@ import {
   Notification,
 } from '@sputnik-v2/notification/entities';
 import { Comment, CommentReport } from '@sputnik-v2/comment/entities';
+import { DaoStats } from '@sputnik-v2/stats/entities';
 
 export default registerAs('db_default', () => ({
   type: 'postgres',
@@ -58,6 +59,7 @@ export default registerAs('db_default', () => ({
     AccountNotificationSettings,
     Comment,
     CommentReport,
+    DaoStats,
   ],
   synchronize: true,
   migrationsTableName: 'migration_table',

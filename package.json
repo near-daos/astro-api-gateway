@@ -155,7 +155,9 @@
       "@sputnik-v2/notification/(.*)": "<rootDir>/libs/notification/src/$1",
       "@sputnik-v2/notification": "<rootDir>/libs/notification/src",
       "@sputnik-v2/comment/(.*)": "<rootDir>/libs/comment/src/$1",
-      "@sputnik-v2/comment": "<rootDir>/libs/comment/src"
+      "@sputnik-v2/comment": "<rootDir>/libs/comment/src",
+      "@sputnik-v2/stats/(.*)": "<rootDir>/libs/stats/src/$1",
+      "@sputnik-v2/stats": "<rootDir>/libs/stats/src"
     }
   }
 }

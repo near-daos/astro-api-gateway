@@ -21,6 +21,7 @@ import { DaoAggregatorModule } from './dao-aggregator/dao-aggregator.module';
 import { ProposalAggregatorModule } from './proposal-aggregator/proposal-aggregator.module';
 import { BountyAggregatorModule } from './bounty-aggregator/bounty-aggregator.module';
 import { TokenAggregatorModule } from './token-aggregator/token-aggregator.module';
+import { StatsAggregatorModule } from './stats-aggregator/stats-aggregator.module';
 import { AggregatorService } from './aggregator.service';
 import { AggregatorController } from './aggregator.controller';
 
@@ -46,6 +47,7 @@ import { AggregatorController } from './aggregator.controller';
     ProposalAggregatorModule,
     BountyAggregatorModule,
     TokenAggregatorModule,
+    StatsAggregatorModule,
     HttpCacheModule,
     EventModule,
   ],

@@ -34,7 +34,6 @@ export class TransactionActionMapperService {
     }
 
     return txStatus.receipts
-      .filter(({ predecessor_id }) => predecessor_id === accountId)
       .map((receipt) =>
         receipt.receipt.Action.actions.map((action) =>
           castNearTransactionAction(transactionHash, receipt, action),

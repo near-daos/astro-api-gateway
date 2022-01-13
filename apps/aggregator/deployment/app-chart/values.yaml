@@ -99,5 +99,7 @@ environment:
   aggregator_token_prices_polling_interval: "100000"
   # 12 hours
   aggregator_dao_status_polling_interval: "43200000"
+  # Every day at 23:55
+  aggregator_dao_stats_cron_time: "55 23 * * *"
   wallet_callback_url: ""
   near_token_api_url: "https://www.sodaki.com/api"
