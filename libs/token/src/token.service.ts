@@ -58,7 +58,10 @@ export class TokenService extends TypeOrmCrudService<Token> {
   }
 
   async tokenBalancesByAccount(accountId: string): Promise<TokenBalance[]> {
-    return this.tokenBalanceRepository.find({ accountId });
+    return this.tokenBalanceRepository.find({
+      where: { accountId },
+      relations: ['token'],
+    });
   }
 
   async tokensByAccount(accountId: string): Promise<Token[]> {
