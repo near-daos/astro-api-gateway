@@ -153,7 +153,7 @@ export class DaoStatsService {
       growth:
         typeof previousValue === 'number'
           ? getGrowth(currentValue, previousValue)
-          : 100,
+          : 0,
     };
   }
 }
