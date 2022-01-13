@@ -67,17 +67,11 @@ export class DaoStatsService {
   }
 
   async getDaoStatsState(
-    daoId: string,
-    previousTimestamp: number,
+    daoStats: DaoStatsDto,
+    previousDaoStats: DaoStatsDto,
   ): Promise<DaoStatsStateDto> {
-    const daoStats = await this.getDaoStats(daoId);
-    const previousDaoStats = await this.getLastDaoStats(
-      daoId,
-      previousTimestamp,
-    );
-
     return {
-      daoId,
+      daoId: daoStats.daoId,
       timestamp: daoStats.timestamp,
       totalDaoFunds: this.getStatsState(
         daoStats.totalDaoFunds,

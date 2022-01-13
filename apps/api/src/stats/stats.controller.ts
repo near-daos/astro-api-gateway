@@ -30,7 +30,12 @@ export class StatsController {
   ): Promise<DaoStatsStateDto> {
     const oneDayAgo = new Date();
     oneDayAgo.setUTCHours(0, 0, 0, 0);
-    return this.daoStatsService.getDaoStatsState(id, oneDayAgo.getTime());
+    const daoStats = await this.daoStatsService.getDaoStats(id);
+    const previousDaoStats = await this.daoStatsService.getLastDaoStats(
+      id,
+      oneDayAgo.getTime(),
+    );
+    return this.daoStatsService.getDaoStatsState(daoStats, previousDaoStats);
   }
 
   @ApiParam({
