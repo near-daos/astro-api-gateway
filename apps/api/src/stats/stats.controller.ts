@@ -28,7 +28,7 @@ export class StatsController {
     @Param() { id }: FindOneParams,
   ): Promise<DaoStatsStateDto> {
     const oneDayAgo = new Date();
-    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+    oneDayAgo.setUTCHours(0, 0, 0, 0);
     return this.daoStatsService.getDaoStatsState(id, oneDayAgo.getTime());
   }
 
