@@ -169,5 +169,8 @@ export const calculateFunds = (amount, price, decimals): number => {
   return value > 0 && price > 0 ? value * price : 0;
 };
 
-export const getGrowth = (current: number, prev: number) =>
-  Math.round(((current - prev) / (current || 1)) * 10000) / 100;
+export const getGrowth = (current: number, prev?: number) => {
+  return typeof prev === 'number'
+    ? Math.round(((current - prev) / (current || 1)) * 10000) / 100
+    : 0;
+};

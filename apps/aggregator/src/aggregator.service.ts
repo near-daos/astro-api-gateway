@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { SchedulerRegistry, Cron } from '@nestjs/schedule';
+import { SchedulerRegistry } from '@nestjs/schedule';
+import { CronJob } from 'cron';
 import PromisePool from '@supercharge/promise-pool';
 
 import {
@@ -51,6 +52,7 @@ export class AggregatorService {
       tokenPollingInterval,
       tokenPricesPollingInterval,
       daoStatusPollingInterval,
+      daoStatsCronTime,
     } = this.configService.get('aggregator');
 
     schedulerRegistry.addInterval(
@@ -78,6 +80,12 @@ export class AggregatorService {
         daoStatusPollingInterval,
       ),
     );
+
+    const daoStatsCron = new CronJob(daoStatsCronTime, () =>
+      this.handleDaoStatsCronAggregation(),
+    );
+    schedulerRegistry.addCronJob('dao_stats_cron', daoStatsCron);
+    daoStatsCron.start();
   }
 
   public async scheduleDaoAggregation(): Promise<void> {
@@ -128,8 +136,6 @@ export class AggregatorService {
     }
   }
 
-  // Every day at 23:55
-  @Cron('55 23 * * *')
   public async handleDaoStatsCronAggregation(): Promise<void> {
     try {
       await this.aggregateDaoStats();
@@ -297,10 +303,10 @@ export class AggregatorService {
     this.state.startAggregation('dao-stats');
 
     await this.statsAggregatorService.aggregateAllDaoStats();
-    await this.cacheService.clearCache();
 
     this.logger.log(`Finished Dao Stats aggregation`);
     this.state.stopAggregation('dao-stats');
+    await this.cacheService.clearCache();
   }
 
   // Sync service Database with transactions made after last aggregation

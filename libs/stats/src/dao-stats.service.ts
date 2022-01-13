@@ -15,6 +15,7 @@ import {
   StatsStateDto,
 } from './dto';
 import { DaoStats } from './entities';
+import { DaoStatsEntryFields } from './types';
 
 @Injectable()
 export class DaoStatsService {
@@ -25,6 +26,10 @@ export class DaoStatsService {
     private readonly bountyService: BountyService,
     private readonly nftTokenService: NFTTokenService,
   ) {}
+
+  async create(daoStats: DaoStatsDto): Promise<DaoStats> {
+    return this.daoStatsRepository.save(daoStats);
+  }
 
   async getDaoStats(daoId: string): Promise<DaoStatsDto> {
     const timestamp = Date.now();
@@ -49,11 +54,6 @@ export class DaoStatsService {
       bountyCount,
       nftCount,
     };
-  }
-
-  async createDaoStats(daoId: string): Promise<DaoStats> {
-    const daoStats = await this.getDaoStats(daoId);
-    return this.daoStatsRepository.save(daoStats);
   }
 
   async getLastDaoStats(
@@ -104,12 +104,7 @@ export class DaoStatsService {
 
   async getDaoStatsEntries(
     daoId: string,
-    field:
-      | 'totalDaoFunds'
-      | 'totalProposalCount'
-      | 'activeProposalCount'
-      | 'bountyCount'
-      | 'nftCount',
+    field: DaoStatsEntryFields,
   ): Promise<StatsEntryDto[]> {
     const currentDaoStats = await this.getDaoStats(daoId);
     const daoStats = await this.daoStatsRepository
@@ -150,10 +145,7 @@ export class DaoStatsService {
   getStatsState(currentValue: number, previousValue?: number): StatsStateDto {
     return {
       value: currentValue,
-      growth:
-        typeof previousValue === 'number'
-          ? getGrowth(currentValue, previousValue)
-          : 0,
+      growth: getGrowth(currentValue, previousValue),
     };
   }
 }

@@ -16,6 +16,11 @@ export class StatsAggregatorService {
     const daoIds = await this.daoService.findDaoIds();
     return PromisePool.withConcurrency(5)
       .for(daoIds)
-      .process((daoId) => this.daoStatsService.createDaoStats(daoId));
+      .process((daoId) => this.aggregateDaoStatsById(daoId));
+  }
+
+  public async aggregateDaoStatsById(daoId: string): Promise<DaoStats> {
+    const daoStats = await this.daoStatsService.getDaoStats(daoId);
+    return this.daoStatsService.create(daoStats);
   }
 }

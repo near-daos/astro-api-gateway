@@ -1,6 +1,7 @@
 import { Controller, Get, Param } from '@nestjs/common';
 import { ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
+  DaoStatsEntryFields,
   DaoStatsService,
   DaoStatsStateDto,
   ProposalStatsEntryDto,
@@ -46,7 +47,10 @@ export class StatsController {
   async getDaoStatsFunds(
     @Param() { id }: FindOneParams,
   ): Promise<StatsEntryDto[]> {
-    return this.daoStatsService.getDaoStatsEntries(id, 'totalDaoFunds');
+    return this.daoStatsService.getDaoStatsEntries(
+      id,
+      DaoStatsEntryFields.Funds,
+    );
   }
 
   @ApiParam({
@@ -63,7 +67,10 @@ export class StatsController {
   async getDaoStatsBounties(
     @Param() { id }: FindOneParams,
   ): Promise<StatsEntryDto[]> {
-    return this.daoStatsService.getDaoStatsEntries(id, 'bountyCount');
+    return this.daoStatsService.getDaoStatsEntries(
+      id,
+      DaoStatsEntryFields.BountyCount,
+    );
   }
 
   @ApiParam({
@@ -80,7 +87,10 @@ export class StatsController {
   async getDaoStatsNfts(
     @Param() { id }: FindOneParams,
   ): Promise<StatsEntryDto[]> {
-    return this.daoStatsService.getDaoStatsEntries(id, 'nftCount');
+    return this.daoStatsService.getDaoStatsEntries(
+      id,
+      DaoStatsEntryFields.NftCount,
+    );
   }
 
   @ApiParam({
