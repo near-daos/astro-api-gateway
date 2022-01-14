@@ -101,7 +101,7 @@ export class NFTAggregatorService {
     daoId: string,
   ): Promise<Array<any>> {
     const contract = this.nearApiService.getContract('nft', nftContractId);
-    const chunkSize = 100;
+    const chunkSize = 50;
     let nfts = [];
     let chunk = [];
     let fromIndex = 0;
