@@ -1,12 +1,13 @@
 import { Module } from '@nestjs/common';
 
-import { NearApiModule } from '@sputnik-v2/near-api';
+import { SputnikModule } from '@sputnik-v2/sputnikdao';
 import { DaoModule } from '@sputnik-v2/dao';
+import { ProposalModule } from '@sputnik-v2/proposal';
 
 import { DaoAggregatorService } from './dao-aggregator.service';
 
 @Module({
-  imports: [NearApiModule, DaoModule],
+  imports: [SputnikModule, DaoModule, ProposalModule],
   providers: [DaoAggregatorService],
   exports: [DaoAggregatorService],
 })

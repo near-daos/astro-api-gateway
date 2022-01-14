@@ -8,6 +8,8 @@ import {
   EVENT_NEW_NOTIFICATION,
   EVENT_NEW_COMMENT,
   EVENT_DELETE_COMMENT,
+  EVENT_AGGREGATOR_SERVICE,
+  EVENT_TRIGGER_DAO_AGGREGATION,
 } from '@sputnik-v2/common';
 import { DaoDto } from '@sputnik-v2/dao';
 import { ProposalDto } from '@sputnik-v2/proposal';
@@ -26,6 +28,8 @@ export class EventService {
     private readonly notificationEventClient: ClientProxy,
     @Inject(EVENT_API_SERVICE)
     private readonly apiEventClient: ClientProxy,
+    @Inject(EVENT_AGGREGATOR_SERVICE)
+    private readonly aggregatorEventClient: ClientProxy,
   ) {}
 
   public async sendDaoUpdateNotificationEvent(
@@ -74,6 +78,17 @@ export class EventService {
   public async sendDeleteCommentEvent(comment: Comment): Promise<void> {
     const message = new BaseMessage(EVENT_DELETE_COMMENT, { comment });
     return this.sendEvent(this.apiEventClient, message);
+  }
+
+  public async sendTriggerDaoAggregationEvent(
+    daoId: string,
+    accountId: string,
+  ): Promise<void> {
+    const message = new BaseMessage(EVENT_TRIGGER_DAO_AGGREGATION, {
+      daoId,
+      accountId,
+    });
+    return this.sendEvent(this.aggregatorEventClient, message);
   }
 
   private async sendEvent(

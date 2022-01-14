@@ -18,6 +18,11 @@ const aggregator = registerAs('aggregator', () => ({
     process.env.AGGREGATOR_TOKEN_PRICES_POLLING_INTERVAL,
     10,
   ),
+  daoStatusPollingInterval: parseInt(
+    process.env.AGGREGATOR_DAO_STATUS_POLLING_INTERVAL,
+    10,
+  ),
+  daoStatsCronTime: process.env.AGGREGATOR_DAO_STATS_CRON_TIME,
 }));
 
 export default [

@@ -3,9 +3,12 @@ kind: ConfigMap
 metadata:
   name: sputnik-v2-aggregator-configmap
 data:
+  NODE_OPTIONS: ' --max-old-space-size={{ include "node.maxOldSpaceSize" . }} '
   PORT: "3000"
   NEST_APP_TYPE: aggregator
   AGGREGATOR_POLLING_INTERVAL: "{{ .Values.environment.aggregator_polling_interval }}"
   AGGREGATOR_TOKEN_POLLING_INTERVAL: "{{ .Values.environment.aggregator_token_polling_interval }}"
   AGGREGATOR_TOKEN_PRICES_POLLING_INTERVAL: "{{ .Values.environment.aggregator_token_prices_polling_interval }}"
+  AGGREGATOR_DAO_STATUS_POLLING_INTERVAL: "{{ .Values.environment.aggregator_dao_status_polling_interval }}"
+  AGGREGATOR_DAO_STATS_CRON_TIME: "{{ .Values.environment.aggregator_dao_stats_cron_time }}"
   NEAR_TOKEN_API_URL: "{{ .Values.environment.near_token_api_url }}"

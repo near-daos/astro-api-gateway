@@ -74,6 +74,14 @@ public abstract class BaseSteps {
                 .isGreaterThanOrEqualTo((int) greaterThanValue);
     }
 
+    @Step("User sees '{fieldName}' field value greater than '{greaterThanValue}' value")
+    public <T> void assertDtoValueGreaterThan(T dto, Function<T, String> valueExtractor,
+                                              String greaterThanValue, String fieldName) {
+        assertThat(Double.valueOf(valueExtractor.apply(dto)))
+                .as(String.format("'%s' field value must be greater than '%s'.", fieldName, greaterThanValue))
+                .isGreaterThanOrEqualTo(Double.valueOf(greaterThanValue));
+    }
+
     @Step("User sees '{fieldName}' fields has value in a collection")
     public <T> void assertCollectionElementsHasValue(Collection<T> actual,
                                                      Predicate<? super T> predicate, String fieldName) {

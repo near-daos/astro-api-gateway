@@ -59,10 +59,11 @@
     "class-validator": "^0.13.1",
     "firebase-admin": "^9.10.0",
     "ioredis": "^4.14.1",
-    "near-api-js": "^0.44.0",
+    "near-api-js": "^0.44.2",
     "object-hash": "^2.2.0",
     "parse-redis-url-simple": "^1.0.2",
     "pg": "^8.6.0",
+    "prom-client": "^14.0.1",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^7.3.0",
@@ -154,7 +155,9 @@
       "@sputnik-v2/notification/(.*)": "<rootDir>/libs/notification/src/$1",
       "@sputnik-v2/notification": "<rootDir>/libs/notification/src",
       "@sputnik-v2/comment/(.*)": "<rootDir>/libs/comment/src/$1",
-      "@sputnik-v2/comment": "<rootDir>/libs/comment/src"
+      "@sputnik-v2/comment": "<rootDir>/libs/comment/src",
+      "@sputnik-v2/stats/(.*)": "<rootDir>/libs/stats/src/$1",
+      "@sputnik-v2/stats": "<rootDir>/libs/stats/src"
     }
   }
 }

@@ -8,7 +8,7 @@ import {
   NotificationType,
 } from '@sputnik-v2/notification';
 import { DaoService, DaoVariant } from '@sputnik-v2/dao';
-import { ProposalService } from '@sputnik-v2/proposal';
+import { ProposalService, Action } from '@sputnik-v2/proposal';
 
 import {
   castDaoUpdateNotification,
@@ -98,6 +98,30 @@ export class NotificationHandlerService {
         type,
         status: NotificationStatus.Created,
       };
+    }
+
+    // Vote Proposal
+    if (
+      data.txAction.methodName === 'act_proposal' &&
+      data.proposal.status === ProposalStatus.InProgress
+    ) {
+      switch (data.txAction.args.action) {
+        case Action.VoteApprove:
+          return {
+            type,
+            status: NotificationStatus.VoteApprove,
+          };
+        case Action.VoteReject:
+          return {
+            type,
+            status: NotificationStatus.VoteReject,
+          };
+        case Action.VoteRemove:
+          return {
+            type,
+            status: NotificationStatus.VoteRemove,
+          };
+      }
     }
 
     // Approved Proposal

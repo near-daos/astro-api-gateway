@@ -7,10 +7,10 @@ import {
   DeleteResult,
   FindConditions,
   In,
+  Not,
   Repository,
   UpdateResult,
 } from 'typeorm';
-import { SputnikDaoDto } from '@sputnik-v2/dao/dto';
 import { Role } from '@sputnik-v2/dao/entities';
 
 import { ProposalDto, ProposalResponse } from './dto';
@@ -19,10 +19,8 @@ import {
   ProposalTypeToContractType,
   ProposalStatus,
   ProposalVoteStatus,
-  ProposalVariant,
 } from './types';
-import { buildProposalId, paginate } from '@sputnik-v2/utils';
-import { PROPOSAL_DESC_SEPARATOR } from '@sputnik-v2/common';
+import { paginate } from '@sputnik-v2/utils';
 
 @Injectable()
 export class ProposalService extends TypeOrmCrudService<Proposal> {
@@ -167,6 +165,18 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
     return response;
   }
 
+  public async getDaoProposalCount(daoId: string): Promise<number> {
+    return this.proposalRepository.count({ daoId });
+  }
+
+  public async getDaoActiveProposalCount(daoId: string): Promise<number> {
+    return this.proposalRepository.count({
+      daoId,
+      status: ProposalStatus.InProgress,
+      voteStatus: Not(ProposalVoteStatus.Expired),
+    });
+  }
+
   async search(
     req: CrudRequest,
     query: string,
@@ -231,6 +241,25 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
       .getMany();
   }
 
+  async getExpiredProposalDaoIds(): Promise<string[]> {
+    const currentTimestamp = new Date().getTime() * 1000 * 1000;
+    const proposals = await this.proposalRepository
+      .createQueryBuilder('proposal')
+      .select('proposal.daoId')
+      .distinctOn(['proposal.daoId'])
+      .where('proposal.voteStatus != :voteStatus', {
+        voteStatus: ProposalVoteStatus.Expired,
+      })
+      .andWhere('proposal.status = :status', {
+        status: ProposalStatus.InProgress,
+      })
+      .andWhere('proposal.votePeriodEnd < :date', {
+        date: currentTimestamp,
+      })
+      .getMany();
+    return proposals.map(({ daoId }) => daoId);
+  }
+
   async updateExpiredProposals(): Promise<UpdateResult> {
     const currentTimestamp = new Date().getTime() * 1000 * 1000; // nanoseconds
     return this.connection
@@ -253,49 +282,5 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
 
   async removeMultiple(proposalIds: string[]): Promise<DeleteResult[]> {
     return Promise.all(proposalIds.map((id) => this.remove(id)));
-  }
-
-  public async purgeRemovedProposals(
-    proposals: ProposalDto[],
-    enrichedDaos: SputnikDaoDto[],
-  ): Promise<void> {
-    try {
-      const proposalIdsByDao = proposals.reduce((acc, cur) => {
-        return {
-          ...acc,
-          [cur.daoId]: [...(acc[cur.daoId] || []), cur.proposalId],
-        };
-      }, {});
-      const removedProposals = [];
-
-      Object.keys(proposalIdsByDao).map((daoId) => {
-        const daoProposalIds = proposalIdsByDao[daoId];
-        const dao = enrichedDaos.find(({ id }) => daoId === id);
-
-        for (let i = 0; i < dao.lastProposalId; i++) {
-          if (!daoProposalIds.includes(i)) {
-            removedProposals.push(buildProposalId(daoId, i));
-          }
-        }
-      });
-
-      if (!removedProposals.length) {
-        return;
-      }
-
-      this.logger.log(`Found removed Proposals: ${removedProposals}`);
-
-      this.logger.log('Purging aggregated Proposals considered as removed...');
-      await Promise.all(removedProposals.map((id) => this.remove(id)));
-      this.logger.log('Successfully purged removed Proposals.');
-    } catch (e) {
-      this.logger.error(e);
-    }
-  }
-
-  public getProposalVariant(proposal: ProposalDto) {
-    return Object.values(ProposalVariant).find((variant) =>
-      proposal.description.includes(`${PROPOSAL_DESC_SEPARATOR}${variant}`),
-    );
   }
 }

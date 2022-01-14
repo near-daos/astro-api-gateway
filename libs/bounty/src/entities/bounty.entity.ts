@@ -27,7 +27,7 @@ export class Bounty extends TransactionEntity {
   daoId: string;
 
   @ApiProperty({ type: Dao })
-  @ManyToOne((_) => Dao, { eager: true })
+  @ManyToOne(() => Dao, { eager: true })
   @JoinColumn({ name: 'dao_id' })
   dao: Dao;
 

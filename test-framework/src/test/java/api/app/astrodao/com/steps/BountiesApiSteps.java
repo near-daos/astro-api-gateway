@@ -22,9 +22,4 @@ public class BountiesApiSteps extends BaseSteps {
     public ResponseEntity<String> getBounties(Map<String, Object> queryParams) {
         return bountiesApi.getBounties(queryParams);
     }
-
-    @Step("Getting bounties")
-    public ResponseEntity<String> getBounties(String sort, int limit, int offset) {
-        return bountiesApi.getBounties(sort, limit, offset);
-    }
 }

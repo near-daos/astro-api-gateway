@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Dao } from '@sputnik-v2/dao';
 import { calculateClaimEndTime } from '@sputnik-v2/utils';
 import { BountyClaim } from '@sputnik-v2/bounty';
 

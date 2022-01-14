@@ -8,10 +8,12 @@ import io.qameta.allure.Severity;
 import io.qameta.allure.SeverityLevel;
 import io.qameta.allure.Story;
 import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -19,22 +21,25 @@ import java.util.Map;
 
 @Tags({@Tag("all"), @Tag("daoApiTests")})
 @Feature("DAO API TESTS")
+@DisplayName("DAO API TESTS")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class DaoApiTests extends BaseTest {
     private final DaoApiSteps daoApiSteps;
 
+    @Value("${test.dao}")
+    private String testDao;
+
     @Test
     @Severity(SeverityLevel.CRITICAL)
-    @Story("Getting a bounty by it's ID")
+    @Story("Getting a DAO by it's ID")
     void getDaoById() {
-        String daoId = "autotest-dao-1.sputnikv2.testnet";
-
-        ResponseEntity<String> response = daoApiSteps.getDAOByID(daoId);
+        ResponseEntity<String> response = daoApiSteps.getDAOByID(testDao);
         daoApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
         Dao dao = daoApiSteps.getResponseDto(response, Dao.class);
 
-        daoApiSteps.assertDtoValue(dao, Dao::getId, daoId, "id");
+        daoApiSteps.assertDtoValue(dao, Dao::getId, testDao, "id");
+        daoApiSteps.assertDtoValueGreaterThan(dao, p -> p.getTotalDaoFunds().intValue(), 10, "totalDaoFunds");
     }
 
     @Test
@@ -109,7 +114,7 @@ public class DaoApiTests extends BaseTest {
 
     @Test
     @Severity(SeverityLevel.CRITICAL)
-    @Story("Get list of DAOs with query param: [sort, fields]")
+    @Story("Get list of DAOs with query param: [sort, s]")
     void getListOfDaosSortSParams() {
         int count = 50;
         int page = 1;

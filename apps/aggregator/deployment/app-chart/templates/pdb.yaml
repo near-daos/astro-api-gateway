@@ -1,0 +1,11 @@
+{{- if gt (int .Values.replicaCount) 1 -}}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: aggregator
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: sputnik-v2-aggregator
+{{- end -}}

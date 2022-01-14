@@ -1,15 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  BeforeInsert,
-  Column,
-  Entity,
-  JoinColumn,
-  OneToOne,
-  PrimaryColumn,
-} from 'typeorm';
+import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
 import { TransactionEntity } from '@sputnik-v2/common';
 
-import { DaoConfig } from '../types/dao-config';
+import { DaoConfig, DaoStatus } from '../types';
 import { Policy } from './policy.entity';
 
 @Entity()
@@ -72,7 +65,7 @@ export class Dao extends TransactionEntity {
   councilSeats: number;
 
   @ApiProperty()
-  @OneToOne((_) => Policy, { eager: true, cascade: true })
+  @OneToOne(() => Policy, { eager: true, cascade: true })
   @JoinColumn({ name: 'id' })
   policy: Policy;
 
@@ -85,4 +78,20 @@ export class Dao extends TransactionEntity {
   @ApiProperty()
   @Column({ nullable: true })
   createdBy: string;
+
+  @ApiProperty()
+  @Column({ type: 'text', nullable: true })
+  status: DaoStatus;
+
+  @ApiProperty()
+  @Column({ default: 0 })
+  activeProposalCount: number;
+
+  @ApiProperty()
+  @Column({ default: 0 })
+  totalProposalCount: number;
+
+  @ApiProperty()
+  @Column({ type: 'float', default: 0 })
+  totalDaoFunds: number;
 }

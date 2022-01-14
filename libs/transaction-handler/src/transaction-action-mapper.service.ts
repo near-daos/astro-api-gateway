@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { NearApiService } from '@sputnik-v2/near-api';
-import { Transaction } from '@sputnik-v2/near-indexer';
+import { AccountChange } from '@sputnik-v2/near-indexer';
 import { sleep } from '@sputnik-v2/utils';
 
 import {
-  castNearIndexerTransactionAction,
+  castNearIndexerReceiptAction,
   castNearTransactionAction,
   TransactionAction,
 } from './types';
@@ -33,14 +33,24 @@ export class TransactionActionMapperService {
       );
     }
 
-    return txStatus.transaction.actions.map((action) =>
-      castNearTransactionAction(txStatus, action),
-    );
+    return txStatus.receipts
+      .map((receipt) =>
+        receipt.receipt.Action.actions.map((action) =>
+          castNearTransactionAction(transactionHash, receipt, action),
+        ),
+      )
+      .flat();
   }
 
-  getActionsByNearIndexerTransactions(
-    transactions: Transaction[],
+  getActionsByNearIndexerAccountChanges(
+    accountChanges: AccountChange[],
   ): TransactionAction[] {
-    return transactions.map((tx) => castNearIndexerTransactionAction(tx));
+    return accountChanges
+      .map((ac) =>
+        ac.causedByReceipt.receiptActions.map((action) =>
+          castNearIndexerReceiptAction(ac.causedByReceipt, action),
+        ),
+      )
+      .flat();
   }
 }

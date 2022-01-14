@@ -28,7 +28,7 @@ export class Transaction {
   indexInChunk: number;
 
   @ApiProperty()
-  @OneToOne((_) => TransactionAction, { cascade: true })
+  @OneToOne(() => TransactionAction, { cascade: true })
   @JoinColumn({ name: 'transaction_hash' })
   transactionAction: TransactionAction;
 

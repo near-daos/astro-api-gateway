@@ -15,7 +15,7 @@ export class AccountNotification extends BaseEntity {
   notificationId: string;
 
   @ApiProperty()
-  @ManyToOne((_) => Notification, { eager: true })
+  @ManyToOne(() => Notification, { eager: true })
   @JoinColumn({ name: 'notification_id' })
   notification: Notification;
 

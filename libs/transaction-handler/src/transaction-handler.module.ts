@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { NearApiModule } from '@sputnik-v2/near-api';
+import { SputnikModule } from '@sputnik-v2/sputnikdao';
 import { DaoModule } from '@sputnik-v2/dao/dao.module';
 import { BountyModule } from '@sputnik-v2/bounty';
 import { ProposalModule } from '@sputnik-v2/proposal';
@@ -16,6 +17,7 @@ import { TransactionActionMapperService } from './transaction-action-mapper.serv
   imports: [
     TypeOrmModule.forFeature([Transaction]),
     NearApiModule,
+    SputnikModule,
     DaoModule,
     BountyModule,
     ProposalModule,

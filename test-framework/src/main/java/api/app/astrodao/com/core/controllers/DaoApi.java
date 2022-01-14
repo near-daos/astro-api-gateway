@@ -41,4 +41,25 @@ public class DaoApi {
 
         return httpClient.get(builder.toUriString(), new HttpEntity<>(httpHeaders), String.class);
     }
+
+    public ResponseEntity<String> getDaosFeed(Map<String, Object> queryParams) {
+        HttpHeaders httpHeaders = httpClient.getBasicHeaders();
+        httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(apiUrl);
+        builder.pathSegment("daos", "feed");
+        queryParams.forEach((key, value) -> builder.queryParam(key, value));
+
+        return httpClient.get(builder.toUriString(), new HttpEntity<>(httpHeaders), String.class);
+    }
+
+    public ResponseEntity<String> getDaoFeed(String id) {
+        HttpHeaders httpHeaders = httpClient.getBasicHeaders();
+        httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(apiUrl);
+        builder.pathSegment("daos", "feed", id);
+
+        return httpClient.get(builder.toUriString(), new HttpEntity<>(httpHeaders), String.class);
+    }
 }

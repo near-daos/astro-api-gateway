@@ -1,3 +1,4 @@
+import { DaoInfo } from '@sputnik-v2/sputnikdao';
 import { castDaoPolicy } from '@sputnik-v2/transaction-handler';
 import { SputnikDaoDto } from '@sputnik-v2/dao';
 import { Account, Transaction } from '@sputnik-v2/near-indexer';
@@ -14,7 +15,7 @@ export function castDao(
     lastProposalId,
     lastBountyId,
     amount,
-  },
+  }: DaoInfo,
 ): SputnikDaoDto {
   const txUpdate = txs[txs.length - 1];
   return {
@@ -41,5 +42,33 @@ export function castDao(
     numberOfAssociates: new Set(
       txs.map(({ signerAccountId }) => signerAccountId),
     ).size,
+  };
+}
+
+export function castDaoById(
+  daoId: string,
+  {
+    config,
+    policy,
+    stakingContract,
+    totalSupply,
+    lastProposalId,
+    lastBountyId,
+    amount,
+  }: DaoInfo,
+): Partial<SputnikDaoDto> {
+  return {
+    id: daoId,
+    ...castDaoPolicy({
+      daoId: daoId,
+      daoPolicy: policy,
+    }),
+    config,
+    metadata: decodeBase64(config.metadata),
+    stakingContract,
+    totalSupply,
+    lastProposalId,
+    lastBountyId,
+    amount: Number(amount),
   };
 }

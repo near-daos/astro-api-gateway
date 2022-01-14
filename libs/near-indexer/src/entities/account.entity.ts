@@ -13,7 +13,7 @@ export class Account {
   @Column()
   createdByReceiptId: string;
 
-  @OneToOne((_) => Receipt)
+  @OneToOne(() => Receipt)
   @JoinColumn({ name: 'created_by_receipt_id' })
   receipt: Receipt;
 

@@ -39,6 +39,10 @@ export class NFTTokenService extends TypeOrmCrudService<NFTToken> {
     return super.getMany(req);
   }
 
+  async getAccountTokenCount(accountId: string): Promise<number> {
+    return this.nftTokenRepository.count({ accountId });
+  }
+
   async getTokenEvents(id: string): Promise<AssetsNftEvent[]> {
     const nftToken = await this.nftTokenRepository.findOne(id);
 

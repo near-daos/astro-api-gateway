@@ -74,10 +74,10 @@ ingress:
 
 resources:
   limits:
-    memory: 200Mi
+    memory: 300Mi
   requests:
     cpu: 20m
-    memory: 100Mi
+    memory: 300Mi
 
 nodeSelector: {}
 
@@ -97,6 +97,4 @@ environment:
   aggregator_polling_interval: "5000"
   aggregator_token_polling_interval: "10000"
   aggregator_token_prices_polling_interval: "100000"
-  dao_polling_interval: "2000"
-  proposal_vote_status_update_interval: "2000"
   wallet_callback_url: ""

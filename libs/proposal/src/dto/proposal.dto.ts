@@ -122,19 +122,15 @@ export class ProposalKindDto {
       const {
         bountyBond: thisBountyBond,
         bountyForgivenessPeriod: thisBountyForgivenessPeriod,
-        defaultVotePolicy: thisDefaultVotePolicy,
         proposalBond: thisProposalBond,
         proposalPeriod: thisProposalPeriod,
-        roles: thisRoles,
       } = thisPolicy as PolicyDto;
 
       const {
         bountyBond,
         bountyForgivenessPeriod,
-        defaultVotePolicy,
         proposalBond,
         proposalPeriod,
-        roles,
       } = policy || {}; //TODO: revise this!!!
 
       //TODO: compare defaultVotePolicy and roles

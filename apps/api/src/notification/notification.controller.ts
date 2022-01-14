@@ -36,6 +36,7 @@ import {
 } from '@sputnik-v2/notification';
 import {
   AccountAccessGuard,
+  AccountBearer,
   BaseCrudRequestInterceptor,
   EntityQuery,
   FindOneParams,
@@ -107,6 +108,40 @@ export class NotificationController {
     @ParsedRequest() query: CrudRequest,
   ): Promise<AccountNotification[] | AccountNotificationResponse> {
     return this.accountNotificationService.getMany(query);
+  }
+
+  @ApiResponse({
+    status: 200,
+    description: 'OK',
+  })
+  @ApiForbiddenResponse({
+    description:
+      'Account <accountId> identity is invalid - public key / bad signature/public key size / Invalid signature',
+  })
+  @UseGuards(AccountAccessGuard)
+  @Patch('/account-notifications/read-all')
+  async readAccountNotifications(@Body() body: AccountBearer): Promise<void> {
+    await this.accountNotificationService.readAccountNotifications(
+      body.accountId,
+    );
+  }
+
+  @ApiResponse({
+    status: 200,
+    description: 'OK',
+  })
+  @ApiForbiddenResponse({
+    description:
+      'Account <accountId> identity is invalid - public key / bad signature/public key size / Invalid signature',
+  })
+  @UseGuards(AccountAccessGuard)
+  @Patch('/account-notifications/archive-all')
+  async archiveAccountNotifications(
+    @Body() body: AccountBearer,
+  ): Promise<void> {
+    await this.accountNotificationService.archiveAccountNotifications(
+      body.accountId,
+    );
   }
 
   @ApiParam({

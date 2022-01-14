@@ -1,0 +1,18 @@
+{{- if .Values.monitoring.metrics.enabled -}}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    {{- include "sputnik-v2-api.labels" . | nindent 4 }}
+    release: kube-prometheus-stack
+  name: api
+spec:
+  endpoints:
+    {{ .Values.monitoring.metrics.endpoints | toYaml | nindent 4 }}
+  namespaceSelector:
+    matchNames:
+    - {{ .Release.Namespace }}
+  selector:
+    matchLabels:
+      {{- include "sputnik-v2-api.selectorLabels" . | nindent 6 }}
+{{- end -}}

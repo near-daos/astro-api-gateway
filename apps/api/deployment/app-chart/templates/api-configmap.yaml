@@ -3,9 +3,11 @@ kind: ConfigMap
 metadata:
   name: sputnik-v2-api-configmap
 data:
+  NODE_OPTIONS: ' --max-old-space-size={{ include "node.maxOldSpaceSize" . }} '
   PORT: "3000"
   NEST_APP_TYPE: api
   REDIS_HTTP_CACHE_TTL: "60"
   WALLET_CALLBACK_URL: "{{ .Values.environment.wallet_callback_url }}"
   API_RATE_TTL: "{{ .Values.environment.api_rate_ttl }}"
   API_RATE_LIMIT: "{{ .Values.environment.api_rate_limit }}"
+  ADMIN_ACCOUNTS: "{{ .Values.environment.admin_accounts }}"

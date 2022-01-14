@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SchedulerRegistry } from '@nestjs/schedule';
+import { CronJob } from 'cron';
 import PromisePool from '@supercharge/promise-pool';
 
 import {
@@ -21,6 +22,7 @@ import { BountyAggregatorService } from './bounty-aggregator/bounty-aggregator.s
 import { AggregatorState } from './aggregator-state/aggregator-state';
 import { TokenAggregatorService } from './token-aggregator/token-aggregator.service';
 import { NFTAggregatorService } from './token-aggregator/nft-aggregator.service';
+import { StatsAggregatorService } from './stats-aggregator/stats-aggregator.service';
 
 @Injectable()
 export class AggregatorService {
@@ -41,6 +43,7 @@ export class AggregatorService {
     private readonly bountyAggregatorService: BountyAggregatorService,
     private readonly tokenAggregatorService: TokenAggregatorService,
     private readonly nftAggregatorService: NFTAggregatorService,
+    private readonly statsAggregatorService: StatsAggregatorService,
     private readonly schedulerRegistry: SchedulerRegistry,
     private readonly cacheService: CacheService,
   ) {
@@ -48,6 +51,8 @@ export class AggregatorService {
       pollingInterval,
       tokenPollingInterval,
       tokenPricesPollingInterval,
+      daoStatusPollingInterval,
+      daoStatsCronTime,
     } = this.configService.get('aggregator');
 
     schedulerRegistry.addInterval(
@@ -67,6 +72,20 @@ export class AggregatorService {
         tokenPricesPollingInterval,
       ),
     );
+
+    schedulerRegistry.addInterval(
+      'dao_status_polling',
+      setInterval(
+        () => this.scheduleDaoStatusAggregation(),
+        daoStatusPollingInterval,
+      ),
+    );
+
+    const daoStatsCron = new CronJob(daoStatsCronTime, () =>
+      this.handleDaoStatsCronAggregation(),
+    );
+    schedulerRegistry.addCronJob('dao_stats_cron', daoStatsCron);
+    daoStatsCron.start();
   }
 
   public async scheduleDaoAggregation(): Promise<void> {
@@ -104,6 +123,26 @@ export class AggregatorService {
       this.state.stopAggregation('token-price');
 
       this.logger.error(`Token Prices Aggregation failed with error: ${error}`);
+    }
+  }
+
+  public async scheduleDaoStatusAggregation(): Promise<void> {
+    try {
+      await this.aggregateDaoStatuses();
+    } catch (error) {
+      this.state.stopAggregation('dao-status');
+
+      this.logger.error(`DAO Status Aggregation failed with error: ${error}`);
+    }
+  }
+
+  public async handleDaoStatsCronAggregation(): Promise<void> {
+    try {
+      await this.aggregateDaoStats();
+    } catch (error) {
+      this.state.stopAggregation('dao-stats');
+
+      this.logger.error(`DAO Stats Aggregation failed with error: ${error}`);
     }
   }
 
@@ -147,6 +186,10 @@ export class AggregatorService {
 
     await this.tokenAggregatorService.aggregateDaoTokenUpdates(uniqueUpdates);
 
+    await this.daoAggregatorService.aggregateDaoFunds([
+      ...new Set(uniqueUpdates.map(({ account }) => account)),
+    ]);
+
     // TODO: https://app.clickup.com/t/1ty89nk
     await this.cacheService.clearCache();
 
@@ -168,6 +211,9 @@ export class AggregatorService {
     this.logger.log(
       `Aggregate token prices: ${updatedTokens.map(({ id }) => id)}`,
     );
+
+    await this.daoAggregatorService.aggregateDaoFunds();
+    this.logger.log(`DAO Funds updated`);
 
     // TODO: https://app.clickup.com/t/1ty89nk
     await this.cacheService.clearCache();
@@ -233,6 +279,36 @@ export class AggregatorService {
     this.state.stopAggregation('nft');
   }
 
+  public async aggregateDaoStatuses() {
+    if (this.state.isInProgress('dao-status')) {
+      return;
+    }
+
+    this.logger.log(`Start Dao Status aggregation...`);
+    this.state.startAggregation('dao-status');
+
+    await this.daoAggregatorService.aggregateDaoStatuses();
+    await this.cacheService.clearCache();
+
+    this.logger.log(`Finished Dao Status aggregation`);
+    this.state.stopAggregation('dao-status');
+  }
+
+  public async aggregateDaoStats() {
+    if (this.state.isInProgress('dao-stats')) {
+      return;
+    }
+
+    this.logger.log(`Start Dao Stats aggregation...`);
+    this.state.startAggregation('dao-stats');
+
+    await this.statsAggregatorService.aggregateAllDaoStats();
+
+    this.logger.log(`Finished Dao Stats aggregation`);
+    this.state.stopAggregation('dao-stats');
+    await this.cacheService.clearCache();
+  }
+
   // Sync service Database with transactions made after last aggregation
   public async aggregateNewDaoTransactions() {
     if (this.state.isInProgress('dao')) {
@@ -243,7 +319,7 @@ export class AggregatorService {
 
     this.state.startAggregation('dao');
 
-    await this.proposalService.updateExpiredProposals();
+    await this.proposalAggregatorService.updateExpiredProposals();
 
     const { contractName } = this.configService.get('near');
 
@@ -254,38 +330,39 @@ export class AggregatorService {
         lastTx?.blockTimestamp,
       );
 
-    // Map account changes to list of unique transactions made after last transaction
-    const transactions = accountChangeActions
-      .map(
-        (accountChange) =>
-          accountChange.causedByReceipt.originatedFromTransaction,
-      )
-      .filter(({ transactionHash, blockTimestamp }, index) => {
-        const isAfterLastTx =
-          !lastTx?.blockTimestamp || blockTimestamp > lastTx?.blockTimestamp;
-        return (
-          isAfterLastTx &&
-          index ===
-            accountChangeActions.findIndex(
-              (accountChange) =>
-                accountChange.causedByReceipt.originatedFromTransaction
-                  .transactionHash === transactionHash,
-            )
-        );
-      });
+    // Filter account changes made after last transaction
+    const newAccountChanges = accountChangeActions.filter((ac, i) => {
+      const { transactionHash, blockTimestamp } =
+        ac.causedByReceipt.originatedFromTransaction;
+      const isAfterLastTx =
+        !lastTx?.blockTimestamp || blockTimestamp > lastTx?.blockTimestamp;
+      return (
+        isAfterLastTx &&
+        i ===
+          accountChangeActions.findIndex(
+            (ac) =>
+              ac.causedByReceipt.originatedFromTransaction.transactionHash ===
+              transactionHash,
+          )
+      );
+    });
 
-    if (transactions.length === 0) {
-      this.logger.log('Skip DAO Aggregation. No new transactions found.');
+    if (newAccountChanges.length === 0) {
+      this.logger.log('Skip DAO Aggregation. No changes found.');
       this.state.stopAggregation('dao');
       return;
     }
 
-    await this.transactionHandlerService.handleNearIndexerTransactions(
-      transactions,
+    await this.transactionHandlerService.handleNearIndexerAccountChanges(
+      newAccountChanges,
     );
 
     this.logger.log('Storing aggregated Transactions...');
-    await this.transactionService.createMultiple(transactions);
+    await this.transactionService.createMultiple(
+      newAccountChanges.map(
+        (ac) => ac.causedByReceipt.originatedFromTransaction,
+      ),
+    );
 
     // TODO: https://app.clickup.com/t/1ty89nk
     await this.cacheService.clearCache();
@@ -297,7 +374,13 @@ export class AggregatorService {
   public async aggregateAllDaos() {
     this.logger.log(`Start all DAO aggregation`);
 
-    this.state.startAggregations(['dao', 'token', 'nft', 'token-price']);
+    this.state.startAggregations([
+      'dao',
+      'token',
+      'nft',
+      'token-price',
+      'dao-status',
+    ]);
 
     const tx = await this.transactionService.lastTransaction();
     const { contractName } = this.configService.get('near');
@@ -326,7 +409,13 @@ export class AggregatorService {
 
     await this.tokenAggregatorService.aggregateTokenPrices();
 
-    this.state.stopAggregations(['dao', 'token', 'nft', 'token-price']);
+    this.state.stopAggregations([
+      'dao',
+      'token',
+      'nft',
+      'token-price',
+      'dao-status',
+    ]);
     this.logger.log(`Finished all DAO aggregation`);
   }
 
@@ -365,6 +454,7 @@ export class AggregatorService {
         dao,
         daoTransactions,
       );
+      await this.daoAggregatorService.aggregateDaoAdditionalFields(dao);
 
       this.logger.log('Storing aggregated Transactions...');
       await this.transactionService.createMultiple(daoTransactions);
@@ -439,5 +529,31 @@ export class AggregatorService {
         `Failed NFT aggregation for DAO: ${account.accountId}. Error: ${error}`,
       );
     }
+  }
+
+  public async aggregateDaoById(daoId: string) {
+    const aggregationName = `dao-${daoId}`;
+
+    if (this.state.isInProgress(aggregationName)) {
+      this.logger.log(`Skip DAO aggregation. Already in progress`);
+      return;
+    }
+
+    this.logger.log(`Start aggregation for DAO: ${daoId}`);
+
+    this.state.startAggregation(aggregationName);
+
+    try {
+      const dao = await this.daoAggregatorService.aggregateDaoById(daoId);
+      await this.proposalAggregatorService.aggregateProposalsByDao(dao, []);
+      await this.bountyAggregatorService.aggregateBountiesByDao(dao, []);
+      await this.daoAggregatorService.aggregateDaoAdditionalFields(dao);
+
+      this.logger.log(`Successfully aggregated DAO: ${daoId}`);
+    } catch (error) {
+      this.logger.error(`Failed DAO aggregation ${daoId}. Error: ${error}`);
+    }
+
+    this.state.stopAggregation(aggregationName);
   }
 }

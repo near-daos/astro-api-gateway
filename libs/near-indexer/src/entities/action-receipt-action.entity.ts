@@ -14,7 +14,7 @@ export class ActionReceiptAction {
   @PrimaryColumn()
   indexInActionReceipt: number;
 
-  @OneToOne((_) => Transaction)
+  @OneToOne(() => Transaction)
   @JoinColumn({
     name: 'receipt_id',
     referencedColumnName: 'convertedIntoReceiptId',

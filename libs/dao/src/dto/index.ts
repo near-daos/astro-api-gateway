@@ -1,6 +1,4 @@
 export * from './dao.dto';
-export * from './dao-feed.dto';
-export * from './dao-feed-response.dto';
 export * from './dao-member-vote.dto';
 export * from './dao-response.dto';
 export * from './dao-sputnik.dto';

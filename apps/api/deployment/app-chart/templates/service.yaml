@@ -8,6 +8,7 @@ spec:
   type: {{ .Values.service.type }}
   ports:
     - port: {{ .Values.service.port }}
+      name: api
       targetPort: {{ .Values.service.targetPort }}
   selector:
     {{- include "sputnik-v2-api.selectorLabels" . | nindent 4 }}

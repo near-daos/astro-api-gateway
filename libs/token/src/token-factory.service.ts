@@ -42,8 +42,9 @@ export class TokenFactoryService {
         [],
       )
       .map((token) => {
-        let { ownerId, id, tokenId, metadata } = token;
-        ownerId = ownerId instanceof Object ? ownerId?.Account : ownerId;
+        const { ownerId: tokenOwnerId, id, tokenId, metadata } = token;
+        const ownerId =
+          tokenOwnerId instanceof Object ? tokenOwnerId?.Account : tokenOwnerId;
 
         return {
           ...token,

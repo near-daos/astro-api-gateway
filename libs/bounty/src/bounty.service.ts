@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 
 import { BountyDto } from './dto';
 import { Bounty } from './entities';
@@ -21,5 +21,12 @@ export class BountyService extends TypeOrmCrudService<Bounty> {
 
   async createMultiple(bountyDtos: BountyDto[]): Promise<Bounty[]> {
     return this.bountyRepository.save(bountyDtos);
+  }
+
+  async getDaoActiveBountiesCount(daoId: string): Promise<number> {
+    return this.bountyRepository.count({
+      daoId,
+      times: Not('0'),
+    });
   }
 }

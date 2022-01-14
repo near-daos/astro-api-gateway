@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiBody,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiParam,
@@ -75,7 +76,7 @@ export class SubscriptionsController {
   })
   @ApiBadRequestResponse({ description: 'Invalid Account ID' })
   @Get('/account-subscriptions/:accountId')
-  getAccountSubscriptions(
+  async getAccountSubscriptions(
     @Param() { accountId }: FindAccountParams,
   ): Promise<Subscription[]> {
     return this.subscriptionService.getAccountSubscriptions(accountId);
@@ -85,6 +86,7 @@ export class SubscriptionsController {
     name: 'id',
     type: String,
   })
+  @ApiBody({ type: SubscriptionDeleteDto })
   @ApiResponse({
     status: 200,
     description: 'OK',
@@ -98,10 +100,7 @@ export class SubscriptionsController {
   })
   @UseGuards(AccountAccessGuard)
   @Delete('/:id')
-  remove(
-    @Param() { id }: DeleteOneParams,
-    @Body() subscriptionDeleteDto: SubscriptionDeleteDto,
-  ): Promise<void> {
+  remove(@Param() { id }: DeleteOneParams): Promise<void> {
     return this.subscriptionService.remove(id);
   }
 }

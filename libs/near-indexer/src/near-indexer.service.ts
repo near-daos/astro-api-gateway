@@ -134,31 +134,33 @@ export class NearIndexerService {
     receiverAccountIds: string[],
     fromBlockTimestamp?: number,
   ): Promise<ActionReceiptAction[]> {
-    const { results: actionReceipts, errors } =
-      await PromisePool.withConcurrency(5)
-        .for(receiverAccountIds)
-        .process(async (id) => {
-          let queryBuilder = this.actionReceiptActionRepository
-            .createQueryBuilder('action_receipt_action')
-            .leftJoinAndSelect(
-              'action_receipt_action.transaction',
-              'transactions',
-            )
-            .where(
-              "action_receipt_action.args->'args_json'->>'receiver_id' = :id and action_kind = 'FUNCTION_CALL' and action_receipt_action.args->>'args_json' is not null and args->>'method_name' like 'nft_%'",
-              {
-                id,
-              },
-            );
+    const { results: actionReceipts } = await PromisePool.withConcurrency(5)
+      .for(receiverAccountIds)
+      .process(async (id) => {
+        let queryBuilder = this.actionReceiptActionRepository
+          .createQueryBuilder('action_receipt_action')
+          .leftJoinAndSelect(
+            'action_receipt_action.transaction',
+            'transactions',
+          )
+          .where("action_kind = 'FUNCTION_CALL'")
+          .andWhere("action_receipt_action.args->>'args_json' is not null")
+          .andWhere(
+            "action_receipt_action.args->'args_json'->>'receiver_id' = :id",
+            {
+              id,
+            },
+          )
+          .andWhere("args->>'method_name' like 'nft_%'");
 
-          queryBuilder = fromBlockTimestamp
-            ? queryBuilder.andWhere('transaction.block_timestamp >= :from', {
-                from: fromBlockTimestamp,
-              })
-            : queryBuilder;
+        queryBuilder = fromBlockTimestamp
+          ? queryBuilder.andWhere('transaction.block_timestamp >= :from', {
+              from: fromBlockTimestamp,
+            })
+          : queryBuilder;
 
-          return await queryBuilder.getMany();
-        });
+        return await queryBuilder.getMany();
+      });
 
     return actionReceipts.reduce((acc, prop) => acc.concat(prop), []);
   }
@@ -531,6 +533,7 @@ export class NearIndexerService {
         'transactions.transactionAction',
         'transaction_actions',
       )
+      .leftJoinAndSelect('receipts.receiptActions', 'action_receipt_actions')
       .where('account_change.affected_account_id like :id', {
         id: `%${contractName}%`,
       })

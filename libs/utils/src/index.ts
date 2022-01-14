@@ -1,8 +1,8 @@
 import Decimal from 'decimal.js';
 
 import { DaoDto, Dao } from '@sputnik-v2/dao';
-import { ProposalDto, Proposal, ProposalVariant } from '@sputnik-v2/proposal';
-import { BaseResponse, PROPOSAL_DESC_SEPARATOR } from '@sputnik-v2/common';
+import { ProposalDto, Proposal } from '@sputnik-v2/proposal';
+import { BaseResponse } from '@sputnik-v2/common';
 
 export const formatTimestamp = (timestamp: number): string => {
   const seconds = Number(timestamp / 1e9);
@@ -105,6 +105,10 @@ export const buildCommentReportId = (
   return `${commentId}-${accountId.toLowerCase()}`;
 };
 
+export const buildDaoStatsId = (daoId: string, timestamp: number): string => {
+  return `${daoId}-${timestamp}`;
+};
+
 export const decodeBase64 = (b: string) => {
   return Buffer.from(b, 'base64').toString('utf-8');
 };
@@ -163,4 +167,10 @@ export const calculateClaimEndTime = (
 export const calculateFunds = (amount, price, decimals): number => {
   const value = Number(BigInt(amount) / BigInt(10) ** BigInt(decimals));
   return value > 0 && price > 0 ? value * price : 0;
+};
+
+export const getGrowth = (current: number, prev?: number) => {
+  return typeof prev === 'number'
+    ? Math.round(((current - prev) / (current || 1)) * 10000) / 100
+    : 0;
 };

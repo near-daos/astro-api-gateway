@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { NearApiService } from '@sputnik-v2/near-api';
+import { SputnikService } from '@sputnik-v2/sputnikdao';
 import { DaoService } from '@sputnik-v2/dao';
 import {
   ProposalService,
@@ -41,6 +42,7 @@ export class TransactionActionHandlerService {
     private readonly transactionRepository: Repository<Transaction>,
     private readonly configService: ConfigService,
     private readonly nearApiService: NearApiService,
+    private readonly sputnikService: SputnikService,
     private readonly daoService: DaoService,
     private readonly proposalService: ProposalService,
     private readonly bountyService: BountyService,
@@ -120,7 +122,7 @@ export class TransactionActionHandlerService {
     });
 
     this.logger.log(`Storing new DAO: ${daoId} due to transaction`);
-    await this.daoService.create(dao);
+    await this.daoService.saveWithFunds(dao);
     this.logger.log(`Successfully stored new DAO: ${daoId}`);
 
     await this.eventService.sendDaoUpdateNotificationEvent(dao, txAction);
@@ -134,11 +136,13 @@ export class TransactionActionHandlerService {
     );
     const daoEntity = await this.daoService.findOne(receiverId);
     const lastProposalId = await daoContract.get_last_proposal_id();
-    const daoProposal = await this.findLastProposal(
+    const daoProposal = await this.sputnikService.findLastProposal(
       receiverId,
-      signerId,
       lastProposalId,
-      args.proposal,
+      {
+        ...args.proposal,
+        proposer: signerId,
+      },
     );
     const proposal = castCreateProposal({
       transactionHash,
@@ -159,7 +163,7 @@ export class TransactionActionHandlerService {
     this.logger.log(`Successfully stored Proposal: ${proposal.id}`);
 
     this.logger.log(`Updating DAO: ${receiverId} due to transaction`);
-    await this.daoService.create(dao);
+    await this.daoService.saveWithProposalCount(dao);
     this.logger.log(`DAO successfully updated: ${receiverId}`);
 
     await this.eventService.sendProposalUpdateNotificationEvent(
@@ -297,7 +301,7 @@ export class TransactionActionHandlerService {
     this.logger.log(`Proposal successfully updated: ${proposal.id}`);
 
     this.logger.log(`Updating DAO: ${receiverId} due to transaction`);
-    await this.daoService.create(
+    await this.daoService.saveWithAdditionalFields(
       castActProposalDao({
         dao,
         amount: state.amount,
@@ -341,7 +345,7 @@ export class TransactionActionHandlerService {
     this.logger.log(`Proposal successfully updated: ${proposal.id}`);
 
     this.logger.log(`Updating DAO: ${receiverId} due to transaction`);
-    await this.daoService.create(
+    await this.daoService.saveWithProposalCount(
       castActProposalDao({
         dao,
         amount: state.amount,
@@ -387,7 +391,7 @@ export class TransactionActionHandlerService {
     }
 
     this.logger.log(`Updating DAO: ${receiverId} due to transaction`);
-    await this.daoService.create(
+    await this.daoService.saveWithProposalCount(
       castActProposalDao({
         dao,
         amount: state.amount,
@@ -406,11 +410,12 @@ export class TransactionActionHandlerService {
     timestamp,
   }) {
     const bountyData = proposal.kind?.kind.bounty;
-    const bountyId = await this.findLastBountyId(
+    const daoBounty = await this.sputnikService.findLastBounty(
       dao.id,
       lastBountyId,
       bountyData,
     );
+    const bountyId = daoBounty?.id;
     const bounty = await this.bountyService.findOne({
       id: buildBountyId(dao.id, bountyId),
     });
@@ -517,77 +522,8 @@ export class TransactionActionHandlerService {
     dao.amount = Number(state.amount);
 
     this.logger.log(`Updating DAO: ${receiverId} due to transaction`);
-    await this.daoService.create({ ...dao });
+    await this.daoService.saveWithFunds({ ...dao });
     this.logger.log(`DAO successfully updated: ${receiverId}`);
-  }
-
-  // TODO: Optimize this logic
-  private async findLastBountyId(
-    daoId: string,
-    lastBountyId: number,
-    bountyData,
-  ): Promise<string | undefined> {
-    const daoContract = this.nearApiService.getContract('sputnikDao', daoId);
-    const chunkSize = 50;
-    const chunkCount =
-      (lastBountyId - (lastBountyId % chunkSize)) / chunkSize + 1;
-    let bounties = [];
-
-    for (let i = 0; i < chunkCount; i++) {
-      const bountiesChunk = await daoContract.get_bounties({
-        from_index: chunkSize * i,
-        limit: chunkSize,
-      });
-      bounties = bounties.concat(bountiesChunk);
-    }
-
-    return bounties
-      .reverse()
-      .find(({ description, token, amount, times, max_deadline }) => {
-        return (
-          description === bountyData.description &&
-          token === bountyData.token &&
-          amount === bountyData.amount &&
-          times === bountyData.times &&
-          max_deadline === bountyData.maxDeadline
-        );
-      })?.id;
-  }
-
-  // TODO: Optimize this logic
-  private async findLastProposal(
-    daoId: string,
-    proposerId: string,
-    lastProposalId: number,
-    proposalData,
-  ) {
-    const daoContract = this.nearApiService.getContract('sputnikDao', daoId);
-    const chunkSize = 50;
-    const chunkCount =
-      (lastProposalId - (lastProposalId % chunkSize)) / chunkSize + 1;
-    let proposals = [];
-
-    // Load all proposals by chunks
-    for (let i = 0; i < chunkCount; i++) {
-      const proposalsChunk = await daoContract.get_proposals({
-        from_index: chunkSize * i,
-        limit: chunkSize,
-      });
-      proposals = proposals.concat(proposalsChunk);
-    }
-
-    return proposals.reverse().find(({ description, proposer, kind }) => {
-      const hasSameKind =
-        typeof kind === 'string'
-          ? kind === proposalData.kind
-          : Object.keys(kind).toString() ===
-            Object.keys(proposalData.kind).toString();
-      return (
-        description === proposalData.description &&
-        proposerId === proposer &&
-        hasSameKind
-      );
-    });
   }
 
   private getContractHandlers(receiverId: string): ContractHandler[] {

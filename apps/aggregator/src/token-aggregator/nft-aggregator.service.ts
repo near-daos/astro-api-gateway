@@ -37,8 +37,8 @@ export class NFTAggregatorService {
           ...updates,
           ...action.args.token_ids
             .filter((arr) => Array.isArray(arr) && arr[1])
-            .map(([id, account]) => ({
-              account: account,
+            .map((arr) => ({
+              account: arr[1],
               nft: action.nft,
               timestamp: action.timestamp,
             })),

@@ -2,7 +2,7 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-replicaCount: 1
+replicaCount: 2
 
 image:
   repository: 398077236708.dkr.ecr.eu-central-1.amazonaws.com
@@ -34,15 +34,15 @@ container:
     successThreshold: 1
     timeoutSeconds: 60
     port: 3000
-    path: /api/v1
+    path: /api/v1/daos
   readinessProbe:
     failureThreshold: 10
-    initialDelaySeconds: 20
+    initialDelaySeconds: 25
     periodSeconds: 60
     successThreshold: 1
     timeoutSeconds: 60
     port: 3000
-    path: /api/v1
+    path: /api/v1/daos
 
 serviceAccount:
   # Specifies whether a service account should be created
@@ -74,10 +74,10 @@ ingress:
 
 resources:
   limits:
-    memory: 300Mi
+    memory: 600Mi
   requests:
     cpu: 100m
-    memory: 200Mi
+    memory: 600Mi
 
 nodeSelector: {}
 
@@ -89,6 +89,13 @@ version:
   commit: latest
   branch: develop
 
+monitoring:
+  metrics:
+    enabled: true
+    endpoints:
+    - path: /api/v1/metrics
+      port: api
+
 environment:
   near_env: "testnet"
   near_contract_name: "sputnikv2.testnet"
@@ -97,8 +104,12 @@ environment:
   aggregator_polling_interval: "5000"
   aggregator_token_polling_interval: "10000"
   aggregator_token_prices_polling_interval: "100000"
-  dao_polling_interval: "2000"
-  proposal_vote_status_update_interval: "2000"
+  # 12 hours
+  aggregator_dao_status_polling_interval: "43200000"
+  # Every day at 23:55
+  aggregator_dao_stats_cron_time: "55 23 * * *"
   wallet_callback_url: ""
+  admin_accounts: ""
   api_rate_ttl: "60"
   api_rate_limit: "5"
+  admin_accounts: "vhorin-dev.near"

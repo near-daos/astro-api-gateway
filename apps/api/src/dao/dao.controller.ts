@@ -13,22 +13,15 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { ParsedRequest, CrudRequest } from '@nestjsx/crud';
+import { CrudRequest, ParsedRequest } from '@nestjsx/crud';
 import {
+  EntityQuery,
+  FindAccountParams,
   FindOneParams,
   HttpCacheInterceptor,
-  EntityQuery,
   QueryFailedErrorFilter,
-  FindAccountParams,
 } from '@sputnik-v2/common';
-import {
-  DaoService,
-  Dao,
-  DaoResponse,
-  DaoFeed,
-  DaoFeedResponse,
-  DaoMemberVote,
-} from '@sputnik-v2/dao';
+import { Dao, DaoMemberVote, DaoResponse, DaoService } from '@sputnik-v2/dao';
 
 import { DaoCrudRequestInterceptor } from './interceptors/dao-crud.interceptor';
 
@@ -55,53 +48,14 @@ export class DaoController {
     return await this.daoService.getMany(query);
   }
 
-  @ApiResponse({
-    status: 200,
-    description: 'Sputnik DAOs Feed',
-    type: DaoResponse,
-  })
-  @ApiBadRequestResponse({
-    description: 'Bad Request Response based on the query params set',
-  })
-  @UseInterceptors(HttpCacheInterceptor, DaoCrudRequestInterceptor)
-  @UseFilters(new QueryFailedErrorFilter())
-  @ApiQuery({ type: EntityQuery })
-  @Get('/feed')
-  async daosFeed(
-    @ParsedRequest() query: CrudRequest,
-  ): Promise<DaoFeed[] | DaoFeedResponse> {
-    return await this.daoService.getFeed(query);
-  }
-
-  @ApiResponse({
-    status: 200,
-    description: 'Sputnik DAO Feed',
-    type: DaoFeed,
-  })
-  @ApiBadRequestResponse({ description: 'Invalid Dao ID' })
-  @UseInterceptors(HttpCacheInterceptor)
-  @ApiParam({
-    name: 'id',
-    type: String,
-  })
-  @Get('/feed/:id')
-  async daoFeed(@Param() { id }: FindOneParams): Promise<DaoFeed> {
-    const daoFeed = await this.daoService.getDaoFeed(id);
-
-    if (!daoFeed) {
-      throw new BadRequestException('Invalid Dao ID');
-    }
-
-    return daoFeed;
-  }
-
   @ApiParam({
     name: 'accountId',
     type: String,
   })
   @ApiResponse({
     status: 200,
-    description: 'Sputnik DAO',
+    description: 'List of Sputnik DAOs by Account',
+    isArray: true,
     type: Dao,
   })
   @ApiBadRequestResponse({ description: 'Invalid accountId' })
@@ -126,7 +80,7 @@ export class DaoController {
   @UseInterceptors(HttpCacheInterceptor)
   @Get('/:id')
   async daoById(@Param() { id }: FindOneParams): Promise<Dao> {
-    const dao: Dao = await this.daoService.findOne(id);
+    const dao: Dao = await this.daoService.findById(id);
 
     if (!dao) {
       throw new BadRequestException('Invalid Dao ID');

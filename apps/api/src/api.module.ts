@@ -9,8 +9,8 @@ import configuration, {
 import { CacheConfigService } from '@sputnik-v2/config/api-config';
 import { HttpCacheModule } from '@sputnik-v2/cache';
 import { ThrottlerModule, ThrottlerModuleOptions } from '@nestjs/throttler';
+import { EventModule } from '@sputnik-v2/event';
 
-import { AccountModule } from './account/account.module';
 import { BountyModule } from './bounty/bounty.module';
 import { DaoModule } from './dao/dao.module';
 import { ProposalModule } from './proposal/proposal.module';
@@ -21,9 +21,11 @@ import { TransactionModule } from './transaction/transaction.module';
 import { AppController } from './api.controller';
 import { WebsocketModule } from './websocket/websocket.module';
 import { WebsocketGateway } from './websocket/websocket.gateway';
-import { EventModule } from '@sputnik-v2/event';
 import { NotificationModule } from './notification/notification.module';
 import { CommentModule } from './comment/comment.module';
+import { AggregatorModule } from './aggregator/aggregator.module';
+import { MetricsModule } from './metrics/metrics.module';
+import { StatsModule } from './stats/stats.module';
 
 @Module({
   imports: [
@@ -49,7 +51,6 @@ import { CommentModule } from './comment/comment.module';
         };
       },
     }),
-    AccountModule,
     BountyModule,
     DaoModule,
     ProposalModule,
@@ -62,6 +63,9 @@ import { CommentModule } from './comment/comment.module';
     EventModule,
     NotificationModule,
     CommentModule,
+    AggregatorModule,
+    MetricsModule,
+    StatsModule,
   ],
   controllers: [AppController],
   providers: [WebsocketGateway],
