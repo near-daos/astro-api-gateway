@@ -1,6 +1,14 @@
 # SPUTNIK API TEST FRAMEWORK
 This framework is intended to be used for testing of Sputnik v2 API
 
+[![Launch API Autotests On Schedule](https://github.com/near-daos/astro-api-gateway/actions/workflows/launch-autotests-on-schedule.yaml/badge.svg)](https://github.com/near-daos/astro-api-gateway/actions/workflows/launch-autotests-on-schedule.yaml)
+[![Manual API Autotests run](https://github.com/near-daos/astro-api-gateway/actions/workflows/run-autotests.yaml/badge.svg)](https://github.com/near-daos/astro-api-gateway/actions/workflows/run-autotests.yaml)
+
+##Test execution reports
+- [API test coverage and Allure reports - **develop** environment](https://automation-report.app.astrodao.com/develop/)
+- [API test coverage and Allure reports - **testnet** environment](https://automation-report.app.astrodao.com/test/)
+
+
 ## Tests Execution
 
 ### Global preconditions
