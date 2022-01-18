@@ -2,6 +2,7 @@ import { HttpService, Injectable, Logger } from '@nestjs/common';
 import PromisePool from '@supercharge/promise-pool';
 import { lastValueFrom, map } from 'rxjs';
 import { ConfigService } from '@nestjs/config';
+import https from 'https';
 
 import { NearApiService } from '@sputnik-v2/near-api';
 import { Token, TokenService, TokenUpdateDto } from '@sputnik-v2/token';
@@ -108,7 +109,11 @@ export class TokenAggregatorService {
     const tokenPrices = tokenApiUrl
       ? await lastValueFrom(
           this.httpService
-            .get(`${tokenApiUrl}/last-tvl`)
+            .get(`${tokenApiUrl}/last-tvl`, {
+              httpsAgent: new https.Agent({
+                rejectUnauthorized: false,
+              }),
+            })
             .pipe(map((res) => res.data)),
         )
       : [];
