@@ -20,9 +20,6 @@ public class TransactionsApi {
     @Value("${framework.api.url}")
     private String apiUrl;
 
-    @Value("${framework.app.url}")
-    private String appUrl;
-
     public ResponseEntity<String> triggerCallback(String accountId, String transactionHashes) {
         HttpHeaders httpHeaders = httpClient.getBasicHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.ALL));
