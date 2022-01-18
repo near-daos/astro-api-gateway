@@ -110,7 +110,7 @@ export class TokenAggregatorService {
           this.httpService
             .get(`${tokenApiUrl}/last-tvl`)
             .pipe(map((res) => res.data)),
-        )
+        ).catch(() => [])
       : [];
     const updatedTokens = tokenPrices.reduce((updatedTokens, tokenPrice) => {
       const token = tokens.find(
