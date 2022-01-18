@@ -98,6 +98,13 @@ public abstract class BaseSteps {
                 .isNull();
     }
 
+    @Step("User sees string contains value")
+    public void assertStringContainsValue(String value, String expectedValue) {
+        assertThat(value)
+                .as("String should contain value.")
+                .contains(expectedValue);
+    }
+
     public <T> T getResponseDto(ResponseEntity<String> entity, Class<T> clazz) {
         return JsonUtils.readValue(entity.getBody(), clazz);
     }

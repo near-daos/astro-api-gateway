@@ -10,6 +10,7 @@ import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.HeaderParameter;
 import io.swagger.v3.oas.models.parameters.QueryParameter;
+import io.swagger.v3.oas.models.parameters.RequestBody;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
 import io.swagger.v3.oas.models.servers.Server;
@@ -72,14 +73,24 @@ public class SwaggerCoverageV3RestTemplate implements ClientHttpRequestIntercept
                         .collect(Collectors.toMap(s -> s[0], s -> s[1]))
                         .forEach((n, v) -> mediaType.getSchema().addProperties(n, new Schema().example(v)));
             }
+            operation.requestBody(new RequestBody().content(
+                    new Content().addMediaType(request.getHeaders().getContentType().toString(), mediaType))
+            );
         }
 
         ClientHttpResponse response = execution.execute(request, body);
 
-        operation.responses(new ApiResponses().addApiResponse(valueOf(response.getRawStatusCode()),
-                new ApiResponse().content(
-                        new Content().addMediaType(response.getHeaders().getContentType().toString(), new MediaType())))
-        );
+        if (response.getHeaders().getContentType() != null) {
+            operation.responses(new ApiResponses().addApiResponse(valueOf(response.getRawStatusCode()),
+                    new ApiResponse().content(
+                            new Content().addMediaType(response.getHeaders().getContentType().toString(), new MediaType())))
+            );
+        } else {
+            operation.responses(new ApiResponses().addApiResponse(valueOf(response.getRawStatusCode()),
+                    new ApiResponse().content(
+                            new Content().addMediaType(ApiResponses.DEFAULT, new MediaType())))
+            );
+        }
 
         PathItem pathItem = new PathItem();
         pathItem.operation(PathItem.HttpMethod.valueOf(request.getMethod().name()), operation);

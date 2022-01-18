@@ -2,6 +2,7 @@ package api.app.astrodao.com.core.utils;
 
 import api.app.astrodao.com.core.exceptions.CLIExecutionNotSuccessful;
 import api.app.astrodao.com.core.exceptions.FailedToExecuteCLICommand;
+import api.app.astrodao.com.core.exceptions.NotEnoughBalanceExecution;
 import io.qameta.allure.Allure;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
@@ -39,11 +40,19 @@ public class CLIUtils {
                 output.stream().collect(Collectors.joining(System.lineSeparator())));
 
         int exitValue = process.exitValue();
+        String outputText = output.stream().collect(Collectors.joining(System.lineSeparator()));
         if (exitValue != 0) {
-            throw new CLIExecutionNotSuccessful(
-                    String.format("Something went wrong, got '%s' exit value for the process, console output:\n%s",
-                    exitValue, output.stream().collect(Collectors.joining(System.lineSeparator())))
-            );
+            if (outputText.contains("not enough balance")) {
+                throw new NotEnoughBalanceExecution(
+                        String.format("Looks like you don't have enough balance for the account, console output:\n%s",
+                                outputText)
+                );
+            } else {
+                throw new CLIExecutionNotSuccessful(
+                        String.format("Something went wrong, got '%s' exit value for the process, console output:\n%s",
+                                exitValue, outputText)
+                );
+            }
         }
 
         return output;
