@@ -110,7 +110,10 @@ export class TokenAggregatorService {
           this.httpService
             .get(`${tokenApiUrl}/last-tvl`)
             .pipe(map((res) => res.data)),
-        ).catch(() => [])
+        ).catch((error) => {
+          this.logger.error(`Failed to load token prices with error: ${error}`);
+          return [];
+        })
       : [];
     const updatedTokens = tokenPrices.reduce((updatedTokens, tokenPrice) => {
       const token = tokens.find(
