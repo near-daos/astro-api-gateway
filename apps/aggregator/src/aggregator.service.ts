@@ -353,16 +353,13 @@ export class AggregatorService {
       return;
     }
 
-    await this.transactionHandlerService.handleNearIndexerAccountChanges(
-      newAccountChanges,
-    );
+    const transactions =
+      await this.transactionHandlerService.handleNearIndexerAccountChanges(
+        newAccountChanges,
+      );
 
     this.logger.log('Storing aggregated Transactions...');
-    await this.transactionService.createMultiple(
-      newAccountChanges.map(
-        (ac) => ac.causedByReceipt.originatedFromTransaction,
-      ),
-    );
+    await this.transactionService.createMultiple(transactions);
 
     // TODO: https://app.clickup.com/t/1ty89nk
     await this.cacheService.clearCache();
