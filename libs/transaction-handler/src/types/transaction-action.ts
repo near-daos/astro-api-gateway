@@ -1,9 +1,15 @@
 import {
   NearTransactionAction,
   NearTransactionReceipt,
+  NearTransactionStatus,
 } from '@sputnik-v2/near-api/types';
-import { Receipt, ReceiptAction } from '@sputnik-v2/near-indexer/entities';
+import {
+  Receipt,
+  ReceiptAction,
+  TransactionAction as TransactionActionEntity,
+} from '@sputnik-v2/near-indexer/entities';
 import { getBlockTimestamp } from '@sputnik-v2/utils';
+import { ActionKind } from '@sputnik-v2/near-indexer';
 
 export type TransactionAction = {
   receiverId: string;
@@ -44,5 +50,18 @@ export function castNearIndexerReceiptAction(
     args: ac?.args?.args_json,
     deposit: (ac?.args?.deposit as string) || '0',
     timestamp: receipt.originatedFromTransaction.blockTimestamp,
+  };
+}
+
+export function castTransactionActionEntity(
+  txStatus: NearTransactionStatus,
+  actionIndex = 0,
+): Partial<TransactionActionEntity> {
+  const action = txStatus.transaction.actions[actionIndex];
+  const actionKindKey = Object.keys(ActionKind).find((key) => action[key]);
+  return {
+    transactionHash: txStatus.transaction.hash,
+    indexInTransaction: actionIndex,
+    actionKind: ActionKind[actionKindKey],
   };
 }
