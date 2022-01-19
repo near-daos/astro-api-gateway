@@ -34,6 +34,7 @@ export class BountyProposalIdMigration implements Migration {
     });
     this.logger.log(`Retrieved ${bountiesToMigrate.length} Bounties.`);
 
+    this.logger.log('Setting proposalId field...');
     const updatedBounties = bountiesToMigrate.map((bounty) => {
       return {
         ...bounty,
@@ -41,7 +42,10 @@ export class BountyProposalIdMigration implements Migration {
       };
     });
 
+    this.logger.log('Updating bounties...');
     await this.bountyService.createMultiple(updatedBounties);
+
+    this.logger.log('Bounty Proposal Id migration finished.');
   }
 
   private findBountyProposalId(
