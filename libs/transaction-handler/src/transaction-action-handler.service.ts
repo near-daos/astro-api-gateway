@@ -429,6 +429,7 @@ export class TransactionActionHandlerService {
     await this.bountyService.create(
       castAddBounty({
         dao,
+        proposal,
         bounty: bountyData,
         bountyId,
         transactionHash,

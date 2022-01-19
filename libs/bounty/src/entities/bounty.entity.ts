@@ -23,6 +23,10 @@ export class Bounty extends TransactionEntity {
   bountyId: number;
 
   @ApiProperty()
+  @Column({ nullable: true })
+  proposalId: string;
+
+  @ApiProperty()
   @Column()
   daoId: string;
 
