@@ -9,7 +9,7 @@ import {
   EVENT_NEW_NOTIFICATION,
 } from '@sputnik-v2/common';
 
-import { RedisPropagatorService } from './websocket/redis-propagator/redis-propagator.service';
+import { SocketService } from './websocket/socket/socket.service';
 
 @Controller()
 export class AppController {
@@ -17,7 +17,7 @@ export class AppController {
 
   constructor(
     private readonly cacheService: CacheService,
-    private readonly redisPropagatorService: RedisPropagatorService,
+    private readonly socketService: SocketService,
   ) {}
 
   @ApiExcludeEndpoint()
@@ -31,11 +31,11 @@ export class AppController {
     this.logger.log(
       `Sending new notification ${data.notification.type} to Websocket clients.`,
     );
-    this.redisPropagatorService.consumeEmitToAllEvent({
+    this.socketService.emitToAllEvent({
       event: 'notification',
       data: data.notification,
     });
-    this.redisPropagatorService.consumeEmitToAuthenticatedEvent({
+    this.socketService.emitToAuthenticatedEvent({
       event: 'account-notification',
       accountEvents: data.accountNotifications,
     });
@@ -46,7 +46,7 @@ export class AppController {
     this.logger.log(
       `Sending new comment ${data.comment.id} to Websocket clients.`,
     );
-    this.redisPropagatorService.consumeEmitToAllEvent({
+    this.socketService.emitToAllEvent({
       event: 'comment',
       data: data.comment,
     });
@@ -57,7 +57,7 @@ export class AppController {
     this.logger.log(
       `Sending removed comment ${data.comment.id} to Websocket clients.`,
     );
-    this.redisPropagatorService.consumeEmitToAllEvent({
+    this.socketService.emitToAllEvent({
       event: 'comment-removed',
       data: data.comment,
     });

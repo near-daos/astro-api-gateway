@@ -1,24 +1,22 @@
 import { Injectable } from '@nestjs/common';
 import { tap } from 'rxjs';
-import { Server } from 'socket.io';
 import { RedisService } from '../redis/redis.service';
 import { SocketStateService } from '../socket-state/socket-state.service';
-import { RedisSocketEventEmitDTO } from './dto/socket-event-emit.dto';
-import { RedisSocketEventSendDTO } from './dto/socket-event-send.dto';
+import { SocketEventEmitDTO } from '../socket/dto/socket-event-emit.dto';
+import { SocketEventSendDTO } from '../socket/dto/socket-event-send.dto';
 import {
   REDIS_SOCKET_EVENT_EMIT_ALL_NAME,
   REDIS_SOCKET_EVENT_EMIT_AUTHENTICATED_NAME,
   REDIS_SOCKET_EVENT_SEND_NAME,
 } from './redis-propagator.constants';
-import { AuthenticatedSocket } from '../socket-state/socket-state.adapter';
+import { SocketService } from '../socket/socket.service';
 
 @Injectable()
 export class RedisPropagatorService {
-  private socketServer: Server;
-
   public constructor(
     private readonly socketStateService: SocketStateService,
     private readonly redisService: RedisService,
+    private readonly socketService: SocketService,
   ) {
     this.redisService
       .fromEvent(REDIS_SOCKET_EVENT_SEND_NAME)
@@ -36,42 +34,21 @@ export class RedisPropagatorService {
       .subscribe();
   }
 
-  public consumeSendEvent = (eventInfo: RedisSocketEventSendDTO): void => {
-    const { accountId, event, data, socketId } = eventInfo;
-
-    return this.socketStateService
-      .get(accountId)
-      .filter((socket) => socket.id !== socketId)
-      .forEach((socket) => socket.emit(event, data));
+  public consumeSendEvent = (eventInfo: SocketEventSendDTO): void => {
+    return this.socketService.sendEvent(eventInfo);
   };
 
-  public consumeEmitToAllEvent = (eventInfo: RedisSocketEventEmitDTO): void => {
-    this.socketServer.emit(eventInfo.event, eventInfo.data);
+  public consumeEmitToAllEvent = (eventInfo: SocketEventEmitDTO): void => {
+    this.socketService.emitToAllEvent(eventInfo);
   };
 
   public consumeEmitToAuthenticatedEvent = (
-    eventInfo: RedisSocketEventEmitDTO,
+    eventInfo: SocketEventEmitDTO,
   ): void => {
-    const { event, data, accountEvents } = eventInfo;
-
-    return this.socketStateService
-      .getAll()
-      .forEach((socket: AuthenticatedSocket) => {
-        if (!Array.isArray(accountEvents)) {
-          socket.emit(event, data);
-        } else {
-          const accountEvent = accountEvents.find(
-            ({ accountId }) => accountId === socket.auth?.accountId,
-          );
-
-          if (accountEvent) {
-            socket.emit(event, accountEvent.data);
-          }
-        }
-      });
+    return this.socketService.emitToAuthenticatedEvent(eventInfo);
   };
 
-  public propagateEvent(eventInfo: RedisSocketEventSendDTO): boolean {
+  public propagateEvent(eventInfo: SocketEventSendDTO): boolean {
     if (!eventInfo.accountId) {
       return false;
     }
@@ -81,7 +58,7 @@ export class RedisPropagatorService {
     return true;
   }
 
-  public emitToAuthenticated(eventInfo: RedisSocketEventEmitDTO): boolean {
+  public emitToAuthenticated(eventInfo: SocketEventEmitDTO): boolean {
     this.redisService.publish(
       REDIS_SOCKET_EVENT_EMIT_AUTHENTICATED_NAME,
       eventInfo,
@@ -90,15 +67,9 @@ export class RedisPropagatorService {
     return true;
   }
 
-  public emitToAll(eventInfo: RedisSocketEventEmitDTO): boolean {
+  public emitToAll(eventInfo: SocketEventEmitDTO): boolean {
     this.redisService.publish(REDIS_SOCKET_EVENT_EMIT_ALL_NAME, eventInfo);
 
     return true;
-  }
-
-  public injectSocketServer(server: Server): RedisPropagatorService {
-    this.socketServer = server;
-
-    return this;
   }
 }

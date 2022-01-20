@@ -2,9 +2,9 @@ import { INestApplicationContext, WebSocketAdapter } from '@nestjs/common';
 import { IoAdapter } from '@nestjs/platform-socket.io';
 import socketio from 'socket.io';
 import { AccountAccessGuard } from '@sputnik-v2/common';
-import { RedisPropagatorService } from '../redis-propagator/redis-propagator.service';
 
 import { SocketStateService } from './socket-state.service';
+import { SocketService } from '../socket/socket.service';
 
 interface TokenPayload {
   readonly accountId: string;
@@ -18,7 +18,7 @@ export class SocketStateAdapter extends IoAdapter implements WebSocketAdapter {
   public constructor(
     private readonly app: INestApplicationContext,
     private readonly socketStateService: SocketStateService,
-    private readonly redisPropagatorService: RedisPropagatorService,
+    private readonly socketService: SocketService,
   ) {
     super(app);
   }
@@ -29,7 +29,7 @@ export class SocketStateAdapter extends IoAdapter implements WebSocketAdapter {
   ): socketio.Server {
     const server = super.createIOServer(port, options);
     const accountAccessGuard = this.app.get(AccountAccessGuard);
-    this.redisPropagatorService.injectSocketServer(server);
+    this.socketService.injectSocketServer(server);
 
     server.use(async (socket: AuthenticatedSocket, next) => {
       const { accountId, publicKey, signature } = socket.handshake.query || {};
