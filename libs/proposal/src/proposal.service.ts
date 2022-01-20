@@ -59,6 +59,10 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
     return this.proposalRepository.save(proposal);
   }
 
+  updateMultiple(proposal: Partial<Proposal>[]): Promise<Proposal[]> {
+    return this.proposalRepository.save(proposal);
+  }
+
   async getMany(req: CrudRequest): Promise<ProposalResponse | Proposal[]> {
     const proposalResponse = await super.getMany(req);
 

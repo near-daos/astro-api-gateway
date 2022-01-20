@@ -167,7 +167,7 @@ export class TransactionActionHandlerService {
       this.logger.log(
         `Storing Bounty Context: ${proposal.id} due to transaction`,
       );
-      await this.bountyContextService.createBountyContext({
+      await this.bountyContextService.create({
         id: proposal.id,
         daoId: proposal.daoId,
       });

@@ -49,9 +49,7 @@ export class ProposalAggregatorService {
       proposalDtos,
     );
 
-    await this.bountyContextService.createBountyContextMultiple(
-      bountyContextDtos,
-    );
+    await this.bountyContextService.createMultiple(bountyContextDtos);
 
     return createdProposals;
   }

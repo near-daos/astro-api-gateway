@@ -4,7 +4,7 @@ import { DaoMetadataMigration } from './dao-metadata.migration';
 import { BountyClaimEndTimeMigration } from './bounty-claim-end-time';
 import { ProposalVoteMigration } from './proposal-vote.migration';
 import { NotificationSettingsMigration } from './notification-settings.migration';
-import { BountyProposalIdMigration } from './bounty-proposal-id';
+import { BountyContextMigration } from './bounty-context.migration';
 
 export default [
   ProposalActionsMigration,
@@ -13,5 +13,5 @@ export default [
   BountyClaimEndTimeMigration,
   ProposalVoteMigration,
   NotificationSettingsMigration,
-  BountyProposalIdMigration,
+  BountyContextMigration,
 ];

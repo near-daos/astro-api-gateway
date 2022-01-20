@@ -15,13 +15,11 @@ export class BountyContextService extends TypeOrmCrudService<BountyContext> {
     super(bountyContextRepository);
   }
 
-  async createBountyContext(
-    bountyContextDto: BountyContextDto,
-  ): Promise<BountyContext> {
+  async create(bountyContextDto: BountyContextDto): Promise<BountyContext> {
     return this.bountyContextRepository.save(bountyContextDto);
   }
 
-  async createBountyContextMultiple(
+  async createMultiple(
     bountyContextDtos: BountyContextDto[],
   ): Promise<BountyContext[]> {
     return this.bountyContextRepository.save(bountyContextDtos);
