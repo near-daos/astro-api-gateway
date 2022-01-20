@@ -9,6 +9,7 @@ import {
 } from '@sputnik-v2/bounty';
 import {
   Proposal,
+  ProposalDto,
   ProposalKindAddBounty,
   ProposalKindBountyDone,
   ProposalService,
@@ -106,7 +107,7 @@ export class BountyContextMigration implements Migration {
   private getBountyDoneProposals(
     proposals: Proposal[],
     bounties: Bounty[],
-  ): BountyContextDto[] {
+  ): Partial<Proposal>[] {
     return proposals
       .filter((proposal) => proposal.type === ProposalType.BountyDone)
       .map((proposal) => {
