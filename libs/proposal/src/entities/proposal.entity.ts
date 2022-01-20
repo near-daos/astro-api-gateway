@@ -13,6 +13,7 @@ import { TransactionEntity } from '@sputnik-v2/common';
 import { Dao } from '@sputnik-v2/dao/entities';
 import { Vote } from '@sputnik-v2/sputnikdao/types';
 import { Comment } from '@sputnik-v2/comment/entities';
+import { Bounty } from '@sputnik-v2/bounty/entities';
 
 import { ProposalKind } from '../dto/proposal-kind.dto';
 import { ProposalKindSwaggerDto } from '../dto/proposal-kind-swagger.dto';
@@ -103,6 +104,16 @@ export class Proposal extends TransactionEntity {
   @ApiProperty()
   @Column({ type: 'bigint', nullable: true })
   votePeriodEnd: number;
+
+  @ApiProperty()
+  @Column({ nullable: true })
+  bountyDoneId: string;
+
+  @ManyToOne(() => Bounty, (bounty) => bounty.bountyDoneProposals, {
+    nullable: true,
+  })
+  @JoinColumn({ name: 'bounty_done_id' })
+  bounty: Bounty;
 
   commentsCount: number;
 

@@ -7,10 +7,12 @@ import {
 import {
   Action,
   ProposalStatus,
+  ProposalType,
   ProposalVoteStatus,
 } from '@sputnik-v2/proposal/types';
 
 import {
+  buildBountyId,
   buildProposalId,
   calcProposalVotePeriodEnd,
   getBlockTimestamp,
@@ -33,6 +35,10 @@ export function castCreateProposal({
     proposer: signerId,
     kind,
     type: kind.kind.type,
+    bountyDoneId:
+      kind.kind.type === ProposalType.BountyDone
+        ? buildBountyId(dao.id, kind.kind.bountyId)
+        : null,
     status: ProposalStatus.InProgress,
     voteStatus: ProposalVoteStatus.Active,
     voteCounts: {},

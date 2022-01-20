@@ -1,6 +1,7 @@
 import camelcaseKeys from 'camelcase-keys';
 import {
   btoaJSON,
+  buildBountyId,
   buildProposalId,
   calcProposalVotePeriodEnd,
 } from '@sputnik-v2/utils';
@@ -11,6 +12,7 @@ import {
   castProposalKind,
   ProposalActionDto,
   ProposalDto,
+  ProposalType,
   ProposalVoteStatus,
 } from '@sputnik-v2/proposal';
 import { Transaction } from '@sputnik-v2/near-indexer';
@@ -94,6 +96,10 @@ export function castProposal(
     dao: { id: dao.id },
     kind,
     type: kind.kind.type,
+    bountyDoneId:
+      kind.kind.type === ProposalType.BountyDone
+        ? buildBountyId(dao.id, kind.kind.bountyId)
+        : null,
     votePeriodEnd: calcProposalVotePeriodEnd(
       { submissionTime: proposalDto.submissionTime },
       dao,

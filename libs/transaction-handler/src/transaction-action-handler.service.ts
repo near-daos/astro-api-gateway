@@ -13,22 +13,22 @@ import {
   ProposalType,
 } from '@sputnik-v2/proposal';
 import { Transaction } from '@sputnik-v2/near-indexer';
-import { BountyService } from '@sputnik-v2/bounty';
+import { BountyContextService, BountyService } from '@sputnik-v2/bounty';
 import { EventService } from '@sputnik-v2/event';
 import { btoaJSON, buildBountyId, buildProposalId } from '@sputnik-v2/utils';
 
 import {
-  ContractHandler,
-  castActProposalDao,
-  castAddProposalDao,
-  castCreateDao,
   castActProposal,
-  castCreateProposal,
+  castActProposalDao,
   castAddBounty,
+  castAddProposalDao,
   castClaimBounty,
+  castCreateDao,
+  castCreateProposal,
+  castDoneBounty,
+  ContractHandler,
   TransactionAction,
   VoteAction,
-  castDoneBounty,
 } from './types';
 
 @Injectable()
@@ -46,6 +46,7 @@ export class TransactionActionHandlerService {
     private readonly daoService: DaoService,
     private readonly proposalService: ProposalService,
     private readonly bountyService: BountyService,
+    private readonly bountyContextService: BountyContextService,
     private readonly eventService: EventService,
   ) {
     const { contractName } = this.configService.get('near');
@@ -161,6 +162,17 @@ export class TransactionActionHandlerService {
     this.logger.log(`Storing Proposal: ${proposal.id} due to transaction`);
     await this.proposalService.create(proposal);
     this.logger.log(`Successfully stored Proposal: ${proposal.id}`);
+
+    if (proposal.type === ProposalType.AddBounty) {
+      this.logger.log(
+        `Storing Bounty Context: ${proposal.id} due to transaction`,
+      );
+      await this.bountyContextService.createBountyContext({
+        id: proposal.id,
+        daoId: proposal.daoId,
+      });
+      this.logger.log(`Successfully stored Bounty Context: ${proposal.id}`);
+    }
 
     this.logger.log(`Updating DAO: ${receiverId} due to transaction`);
     await this.daoService.saveWithProposalCount(dao);
