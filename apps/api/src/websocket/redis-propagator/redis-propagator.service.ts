@@ -36,7 +36,7 @@ export class RedisPropagatorService {
       .subscribe();
   }
 
-  private consumeSendEvent = (eventInfo: RedisSocketEventSendDTO): void => {
+  public consumeSendEvent = (eventInfo: RedisSocketEventSendDTO): void => {
     const { accountId, event, data, socketId } = eventInfo;
 
     return this.socketStateService
@@ -45,13 +45,11 @@ export class RedisPropagatorService {
       .forEach((socket) => socket.emit(event, data));
   };
 
-  private consumeEmitToAllEvent = (
-    eventInfo: RedisSocketEventEmitDTO,
-  ): void => {
+  public consumeEmitToAllEvent = (eventInfo: RedisSocketEventEmitDTO): void => {
     this.socketServer.emit(eventInfo.event, eventInfo.data);
   };
 
-  private consumeEmitToAuthenticatedEvent = (
+  public consumeEmitToAuthenticatedEvent = (
     eventInfo: RedisSocketEventEmitDTO,
   ): void => {
     const { event, data, accountEvents } = eventInfo;
