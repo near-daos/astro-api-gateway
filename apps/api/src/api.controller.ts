@@ -9,11 +9,7 @@ import {
   EVENT_NEW_NOTIFICATION,
 } from '@sputnik-v2/common';
 
-import {
-  REDIS_SOCKET_EVENT_EMIT_ALL_NAME,
-  REDIS_SOCKET_EVENT_EMIT_AUTHENTICATED_NAME,
-} from './websocket/redis-propagator/redis-propagator.constants';
-import { RedisService } from './websocket/redis/redis.service';
+import { SocketService } from './websocket/socket/socket.service';
 
 @Controller()
 export class AppController {
@@ -21,7 +17,7 @@ export class AppController {
 
   constructor(
     private readonly cacheService: CacheService,
-    private readonly redisService: RedisService,
+    private readonly socketService: SocketService,
   ) {}
 
   @ApiExcludeEndpoint()
@@ -35,17 +31,14 @@ export class AppController {
     this.logger.log(
       `Sending new notification ${data.notification.type} to Websocket clients.`,
     );
-    await this.redisService.publish(REDIS_SOCKET_EVENT_EMIT_ALL_NAME, {
+    this.socketService.emitToAllEvent({
       event: 'notification',
       data: data.notification,
     });
-    await this.redisService.publish(
-      REDIS_SOCKET_EVENT_EMIT_AUTHENTICATED_NAME,
-      {
-        event: 'account-notification',
-        accountEvents: data.accountNotifications,
-      },
-    );
+    this.socketService.emitToAuthenticatedEvent({
+      event: 'account-notification',
+      accountEvents: data.accountNotifications,
+    });
   }
 
   @EventPattern(EVENT_NEW_COMMENT, Transport.REDIS)
@@ -53,7 +46,7 @@ export class AppController {
     this.logger.log(
       `Sending new comment ${data.comment.id} to Websocket clients.`,
     );
-    await this.redisService.publish(REDIS_SOCKET_EVENT_EMIT_ALL_NAME, {
+    this.socketService.emitToAllEvent({
       event: 'comment',
       data: data.comment,
     });
@@ -64,7 +57,7 @@ export class AppController {
     this.logger.log(
       `Sending removed comment ${data.comment.id} to Websocket clients.`,
     );
-    await this.redisService.publish(REDIS_SOCKET_EVENT_EMIT_ALL_NAME, {
+    this.socketService.emitToAllEvent({
       event: 'comment-removed',
       data: data.comment,
     });
