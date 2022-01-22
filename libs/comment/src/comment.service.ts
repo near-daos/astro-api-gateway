@@ -9,9 +9,11 @@ import { Repository } from 'typeorm';
 import { DaoService } from '@sputnik-v2/dao';
 import { ProposalService } from '@sputnik-v2/proposal';
 import { EventService } from '@sputnik-v2/event';
+import { BountyContextService } from '@sputnik-v2/bounty';
 
 import { Comment } from './entities';
 import { CommentDto } from './dto';
+import { CommentContextType } from './types';
 
 @Injectable()
 export class CommentService extends TypeOrmCrudService<Comment> {
@@ -19,6 +21,7 @@ export class CommentService extends TypeOrmCrudService<Comment> {
     @InjectRepository(Comment)
     private readonly commentRepository: Repository<Comment>,
     private readonly proposalService: ProposalService,
+    private readonly bountyContextService: BountyContextService,
     private readonly daoService: DaoService,
     private readonly eventService: EventService,
   ) {
@@ -26,23 +29,49 @@ export class CommentService extends TypeOrmCrudService<Comment> {
   }
 
   async create(commentDto: CommentDto): Promise<Comment> {
-    const proposal = await this.proposalService.findOne(commentDto.proposalId);
+    if (commentDto.contextType === CommentContextType.Proposal) {
+      const proposal = await this.proposalService.findOne(commentDto.contextId);
 
-    if (!proposal) {
-      throw new NotFoundException(
-        `Proposal with proposalId ${commentDto.proposalId} not found`,
-      );
+      if (!proposal) {
+        throw new NotFoundException(
+          `Proposal with id ${commentDto.contextId} not found`,
+        );
+      }
+
+      return this.createDaoComment(proposal.daoId, commentDto);
     }
+
+    if (commentDto.contextType === CommentContextType.BountyContext) {
+      const bountyContext = await this.bountyContextService.findOne(
+        commentDto.contextId,
+      );
+
+      if (!bountyContext) {
+        throw new NotFoundException(
+          `Bounty Context with id ${commentDto.contextId} not found`,
+        );
+      }
+
+      return this.createDaoComment(bountyContext.daoId, commentDto);
+    }
+  }
+
+  private async createDaoComment(
+    daoId: string,
+    commentDto: CommentDto,
+  ): Promise<Comment> {
     const comment = await this.commentRepository.save({
-      proposalId: commentDto.proposalId,
-      accountId: commentDto.accountId,
-      message: commentDto.message,
-      daoId: proposal.daoId,
+      ...commentDto,
+      daoId,
     });
 
     await this.eventService.sendNewCommentEvent(comment);
 
     return comment;
+  }
+
+  async updateMultiple(comments: Partial<Comment>[]): Promise<Comment[]> {
+    return this.commentRepository.save(comments);
   }
 
   async delete(comment: Comment): Promise<Comment> {
