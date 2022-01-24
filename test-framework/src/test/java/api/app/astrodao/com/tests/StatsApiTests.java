@@ -22,7 +22,6 @@ import org.springframework.http.ResponseEntity;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class StatsApiTests extends BaseTest {
     private final StatsApiSteps statsApiSteps;
-    private final Faker faker;
 
     @Test
     @Severity(SeverityLevel.CRITICAL)
@@ -55,9 +54,9 @@ public class StatsApiTests extends BaseTest {
 
         StatsEntries statsEntries = statsApiSteps.getResponseDto(response, StatsEntries.class);
 
-        statsApiSteps.assertCollectionHasCorrectSize(statsEntries, 3);
+        statsApiSteps.assertCollectionHasCorrectSize(statsEntries, 6);
         statsApiSteps.assertCollectionElementsHasValue(statsEntries, r -> r.getValue().intValue() >= 0, "value");
-        statsApiSteps.assertCollectionElementsHasValue(statsEntries, r -> r.getTimestamp().intValue() > 1642636505, "timestamp");
+        statsApiSteps.assertCollectionElementsHasValue(statsEntries, r -> !r.getTimestamp().toString().isBlank(), "timestamp");
     }
 
     @Test
@@ -72,9 +71,9 @@ public class StatsApiTests extends BaseTest {
 
         StatsEntries statsEntries = statsApiSteps.getResponseDto(response, StatsEntries.class);
 
-        statsApiSteps.assertCollectionHasCorrectSize(statsEntries, 3);
+        statsApiSteps.assertCollectionHasCorrectSize(statsEntries, 6);
         statsApiSteps.assertCollectionElementsHasValue(statsEntries, r -> r.getValue().intValue() >= 0, "value");
-        statsApiSteps.assertCollectionElementsHasValue(statsEntries, r -> r.getTimestamp().intValue() > 1642636505, "timestamp");
+        statsApiSteps.assertCollectionElementsHasValue(statsEntries, r -> !r.getTimestamp().toString().isBlank(), "timestamp");
     }
 
     @Test
@@ -89,9 +88,9 @@ public class StatsApiTests extends BaseTest {
 
         StatsEntries statsEntries = statsApiSteps.getResponseDto(response, StatsEntries.class);
 
-        statsApiSteps.assertCollectionHasCorrectSize(statsEntries, 3);
+        statsApiSteps.assertCollectionHasCorrectSize(statsEntries, 6);
         statsApiSteps.assertCollectionElementsHasValue(statsEntries, r -> r.getValue().intValue() >= 0, "value");
-        statsApiSteps.assertCollectionElementsHasValue(statsEntries, r -> r.getTimestamp().intValue() > 1642636505, "timestamp");
+        statsApiSteps.assertCollectionElementsHasValue(statsEntries, r -> !r.getTimestamp().toString().isBlank(), "timestamp");
     }
 
     @Test
@@ -106,8 +105,8 @@ public class StatsApiTests extends BaseTest {
 
         ProposalStatsEntries statsEntries = statsApiSteps.getResponseDto(response, ProposalStatsEntries.class);
 
-        statsApiSteps.assertCollectionHasCorrectSize(statsEntries, 3);
-        statsApiSteps.assertCollectionElementsHasValue(statsEntries, r -> r.getTimestamp().intValue() > 1642636505, "timestamp");
+        statsApiSteps.assertCollectionHasCorrectSize(statsEntries, 6);
+        statsApiSteps.assertCollectionElementsHasValue(statsEntries, r -> !r.getTimestamp().toString().isBlank(), "timestamp");
         statsApiSteps.assertCollectionElementsHasValue(statsEntries, r -> r.getTotal().intValue() >= 0, "total");
         statsApiSteps.assertCollectionElementsHasValue(statsEntries, r -> r.getActive().intValue() >= 0, "active");
     }
