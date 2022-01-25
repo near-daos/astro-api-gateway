@@ -13,6 +13,7 @@ import { Token } from '@sputnik-v2/token';
 import { Dao, DaoModule } from '@sputnik-v2/dao';
 import { BountyClaim, BountyModule } from '@sputnik-v2/bounty';
 import { AccountNotificationSettings } from '@sputnik-v2/notification';
+import { CommentModule } from '@sputnik-v2/comment';
 
 import migrationScripts from './scripts';
 
@@ -38,6 +39,7 @@ import migrationScripts from './scripts';
     NearIndexerModule,
     NearApiModule,
     SputnikModule,
+    CommentModule,
   ],
   providers: [...migrationScripts],
 })
