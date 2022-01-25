@@ -69,15 +69,15 @@ export class DaoService extends TypeOrmCrudService<Dao> {
 
   async search(req: CrudRequest, query: string): Promise<Dao[] | DaoResponse> {
     const likeQuery = `%${query.toLowerCase()}%`;
-    const daos = await this.daoRepository
+    const { limit, offset, fields } = req.parsed;
+    const [data, total] = await this.daoRepository
       .createQueryBuilder('dao')
-      .leftJoinAndSelect('dao.policy', 'policy')
-      .leftJoinAndSelect('policy.roles', 'roles')
+      .select(fields.map((field) => `dao.${field}`))
       .where(`lower(dao.id) like :likeQuery`, { likeQuery })
       .orWhere(`lower(dao.config) like :likeQuery`, { likeQuery })
       .orWhere(`lower(dao.metadata) like :likeQuery`, { likeQuery })
       .orWhere(`lower(dao.description) like :likeQuery`, { likeQuery })
-      .orWhere(`array_to_string(roles.accountIds, '||') like :likeQuery`, {
+      .orWhere(`array_to_string(dao.accountIds, '||') like :likeQuery`, {
         likeQuery,
       })
       .orderBy(
@@ -89,9 +89,10 @@ export class DaoService extends TypeOrmCrudService<Dao> {
           {},
         ),
       )
-      .getMany();
-
-    return paginate<Dao>(daos, req.parsed.limit, req.parsed.offset);
+      .skip(offset)
+      .limit(limit)
+      .getManyAndCount();
+    return paginate<Dao>(data, limit, offset, total);
   }
 
   async getDaoMembers(daoId: string): Promise<string[]> {

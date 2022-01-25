@@ -14,6 +14,8 @@ export class DaoCrudRequestInterceptor extends BaseCrudRequestInterceptor {
     'numberOfGroups',
     'activeProposalCount',
     'totalProposalCount',
+    'accountIds',
+    'createdAt',
   ];
 
   getCrudRequest(

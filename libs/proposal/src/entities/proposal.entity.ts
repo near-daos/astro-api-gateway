@@ -15,11 +15,13 @@ import { Vote } from '@sputnik-v2/sputnikdao/types';
 import { Comment } from '@sputnik-v2/comment/entities';
 import { Bounty } from '@sputnik-v2/bounty/entities';
 
-import { ProposalKind } from '../dto/proposal-kind.dto';
-import { ProposalKindSwaggerDto } from '../dto/proposal-kind-swagger.dto';
-import { ProposalStatus } from '../types/proposal-status';
-import { ProposalType } from '../types/proposal-type';
-import { ProposalVoteStatus } from '../types/proposal-vote-status';
+import { ProposalKind, ProposalKindSwaggerDto } from '../dto';
+import {
+  ProposalStatus,
+  ProposalType,
+  ProposalVoteStatus,
+  ProposalPermissions,
+} from '../types';
 import { ProposalAction } from './proposal-action.entity';
 
 @Entity()
@@ -124,4 +126,7 @@ export class Proposal extends TransactionEntity {
       .where({ proposalId: this.id, isArchived: false })
       .getCount();
   }
+
+  @ApiProperty()
+  permissions?: ProposalPermissions;
 }
