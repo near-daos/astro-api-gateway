@@ -9,7 +9,6 @@ import {
 } from '@sputnik-v2/bounty';
 import {
   Proposal,
-  ProposalDto,
   ProposalKindAddBounty,
   ProposalKindBountyDone,
   ProposalService,
