@@ -204,6 +204,9 @@ export class TransactionActionHandlerService {
         timestamp,
         action: args.action,
       });
+    const proposalEntity = await this.proposalService.findOne(
+      buildProposalId(receiverId, args.id),
+    );
 
     switch (args.action) {
       case VoteAction.VoteApprove:
@@ -234,6 +237,7 @@ export class TransactionActionHandlerService {
           dao,
           daoContract,
           proposal,
+          proposalEntity,
           receiverId,
           transactionHash,
           timestamp,
@@ -247,7 +251,7 @@ export class TransactionActionHandlerService {
     }
 
     await this.eventService.sendProposalUpdateNotificationEvent(
-      proposal,
+      proposal || proposalEntity,
       txAction,
     );
   }
@@ -372,6 +376,7 @@ export class TransactionActionHandlerService {
     dao,
     daoContract,
     proposal,
+    proposalEntity,
     receiverId,
     transactionHash,
     args,
@@ -380,8 +385,6 @@ export class TransactionActionHandlerService {
     const state = await this.nearApiService.getAccountState(receiverId);
 
     if (!proposal) {
-      const proposalId = buildProposalId(receiverId, args.id);
-      const proposalEntity = await this.proposalService.findOne(proposalId);
       const proposalKindType = proposalEntity?.kind?.type;
 
       if (proposalKindType === ProposalType.BountyDone) {
@@ -395,7 +398,7 @@ export class TransactionActionHandlerService {
       }
 
       this.logger.log(`Removing Proposal: ${args.id} due to transaction`);
-      await this.proposalService.remove(proposalId);
+      await this.proposalService.remove(proposalEntity.id);
     } else {
       this.logger.log(`Updating Proposal: ${proposal.id} due to transaction`);
       await this.proposalService.create(proposal);

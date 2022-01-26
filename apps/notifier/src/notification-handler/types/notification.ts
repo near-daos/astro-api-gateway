@@ -2,6 +2,7 @@ import { NotificationDto } from '@sputnik-v2/notification/dto';
 import { DaoUpdateDto, ProposalUpdateDto } from '@sputnik-v2/event';
 import { buildNotificationId } from '@sputnik-v2/utils';
 import { NotificationStatus, NotificationType } from '@sputnik-v2/notification';
+import { ProposalDto, ProposalKind } from '@sputnik-v2/proposal';
 
 export interface NotificationAction {
   type: NotificationType;
@@ -31,6 +32,7 @@ export function castProposalUpdateNotification(
   data: ProposalUpdateDto,
   action: NotificationAction,
 ): NotificationDto {
+  const proposalKind = data.proposal.kind.kind || data.proposal.kind;
   return {
     id: buildNotificationId(action.type, String(data.txAction.transactionHash)),
     daoId: data.proposal.daoId,
@@ -45,7 +47,7 @@ export function castProposalUpdateNotification(
         id: data.proposal.id,
         proposer: data.proposal.proposer,
         description: data.proposal.description,
-        kind: data.proposal.kind?.kind,
+        kind: proposalKind,
         votes: data.proposal.votes,
       },
     },
