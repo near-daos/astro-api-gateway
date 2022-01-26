@@ -54,7 +54,7 @@ public class StatsApiTests extends BaseTest {
 
         StatsEntries statsEntries = statsApiSteps.getResponseDto(response, StatsEntries.class);
 
-        statsApiSteps.assertCollectionHasCorrectSize(statsEntries, 6);
+        statsApiSteps.assertCollectionHasSizeGreaterThan(statsEntries, 3);
         statsApiSteps.assertCollectionElementsHasValue(statsEntries, r -> r.getValue().intValue() >= 0, "value");
         statsApiSteps.assertCollectionElementsHasValue(statsEntries, r -> !r.getTimestamp().toString().isBlank(), "timestamp");
     }
@@ -71,7 +71,7 @@ public class StatsApiTests extends BaseTest {
 
         StatsEntries statsEntries = statsApiSteps.getResponseDto(response, StatsEntries.class);
 
-        statsApiSteps.assertCollectionHasCorrectSize(statsEntries, 6);
+        statsApiSteps.assertCollectionHasSizeGreaterThan(statsEntries, 3);
         statsApiSteps.assertCollectionElementsHasValue(statsEntries, r -> r.getValue().intValue() >= 0, "value");
         statsApiSteps.assertCollectionElementsHasValue(statsEntries, r -> !r.getTimestamp().toString().isBlank(), "timestamp");
     }
@@ -88,7 +88,7 @@ public class StatsApiTests extends BaseTest {
 
         StatsEntries statsEntries = statsApiSteps.getResponseDto(response, StatsEntries.class);
 
-        statsApiSteps.assertCollectionHasCorrectSize(statsEntries, 6);
+        statsApiSteps.assertCollectionHasSizeGreaterThan(statsEntries, 3);
         statsApiSteps.assertCollectionElementsHasValue(statsEntries, r -> r.getValue().intValue() >= 0, "value");
         statsApiSteps.assertCollectionElementsHasValue(statsEntries, r -> !r.getTimestamp().toString().isBlank(), "timestamp");
     }
@@ -105,7 +105,7 @@ public class StatsApiTests extends BaseTest {
 
         ProposalStatsEntries statsEntries = statsApiSteps.getResponseDto(response, ProposalStatsEntries.class);
 
-        statsApiSteps.assertCollectionHasCorrectSize(statsEntries, 6);
+        statsApiSteps.assertCollectionHasSizeGreaterThan(statsEntries, 3);
         statsApiSteps.assertCollectionElementsHasValue(statsEntries, r -> !r.getTimestamp().toString().isBlank(), "timestamp");
         statsApiSteps.assertCollectionElementsHasValue(statsEntries, r -> r.getTotal().intValue() >= 0, "total");
         statsApiSteps.assertCollectionElementsHasValue(statsEntries, r -> r.getActive().intValue() >= 0, "active");
