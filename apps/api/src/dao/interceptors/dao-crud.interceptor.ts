@@ -15,6 +15,7 @@ export class DaoCrudRequestInterceptor extends BaseCrudRequestInterceptor {
     'activeProposalCount',
     'totalProposalCount',
     'accountIds',
+    'transactionHash',
     'createdAt',
   ];
 

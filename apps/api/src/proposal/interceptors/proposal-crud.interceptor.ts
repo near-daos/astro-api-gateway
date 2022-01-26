@@ -8,6 +8,7 @@ export class ProposalCrudRequestInterceptor extends BaseCrudRequestInterceptor {
   public static readonly defaultFields = [
     'id',
     'daoId',
+    'proposalId',
     'type',
     'kind',
     'description',
@@ -16,6 +17,7 @@ export class ProposalCrudRequestInterceptor extends BaseCrudRequestInterceptor {
     'voteStatus',
     'proposer',
     'votePeriodEnd',
+    'transactionHash',
     'createdAt',
   ];
 
@@ -33,7 +35,12 @@ export class ProposalCrudRequestInterceptor extends BaseCrudRequestInterceptor {
       dao: {
         eager: true,
         alias: 'dao',
-        allow: ['id', 'config'],
+        allow: ['id', 'config', 'transactionHash', 'numberOfMembers'],
+      },
+      'dao.policy': {
+        eager: true,
+        alias: 'policy',
+        allow: ['defaultVotePolicy'],
       },
       actions: {
         eager: true,
