@@ -2,7 +2,6 @@ import { NotificationDto } from '@sputnik-v2/notification/dto';
 import { DaoUpdateDto, ProposalUpdateDto } from '@sputnik-v2/event';
 import { buildNotificationId } from '@sputnik-v2/utils';
 import { NotificationStatus, NotificationType } from '@sputnik-v2/notification';
-import { ProposalDto, ProposalKind } from '@sputnik-v2/proposal';
 
 export interface NotificationAction {
   type: NotificationType;
