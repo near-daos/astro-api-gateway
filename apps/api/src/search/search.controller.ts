@@ -37,11 +37,17 @@ export class SearchController {
   @UseInterceptors(HttpCacheInterceptor, BaseCrudRequestInterceptor)
   @UseFilters(new QueryFailedErrorFilter())
   @ApiQuery({ type: SearchQuery })
+  @ApiQuery({
+    name: 'accountId',
+    required: false,
+    type: String,
+  })
   @Get('/search')
   async search(
     @ParsedRequest() req: CrudRequest,
     @Query('query') query: string,
+    @Query('accountId') accountId?: string,
   ): Promise<SearchResultDto> {
-    return await this.searchService.search(req, query);
+    return await this.searchService.search(req, query, accountId);
   }
 }

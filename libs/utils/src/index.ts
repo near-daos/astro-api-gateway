@@ -136,13 +136,12 @@ export function isNotNull<T>(arg: T): arg is Exclude<T, null> {
 }
 
 export function paginate<T>(
-  allData: T[],
+  data: T[],
   limit: number,
   offset: number,
+  total: number,
 ): BaseResponse<T> {
-  const total = allData.length;
   const page = limit ? Math.floor(offset / limit) + 1 : 1;
-  const data = allData.slice(offset, page * limit);
   const pageCount = limit && total ? Math.ceil(total / limit) : 1;
   return {
     data,

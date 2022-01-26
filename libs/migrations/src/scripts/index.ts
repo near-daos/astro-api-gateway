@@ -6,6 +6,7 @@ import { ProposalVoteMigration } from './proposal-vote.migration';
 import { NotificationSettingsMigration } from './notification-settings.migration';
 import { BountyContextMigration } from './bounty-context.migration';
 import { CommentProposalContextMigration } from './comment-proposal-context.migration';
+import { DaoGroupFieldsMigration } from './dao-goup-fields.migration';
 
 export default [
   ProposalActionsMigration,
@@ -16,4 +17,5 @@ export default [
   NotificationSettingsMigration,
   BountyContextMigration,
   CommentProposalContextMigration,
+  DaoGroupFieldsMigration,
 ];
