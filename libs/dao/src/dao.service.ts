@@ -72,7 +72,14 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     const { limit, offset, fields } = req.parsed;
     const [data, total] = await this.daoRepository
       .createQueryBuilder('dao')
-      .select(fields.map((field) => `dao.${field}`))
+      .select([
+        ...fields.map((field) => `dao.${field}`),
+        'policy.daoId',
+        'roles.name',
+        'roles.accountIds',
+      ])
+      .leftJoin('dao.policy', 'policy')
+      .leftJoin('policy.roles', 'roles')
       .where(`lower(dao.id) like :likeQuery`, { likeQuery })
       .orWhere(`lower(dao.config) like :likeQuery`, { likeQuery })
       .orWhere(`lower(dao.metadata) like :likeQuery`, { likeQuery })
