@@ -9,4 +9,7 @@ export class ProposalPermissions {
 
   @ApiProperty()
   canDelete: boolean;
+
+  @ApiProperty()
+  isCouncil: boolean;
 }

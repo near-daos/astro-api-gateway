@@ -110,7 +110,12 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
       dao: {
         eager: true,
         alias: 'dao',
-        allow: ['id', 'config'],
+        allow: ['id', 'config', 'transactionHash', 'numberOfMembers'],
+      },
+      'dao.policy': {
+        eager: true,
+        alias: 'policy',
+        allow: ['defaultVotePolicy'],
       },
     };
 
@@ -224,7 +229,12 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
     if (permissionsAccountId) {
       const roles = await this.roleRepository
         .createQueryBuilder('role')
-        .select(['policy.daoId', 'role.permissions', 'role.accountIds'])
+        .select([
+          'policy.daoId',
+          'role.permissions',
+          'role.name',
+          'role.accountIds',
+        ])
         .leftJoin('role.policy', 'policy')
         .where('policy.daoId = ANY(ARRAY[:...ids])', {
           ids: [...new Set(proposals.map(({ dao }) => dao.id))],
@@ -275,9 +285,14 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
     const groupRole = roles.filter(({ accountIds }) => {
       return accountIds?.includes(accountId);
     });
+
     return groupRole.reduce(
-      (acc, { permissions }) => {
-        const { canApprove, canReject, canDelete } = acc;
+      (acc, { permissions, name }) => {
+        const { canApprove, canReject, canDelete, isCouncil } = acc;
+
+        if (!isCouncil) {
+          acc.isCouncil = name.toLowerCase() === 'council';
+        }
 
         if (!canApprove) {
           acc.canApprove = this.checkPermissions(
@@ -309,6 +324,7 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
         canApprove: false,
         canReject: false,
         canDelete: false,
+        isCouncil: false,
       } as ProposalPermissions,
     );
   }
