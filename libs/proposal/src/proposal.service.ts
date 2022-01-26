@@ -255,6 +255,10 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
           permissionsAccountId,
         ),
       );
+    } else {
+      proposals = proposals.map((proposal) =>
+        this.populateProposalPermissions(proposal, []),
+      );
     }
 
     if (proposalResponse instanceof Array) {
@@ -273,7 +277,12 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
       ...proposal,
       permissions: accountId
         ? this.getAccountPermissions(accountId, proposal, roles)
-        : undefined,
+        : {
+            canApprove: false,
+            canReject: false,
+            canDelete: false,
+            isCouncil: false,
+          },
     } as Proposal;
   }
 
