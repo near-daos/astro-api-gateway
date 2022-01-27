@@ -19,6 +19,7 @@ export class ProposalCrudRequestInterceptor extends BaseCrudRequestInterceptor {
     'votePeriodEnd',
     'transactionHash',
     'createdAt',
+    'updatedAt',
   ];
 
   getCrudRequest(
