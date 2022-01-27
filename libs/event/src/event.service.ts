@@ -12,7 +12,7 @@ import {
   EVENT_TRIGGER_DAO_AGGREGATION,
 } from '@sputnik-v2/common';
 import { DaoDto } from '@sputnik-v2/dao';
-import { ProposalDto } from '@sputnik-v2/proposal';
+import { Proposal, ProposalDto } from '@sputnik-v2/proposal';
 import { TransactionAction } from '@sputnik-v2/transaction-handler';
 import { AccountNotification, Notification } from '@sputnik-v2/notification';
 import { Comment } from '@sputnik-v2/comment';
@@ -44,7 +44,7 @@ export class EventService {
   }
 
   public async sendProposalUpdateNotificationEvent(
-    proposal: ProposalDto,
+    proposal: ProposalDto | Proposal,
     txAction: TransactionAction,
   ): Promise<any> {
     const message = new BaseMessage(EVENT_PROPOSAL_UPDATE_NOTIFICATION, {

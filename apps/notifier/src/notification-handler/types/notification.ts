@@ -31,6 +31,7 @@ export function castProposalUpdateNotification(
   data: ProposalUpdateDto,
   action: NotificationAction,
 ): NotificationDto {
+  const proposalKind = data.proposal.kind.kind || data.proposal.kind;
   return {
     id: buildNotificationId(action.type, String(data.txAction.transactionHash)),
     daoId: data.proposal.daoId,
@@ -45,7 +46,7 @@ export function castProposalUpdateNotification(
         id: data.proposal.id,
         proposer: data.proposal.proposer,
         description: data.proposal.description,
-        kind: data.proposal.kind?.kind,
+        kind: proposalKind,
         votes: data.proposal.votes,
       },
     },
