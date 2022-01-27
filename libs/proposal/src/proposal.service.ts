@@ -77,7 +77,7 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
   ): Promise<ProposalResponse | Proposal[]> {
     const queryBuilder = await super.createBuilder(req.parsed, req.options);
     queryBuilder.andWhere(
-      ':accountId = ANY(dao.accountIds) OR proposer = :accountId',
+      '(:accountId = ANY(dao.accountIds) OR proposer = :accountId)',
       { accountId },
     );
     const proposalResponse = await super.doGetMany(

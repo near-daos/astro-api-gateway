@@ -13,6 +13,7 @@ import { TransactionEntity } from '@sputnik-v2/common';
 import { Dao } from '@sputnik-v2/dao/entities';
 import { Vote } from '@sputnik-v2/sputnikdao/types';
 import { Comment } from '@sputnik-v2/comment/entities';
+import { CommentContextType } from '@sputnik-v2/comment/types';
 import { Bounty } from '@sputnik-v2/bounty/entities';
 
 import { ProposalKind, ProposalKindSwaggerDto } from '../dto';
@@ -123,7 +124,11 @@ export class Proposal extends TransactionEntity {
   async countComments(): Promise<void> {
     this.commentsCount = await getManager()
       .createQueryBuilder(Comment, 'comment')
-      .where({ proposalId: this.id, isArchived: false })
+      .where({
+        contextId: this.id,
+        contextType: CommentContextType.Proposal,
+        isArchived: false,
+      })
       .getCount();
   }
 
