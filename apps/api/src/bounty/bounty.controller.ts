@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Param,
+  Query,
   UseFilters,
   UseInterceptors,
 } from '@nestjs/common';
@@ -91,10 +92,16 @@ export class BountyController {
   @UseInterceptors(HttpCacheInterceptor, BountyContextCrudRequestInterceptor)
   @UseFilters(new QueryFailedErrorFilter())
   @ApiQuery({ type: EntityQuery })
+  @ApiQuery({
+    name: 'accountId',
+    required: false,
+    type: String,
+  })
   @Get('/bounty-contexts')
   async bountyContexts(
     @ParsedRequest() query: CrudRequest,
+    @Query('accountId') accountId?: string,
   ): Promise<BountyContext[] | BountyContextResponse> {
-    return await this.bountyContextService.getMany(query);
+    return await this.bountyContextService.getMany(query, accountId);
   }
 }
