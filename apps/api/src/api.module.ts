@@ -25,7 +25,10 @@ import { NotificationModule } from './notification/notification.module';
 import { CommentModule } from './comment/comment.module';
 import { AggregatorModule } from './aggregator/aggregator.module';
 import { MetricsModule } from './metrics/metrics.module';
-import { StatsModule } from './stats/stats.module';
+import { PrometheusExporter } from '@opentelemetry/exporter-prometheus';
+import { OpenTelemetryModule } from '@metinseylan/nestjs-opentelemetry';
+import { JaegerExporter } from '@opentelemetry/exporter-jaeger';
+import { SimpleSpanProcessor } from '@opentelemetry/sdk-trace-base';
 
 @Module({
   imports: [
@@ -65,7 +68,19 @@ import { StatsModule } from './stats/stats.module';
     CommentModule,
     AggregatorModule,
     MetricsModule,
-    StatsModule,
+    OpenTelemetryModule.forRoot({
+      metricExporter: new PrometheusExporter({
+        endpoint: 'metrics',
+        port: 3001,
+      }),
+      metricInterval: 1000,
+      spanProcessor: new SimpleSpanProcessor(
+        new JaegerExporter({
+          host: 'localhost',
+          port: 6832,
+        })
+      ),
+    }),
   ],
   controllers: [AppController],
   providers: [WebsocketGateway],
