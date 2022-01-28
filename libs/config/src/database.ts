@@ -11,7 +11,11 @@ import { Subscription } from '@sputnik-v2/subscription/entities';
 import { Proposal, ProposalAction } from '@sputnik-v2/proposal/entities';
 import { Account } from '@sputnik-v2/account/entities';
 import { Dao, Policy, Role } from '@sputnik-v2/dao/entities';
-import { Bounty, BountyClaim } from '@sputnik-v2/bounty/entities';
+import {
+  Bounty,
+  BountyClaim,
+  BountyContext,
+} from '@sputnik-v2/bounty/entities';
 import {
   Token,
   NFTToken,
@@ -41,6 +45,7 @@ export default registerAs('db_default', () => ({
     Role,
     Bounty,
     BountyClaim,
+    BountyContext,
     Proposal,
     ProposalAction,
     Transaction,

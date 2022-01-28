@@ -1,5 +1,10 @@
 # Astro API Gateway
 
+[![Release version](https://img.shields.io/github/v/release/near-daos/astro-api-gateway)](https://github.com/near-daos/astro-api-gateway/releases/)
+[![Build](https://github.com/near-daos/astro-api-gateway/actions/workflows/build-deploy.yaml/badge.svg)](https://github.com/near-daos/astro-api-gateway/actions/workflows/build-deploy.yaml)
+[![Launch API Autotests On Schedule](https://github.com/near-daos/astro-api-gateway/actions/workflows/launch-autotests-on-schedule.yaml/badge.svg)](https://github.com/near-daos/astro-api-gateway/actions/workflows/launch-autotests-on-schedule.yaml)
+[![Telegram group](https://img.shields.io/badge/-Telegram%20group-blue)](https://t.me/astro_near)
+
 Astro API Gateway contains list of services used by DAO applications based on [Sputnik DAO Contracts](https://github.com/near-daos/sputnik-dao-contract) version 2 on [NEAR Protocol](https://near.org/).
 
 Main features:

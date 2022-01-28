@@ -17,7 +17,7 @@ import static com.fasterxml.jackson.annotation.PropertyAccessor.FIELD;
 
 @UtilityClass
 public class JsonUtils {
-    private static final ObjectMapper MAPPER;
+    public static final ObjectMapper MAPPER;
 
     static {
         MAPPER = new ObjectMapper();

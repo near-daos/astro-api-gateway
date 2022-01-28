@@ -105,6 +105,7 @@ export class DaoStatsService {
       .createQueryBuilder('stats')
       .select(['stats.timestamp', `stats.${field}`])
       .where('stats.daoId = :daoId', { daoId })
+      .andWhere(`stats.${field} is not NULL`)
       .orderBy('stats.timestamp', 'ASC')
       .getMany();
 

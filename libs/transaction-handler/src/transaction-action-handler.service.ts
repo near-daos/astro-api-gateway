@@ -13,22 +13,22 @@ import {
   ProposalType,
 } from '@sputnik-v2/proposal';
 import { Transaction } from '@sputnik-v2/near-indexer';
-import { BountyService } from '@sputnik-v2/bounty';
+import { BountyContextService, BountyService } from '@sputnik-v2/bounty';
 import { EventService } from '@sputnik-v2/event';
 import { btoaJSON, buildBountyId, buildProposalId } from '@sputnik-v2/utils';
 
 import {
-  ContractHandler,
-  castActProposalDao,
-  castAddProposalDao,
-  castCreateDao,
   castActProposal,
-  castCreateProposal,
+  castActProposalDao,
   castAddBounty,
+  castAddProposalDao,
   castClaimBounty,
+  castCreateDao,
+  castCreateProposal,
+  castDoneBounty,
+  ContractHandler,
   TransactionAction,
   VoteAction,
-  castDoneBounty,
 } from './types';
 
 @Injectable()
@@ -46,6 +46,7 @@ export class TransactionActionHandlerService {
     private readonly daoService: DaoService,
     private readonly proposalService: ProposalService,
     private readonly bountyService: BountyService,
+    private readonly bountyContextService: BountyContextService,
     private readonly eventService: EventService,
   ) {
     const { contractName } = this.configService.get('near');
@@ -162,6 +163,17 @@ export class TransactionActionHandlerService {
     await this.proposalService.create(proposal);
     this.logger.log(`Successfully stored Proposal: ${proposal.id}`);
 
+    if (proposal.type === ProposalType.AddBounty) {
+      this.logger.log(
+        `Storing Bounty Context: ${proposal.id} due to transaction`,
+      );
+      await this.bountyContextService.create({
+        id: proposal.id,
+        daoId: proposal.daoId,
+      });
+      this.logger.log(`Successfully stored Bounty Context: ${proposal.id}`);
+    }
+
     this.logger.log(`Updating DAO: ${receiverId} due to transaction`);
     await this.daoService.saveWithProposalCount(dao);
     this.logger.log(`DAO successfully updated: ${receiverId}`);
@@ -192,6 +204,9 @@ export class TransactionActionHandlerService {
         timestamp,
         action: args.action,
       });
+    const proposalEntity = await this.proposalService.findOne(
+      buildProposalId(receiverId, args.id),
+    );
 
     switch (args.action) {
       case VoteAction.VoteApprove:
@@ -222,6 +237,7 @@ export class TransactionActionHandlerService {
           dao,
           daoContract,
           proposal,
+          proposalEntity,
           receiverId,
           transactionHash,
           timestamp,
@@ -235,7 +251,7 @@ export class TransactionActionHandlerService {
     }
 
     await this.eventService.sendProposalUpdateNotificationEvent(
-      proposal,
+      proposal || proposalEntity,
       txAction,
     );
   }
@@ -360,6 +376,7 @@ export class TransactionActionHandlerService {
     dao,
     daoContract,
     proposal,
+    proposalEntity,
     receiverId,
     transactionHash,
     args,
@@ -368,8 +385,6 @@ export class TransactionActionHandlerService {
     const state = await this.nearApiService.getAccountState(receiverId);
 
     if (!proposal) {
-      const proposalId = buildProposalId(receiverId, args.id);
-      const proposalEntity = await this.proposalService.findOne(proposalId);
       const proposalKindType = proposalEntity?.kind?.type;
 
       if (proposalKindType === ProposalType.BountyDone) {
@@ -383,7 +398,7 @@ export class TransactionActionHandlerService {
       }
 
       this.logger.log(`Removing Proposal: ${args.id} due to transaction`);
-      await this.proposalService.remove(proposalId);
+      await this.proposalService.remove(proposalEntity.id);
     } else {
       this.logger.log(`Updating Proposal: ${proposal.id} due to transaction`);
       await this.proposalService.create(proposal);
@@ -429,6 +444,7 @@ export class TransactionActionHandlerService {
     await this.bountyService.create(
       castAddBounty({
         dao,
+        proposal,
         bounty: bountyData,
         bountyId,
         transactionHash,

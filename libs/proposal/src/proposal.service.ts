@@ -19,8 +19,8 @@ import {
   ProposalTypeToContractType,
   ProposalStatus,
   ProposalVoteStatus,
+  ProposalPermissions,
 } from './types';
-import { paginate } from '@sputnik-v2/utils';
 
 @Injectable()
 export class ProposalService extends TypeOrmCrudService<Proposal> {
@@ -59,110 +59,34 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
     return this.proposalRepository.save(proposal);
   }
 
-  async getMany(req: CrudRequest): Promise<ProposalResponse | Proposal[]> {
-    const proposalResponse = await super.getMany(req);
-
-    const proposals =
-      proposalResponse instanceof Array
-        ? proposalResponse
-        : proposalResponse.data;
-
-    if (!proposals || !proposals.length) {
-      return proposalResponse;
-    }
-
-    // populating Proposal Dao Policy with Roles
-    const daoIds: Set<string> = new Set(proposals.map(({ daoId }) => daoId));
-
-    const roles = await this.roleRepository.find({
-      where: { policy: { daoId: In([...daoIds]) } },
-      join: {
-        alias: 'role',
-        leftJoinAndSelect: { policy: 'role.policy' },
-      },
-    });
-
-    (proposalResponse as ProposalResponse).data.map((proposal) => {
-      proposal.dao.policy = {
-        ...proposal.dao.policy,
-        roles: roles
-          .filter(({ policy }) => policy.daoId === proposal.daoId)
-          .map((role) => ({
-            ...role,
-            policy: { daoId: role.policy.daoId },
-          })) as any,
-      };
-    });
-
-    return proposalResponse;
+  updateMultiple(proposal: Partial<Proposal>[]): Promise<Proposal[]> {
+    return this.proposalRepository.save(proposal);
   }
 
-  async getManyByAccountId(
+  async getFeed(
+    req: CrudRequest,
+    permissionsAccountId?: string,
+  ): Promise<ProposalResponse | Proposal[]> {
+    const proposalResponse = await super.getMany(req);
+    return this.mapProposalFeed(proposalResponse, permissionsAccountId);
+  }
+
+  async getFeedByAccountId(
     accountId: string,
     req: CrudRequest,
   ): Promise<ProposalResponse | Proposal[]> {
-    const proposalResponse = (await this.getMany({
-      ...req,
-      parsed: {
-        ...req.parsed,
-        offset: 0,
-        limit: 10000, // TODO: chunk proposal queries
-      },
-    })) as ProposalResponse;
+    const queryBuilder = await super.createBuilder(req.parsed, req.options);
+    queryBuilder.andWhere(
+      '(:accountId = ANY(dao.accountIds) OR proposer = :accountId)',
+      { accountId },
+    );
+    const proposalResponse = await super.doGetMany(
+      queryBuilder,
+      req.parsed,
+      req.options,
+    );
 
-    const filtered = proposalResponse.data.filter((proposal) => {
-      const groupRole = proposal?.dao?.policy?.roles?.filter(
-        ({ kind, accountIds }) => {
-          return kind === 'Group' && accountIds?.includes(accountId);
-        },
-      );
-
-      function checkPermissions(permission: string, groupPerms: string[]) {
-        const type = ProposalTypeToContractType[proposal.kind.type];
-
-        return (
-          groupPerms.includes('*:*') ||
-          groupPerms.includes(`*:${permission}`) ||
-          groupPerms.includes(`${type}:${permission}`)
-        );
-      }
-
-      const perms = groupRole.reduce(
-        (acc, { permissions: groupPerms }) => {
-          const { canApprove, canReject, canDelete } = acc;
-
-          if (!canApprove) {
-            acc.canApprove = checkPermissions('VoteApprove', groupPerms);
-          }
-
-          if (!canReject) {
-            acc.canReject = checkPermissions('VoteReject', groupPerms);
-          }
-
-          if (!canDelete) {
-            acc.canDelete = checkPermissions('VoteRemove', groupPerms);
-          }
-
-          return acc;
-        },
-        {
-          canApprove: false,
-          canReject: false,
-          canDelete: false,
-        },
-      );
-
-      return perms.canApprove || perms.canReject || perms.canDelete;
-    });
-
-    const { offset, limit } = req.parsed;
-
-    const response = {
-      ...proposalResponse,
-      ...paginate<Proposal>(filtered, limit, offset),
-    };
-
-    return response;
+    return this.mapProposalFeed(proposalResponse, accountId);
   }
 
   public async getDaoProposalCount(daoId: string): Promise<number> {
@@ -180,13 +104,18 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
   async search(
     req: CrudRequest,
     query: string,
+    accountId?: string,
   ): Promise<Proposal[] | ProposalResponse> {
     req.options.query.join = {
       dao: {
         eager: true,
+        alias: 'dao',
+        allow: ['id', 'config', 'transactionHash', 'numberOfMembers'],
       },
       'dao.policy': {
         eager: true,
+        alias: 'policy',
+        allow: ['defaultVotePolicy'],
       },
     };
 
@@ -212,7 +141,7 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
       ],
     };
 
-    return this.getMany(req);
+    return this.getFeed(req, accountId);
   }
 
   async findProposalsByDaoIds(
@@ -282,5 +211,144 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
 
   async removeMultiple(proposalIds: string[]): Promise<DeleteResult[]> {
     return Promise.all(proposalIds.map((id) => this.remove(id)));
+  }
+
+  private async mapProposalFeed(
+    proposalResponse: ProposalResponse | Proposal[],
+    permissionsAccountId?: string,
+  ): Promise<ProposalResponse | Proposal[]> {
+    let proposals =
+      proposalResponse instanceof Array
+        ? proposalResponse
+        : proposalResponse.data;
+
+    if (!proposals || !proposals.length) {
+      return proposalResponse;
+    }
+
+    if (permissionsAccountId) {
+      const roles = await this.roleRepository
+        .createQueryBuilder('role')
+        .select([
+          'policy.daoId',
+          'role.permissions',
+          'role.name',
+          'role.accountIds',
+        ])
+        .leftJoin('role.policy', 'policy')
+        .where('policy.daoId = ANY(ARRAY[:...ids])', {
+          ids: [...new Set(proposals.map(({ dao }) => dao.id))],
+        })
+        .getMany();
+      const daoRolesMap = roles.reduce((daoRolesMap, role) => {
+        if (!daoRolesMap[role.policy.daoId]) {
+          daoRolesMap[role.policy.daoId] = [role];
+        } else {
+          daoRolesMap[role.policy.daoId].push(role);
+        }
+        return daoRolesMap;
+      }, {});
+      proposals = proposals.map((proposal) =>
+        this.populateProposalPermissions(
+          proposal,
+          daoRolesMap[proposal.dao.id],
+          permissionsAccountId,
+        ),
+      );
+    } else {
+      proposals = proposals.map((proposal) =>
+        this.populateProposalPermissions(proposal, []),
+      );
+    }
+
+    if (proposalResponse instanceof Array) {
+      return proposals;
+    } else {
+      return { ...proposalResponse, data: proposals };
+    }
+  }
+
+  private populateProposalPermissions(
+    proposal: Proposal,
+    roles: Role[],
+    accountId?: string,
+  ): Proposal {
+    return {
+      ...proposal,
+      permissions: accountId
+        ? this.getAccountPermissions(accountId, proposal, roles)
+        : {
+            canApprove: false,
+            canReject: false,
+            canDelete: false,
+            isCouncil: false,
+          },
+    } as Proposal;
+  }
+
+  private getAccountPermissions(
+    accountId: string,
+    proposal: Proposal,
+    roles: Role[],
+  ): ProposalPermissions {
+    const groupRole = roles.filter(({ accountIds }) => {
+      return accountIds?.includes(accountId);
+    });
+
+    return groupRole.reduce(
+      (acc, { permissions, name }) => {
+        const { canApprove, canReject, canDelete, isCouncil } = acc;
+
+        if (!isCouncil) {
+          acc.isCouncil = name.toLowerCase() === 'council';
+        }
+
+        if (!canApprove) {
+          acc.canApprove = this.checkPermissions(
+            proposal,
+            'VoteApprove',
+            permissions,
+          );
+        }
+
+        if (!canReject) {
+          acc.canReject = this.checkPermissions(
+            proposal,
+            'VoteReject',
+            permissions,
+          );
+        }
+
+        if (!canDelete) {
+          acc.canDelete = this.checkPermissions(
+            proposal,
+            'VoteRemove',
+            permissions,
+          );
+        }
+
+        return acc;
+      },
+      {
+        canApprove: false,
+        canReject: false,
+        canDelete: false,
+        isCouncil: false,
+      } as ProposalPermissions,
+    );
+  }
+
+  private checkPermissions(
+    proposal: Proposal,
+    permission: string,
+    permissions: string[],
+  ): boolean {
+    const type = ProposalTypeToContractType[proposal.kind.type];
+
+    return (
+      permissions.includes('*:*') ||
+      permissions.includes(`*:${permission}`) ||
+      permissions.includes(`${type}:${permission}`)
+    );
   }
 }

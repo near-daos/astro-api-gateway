@@ -5,12 +5,15 @@ import {
   JoinColumn,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryColumn,
 } from 'typeorm';
 import { TransactionEntity } from '@sputnik-v2/common';
 import { Dao } from '@sputnik-v2/dao/entities';
+import { Proposal } from '@sputnik-v2/proposal/entities/proposal.entity';
 
 import { BountyClaim } from './bounty-claim.entity';
+import { BountyContext } from './bounty-context.entity';
 
 @Entity()
 export class Bounty extends TransactionEntity {
@@ -23,6 +26,10 @@ export class Bounty extends TransactionEntity {
   bountyId: number;
 
   @ApiProperty()
+  @Column({ nullable: true, unique: true })
+  proposalId: string;
+
+  @ApiProperty()
   @Column()
   daoId: string;
 
@@ -30,6 +37,17 @@ export class Bounty extends TransactionEntity {
   @ManyToOne(() => Dao, { eager: true })
   @JoinColumn({ name: 'dao_id' })
   dao: Dao;
+
+  @ApiProperty()
+  @OneToOne(() => BountyContext, { nullable: true })
+  @JoinColumn({ name: 'proposal_id' })
+  bountyContext: BountyContext;
+
+  @ApiProperty({ type: [Proposal] })
+  @OneToMany(() => Proposal, (proposal) => proposal.bounty, {
+    nullable: true,
+  })
+  bountyDoneProposals: Proposal[];
 
   @ApiProperty({ type: [BountyClaim] })
   @OneToMany(() => BountyClaim, (claim) => claim.bounty, {

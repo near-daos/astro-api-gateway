@@ -18,7 +18,7 @@ export class DaoStats extends BaseEntity {
   timestamp: number;
 
   @ApiProperty()
-  @Column({ type: 'float' })
+  @Column({ type: 'float', nullable: true })
   totalDaoFunds: number;
 
   @ApiProperty()
@@ -26,18 +26,18 @@ export class DaoStats extends BaseEntity {
   transactionsCount: number;
 
   @ApiProperty()
-  @Column()
+  @Column({ nullable: true })
   bountyCount: number;
 
   @ApiProperty()
-  @Column()
+  @Column({ nullable: true })
   nftCount: number;
 
   @ApiProperty()
-  @Column()
+  @Column({ nullable: true })
   activeProposalCount: number;
 
   @ApiProperty()
-  @Column()
+  @Column({ nullable: true })
   totalProposalCount: number;
 }
