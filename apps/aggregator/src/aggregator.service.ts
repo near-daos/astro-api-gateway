@@ -379,12 +379,12 @@ export class AggregatorService {
       'dao-status',
     ]);
 
+    await this.tokenAggregatorService.aggregateTokenPrices();
+
     const tx = await this.transactionService.lastTransaction();
     const { contractName } = this.configService.get('near');
     const daoAccounts =
-      await this.nearIndexerService.findAccountsByContractName(
-        `.${contractName}`,
-      );
+      await this.nearIndexerService.findAccountsByContractName(contractName);
 
     await PromisePool.withConcurrency(5)
       .for(daoAccounts)
@@ -403,8 +403,6 @@ export class AggregatorService {
       .process(
         async (daoAccount) => await this.aggregateDaoNFTs(daoAccount, tx),
       );
-
-    await this.tokenAggregatorService.aggregateTokenPrices();
 
     this.state.stopAggregations([
       'dao',
@@ -443,11 +441,11 @@ export class AggregatorService {
         account,
         daoTransactions,
       );
-      await this.proposalAggregatorService.aggregateProposalsByDao(
+      await this.bountyAggregatorService.aggregateBountiesByDao(
         dao,
         daoTransactions,
       );
-      await this.bountyAggregatorService.aggregateBountiesByDao(
+      await this.proposalAggregatorService.aggregateProposalsByDao(
         dao,
         daoTransactions,
       );
