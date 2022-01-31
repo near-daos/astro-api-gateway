@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 import { CrudRequest } from '@nestjsx/crud';
@@ -61,6 +61,23 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
 
   updateMultiple(proposal: Partial<Proposal>[]): Promise<Proposal[]> {
     return this.proposalRepository.save(proposal);
+  }
+
+  async getById(
+    proposalId: string,
+    permissionsAccountId?: string,
+  ): Promise<Proposal> {
+    const proposal: Proposal = await this.findOne(proposalId);
+
+    if (!proposal) {
+      throw new BadRequestException('Invalid Proposal ID');
+    }
+
+    return this.populateProposalPermissions(
+      proposal,
+      proposal.dao?.policy?.roles || [],
+      permissionsAccountId,
+    );
   }
 
   async getFeed(
@@ -213,7 +230,7 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
     return Promise.all(proposalIds.map((id) => this.remove(id)));
   }
 
-  private async mapProposalFeed(
+  public async mapProposalFeed(
     proposalResponse: ProposalResponse | Proposal[],
     permissionsAccountId?: string,
   ): Promise<ProposalResponse | Proposal[]> {
@@ -237,7 +254,9 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
         ])
         .leftJoin('role.policy', 'policy')
         .where('policy.daoId = ANY(ARRAY[:...ids])', {
-          ids: [...new Set(proposals.map(({ dao }) => dao.id))],
+          ids: [
+            ...new Set(proposals.map(({ dao, daoId }) => dao?.id || daoId)),
+          ],
         })
         .getMany();
       const daoRolesMap = roles.reduce((daoRolesMap, role) => {
@@ -251,7 +270,7 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
       proposals = proposals.map((proposal) =>
         this.populateProposalPermissions(
           proposal,
-          daoRolesMap[proposal.dao.id],
+          daoRolesMap[proposal.dao?.id || proposal.daoId],
           permissionsAccountId,
         ),
       );

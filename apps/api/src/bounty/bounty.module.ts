@@ -7,6 +7,7 @@ import {
   BountyContext,
   BountyContextService,
 } from '@sputnik-v2/bounty';
+import { ProposalModule } from '@sputnik-v2/proposal';
 import { CacheConfigService } from '@sputnik-v2/config/api-config';
 
 import { NearModule } from '../near/near.module';
@@ -18,6 +19,7 @@ import { BountyController } from './bounty.controller';
       useClass: CacheConfigService,
     }),
     TypeOrmModule.forFeature([Bounty, BountyClaim, BountyContext]),
+    ProposalModule,
     NearModule,
   ],
   providers: [BountyService, BountyContextService],

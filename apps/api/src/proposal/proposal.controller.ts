@@ -63,6 +63,11 @@ export class ProposalController {
     name: 'id',
     type: String,
   })
+  @ApiQuery({
+    name: 'accountId',
+    required: false,
+    type: String,
+  })
   @ApiResponse({
     status: 200,
     description: 'Sputnik DAO Proposal',
@@ -70,14 +75,11 @@ export class ProposalController {
   })
   @ApiBadRequestResponse({ description: 'Invalid Proposal ID' })
   @Get('/proposals/:id')
-  async proposalById(@Param() { id }: FindOneParams): Promise<Proposal> {
-    const proposal: Proposal = await this.proposalService.findOne(id);
-
-    if (!proposal) {
-      throw new BadRequestException('Invalid Proposal ID');
-    }
-
-    return proposal;
+  async proposalById(
+    @Param() { id }: FindOneParams,
+    @Query('accountId') accountId?: string,
+  ): Promise<Proposal> {
+    return await this.proposalService.getById(id, accountId);
   }
 
   @ApiParam({
