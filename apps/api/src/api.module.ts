@@ -26,6 +26,7 @@ import { CommentModule } from './comment/comment.module';
 import { AggregatorModule } from './aggregator/aggregator.module';
 import { MetricsModule } from './metrics/metrics.module';
 import { StatsModule } from './stats/stats.module';
+import { ApiDaoSettingsModule } from './dao-settings/dao-settings.module';
 
 @Module({
   imports: [
@@ -53,6 +54,7 @@ import { StatsModule } from './stats/stats.module';
     }),
     BountyModule,
     DaoModule,
+    ApiDaoSettingsModule,
     ProposalModule,
     SearchModule,
     SubscriptionModule,
