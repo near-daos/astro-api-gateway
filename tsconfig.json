@@ -40,6 +40,12 @@
       "@sputnik-v2/dao/*": [
         "libs/dao/src/*"
       ],
+      "@sputnik-v2/dao-settings": [
+        "libs/dao-settings/src"
+      ],
+      "@sputnik-v2/dao-settings/*": [
+        "libs/dao-settings/src/*"
+      ],
       "@sputnik-v2/account": [
         "libs/account/src"
       ],
