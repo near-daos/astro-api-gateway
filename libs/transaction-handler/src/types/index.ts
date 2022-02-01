@@ -4,5 +4,6 @@ export * from './dao';
 export * from './proposal';
 export * from './role';
 export * from './transaction-action';
+export * from './transaction-actions-response';
 export * from './vote-action';
 export * from './vote-policy';

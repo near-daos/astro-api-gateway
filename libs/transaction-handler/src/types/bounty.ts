@@ -9,6 +9,7 @@ import {
 
 export function castAddBounty({
   dao,
+  proposal,
   bounty,
   bountyId,
   transactionHash,
@@ -19,6 +20,7 @@ export function castAddBounty({
     id: buildBountyId(dao.id, bountyId),
     bountyId: bountyId,
     daoId: dao.id,
+    proposalId: proposal.id,
     dao: { id: dao.id },
     numberOfClaims: 0,
     bountyClaims: [],

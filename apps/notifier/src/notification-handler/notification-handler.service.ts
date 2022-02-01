@@ -163,7 +163,9 @@ export class NotificationHandlerService {
   private getProposalUpdateNotificationType(
     data: ProposalUpdateDto,
   ): NotificationType | null {
-    switch (data.proposal.kind?.kind.type) {
+    const proposalKind = data.proposal.kind.kind || data.proposal.kind;
+
+    switch (proposalKind?.type) {
       case ProposalType.AddMemberToRole:
         return NotificationType.AddMemberToRole;
 

@@ -53,10 +53,22 @@ export class Dao extends TransactionEntity {
   numberOfMembers: number;
 
   @ApiProperty({
+    description: 'How many groups exist in the DAO',
+  })
+  @Column({ nullable: true })
+  numberOfGroups: number;
+
+  @ApiProperty({
     description: 'List of accounts that can vote for various activity',
   })
   @Column({ type: 'text', array: true })
   council: string[];
+
+  @ApiProperty({
+    description: 'List of all account ids that joined the DAO',
+  })
+  @Column({ type: 'text', array: true, nullable: true })
+  accountIds: string[];
 
   @ApiProperty({
     description: 'Council accounts count',

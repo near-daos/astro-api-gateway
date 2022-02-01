@@ -8,6 +8,7 @@ export class BountyDto extends TransactionInfo {
   daoId: string;
   dao: DaoDto;
   bountyId: number;
+  proposalId: string;
   description: string;
   /// Token the bounty will be paid out.
   token: string;

@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Param,
+  Query,
   UseFilters,
   UseInterceptors,
 } from '@nestjs/common';
@@ -20,14 +21,25 @@ import {
   EntityQuery,
   QueryFailedErrorFilter,
 } from '@sputnik-v2/common';
-import { BountyService, BountyResponse, Bounty } from '@sputnik-v2/bounty';
+import {
+  BountyService,
+  BountyResponse,
+  Bounty,
+  BountyContextService,
+  BountyContext,
+  BountyContextResponse,
+} from '@sputnik-v2/bounty';
 
 import { BountyCrudRequestInterceptor } from './interceptors/bounty-crud.interceptor';
+import { BountyContextCrudRequestInterceptor } from './interceptors/bounty-context-crud.interceptor';
 
 @ApiTags('Bounty')
-@Controller('/bounties')
+@Controller()
 export class BountyController {
-  constructor(private readonly bountyService: BountyService) {}
+  constructor(
+    private readonly bountyService: BountyService,
+    private readonly bountyContextService: BountyContextService,
+  ) {}
 
   @ApiResponse({
     status: 200,
@@ -40,7 +52,7 @@ export class BountyController {
   @UseInterceptors(HttpCacheInterceptor, BountyCrudRequestInterceptor)
   @UseFilters(new QueryFailedErrorFilter())
   @ApiQuery({ type: EntityQuery })
-  @Get('/')
+  @Get('/bounties')
   async bounties(
     @ParsedRequest() query: CrudRequest,
   ): Promise<Bounty[] | BountyResponse> {
@@ -58,7 +70,7 @@ export class BountyController {
   })
   @ApiBadRequestResponse({ description: 'Invalid Bounty ID' })
   @UseInterceptors(HttpCacheInterceptor)
-  @Get('/:id')
+  @Get('/bounties/:id')
   async bountyById(@Param() { id }: FindOneParams): Promise<Bounty> {
     const bounty: Bounty = await this.bountyService.findOne(id);
 
@@ -67,5 +79,29 @@ export class BountyController {
     }
 
     return bounty;
+  }
+
+  @ApiResponse({
+    status: 200,
+    description: 'List of aggregated Sputnik DAO Bounties',
+    type: BountyContextResponse,
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
+  @UseInterceptors(HttpCacheInterceptor, BountyContextCrudRequestInterceptor)
+  @UseFilters(new QueryFailedErrorFilter())
+  @ApiQuery({ type: EntityQuery })
+  @ApiQuery({
+    name: 'accountId',
+    required: false,
+    type: String,
+  })
+  @Get('/bounty-contexts')
+  async bountyContexts(
+    @ParsedRequest() query: CrudRequest,
+    @Query('accountId') accountId?: string,
+  ): Promise<BountyContext[] | BountyContextResponse> {
+    return await this.bountyContextService.getMany(query, accountId);
   }
 }

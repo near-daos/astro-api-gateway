@@ -25,6 +25,7 @@ export class ProposalDto extends TransactionInfo {
   id: string;
   proposalId: number;
   daoId: string;
+  bountyDoneId?: string;
   proposer: string;
   description: string;
   status: ProposalStatus;
@@ -41,9 +42,11 @@ export class ProposalDto extends TransactionInfo {
 
 export class ProposalKindDto {
   public kind: ProposalKind;
+  public type: ProposalType;
 
   constructor(kind: ProposalKind) {
     this.kind = kind;
+    this.type = kind.type;
   }
 
   equals(kindWrapper: ProposalKindDto | null): boolean {
