@@ -5,9 +5,10 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { AccountAccessGuard, FindOneParams } from '@sputnik-v2/common';
+import { AccountAccessGuard } from '@sputnik-v2/common';
 import { DaoSettingsDto, DaoSettingsService } from '@sputnik-v2/dao-settings';
 import { PatchSettingsBodyDto } from './dto/patch-settings-body.dto';
+import { CouncilMemberGuard } from '../guards/council-member.guard';
 
 @ApiTags('DAO')
 @Controller('/daos')
@@ -15,8 +16,7 @@ export class DaoSettingsController {
   constructor(private readonly daoSettingsService: DaoSettingsService) {}
 
   @ApiParam({
-    name: 'id',
-    description: 'DAO Id',
+    name: 'daoId',
     type: String,
   })
   @ApiResponse({
@@ -24,9 +24,9 @@ export class DaoSettingsController {
     description: 'Get DAO settings',
     type: DaoSettingsDto,
   })
-  @Get('/:id/settings')
-  async getSettings(@Param() { id }: FindOneParams): Promise<DaoSettingsDto> {
-    const entity = await this.daoSettingsService.getSettings(id);
+  @Get('/:daoId/settings')
+  async getSettings(@Param('daoId') daoId: string): Promise<DaoSettingsDto> {
+    const entity = await this.daoSettingsService.getSettings(daoId);
     return entity?.settings || {};
   }
 
@@ -44,13 +44,13 @@ export class DaoSettingsController {
     description:
       'Account <accountId> identity is invalid - public key / bad signature/public key size / Invalid signature',
   })
-  @UseGuards(AccountAccessGuard)
-  @Patch('/:id/settings')
+  @UseGuards(AccountAccessGuard, CouncilMemberGuard)
+  @Patch('/:daoId/settings')
   async patchSettings(
-    @Param() { id }: FindOneParams,
+    @Param('daoId') daoId: string,
     @Body() { settings }: PatchSettingsBodyDto,
   ): Promise<DaoSettingsDto> {
-    const entity = await this.daoSettingsService.saveSettings(id, settings);
+    const entity = await this.daoSettingsService.saveSettings(daoId, settings);
     return entity.settings;
   }
 }
