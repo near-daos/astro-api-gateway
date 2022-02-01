@@ -15,7 +15,7 @@ export class Comment extends BaseEntity {
   daoId: string;
 
   @ApiProperty()
-  @Column()
+  @Column({ nullable: true })
   proposalId: string;
 
   @ApiProperty({ type: [CommentReport] })
