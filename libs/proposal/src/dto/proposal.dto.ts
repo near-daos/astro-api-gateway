@@ -26,6 +26,7 @@ export class ProposalDto extends TransactionInfo {
   proposalId: number;
   daoId: string;
   bountyDoneId?: string;
+  bountyClaimId?: string;
   proposer: string;
   description: string;
   status: ProposalStatus;

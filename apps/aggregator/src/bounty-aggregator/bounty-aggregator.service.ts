@@ -41,9 +41,19 @@ export class BountyAggregatorService {
       dao.id,
       bountyClaimAccountIds,
     );
+    const daoBounties = await this.bountyService.find({
+      where: { daoId: dao.id },
+      relations: ['bountyClaims'],
+    });
 
     const bountyDtos = bounties.map((bounty) =>
-      castBounty(dao, txs, bounty, claims),
+      castBounty(
+        dao,
+        txs,
+        bounty,
+        claims,
+        daoBounties.find(({ bountyId }) => bountyId === bounty.id),
+      ),
     );
 
     return this.bountyService.createMultiple(bountyDtos);
