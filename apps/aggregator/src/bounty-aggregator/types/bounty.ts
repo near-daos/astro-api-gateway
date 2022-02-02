@@ -47,7 +47,13 @@ export function castBountyClaim(
   };
 }
 
-export function castBounty(dao: Dao, txs: Transaction[], bounty, claims) {
+export function castBounty(
+  dao: Dao,
+  txs: Transaction[],
+  bounty,
+  claims,
+  bountyEntity,
+) {
   const bountyDto = {
     ...camelcaseKeys(bounty),
     id: buildBountyId(dao.id, bounty.id),
@@ -87,14 +93,17 @@ export function castBounty(dao: Dao, txs: Transaction[], bounty, claims) {
   });
   const txCreateData = txData[0];
   const txUpdateData = txData[txData.length - 1];
+  const bountyClaims = claims
+    .filter((claim) => bountyDto.bountyId === claim.bounty_id)
+    .map((claim) =>
+      castBountyClaim(dao, bountyClaimTxs, bounty, camelcaseKeys(claim)),
+    );
 
   return {
     ...bountyDto,
-    bountyClaims: claims
-      .filter((claim) => bountyDto.bountyId === claim.bounty_id)
-      .map((claim) =>
-        castBountyClaim(dao, bountyClaimTxs, bounty, camelcaseKeys(claim)),
-      ),
+    bountyClaims: bountyEntity?.bountyClaims
+      ? bountyEntity.bountyClaims.concat(bountyClaims)
+      : bountyClaims,
     transactionHash: txCreateData?.transactionHash,
     createTimestamp: txCreateData?.blockTimestamp,
     updateTransactionHash: txUpdateData?.transactionHash,

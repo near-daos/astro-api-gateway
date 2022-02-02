@@ -8,6 +8,7 @@ import { NearApiService } from '@sputnik-v2/near-api';
 import { SputnikService } from '@sputnik-v2/sputnikdao';
 import { DaoService } from '@sputnik-v2/dao';
 import {
+  ProposalKindBountyDone,
   ProposalService,
   ProposalStatus,
   ProposalType,
@@ -158,6 +159,16 @@ export class TransactionActionHandlerService {
       transactionHash,
       timestamp,
     });
+
+    if (proposal.type === ProposalType.BountyDone) {
+      const proposalKind = proposal.kind.kind as ProposalKindBountyDone;
+      const bountyClaim = await this.bountyService.getLastBountyClaim(
+        buildBountyId(dao.id, proposalKind.bountyId),
+        proposalKind.receiverId,
+        timestamp,
+      );
+      proposal.bountyClaimId = bountyClaim.id;
+    }
 
     this.logger.log(`Storing Proposal: ${proposal.id} due to transaction`);
     await this.proposalService.create(proposal);

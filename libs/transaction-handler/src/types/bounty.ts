@@ -72,9 +72,7 @@ export function castClaimBounty({
   return {
     ...bounty,
     bountyClaims: bounty.bountyClaims
-      ? bounty.bountyClaims
-          .filter((claim) => claim.accountId !== accountId)
-          .concat(claims)
+      ? bounty.bountyClaims.concat(claims)
       : claims,
     numberOfClaims: numberOfClaims,
     updateTransactionHash: transactionHash,
@@ -102,9 +100,7 @@ export function castDoneBounty({
     ...bounty,
     times: bountyData.times,
     bountyClaims: bounty.bountyClaims
-      ? bounty.bountyClaims
-          .filter((claim) => claim.accountId !== accountId)
-          .concat(claims)
+      ? bounty.bountyClaims.concat(claims)
       : claims,
     numberOfClaims: numberOfClaims,
     updateTransactionHash: transactionHash,

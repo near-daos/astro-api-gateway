@@ -118,6 +118,10 @@ export class Proposal extends TransactionEntity {
   @JoinColumn({ name: 'bounty_done_id' })
   bounty: Bounty;
 
+  @ApiProperty()
+  @Column({ nullable: true })
+  bountyClaimId: string;
+
   commentsCount: number;
 
   @AfterLoad()

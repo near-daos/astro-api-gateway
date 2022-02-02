@@ -4,7 +4,8 @@ import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 import { Not, Repository } from 'typeorm';
 
 import { BountyDto } from './dto';
-import { Bounty } from './entities';
+import { Bounty, BountyClaim } from './entities';
+import { getBlockTimestamp } from '@sputnik-v2/utils';
 
 @Injectable()
 export class BountyService extends TypeOrmCrudService<Bounty> {
@@ -28,5 +29,27 @@ export class BountyService extends TypeOrmCrudService<Bounty> {
       daoId,
       times: Not('0'),
     });
+  }
+
+  async getLastBountyClaim(
+    bountyId: string,
+    accountId: string,
+    untilTimestamp = getBlockTimestamp(),
+  ): Promise<BountyClaim | null> {
+    const bounty = await this.bountyRepository.findOne(bountyId, {
+      relations: ['bountyClaims'],
+    });
+    return bounty.bountyClaims.reduce((lastClaim, currentClaim) => {
+      const currentClaimTimestamp = Number(currentClaim.startTime);
+      const lastClaimTimestamp = Number(lastClaim?.startTime ?? 0);
+
+      const isLastClaim = () =>
+        currentClaimTimestamp < untilTimestamp &&
+        currentClaimTimestamp > lastClaimTimestamp;
+
+      return currentClaim.accountId === accountId && isLastClaim()
+        ? currentClaim
+        : lastClaim;
+    }, null);
   }
 }
