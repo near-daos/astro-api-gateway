@@ -41,11 +41,14 @@ jobs:
     - id: updated-apps
       shell: bash
       run: |
-        export ARR_TO_JSON='s| |", "|g;s|.*|"&"|'
+        array_to_json () {
+          echo "[$(echo $1 | xargs | sed -e 's| |", "|g;s|.*|"&"|')]"
+        }
+
         if [[ "${{ github.event.inputs.apps }}" != "" ]]
         then
-          export UPDATED_APPS=$(echo "[$(echo "${{ github.event.inputs.apps }}" | xargs | sed -e $ARR_TO_JSON)]")
           echo "List of apps was provided manually: ${{ github.event.inputs.apps }}"
+          export UPDATED_APPS=$(array_to_json "${{ github.event.inputs.apps }}")
           echo "::set-output name=apps::$UPDATED_APPS"
           for app in ${{ github.event.inputs.apps }}
           do
@@ -80,7 +83,7 @@ jobs:
             fi
           done
         done
-        export UPDATED_APPS=$(echo "[$(echo $UPDATED_APPS | xargs | sed -e $ARR_TO_JSON)]")
+        export UPDATED_APPS=$(array_to_json "$UPDATED_APPS")
         echo "::set-output name=apps::$UPDATED_APPS"
 
   get-environment:
