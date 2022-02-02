@@ -160,7 +160,7 @@ export class AggregatorService {
     const { contractName } = this.configService.get('near');
     const daoTokenUpdates =
       await this.nearIndexerService.findLikelyTokenUpdates(
-        `%.${contractName}%`,
+        contractName,
         timestamp,
       );
 
@@ -236,12 +236,12 @@ export class AggregatorService {
     const { contractName, nftFactoryContracts } =
       this.configService.get('near');
     const daoNFTUpdates = await this.nearIndexerService.findLikelyNFTsUpdates(
-      `%${contractName}%`,
+      contractName,
       timestamp,
     );
     const whitelistNFTActions =
       await this.nearIndexerService.findContractsNFTsActions(
-        nftFactoryContracts.map((contractName) => `%.${contractName}%`),
+        nftFactoryContracts,
         timestamp,
       );
     const nftUpdates = [
