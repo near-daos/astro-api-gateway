@@ -5,6 +5,7 @@ import { Not, Repository } from 'typeorm';
 
 import { BountyDto } from './dto';
 import { Bounty, BountyClaim } from './entities';
+import { getBlockTimestamp } from '@sputnik-v2/utils';
 
 @Injectable()
 export class BountyService extends TypeOrmCrudService<Bounty> {
@@ -33,21 +34,22 @@ export class BountyService extends TypeOrmCrudService<Bounty> {
   async getLastBountyClaim(
     bountyId: string,
     accountId: string,
-    untilTimestamp?: number,
+    untilTimestamp = getBlockTimestamp(),
   ): Promise<BountyClaim | null> {
     const bounty = await this.bountyRepository.findOne(bountyId, {
       relations: ['bountyClaims'],
     });
-    return bounty.bountyClaims.reduce((lastClaim, bountyClaim) => {
-      if (
-        bountyClaim.accountId === accountId &&
-        (!untilTimestamp || Number(bountyClaim.startTime) < untilTimestamp) &&
-        (!lastClaim ||
-          Number(bountyClaim.startTime) > Number(lastClaim.startTime))
-      ) {
-        return bountyClaim;
-      }
-      return lastClaim;
+    return bounty.bountyClaims.reduce((lastClaim, currentClaim) => {
+      const currentClaimTimestamp = Number(currentClaim.startTime);
+      const lastClaimTimestamp = Number(lastClaim?.startTime ?? 0);
+
+      const isLastClaim = () =>
+        currentClaimTimestamp < untilTimestamp &&
+        currentClaimTimestamp > lastClaimTimestamp;
+
+      return currentClaim.accountId === accountId && isLastClaim()
+        ? currentClaim
+        : lastClaim;
     }, null);
   }
 }
