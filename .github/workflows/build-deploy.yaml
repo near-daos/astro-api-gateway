@@ -114,8 +114,7 @@ jobs:
     strategy:
       matrix:
         app: ${{ fromJSON(needs.get-updated-apps.outputs.updated-apps) }}
-    env:
-      APP_NAME: aggregator
+    if: ${{ fromJSON(needs.get-updated-apps.outputs.updated-apps).include[0] }}
     runs-on: ubuntu-latest
     needs:
     - get-updated-apps
