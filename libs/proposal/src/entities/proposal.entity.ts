@@ -13,12 +13,16 @@ import { TransactionEntity } from '@sputnik-v2/common';
 import { Dao } from '@sputnik-v2/dao/entities';
 import { Vote } from '@sputnik-v2/sputnikdao/types';
 import { Comment } from '@sputnik-v2/comment/entities';
+import { CommentContextType } from '@sputnik-v2/comment/types';
+import { Bounty } from '@sputnik-v2/bounty/entities';
 
-import { ProposalKind } from '../dto/proposal-kind.dto';
-import { ProposalKindSwaggerDto } from '../dto/proposal-kind-swagger.dto';
-import { ProposalStatus } from '../types/proposal-status';
-import { ProposalType } from '../types/proposal-type';
-import { ProposalVoteStatus } from '../types/proposal-vote-status';
+import { ProposalKind, ProposalKindSwaggerDto } from '../dto';
+import {
+  ProposalStatus,
+  ProposalType,
+  ProposalVoteStatus,
+  ProposalPermissions,
+} from '../types';
 import { ProposalAction } from './proposal-action.entity';
 
 @Entity()
@@ -104,13 +108,30 @@ export class Proposal extends TransactionEntity {
   @Column({ type: 'bigint', nullable: true })
   votePeriodEnd: number;
 
+  @ApiProperty()
+  @Column({ nullable: true })
+  bountyDoneId: string;
+
+  @ManyToOne(() => Bounty, (bounty) => bounty.bountyDoneProposals, {
+    nullable: true,
+  })
+  @JoinColumn({ name: 'bounty_done_id' })
+  bounty: Bounty;
+
   commentsCount: number;
 
   @AfterLoad()
   async countComments(): Promise<void> {
     this.commentsCount = await getManager()
       .createQueryBuilder(Comment, 'comment')
-      .where({ proposalId: this.id, isArchived: false })
+      .where({
+        contextId: this.id,
+        contextType: CommentContextType.Proposal,
+        isArchived: false,
+      })
       .getCount();
   }
+
+  @ApiProperty()
+  permissions?: ProposalPermissions;
 }

@@ -71,7 +71,7 @@ export class NearIndexerService {
       .createQueryBuilder('account')
       .leftJoinAndSelect('account.receipt', 'receipts')
       .leftJoinAndSelect('receipts.originatedFromTransaction', 'transactions')
-      .where('account.account_id like :id', { id: `%${contractName}%` })
+      .where('account.account_id like :id', { id: `%.${contractName}%` })
       .getMany();
   }
 
@@ -80,7 +80,7 @@ export class NearIndexerService {
       .createQueryBuilder('account')
       .leftJoinAndSelect('account.receipt', 'receipts')
       .leftJoinAndSelect('receipts.originatedFromTransaction', 'transactions')
-      .where('account.account_id = ANY(ARRAY[:...ids])', { ids: accountIds })
+      .where('account.account_id IN (:...ids)', { ids: accountIds })
       .getMany();
   }
 
@@ -200,7 +200,7 @@ export class NearIndexerService {
     let queryBuilder = this.receiptRepository
       .createQueryBuilder('receipt')
       .leftJoinAndSelect('receipt.receiptActions', 'action_receipt_actions')
-      .where('receipt.receiver_account_id = ANY(ARRAY[:...ids])', {
+      .where('receipt.receiver_account_id IN (:...ids)', {
         ids: receiverAccountIds,
       });
 
@@ -439,7 +439,7 @@ export class NearIndexerService {
       ? await this.receiptRepository
           .createQueryBuilder('receipt')
           .leftJoinAndSelect('receipt.receiptActions', 'action_receipt_actions')
-          .where('receipt.receipt_id = ANY(ARRAY[:...ids])', {
+          .where('receipt.receipt_id IN (:...ids)', {
             ids: actions.map(({ receiptId }) => receiptId),
           })
           .orderBy('included_in_block_timestamp', 'ASC')
@@ -461,26 +461,23 @@ export class NearIndexerService {
     // .leftJoinAndSelect(
     //   'transaction.receipts',
     //   'receipts',
-    //   'receipts.predecessor_account_id = ANY(ARRAY[:...ids])',
+    //   'receipts.predecessor_account_id IN (:...ids)',
     //   { ids: receiverAccountIds },
     // )
     // .leftJoinAndSelect(
     //   'receipts.receiptActions',
     //   'action_receipt_actions',
-    //   'action_receipt_actions.receipt_predecessor_account_id = ANY(ARRAY[:...ids]) AND action_receipt_actions.action_kind = :actionKind',
+    //   'action_receipt_actions.receipt_predecessor_account_id = IN (:...ids) AND action_receipt_actions.action_kind = :actionKind',
     //   { ids: receiverAccountIds, actionKind: ActionKind.Transfer },
     // )
 
     queryBuilder =
       accountIds instanceof Array
-        ? queryBuilder.where(
-            'transaction.receiver_account_id = ANY(ARRAY[:...ids])',
-            {
-              ids: accountIds,
-            },
-          )
-        : queryBuilder.where('transaction.receiver_account_id LIKE :id', {
-            id: `%${accountIds}`,
+        ? queryBuilder.where('transaction.receiver_account_id IN (:...ids)', {
+            ids: accountIds,
+          })
+        : queryBuilder.where('transaction.receiver_account_id = :id', {
+            id: `${accountIds}`,
           });
 
     queryBuilder = fromBlockTimestamp

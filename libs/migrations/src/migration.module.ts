@@ -8,11 +8,12 @@ import { SputnikModule } from '@sputnik-v2/sputnikdao';
 import { ConfigModule } from '@nestjs/config';
 import configuration, {
   TypeOrmConfigService,
-} from '@sputnik-v2/config/aggregator-dao-config';
+} from '@sputnik-v2/config/aggregator-config';
 import { Token } from '@sputnik-v2/token';
 import { Dao, DaoModule } from '@sputnik-v2/dao';
-import { BountyClaim } from '@sputnik-v2/bounty';
+import { BountyClaim, BountyModule } from '@sputnik-v2/bounty';
 import { AccountNotificationSettings } from '@sputnik-v2/notification';
+import { CommentModule } from '@sputnik-v2/comment';
 
 import migrationScripts from './scripts';
 
@@ -34,9 +35,11 @@ import migrationScripts from './scripts';
     }),
     DaoModule,
     ProposalModule,
+    BountyModule,
     NearIndexerModule,
     NearApiModule,
     SputnikModule,
+    CommentModule,
   ],
   providers: [...migrationScripts],
 })

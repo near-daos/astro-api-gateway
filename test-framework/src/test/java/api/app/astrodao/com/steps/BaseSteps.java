@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
@@ -43,6 +44,13 @@ public abstract class BaseSteps {
                 .containsExactlyInAnyOrder(expected.toArray(String[]::new));
     }
 
+    @Step("User sees collection has size greater than '{greaterThanValue}'")
+    public void assertCollectionHasSizeGreaterThan(Collection<?> actual, int greaterThanValue) {
+        assertThat(actual.size())
+                .as("Collection should have correct size.")
+                .isGreaterThanOrEqualTo(greaterThanValue);
+    }
+
     @Step("User sees valid '{fieldName}' contains '{expectedValue}' value")
     public <T> void assertDtoContainsValue(T dto, Function<T, String> valueExtractor,
                                            String expectedValue, String fieldName) {
@@ -66,12 +74,20 @@ public abstract class BaseSteps {
                 .isEqualTo(expectedValue);
     }
 
-    @Step("User sees '{fieldName}' field value greater than '{greaterThanValue}' value")
+    @Step("User sees '{fieldName}' field has value greater than '{value}' value")
     public <T, Integer> void assertDtoValueGreaterThan(T dto, Function<T, Integer> valueExtractor,
-                                                       Integer greaterThanValue, String fieldName) {
+                                                       Integer value, String fieldName) {
         assertThat((int) valueExtractor.apply(dto))
-                .as(String.format("'%s' field value must be greater than '%s'.", fieldName, greaterThanValue))
-                .isGreaterThanOrEqualTo((int) greaterThanValue);
+                .as(String.format("'%s' field value must be greater than '%s'.", fieldName, value))
+                .isGreaterThan((int) value);
+    }
+
+    @Step("User sees '{fieldName}' field has value greater than or equal to '{value}' value")
+    public <T, Integer> void assertDtoValueGreaterThanOrEqualTo(T dto, Function<T, Integer> valueExtractor,
+                                                       Integer value, String fieldName) {
+        assertThat((int) valueExtractor.apply(dto))
+                .as(String.format("'%s' field value must be greater than '%s'.", fieldName, value))
+                .isGreaterThanOrEqualTo((int) value);
     }
 
     @Step("User sees '{fieldName}' field value greater than '{greaterThanValue}' value")
@@ -89,6 +105,20 @@ public abstract class BaseSteps {
                 .as(String.format("'%s' field should have value in collection.", fieldName))
                 .filteredOn(predicate)
                 .hasSize(actual.size());
+    }
+
+    @Step("User sees '{fieldName}' field has only desired value in collection")
+    public <T, D> void assertCollectionElementsContainsOnly(Collection<T> collection,
+                                                     Function<T, D> predicate, D expectedValue, String fieldName) {
+        List<D> mapped = collection.stream().map(predicate).distinct().collect(Collectors.toList());
+
+        assertThat(mapped)
+                .as(String.format("'%s' field should have only one value.", fieldName))
+                .hasSize(1);
+
+        assertThat(mapped.get(0))
+                .as(String.format("'%s' field should have correct value.", fieldName))
+                .isEqualTo(expectedValue);
     }
 
     @Step("User sees '{fieldName}' field has no value")

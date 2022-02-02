@@ -64,7 +64,10 @@ export class DaoController {
   async daosByAccountId(
     @Param() { accountId }: FindAccountParams,
   ): Promise<Dao[] | DaoResponse> {
-    return await this.daoService.findAccountDaos(accountId);
+    return await this.daoService.findAccountDaos(
+      accountId,
+      DaoCrudRequestInterceptor.defaultFields,
+    );
   }
 
   @ApiParam({

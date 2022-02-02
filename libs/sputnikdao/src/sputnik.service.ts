@@ -3,6 +3,7 @@ import { Injectable, Logger } from '@nestjs/common';
 
 import { NearApiService } from '@sputnik-v2/near-api';
 import PromisePool from '@supercharge/promise-pool';
+import { castProposalKind } from '@sputnik-v2/proposal/dto';
 
 import { DaoInfo } from './types';
 import {
@@ -133,11 +134,10 @@ export class SputnikService {
   }
 
   private compareProposals(proposal1, proposal2): boolean {
-    const hasSameKind =
-      typeof proposal1.kind === 'string'
-        ? proposal1.kind === proposal2.kind
-        : Object.keys(proposal1.kind).toString() ===
-          Object.keys(proposal2.kind).toString();
+    const hasSameKind = this.compareProposalKinds(
+      proposal1.kind,
+      proposal2.kind,
+    );
     return (
       proposal1.description === proposal2.description &&
       proposal1.proposer === proposal2.proposer &&
@@ -153,5 +153,11 @@ export class SputnikService {
       bounty1.times === bounty2.times &&
       bounty1.max_deadline === bounty2.maxDeadline
     );
+  }
+
+  private compareProposalKinds(kind1, kind2): boolean {
+    const kindDto1 = castProposalKind(kind1);
+    const kindDto2 = castProposalKind(kind2);
+    return kindDto1.equals(kindDto2);
   }
 }
