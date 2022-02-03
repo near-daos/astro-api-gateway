@@ -3,6 +3,7 @@ import { TransactionInfo } from '@sputnik-v2/common';
 import { BountyDto } from './bounty.dto';
 
 export class BountyClaimDto extends TransactionInfo {
+  id: string;
   bounty: BountyDto;
   accountId: string;
   /// Start time of the claim.

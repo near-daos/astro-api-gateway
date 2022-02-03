@@ -34,12 +34,20 @@ export class BountyService extends TypeOrmCrudService<Bounty> {
   async getLastBountyClaim(
     bountyId: string,
     accountId: string,
-    untilTimestamp = getBlockTimestamp(),
+    untilTimestamp?: number,
   ): Promise<BountyClaim | null> {
     const bounty = await this.bountyRepository.findOne(bountyId, {
       relations: ['bountyClaims'],
     });
-    return bounty.bountyClaims.reduce((lastClaim, currentClaim) => {
+    return this.findLastClaim(bounty.bountyClaims, accountId, untilTimestamp);
+  }
+
+  findLastClaim(
+    claims: BountyClaim[],
+    accountId: string,
+    untilTimestamp = getBlockTimestamp(),
+  ): BountyClaim | null {
+    return claims.reduce((lastClaim, currentClaim) => {
       const currentClaimTimestamp = Number(currentClaim.startTime);
       const lastClaimTimestamp = Number(lastClaim?.startTime ?? 0);
 
