@@ -3,6 +3,7 @@ test:
   accountId: testdao2.testnet
 #  accountId: automation-01.testnet
   dao: test-dao-1641395769436.sputnikv2.testnet
+  proposal: test-dao-1641395769436.sputnikv2.testnet-911
   aggregation.timeout: ${TEST_AGG_TIMEOUT:20}
 
 framework:
