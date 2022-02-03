@@ -338,7 +338,7 @@ export class NearIndexerService {
   // Account Likely NFTs - taken from NEAR Helper Indexer middleware
   // https://github.com/near/near-contract-helper/blob/master/middleware/indexer.js
   async findLikelyNFTs(accountId: string): Promise<string[]> {
-    const received = `
+    const ownershipChangeFunctionCalls = `
         select distinct receipt_receiver_account_id as receiver_account_id
         from action_receipt_actions
         where args->'args_json'->>'receiver_id' = $1
@@ -347,9 +347,24 @@ export class NearIndexerService {
             and args->>'method_name' like 'nft_%'
     `;
 
-    const receivedTokens = await this.connection.query(received, [accountId]);
+    const ownershipChangeEvents = `
+        select distinct emitted_by_contract_account_id as receiver_account_id 
+        from assets__non_fungible_token_events
+        where token_new_owner_account_id = $1
+    `;
 
-    return receivedTokens.map(({ receiver_account_id }) => receiver_account_id);
+    const receivedTokens = await Promise.all([
+      this.connection.query(ownershipChangeFunctionCalls, [accountId]),
+      this.connection.query(ownershipChangeEvents, [accountId]),
+    ]);
+
+    return [
+      ...new Set(
+        receivedTokens
+          .flat()
+          .map(({ receiver_account_id }) => receiver_account_id),
+      ),
+    ];
   }
 
   async findLikelyNFTsUpdates(
