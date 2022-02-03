@@ -174,6 +174,6 @@ export const getGrowth = (current: number, prev?: number) => {
     : 0;
 };
 
-export const buildLikeContractName = (contractName: string) => {
-  return `%.${contractName}`;
+export const buildLikeContractName = (contractName: string, prefix = '.') => {
+  return `%${prefix}${contractName}`;
 };

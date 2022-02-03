@@ -375,7 +375,9 @@ export class NearIndexerService {
     contractNames: string[],
     fromBlockTimestamp: number,
   ): Promise<NFTTokenActionDto[]> {
-    const accountIds = contractNames.map(buildLikeContractName);
+    const accountIds = contractNames.map((contractName) =>
+      buildLikeContractName(contractName),
+    );
 
     const received = `
         select distinct receipt_receiver_account_id as nft, args->'args_json' as args, receipt_included_in_block_timestamp as timestamp
@@ -539,7 +541,7 @@ export class NearIndexerService {
       )
       .leftJoinAndSelect('receipts.receiptActions', 'action_receipt_actions')
       .where('account_change.affected_account_id like :id', {
-        id: buildLikeContractName(contractName),
+        id: buildLikeContractName(contractName, ''),
       })
       .andWhere('account_change.changed_in_block_timestamp > :from', {
         from: fromBlockTimestamp,
