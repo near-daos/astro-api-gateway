@@ -28,15 +28,10 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       updated-apps: ${{ steps.updated-apps.outputs.apps }}
-      aggregator: ${{ steps.updated-apps.outputs.aggregator }}
-      api: ${{ steps.updated-apps.outputs.api }}
-      notifier: ${{ steps.updated-apps.outputs.notifier }}
     steps:
     - uses: actions/checkout@v2
       with:
         fetch-depth: 2
-    - uses: tj-actions/changed-files@v11.6
-      id: changed-files
 
     - id: updated-apps
       shell: bash
@@ -50,41 +45,10 @@ jobs:
           echo "List of apps was provided manually: ${{ github.event.inputs.apps }}"
           export UPDATED_APPS=$(array_to_json "${{ github.event.inputs.apps }}")
           echo "::set-output name=apps::$UPDATED_APPS"
-          for app in ${{ github.event.inputs.apps }}
-          do
-            echo "::set-output name=$app::true"
-          done
           exit 0
         fi
-        for file in ${{ join(steps.changed-files.outputs.modified_files, ' ') }}
-        do
-          echo "$file was updated, checking if it is libs file"
-          if [[ "$file" =~ ^libs/.* ]] || !([[ "$file" == *\/* ]] || [[ "$file" == *\\* ]])
-          then
-            echo "$file matched libs"
-            echo "::set-output name=apps::[\"aggregator\", \"api\", \"notifier\"]"
-            echo "::set-output name=aggregator::true"
-            echo "::set-output name=api::true"
-            echo "::set-output name=notifier::true"
-            exit 0
-          fi
-        done
-        for app in aggregator api notifier
-        do
-          for file in ${{ join(steps.changed-files.outputs.modified_files, ' ') }}
-          do
-            echo "$file was updated, checking if it is $app file"
-            if [[ "$file" =~ ^apps/$app/.* ]]
-            then
-              echo "$file is part of $app"
-              export UPDATED_APPS="$UPDATED_APPS $app"
-              echo "::set-output name=$app::true"
-              break
-            fi
-          done
-        done
-        export UPDATED_APPS=$(array_to_json "$UPDATED_APPS")
-        echo "::set-output name=apps::$UPDATED_APPS"
+
+        echo "::set-output name=apps::[\"aggregator\", \"api\", \"notifier\"]"
 
   get-environment:
     name: Get Environment
@@ -113,11 +77,10 @@ jobs:
         fi
 
   build-images:
-    name: Build Image Aggregator
+    name: Build Image
     strategy:
       matrix:
         app: ${{ fromJSON(needs.get-updated-apps.outputs.updated-apps) }}
-    if: ${{ fromJSON(needs.get-updated-apps.outputs.updated-apps).include[0] }}
     runs-on: ubuntu-latest
     needs:
     - get-updated-apps
