@@ -69,14 +69,13 @@ export function castClaimBounty({
     bountyId: bounty.bountyId,
     bountyClaims,
   });
+  const filteredClaims = removedClaim
+    ? bounty.bountyClaims.filter((claim) => claim.id !== removedClaim?.id)
+    : bounty.bountyClaims;
 
   return {
     ...bounty,
-    bountyClaims: bounty.bountyClaims
-      ? bounty.bountyClaims
-          .filter((claim) => claim.id !== removedClaim?.id)
-          .concat(claims)
-      : claims,
+    bountyClaims: filteredClaims ? filteredClaims.concat(claims) : claims,
     numberOfClaims: numberOfClaims,
     updateTransactionHash: transactionHash,
     updateTimestamp: timestamp,
