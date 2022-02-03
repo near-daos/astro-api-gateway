@@ -19,6 +19,7 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
       migrations,
       cli,
       namingStrategy,
+      logging,
     } = this.configService.get(`db_${name || 'default'}`);
 
     return {
@@ -35,6 +36,7 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
       migrations,
       cli,
       namingStrategy,
+      logging,
     };
   }
 }
