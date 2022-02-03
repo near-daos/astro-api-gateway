@@ -60,6 +60,7 @@ export function castClaimBounty({
   transactionHash,
   bountyClaims,
   numberOfClaims,
+  removedClaim,
   timestamp = getBlockTimestamp(),
 }): BountyDto {
   const claims = castBountyClaims({
@@ -72,7 +73,9 @@ export function castClaimBounty({
   return {
     ...bounty,
     bountyClaims: bounty.bountyClaims
-      ? bounty.bountyClaims.concat(claims)
+      ? bounty.bountyClaims
+          .filter((claim) => claim.id !== removedClaim?.id)
+          .concat(claims)
       : claims,
     numberOfClaims: numberOfClaims,
     updateTransactionHash: transactionHash,
