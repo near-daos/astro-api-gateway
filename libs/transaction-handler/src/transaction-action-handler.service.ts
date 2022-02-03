@@ -529,15 +529,14 @@ export class TransactionActionHandlerService {
       id: bounty.bountyId,
     });
 
-    // If unclaim found last claim to remove it
-    let removedClaim;
-    if (methodName === 'bounty_giveup') {
-      removedClaim = this.bountyService.findLastClaim(
-        bounty.bountyClaims,
-        signerId,
-        timestamp,
-      );
-    }
+    const getRemovedClaim = () =>
+      methodName === 'bounty_giveup'
+        ? this.bountyService.findLastClaim(
+            bounty.bountyClaims,
+            signerId,
+            timestamp,
+          )
+        : undefined;
 
     this.logger.log(`Updating Bounty: ${bounty.id} due to transaction`);
     await this.bountyService.create(
@@ -547,7 +546,7 @@ export class TransactionActionHandlerService {
         transactionHash,
         bountyClaims,
         numberOfClaims,
-        removedClaim,
+        removedClaim: getRemovedClaim(),
         timestamp,
       }),
     );
