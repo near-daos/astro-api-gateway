@@ -97,7 +97,7 @@ export class DaoService extends TypeOrmCrudService<Dao> {
         ),
       )
       .skip(offset)
-      .limit(limit)
+      .take(limit)
       .getManyAndCount();
     return paginate<Dao>(data, limit, offset, total);
   }
