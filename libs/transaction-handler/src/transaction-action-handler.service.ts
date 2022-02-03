@@ -508,6 +508,7 @@ export class TransactionActionHandlerService {
     receiverId,
     signerId,
     transactionHash,
+    methodName,
     args,
     timestamp,
   }: TransactionAction) {
@@ -528,6 +529,15 @@ export class TransactionActionHandlerService {
       id: bounty.bountyId,
     });
 
+    const getRemovedClaim = () =>
+      methodName === 'bounty_giveup'
+        ? this.bountyService.findLastClaim(
+            bounty.bountyClaims,
+            signerId,
+            timestamp,
+          )
+        : undefined;
+
     this.logger.log(`Updating Bounty: ${bounty.id} due to transaction`);
     await this.bountyService.create(
       castClaimBounty({
@@ -536,6 +546,7 @@ export class TransactionActionHandlerService {
         transactionHash,
         bountyClaims,
         numberOfClaims,
+        removedClaim: getRemovedClaim(),
         timestamp,
       }),
     );

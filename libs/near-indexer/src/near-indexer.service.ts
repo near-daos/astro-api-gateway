@@ -554,7 +554,8 @@ export class NearIndexerService {
       )
       .leftJoinAndSelect('receipts.receiptActions', 'action_receipt_actions')
       .where('account_change.affected_account_id like :id', {
-        id: buildLikeContractName(contractName),
+        // Need to find all DAOs + factory contract changes
+        id: `%${contractName}`,
       })
       .andWhere('account_change.changed_in_block_timestamp > :from', {
         from: fromBlockTimestamp,
