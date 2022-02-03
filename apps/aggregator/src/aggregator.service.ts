@@ -326,7 +326,7 @@ export class AggregatorService {
     const lastTx = await this.transactionService.lastTransaction();
     const accountChangeActions =
       await this.nearIndexerService.findAccountChangeActionsByContractName(
-        `${contractName}`,
+        contractName,
         lastTx?.blockTimestamp,
       );
 
