@@ -18,6 +18,7 @@ import {
   AssetsNftEvent,
 } from './entities';
 import { buildLikeContractName, getBlockTimestamp } from '@sputnik-v2/utils';
+import { ExecutionOutcomeStatus } from './types';
 
 @Injectable()
 export class NearIndexerService {
@@ -538,9 +539,17 @@ export class NearIndexerService {
         'transaction_actions',
       )
       .leftJoinAndSelect('receipts.receiptActions', 'action_receipt_actions')
+      .leftJoin(
+        'execution_outcomes',
+        'execution_outcomes',
+        'execution_outcomes.receipt_id = receipts.receipt_id',
+      )
       .where('account_change.affected_account_id like :id', {
         // Need to find all DAOs + factory contract changes
         id: `%${contractName}`,
+      })
+      .andWhere('execution_outcomes.status != :failStatus', {
+        failStatus: ExecutionOutcomeStatus.Failure,
       })
       .andWhere('account_change.changed_in_block_timestamp > :from', {
         from: fromBlockTimestamp,

@@ -6,3 +6,4 @@ export * from './receipt-action.entity';
 export * from './transaction.entity';
 export * from './transaction-action.entity';
 export * from './assets-nft-event.entity';
+export * from './execution-outcome.entity';
