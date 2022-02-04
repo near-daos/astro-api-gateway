@@ -1,11 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 
 import { NearApiService } from '@sputnik-v2/near-api';
-import {
-  NFTTokenActionDto,
-  NFTTokenService,
-  NFTTokenUpdateDto,
-} from '@sputnik-v2/token';
+import { NFTTokenService, NFTTokenUpdateDto } from '@sputnik-v2/token';
 import PromisePool from '@supercharge/promise-pool';
 
 import { castNFT } from './types/nft';
@@ -18,36 +14,6 @@ export class NFTAggregatorService {
     private readonly nearApiService: NearApiService,
     private readonly nftTokenService: NFTTokenService,
   ) {}
-
-  public mapNFTActions(nftActions: NFTTokenActionDto[]): NFTTokenUpdateDto[] {
-    return nftActions.reduce((updates, action) => {
-      if (action.args.receiver_id) {
-        // nft_transfer
-        return [
-          ...updates,
-          {
-            account: action.args.receiver_id,
-            nft: action.nft,
-            timestamp: action.timestamp,
-          },
-        ];
-      } else if (Array.isArray(action.args.token_ids)) {
-        // nft_batch_transfer
-        return [
-          ...updates,
-          ...action.args.token_ids
-            .filter((arr) => Array.isArray(arr) && arr[1])
-            .map((arr) => ({
-              account: arr[1],
-              nft: action.nft,
-              timestamp: action.timestamp,
-            })),
-        ];
-      }
-
-      return updates;
-    }, []);
-  }
 
   public async aggregateDaoNFTUpdates(
     tokenUpdates: NFTTokenUpdateDto[],
@@ -89,11 +55,12 @@ export class NFTAggregatorService {
     const contract = this.nearApiService.getContract('nft', nftContractId);
     const metadata = await contract.nft_metadata();
     const nfts = await this.getNfts(nftContractId, daoId);
-    await this.nftTokenService.createMultiple(
-      nfts.map((nft) =>
-        castNFT(nftContractId, daoId, metadata, nft, timestamp),
-      ),
+    const tokenDtos = nfts.map((nft) =>
+      castNFT(nftContractId, daoId, metadata, nft, timestamp),
     );
+    const tokenIds = tokenDtos.map(({ id }) => id);
+    await this.nftTokenService.createMultiple(tokenDtos);
+    await this.nftTokenService.purge(daoId, nftContractId, tokenIds);
   }
 
   private async getNfts(
