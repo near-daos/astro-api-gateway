@@ -48,6 +48,7 @@ runs:
       cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-sputnik-v2-${{ env.APP_NAME }}-new
 
   - name: Move cache
+    shell: bash
     run: |
       rm -rf /tmp/.buildx-cache-sputnik-v2-${{ env.APP_NAME }}
       mv /tmp/.buildx-cache-sputnik-v2-${{ env.APP_NAME }}-new /tmp/.buildx-cache-sputnik-v2-${{ env.APP_NAME }}
