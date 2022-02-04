@@ -45,7 +45,9 @@ export class NFTToken extends TransactionEntity {
 
   // Metadata
   @ApiProperty()
-  @OneToOne(() => NFTTokenMetadata, { eager: true, cascade: true })
-  @JoinColumn({ name: 'id' })
+  @OneToOne(() => NFTTokenMetadata, (metadata) => metadata.token, {
+    eager: true,
+    cascade: true,
+  })
   metadata: NFTTokenMetadata;
 }
