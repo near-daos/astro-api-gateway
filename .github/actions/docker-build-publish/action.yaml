@@ -2,19 +2,13 @@ name: 'Docker Build Publish'
 runs:
   using: 'composite'
   steps:
-  - name: Docker Cache
+  - name: Cache Docker layers
     uses: actions/cache@v2
     with:
-      path: |
-        docker-cache.tar
-      key: docker
-
-  - name: Load Cache
-    shell: bash
-    run: |
-      if [[ -f "docker-cache/cache.tar" ]]; then
-        docker load < docker-cache.tar;
-      fi
+      path: /tmp/.buildx-cache-sputnik-v2-${{ env.APP_NAME }}
+      key: ${{ runner.os }}-sputnik-v2-${{ env.APP_NAME }}-${{ github.sha }}
+      restore-keys: |
+        ${{ runner.os }}-sputnik-v2-${{ env.APP_NAME }}
 
   - name: Docker meta
     id: meta
@@ -50,12 +44,10 @@ runs:
       tags: ${{ steps.meta.outputs.tags }}
       push: true
       build-args: APP_NAME=${{ env.APP_NAME }}
-      cache-from: type=registry,ref=${{ env.AWS_ECR_URL }}/sputnik-v2-${{ env.APP_NAME }}:latest
+      cache-from: type=local,src=/tmp/.buildx-cache-sputnik-v2-${{ env.APP_NAME }}
+      cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-sputnik-v2-${{ env.APP_NAME }}-new
 
-  - name: Save Cache
-    shell: bash
+  - name: Move cache
     run: |
-      if [[ ! -f "docker-cache.tar" ]]; then
-        docker save $(docker images -qa) > docker-cache.tar;
-      fi
-
+      rm -rf /tmp/.buildx-cache-sputnik-v2-${{ env.APP_NAME }}
+      mv /tmp/.buildx-cache-sputnik-v2-${{ env.APP_NAME }}-new /tmp/.buildx-cache-sputnik-v2-${{ env.APP_NAME }}
