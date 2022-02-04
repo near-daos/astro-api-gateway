@@ -3,12 +3,14 @@ import { ConfigService } from '@nestjs/config';
 import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 import PromisePool from '@supercharge/promise-pool';
 import { NEAR_INDEXER_DB_CONNECTION } from '@sputnik-v2/common';
+import { TokenUpdateDto } from '@sputnik-v2/token';
 import {
-  NFTTokenActionDto,
-  NFTTokenUpdateDto,
-  TokenUpdateDto,
-} from '@sputnik-v2/token';
-import { Connection, Repository, SelectQueryBuilder } from 'typeorm';
+  Connection,
+  MoreThan,
+  Like,
+  Repository,
+  SelectQueryBuilder,
+} from 'typeorm';
 import {
   Account,
   Transaction,
@@ -338,7 +340,7 @@ export class NearIndexerService {
   // Account Likely NFTs - taken from NEAR Helper Indexer middleware
   // https://github.com/near/near-contract-helper/blob/master/middleware/indexer.js
   async findLikelyNFTs(accountId: string): Promise<string[]> {
-    const received = `
+    const ownershipChangeFunctionCalls = `
         select distinct receipt_receiver_account_id as receiver_account_id
         from action_receipt_actions
         where args->'args_json'->>'receiver_id' = $1
@@ -347,50 +349,24 @@ export class NearIndexerService {
             and args->>'method_name' like 'nft_%'
     `;
 
-    const receivedTokens = await this.connection.query(received, [accountId]);
-
-    return receivedTokens.map(({ receiver_account_id }) => receiver_account_id);
-  }
-
-  async findLikelyNFTsUpdates(
-    contractName: string,
-    fromBlockTimestamp: number,
-  ): Promise<NFTTokenUpdateDto[]> {
-    const accountId = buildLikeContractName(contractName);
-
-    const received = `
-        select distinct receipt_receiver_account_id as nft, args->'args_json'->>'receiver_id' as account, receipt_included_in_block_timestamp as timestamp
-        from action_receipt_actions
-        where args->'args_json'->>'receiver_id' like $1
-            and action_kind = 'FUNCTION_CALL'
-            and args->>'args_json' is not null
-            and args->>'method_name' like 'nft_%'
-        and receipt_included_in_block_timestamp > $2
+    const ownershipChangeEvents = `
+        select distinct emitted_by_contract_account_id as receiver_account_id 
+        from assets__non_fungible_token_events
+        where token_new_owner_account_id = $1
     `;
 
-    return this.connection.query(received, [accountId, fromBlockTimestamp]);
-  }
-
-  async findContractsNFTsActions(
-    contractNames: string[],
-    fromBlockTimestamp: number,
-  ): Promise<NFTTokenActionDto[]> {
-    const accountIds = contractNames.map(buildLikeContractName);
-
-    const received = `
-        select distinct receipt_receiver_account_id as nft, args->'args_json' as args, receipt_included_in_block_timestamp as timestamp
-        from action_receipt_actions
-        where receipt_receiver_account_id like any (array[$1])
-            and action_kind = 'FUNCTION_CALL'
-            and args->>'args_json' is not null
-            and args->>'method_name' like 'nft_%'
-        and receipt_included_in_block_timestamp > $2
-    `;
-
-    return this.connection.query(received, [
-      accountIds.join(','),
-      fromBlockTimestamp,
+    const receivedTokens = await Promise.all([
+      this.connection.query(ownershipChangeFunctionCalls, [accountId]),
+      this.connection.query(ownershipChangeEvents, [accountId]),
     ]);
+
+    return [
+      ...new Set(
+        receivedTokens
+          .flat()
+          .map(({ receiver_account_id }) => receiver_account_id),
+      ),
+    ];
   }
 
   async findNFTEvents(
@@ -405,6 +381,29 @@ export class NearIndexerService {
       .andWhere('nftEvent.token_id = :tokenId', { tokenId })
       .orderBy('emitted_at_block_timestamp', 'DESC')
       .getMany();
+  }
+
+  async findNFTEventUpdates(
+    contractName: string,
+    fromBlockTimestamp: number,
+  ): Promise<AssetsNftEvent[]> {
+    // TODO optimize query, replace LIKE '%.contract.name' with IN ('1.contract.name', '2.contract.name', ...)
+    const accountId = buildLikeContractName(contractName);
+    return this.assetsNftEventRepository.find({
+      where: [
+        {
+          tokenOldOwnerAccountId: Like(accountId),
+          emittedAtBlockTimestamp: MoreThan(fromBlockTimestamp),
+        },
+        {
+          tokenNewOwnerAccountId: Like(accountId),
+          emittedAtBlockTimestamp: MoreThan(fromBlockTimestamp),
+        },
+      ],
+      order: {
+        emittedAtBlockTimestamp: 'DESC',
+      },
+    });
   }
 
   async receiptsByAccount(accountId: string): Promise<Receipt[]> {

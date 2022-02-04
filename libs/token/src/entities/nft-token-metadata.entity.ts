@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Column, Entity, PrimaryColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
+import { NFTToken } from './nft-token.entity';
 
 @Entity()
 export class NFTTokenMetadata {
@@ -58,4 +59,9 @@ export class NFTTokenMetadata {
   @ApiProperty()
   @Column({ type: 'text', array: true, nullable: true })
   approvedAccountIds: string[];
+
+  @ApiProperty()
+  @OneToOne(() => NFTToken, (token) => token.metadata, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'tokenId' })
+  token: NFTToken;
 }

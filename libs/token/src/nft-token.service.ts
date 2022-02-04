@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
-import { IsNull, Not, Repository } from 'typeorm';
+import { DeleteResult, In, IsNull, Not, Repository } from 'typeorm';
 import { CrudRequest } from '@nestjsx/crud';
 
 import { AssetsNftEvent, NearIndexerService } from '@sputnik-v2/near-indexer';
@@ -25,6 +25,18 @@ export class NFTTokenService extends TypeOrmCrudService<NFTToken> {
 
   async createMultiple(tokenDtos: NFTTokenDto[]): Promise<NFTToken[]> {
     return this.nftTokenRepository.save(tokenDtos);
+  }
+
+  async purge(
+    accountId: string,
+    contractId: string,
+    ids: string[],
+  ): Promise<DeleteResult> {
+    return this.nftTokenRepository.delete({
+      accountId,
+      contractId,
+      id: Not(In(ids)),
+    });
   }
 
   async lastToken(): Promise<NFTToken> {
