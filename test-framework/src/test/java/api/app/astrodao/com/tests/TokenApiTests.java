@@ -185,7 +185,6 @@ public class TokenApiTests extends BaseTest {
         tokenApiSteps.assertCollectionElementsHasValue(tokenResponse.getData(), r -> !r.getContract().getId().isBlank(), "contract/id");
         tokenApiSteps.assertCollectionElementsHasValue(tokenResponse.getData(), r -> !r.getContract().getSpec().isBlank(), "contract/spec");
         tokenApiSteps.assertCollectionElementsHasValue(tokenResponse.getData(), r -> !r.getContract().getIcon().isBlank(), "contract/icon");
-        tokenApiSteps.assertCollectionElementsHasValue(tokenResponse.getData(), r -> !r.getMetadata().getTokenId().isBlank(), "metadata/tokenId");
     }
 
     @Test
@@ -211,7 +210,6 @@ public class TokenApiTests extends BaseTest {
         tokenApiSteps.assertCollectionElementsHasValue(tokenResponse.getData(), r -> !r.getContractId().isBlank(), "contractId");
         tokenApiSteps.assertCollectionElementsHasValue(tokenResponse.getData(), r -> !r.getContract().getId().isBlank(), "contract/id");
         tokenApiSteps.assertCollectionElementsHasValue(tokenResponse.getData(), r -> !r.getContract().getSpec().isBlank(), "contract/spec");
-        tokenApiSteps.assertCollectionElementsHasValue(tokenResponse.getData(), r -> !r.getMetadata().getTokenId().isBlank(), "metadata/tokenId");
     }
 
     @Test
@@ -257,7 +255,6 @@ public class TokenApiTests extends BaseTest {
         tokenApiSteps.assertCollectionElementsHasValue(tokenResponse.getData(), r -> !r.getContractId().isBlank(), "contractId");
         tokenApiSteps.assertCollectionElementsHasValue(tokenResponse.getData(), r -> !r.getContract().getId().isBlank(), "contract/id");
         tokenApiSteps.assertCollectionElementsHasValue(tokenResponse.getData(), r -> !r.getContract().getSpec().isBlank(), "contract/spec");
-        tokenApiSteps.assertCollectionElementsHasValue(tokenResponse.getData(), r -> !r.getMetadata().getTokenId().isBlank(), "metadata/tokenId");
     }
 
     @Test
