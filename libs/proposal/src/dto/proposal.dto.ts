@@ -3,7 +3,7 @@ import { PolicyDto } from '@sputnik-v2/dao';
 import { TransactionInfo } from '@sputnik-v2/common';
 import { Vote } from '@sputnik-v2/sputnikdao/types';
 
-import { ProposalStatus, ProposalType } from '../types';
+import { ProposalPolicyLabel, ProposalStatus, ProposalType } from '../types';
 
 import {
   ProposalKind,
@@ -33,6 +33,7 @@ export class ProposalDto extends TransactionInfo {
   submissionTime: number;
   kind: ProposalKindDto;
   type?: ProposalType;
+  policyLabel?: ProposalPolicyLabel;
   voteCounts: { [key: string]: number[] };
   votes: {
     [key: string]: Vote;

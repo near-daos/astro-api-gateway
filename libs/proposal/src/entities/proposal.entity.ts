@@ -22,6 +22,7 @@ import {
   ProposalType,
   ProposalVoteStatus,
   ProposalPermissions,
+  ProposalPolicyLabel,
 } from '../types';
 import { ProposalAction } from './proposal-action.entity';
 
@@ -83,6 +84,13 @@ export class Proposal extends TransactionEntity {
     enum: ProposalType,
   })
   type: ProposalType;
+
+  @Column({
+    type: 'enum',
+    enum: ProposalPolicyLabel,
+    nullable: true,
+  })
+  policyLabel: ProposalPolicyLabel;
 
   @ApiProperty()
   @Column({ type: 'bigint' })

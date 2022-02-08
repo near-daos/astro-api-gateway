@@ -13,6 +13,7 @@ import {
   ProposalActionDto,
   ProposalDto,
   ProposalType,
+  ProposalTypeToPolicyLabel,
   ProposalVoteStatus,
 } from '@sputnik-v2/proposal';
 import { Transaction } from '@sputnik-v2/near-indexer';
@@ -96,6 +97,7 @@ export function castProposal(
     dao: { id: dao.id },
     kind,
     type: kind.kind.type,
+    policyLabel: ProposalTypeToPolicyLabel[kind.kind.type],
     bountyDoneId:
       kind.kind.type === ProposalType.BountyDone
         ? buildBountyId(dao.id, kind.kind.bountyId)

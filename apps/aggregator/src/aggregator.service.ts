@@ -18,7 +18,6 @@ import {
   NFTTokenUpdateDto,
   TokenService,
 } from '@sputnik-v2/token';
-import { ProposalService } from '@sputnik-v2/proposal';
 
 import { DaoAggregatorService } from './dao-aggregator/dao-aggregator.service';
 import { ProposalAggregatorService } from './proposal-aggregator/proposal-aggregator.service';
@@ -40,7 +39,6 @@ export class AggregatorService {
     private readonly tokenService: TokenService,
     private readonly nftTokenService: NFTTokenService,
     private readonly daoService: DaoService,
-    private readonly proposalService: ProposalService,
     private readonly transactionHandlerService: TransactionHandlerService,
     private readonly daoAggregatorService: DaoAggregatorService,
     private readonly proposalAggregatorService: ProposalAggregatorService,
