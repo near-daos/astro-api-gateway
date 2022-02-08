@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { QueryFilter, QueryJoin } from '@nestjsx/crud-request';
+import { QueryFilter } from '@nestjsx/crud-request';
 
 import { PagingQuery } from './PagingQuery';
 
@@ -31,11 +31,4 @@ export class EntityQuery extends PagingQuery {
     required: false,
   })
   or: QueryFilter[];
-
-  @ApiProperty({
-    description:
-      'Receive joined relational objects in GET result (with all or selected fields). Syntax: ```relation1||field11,field12,...```',
-    required: false,
-  })
-  join: QueryJoin[];
 }
