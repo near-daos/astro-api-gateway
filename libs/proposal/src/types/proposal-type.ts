@@ -13,7 +13,7 @@ export enum ProposalType {
   Vote = 'Vote',
 }
 
-export const ProposalTypeToContractType = {
+export const ProposalTypeToPolicyLabel = {
   [ProposalType.ChangeConfig]: 'config',
   [ProposalType.ChangePolicy]: 'policy',
   [ProposalType.AddMemberToRole]: 'add_member_to_role',

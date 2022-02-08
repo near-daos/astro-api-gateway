@@ -43,6 +43,11 @@ export class ProposalCrudRequestInterceptor extends BaseCrudRequestInterceptor {
         alias: 'policy',
         allow: ['defaultVotePolicy'],
       },
+      'dao.policy.roles': {
+        eager: true,
+        alias: 'roles',
+        allow: ['name', 'kind', 'accountIds', 'permissions'],
+      },
       actions: {
         eager: true,
       },
