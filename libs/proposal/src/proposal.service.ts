@@ -136,28 +136,27 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
     req: CrudRequest,
   ): Promise<ProposalResponse | Proposal[]> {
     const queryBuilder = await super.createBuilder(req.parsed, req.options);
-    queryBuilder.andWhere(
-      '(:accountId = ANY(dao.accountIds) OR proposer = :accountId)',
-      { accountId },
-    );
-    queryBuilder.andWhere(
-      new Brackets((qb) => {
-        qb.where(
-          `array['*:*', '*:VoteApprove', Proposal.type || ':VoteApprove'] && perms.dao_permissions`,
-        );
-        qb.orWhere(
-          `array['*:*', '*:VoteReject', Proposal.type || ':VoteReject'] && perms.dao_permissions`,
-        );
-        qb.orWhere(
-          `array['*:*', '*:VoteRemove', Proposal.type || ':VoteRemove'] && perms.dao_permissions`,
-        );
-      }),
-    );
-    queryBuilder.leftJoin(
-      (subQuery) => this.buildPermissionsSubQuery(subQuery, accountId),
-      'perms',
-      'perms.dao_id = Proposal.dao_id',
-    );
+    queryBuilder
+      .leftJoin(
+        (subQuery) => this.buildPermissionsSubQuery(subQuery, accountId),
+        'perms',
+        'perms.dao_id = Proposal.dao_id',
+      )
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('proposer = :accountId', { accountId })
+            .orWhere(':accountId = ANY(dao.accountIds)', { accountId })
+            .orWhere(
+              `array['*:*', '*:VoteApprove', Proposal.policy_label || ':VoteApprove'] && perms.dao_permissions`,
+            )
+            .orWhere(
+              `array['*:*', '*:VoteReject', Proposal.policy_label || ':VoteReject'] && perms.dao_permissions`,
+            )
+            .orWhere(
+              `array['*:*', '*:VoteRemove', Proposal.policy_label || ':VoteRemove'] && perms.dao_permissions`,
+            );
+        }),
+      );
 
     const proposalResponse = await super.doGetMany(
       queryBuilder,

@@ -8,6 +8,7 @@ import { BountyContextMigration } from './bounty-context.migration';
 import { CommentProposalContextMigration } from './comment-proposal-context.migration';
 import { DaoGroupFieldsMigration } from './dao-goup-fields.migration';
 import { ProposalClaimIdMigration } from './proposal-claim-id.migration';
+import { ProposalPolicyLabelMigration } from './proposal-policy-label.migration';
 
 export default [
   ProposalActionsMigration,
@@ -20,4 +21,5 @@ export default [
   CommentProposalContextMigration,
   DaoGroupFieldsMigration,
   ProposalClaimIdMigration,
+  ProposalPolicyLabelMigration,
 ];

@@ -1,3 +1,5 @@
+import { ProposalPolicyLabel } from './proposal-policy-label';
+
 export enum ProposalType {
   ChangeConfig = 'ChangeConfig',
   ChangePolicy = 'ChangePolicy',
@@ -14,16 +16,16 @@ export enum ProposalType {
 }
 
 export const ProposalTypeToPolicyLabel = {
-  [ProposalType.ChangeConfig]: 'config',
-  [ProposalType.ChangePolicy]: 'policy',
-  [ProposalType.AddMemberToRole]: 'add_member_to_role',
-  [ProposalType.RemoveMemberFromRole]: 'remove_member_from_role',
-  [ProposalType.FunctionCall]: 'call',
-  [ProposalType.UpgradeSelf]: 'upgrade_self',
-  [ProposalType.UpgradeRemote]: 'upgrade_remote',
-  [ProposalType.Transfer]: 'transfer',
-  [ProposalType.SetStakingContract]: 'set_vote_token',
-  [ProposalType.AddBounty]: 'add_bounty',
-  [ProposalType.BountyDone]: 'bounty_done',
-  [ProposalType.Vote]: 'vote',
+  [ProposalType.ChangeConfig]: ProposalPolicyLabel.Config,
+  [ProposalType.ChangePolicy]: ProposalPolicyLabel.Policy,
+  [ProposalType.AddMemberToRole]: ProposalPolicyLabel.AddMemberToRole,
+  [ProposalType.RemoveMemberFromRole]: ProposalPolicyLabel.RemoveMemberFromRole,
+  [ProposalType.FunctionCall]: ProposalPolicyLabel.Call,
+  [ProposalType.UpgradeSelf]: ProposalPolicyLabel.UpgradeSelf,
+  [ProposalType.UpgradeRemote]: ProposalPolicyLabel.UpgradeRemote,
+  [ProposalType.Transfer]: ProposalPolicyLabel.Transfer,
+  [ProposalType.SetStakingContract]: ProposalPolicyLabel.SetVoteToken,
+  [ProposalType.AddBounty]: ProposalPolicyLabel.AddBounty,
+  [ProposalType.BountyDone]: ProposalPolicyLabel.BountyDone,
+  [ProposalType.Vote]: ProposalPolicyLabel.Vote,
 };
