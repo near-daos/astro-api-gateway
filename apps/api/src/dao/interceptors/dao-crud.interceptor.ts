@@ -17,6 +17,7 @@ export class DaoCrudRequestInterceptor extends BaseCrudRequestInterceptor {
     'accountIds',
     'transactionHash',
     'createdAt',
+    'status',
   ];
 
   getCrudRequest(
