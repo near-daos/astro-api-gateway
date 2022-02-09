@@ -19,5 +19,5 @@ export class ProposalQuery extends EntityQuery {
   })
   @Transform(({ value }) => (value ? value === 'true' : value))
   @IsOptional()
-  voted?: string;
+  voted?: boolean;
 }

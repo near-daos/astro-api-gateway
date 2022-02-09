@@ -55,9 +55,6 @@ export default class Api {
         transform: true,
         disableErrorMessages: false,
         validationError: { target: false },
-        transformOptions: {
-          enableImplicitConversion: true,
-        },
       }),
     );
 

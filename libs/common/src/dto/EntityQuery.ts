@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { QueryFilter } from '@nestjsx/crud-request';
+import { IsOptional, IsString } from 'class-validator';
 
 import { PagingQuery } from './PagingQuery';
 
@@ -9,6 +10,8 @@ export class EntityQuery extends PagingQuery {
       'Selects fields that should be returned in the reponse body. Syntax: ```field1,field2,...```',
     required: false,
   })
+  @IsString()
+  @IsOptional()
   fields?: string;
 
   @ApiProperty({
@@ -16,6 +19,8 @@ export class EntityQuery extends PagingQuery {
       'Adds a search condition as a JSON string to you request. Syntax: ```{"$or": [{"isActive": false}, {"updatedAt": {"$notnull": true}}]}```',
     required: false,
   })
+  @IsString()
+  @IsOptional()
   s?: string;
 
   @ApiProperty({
