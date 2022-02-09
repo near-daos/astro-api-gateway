@@ -77,7 +77,11 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
       throw new BadRequestException('Invalid Proposal ID');
     }
 
-    return this.populateProposalPermissions(proposal, permissionsAccountId);
+    return this.populateProposalPermissions(
+      proposal,
+      proposal.dao.policy.roles,
+      permissionsAccountId,
+    );
   }
 
   async getFeed(
@@ -140,7 +144,7 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
   buildVotedQuery(
     query: SelectQueryBuilder<Proposal>,
     params: ProposalQuery,
-  ): SelectQueryBuilder<any> {
+  ): SelectQueryBuilder<Proposal> {
     if (params.accountId && typeof params.voted === 'boolean') {
       query.andWhere(
         `${params.voted ? '' : 'NOT'} (votes::jsonb ? '${params.accountId}')`,
@@ -327,9 +331,27 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
       return proposalResponse;
     }
 
-    proposals = proposals.map((proposal) =>
-      this.populateProposalPermissions(proposal, permissionsAccountId),
-    );
+    const daoIds = [...new Set(proposals.map((proposal) => proposal.daoId))];
+    let daoRoles = [];
+
+    if (daoIds.length) {
+      daoRoles = await this.roleRepository
+        .createQueryBuilder('role')
+        .leftJoinAndSelect('role.policy', 'policy')
+        .where('policy_dao_id IN (:...daoIds)', { daoIds })
+        .getMany();
+    }
+
+    proposals = proposals.map((proposal) => {
+      const roles = daoRoles.filter(
+        (role) => role.policy.daoId === proposal.daoId,
+      );
+      return this.populateProposalPermissions(
+        proposal,
+        roles,
+        permissionsAccountId,
+      );
+    });
 
     if (proposalResponse instanceof Array) {
       return proposals;
@@ -340,23 +362,23 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
 
   private populateProposalPermissions(
     proposal: Proposal,
+    roles: Role[],
     accountId?: string,
   ): Proposal {
     return {
       ...proposal,
-      permissions: this.getAccountPermissions(proposal, accountId),
+      permissions: this.getAccountPermissions(proposal, roles, accountId),
     } as Proposal;
   }
 
   private getAccountPermissions(
     proposal: Proposal,
+    roles: Role[],
     accountId?: string,
     accountBalance?: bigint,
   ): ProposalPermissions {
-    const council = proposal.dao.policy.roles.find(
-      (role) => role.name.toLowerCase() === 'council',
-    );
-    const permissions = proposal.dao.policy.roles.reduce((roles, role) => {
+    const council = roles.find((role) => role.name.toLowerCase() === 'council');
+    const permissions = roles.reduce((roles, role) => {
       if (
         role.kind === RoleKindType.Everyone ||
         (role.kind === RoleKindType.Group &&

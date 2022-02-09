@@ -15,21 +15,6 @@ export class BountyContextCrudRequestInterceptor extends BaseCrudRequestIntercep
       proposal: {
         eager: true,
       },
-      'proposal.dao': {
-        eager: true,
-        alias: 'dao',
-        allow: ['id'],
-      },
-      'proposal.dao.policy': {
-        eager: true,
-        alias: 'policy',
-        allow: ['id'],
-      },
-      'proposal.dao.policy.roles': {
-        eager: true,
-        alias: 'roles',
-        allow: ['name', 'kind', 'accountIds', 'permissions'],
-      },
       bounty: {
         eager: true,
       },
