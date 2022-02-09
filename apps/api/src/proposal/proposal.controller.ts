@@ -25,6 +25,7 @@ import {
   ProposalResponse,
   Proposal,
   ProposalService,
+  ProposalQuery,
 } from '@sputnik-v2/proposal';
 
 import { ProposalCrudRequestInterceptor } from './interceptors/proposal-crud.interceptor';
@@ -44,18 +45,12 @@ export class ProposalController {
   })
   @UseInterceptors(HttpCacheInterceptor, ProposalCrudRequestInterceptor)
   @UseFilters(new QueryFailedErrorFilter())
-  @ApiQuery({ type: EntityQuery })
-  @ApiQuery({
-    name: 'accountId',
-    required: false,
-    type: String,
-  })
   @Get('/proposals')
   async proposals(
     @ParsedRequest() query: CrudRequest,
-    @Query('accountId') accountId?: string,
+    @Query() params: ProposalQuery,
   ): Promise<Proposal[] | ProposalResponse> {
-    return await this.proposalService.getFeed(query, accountId);
+    return await this.proposalService.getFeed(query, params);
   }
 
   @ApiParam({

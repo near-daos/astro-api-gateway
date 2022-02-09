@@ -16,6 +16,7 @@ import { DaoStatus, DaoVariant } from '@sputnik-v2/dao/types';
 import { DaoDto, DaoMemberVote, DaoResponse } from './dto';
 import { Dao, RoleKindType } from './entities';
 import { WeightKind } from '@sputnik-v2/sputnikdao';
+import { SearchQuery } from '@sputnik-v2/common';
 
 @Injectable()
 export class DaoService extends TypeOrmCrudService<Dao> {
@@ -67,8 +68,11 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     return this.daoRepository.save(daoDto);
   }
 
-  async search(req: CrudRequest, query: string): Promise<Dao[] | DaoResponse> {
-    const likeQuery = `%${query.toLowerCase()}%`;
+  async search(
+    req: CrudRequest,
+    params: SearchQuery,
+  ): Promise<Dao[] | DaoResponse> {
+    const likeQuery = `%${params.query.toLowerCase()}%`;
     const { limit, offset, fields } = req.parsed;
     const [data, total] = await this.daoRepository
       .createQueryBuilder('dao')

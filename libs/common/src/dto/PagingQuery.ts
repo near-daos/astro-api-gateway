@@ -9,7 +9,7 @@ export class PagingQuery {
     required: false,
     default: 'createdAt,DESC',
   })
-  sort: QuerySort[];
+  sort?: QuerySort[];
 
   @ApiProperty({
     description: 'Receive N amount of entities.',
@@ -17,7 +17,7 @@ export class PagingQuery {
     required: false,
   })
   @IsNumber()
-  limit: number = 50;
+  limit?: number = 50;
 
   @ApiProperty({
     description: 'Limit the amount of received resources.',
@@ -25,7 +25,7 @@ export class PagingQuery {
     required: false,
   })
   @IsNumber()
-  offset: number = 0;
+  offset?: number = 0;
 
   @ApiProperty({
     description: 'Receive a portion of limited amount of resources.',
@@ -33,5 +33,5 @@ export class PagingQuery {
   })
   @IsOptional()
   @IsNumber()
-  page: number = 1;
+  page?: number = 1;
 }
