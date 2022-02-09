@@ -43,7 +43,7 @@ export class Bounty extends TransactionEntity {
   @JoinColumn({ name: 'proposal_id' })
   bountyContext: BountyContext;
 
-  @ApiProperty({ type: [Proposal] })
+  @ApiProperty({ type: () => [Proposal] })
   @OneToMany(() => Proposal, (proposal) => proposal.bounty, {
     nullable: true,
   })
