@@ -101,7 +101,7 @@ export class Proposal extends TransactionEntity {
   voteCounts: Record<string, number[]>;
 
   @ApiProperty({ type: 'object' })
-  @Column({ type: 'simple-json' })
+  @Column({ type: 'jsonb' })
   votes: Record<string, Vote>;
 
   @ApiProperty({ type: [ProposalAction] })

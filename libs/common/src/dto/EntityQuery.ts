@@ -28,6 +28,7 @@ export class EntityQuery extends PagingQuery {
       'Adds fields request condition (multiple conditions) to your request. Syntax: ```field||$condition||value```',
     required: false,
   })
+  @IsOptional()
   filter?: QueryFilter[];
 
   @ApiProperty({
@@ -35,5 +36,6 @@ export class EntityQuery extends PagingQuery {
       'Adds ```OR``` conditions to the request. Syntax: ```field||$condition||value```',
     required: false,
   })
+  @IsOptional()
   or?: QueryFilter[];
 }

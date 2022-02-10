@@ -147,7 +147,7 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
   ): SelectQueryBuilder<Proposal> {
     if (params.accountId && typeof params.voted === 'boolean') {
       query.andWhere(
-        `${params.voted ? '' : 'NOT'} (votes::jsonb ? '${params.accountId}')`,
+        `${params.voted ? '' : 'NOT'} (votes ? '${params.accountId}')`,
       );
     }
 
