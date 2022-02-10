@@ -14,8 +14,9 @@ import {
   UpdateResult,
 } from 'typeorm';
 import { Role, RoleKindType } from '@sputnik-v2/dao/entities';
+import { SearchQuery } from '@sputnik-v2/common';
 
-import { ProposalDto, ProposalResponse } from './dto';
+import { ProposalDto, ProposalQuery, ProposalResponse } from './dto';
 import { Proposal } from './entities';
 import {
   ProposalPermissions,
@@ -85,10 +86,15 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
 
   async getFeed(
     req: CrudRequest,
-    permissionsAccountId?: string,
+    params: ProposalQuery,
   ): Promise<ProposalResponse | Proposal[]> {
-    const proposalResponse = await super.getMany(req);
-    return this.mapProposalFeed(proposalResponse, permissionsAccountId);
+    const queryBuilder = await super.createBuilder(req.parsed, req.options);
+    const proposalResponse = await super.doGetMany(
+      this.buildVotedQuery(queryBuilder, params),
+      req.parsed,
+      req.options,
+    );
+    return this.mapProposalFeed(proposalResponse, params.accountId);
   }
 
   buildPermissionsSubQuery(
@@ -131,6 +137,19 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
         return subQuery;
       }, 'pt')
       .groupBy('dao_id');
+
+    return query;
+  }
+
+  buildVotedQuery(
+    query: SelectQueryBuilder<Proposal>,
+    params: ProposalQuery,
+  ): SelectQueryBuilder<Proposal> {
+    if (params.accountId && typeof params.voted === 'boolean') {
+      query.andWhere(
+        `${params.voted ? '' : 'NOT'} (votes ? '${params.accountId}')`,
+      );
+    }
 
     return query;
   }
@@ -185,8 +204,7 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
 
   async search(
     req: CrudRequest,
-    query: string,
-    accountId?: string,
+    params: SearchQuery,
   ): Promise<Proposal[] | ProposalResponse> {
     req.options.query.join = {
       dao: {
@@ -212,23 +230,23 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
         {
           $or: [
             {
-              id: { $contL: query },
+              id: { $contL: params.query },
             },
             {
-              description: { $contL: query },
+              description: { $contL: params.query },
             },
             {
-              proposer: { $contL: query },
+              proposer: { $contL: params.query },
             },
             {
-              votes: { $contL: query },
+              votes: { $contL: params.query },
             },
           ],
         },
       ],
     };
 
-    return this.getFeed(req, accountId);
+    return this.getFeed(req, params);
   }
 
   async findProposalsByDaoIds(
