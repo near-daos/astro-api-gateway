@@ -137,3 +137,28 @@ Or run specific service you need:
 - Aggregator: `yarn start-aggregator:dev`
 - API: `yarn start-api:dev`
 - Notifier: `yarn start-notifier:dev`
+
+## Migrations
+
+### Database migration workflow
+
+1. Change entity definition
+2. Generate migration via:
+
+- `yarn migration:generate`
+- `node -r ts-node/register -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:generate -n <MigrationName>`
+
+3. Review generated migration & fix migration code style & lint warnings
+4. Run new migrations via: `yarn migration:run`
+5. If something went wrong, revert the last migration via: `yarn migration:revert`
+6. Commit changes
+
+### OR
+
+You can sync database manually without running migration (NOT RECOMMENDED):
+
+`yarn schema:sync`
+
+Before syncing schema, a review of SQL queries to be executed is highly RECOMMENDED:
+
+`yarn schema:log`
