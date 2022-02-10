@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { QueryFilter } from '@nestjsx/crud-request';
-import { IsOptional, IsString } from 'class-validator';
+import { IsArray, IsOptional, IsString } from 'class-validator';
 
 import { PagingQuery } from './PagingQuery';
 
@@ -29,6 +29,7 @@ export class EntityQuery extends PagingQuery {
     required: false,
   })
   @IsOptional()
+  @IsArray()
   filter?: QueryFilter[];
 
   @ApiProperty({
@@ -37,5 +38,6 @@ export class EntityQuery extends PagingQuery {
     required: false,
   })
   @IsOptional()
+  @IsArray()
   or?: QueryFilter[];
 }

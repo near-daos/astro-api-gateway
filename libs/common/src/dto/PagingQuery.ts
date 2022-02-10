@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { QuerySort } from '@nestjsx/crud-request';
-import { IsNumber, IsOptional } from 'class-validator';
+import { IsArray, IsNumber, IsOptional } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class PagingQuery {
@@ -10,6 +10,8 @@ export class PagingQuery {
     required: false,
     default: 'createdAt,DESC',
   })
+  @IsOptional()
+  @IsArray()
   sort?: QuerySort[];
 
   @ApiProperty({
