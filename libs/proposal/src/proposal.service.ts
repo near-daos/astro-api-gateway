@@ -16,7 +16,12 @@ import {
 import { Role, RoleKindType } from '@sputnik-v2/dao/entities';
 import { SearchQuery } from '@sputnik-v2/common';
 
-import { ProposalDto, ProposalQuery, ProposalResponse } from './dto';
+import {
+  AccountProposalQuery,
+  ProposalDto,
+  ProposalQuery,
+  ProposalResponse,
+} from './dto';
 import { Proposal } from './entities';
 import {
   ProposalPermissions,
@@ -86,7 +91,7 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
 
   async getFeed(
     req: CrudRequest,
-    params: ProposalQuery,
+    params: AccountProposalQuery,
   ): Promise<ProposalResponse | Proposal[]> {
     const queryBuilder = await super.createBuilder(req.parsed, req.options);
     const proposalResponse = await super.doGetMany(
@@ -143,7 +148,7 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
 
   buildVotedQuery(
     query: SelectQueryBuilder<Proposal>,
-    params: ProposalQuery,
+    params: AccountProposalQuery,
   ): SelectQueryBuilder<Proposal> {
     if (params.accountId && typeof params.voted === 'boolean') {
       query.andWhere(
@@ -157,6 +162,7 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
   async getFeedByAccountId(
     accountId: string,
     req: CrudRequest,
+    params: ProposalQuery,
   ): Promise<ProposalResponse | Proposal[]> {
     const queryBuilder = await super.createBuilder(req.parsed, req.options);
     queryBuilder
@@ -182,7 +188,7 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
       );
 
     const proposalResponse = await super.doGetMany(
-      queryBuilder,
+      this.buildVotedQuery(queryBuilder, { ...params, accountId }),
       req.parsed,
       req.options,
     );
