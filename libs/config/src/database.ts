@@ -68,11 +68,6 @@ export default registerAs('db_default', () => ({
     CommentReport,
     DaoStats,
   ],
-  synchronize: true,
-  migrationsTableName: 'migration_table',
-  migrations: ['migration/*.js'],
-  cli: {
-    migrationsDir: 'migration',
-  },
+  synchronize: false,
   namingStrategy: new SnakeNamingStrategy(),
 }));
