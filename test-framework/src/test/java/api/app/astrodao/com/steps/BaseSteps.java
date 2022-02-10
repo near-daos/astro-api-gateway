@@ -90,8 +90,8 @@ public abstract class BaseSteps {
                 .isGreaterThanOrEqualTo((int) value);
     }
 
-    @Step("User sees '{fieldName}' field value greater than '{greaterThanValue}' value")
-    public <T> void assertDtoValueGreaterThan(T dto, Function<T, String> valueExtractor,
+    @Step("User sees '{fieldName}' field value greater than or equal to '{greaterThanValue}' value")
+    public <T> void assertDtoValueIsGreaterThanOrEqualTo(T dto, Function<T, String> valueExtractor,
                                               String greaterThanValue, String fieldName) {
         assertThat(Double.valueOf(valueExtractor.apply(dto)))
                 .as(String.format("'%s' field value must be greater than '%s'.", fieldName, greaterThanValue))
@@ -103,6 +103,16 @@ public abstract class BaseSteps {
                                                      Predicate<? super T> predicate, String fieldName) {
         assertThat(actual)
                 .as(String.format("'%s' field should have value in collection.", fieldName))
+                .filteredOn(predicate)
+                .hasSize(actual.size());
+    }
+
+    @Step("User sees that fields '{fieldName}' has boolean value in a collection")
+    public <T> void assertCollectionElementsHasBooleanValueAndSize(Collection<T> actual,
+                                                     Predicate<? super T> predicate, String errorMessage,
+                                                                   String fieldName) {
+        assertThat(actual)
+                .as("%s " + "'%s'", errorMessage, fieldName)
                 .filteredOn(predicate)
                 .hasSize(actual.size());
     }
@@ -146,5 +156,14 @@ public abstract class BaseSteps {
 
     public <T> T getResponseDto(ResponseEntity<String> entity, Class<T> clazz) {
         return JsonUtils.readValue(entity.getBody(), clazz);
+    }
+
+    @Step("User sees '{fieldName}' fields has value in a collection")
+    public <T> void assertCollectionElementsHasAtLeastOneValue(Collection<T> actual,
+                                                            Predicate<? super T> predicate, String fieldName) {
+        assertThat(actual)
+                .as(String.format("'%s' field should have value in collection.", fieldName))
+                .filteredOn(predicate)
+                .hasSizeGreaterThan(0);
     }
 }
