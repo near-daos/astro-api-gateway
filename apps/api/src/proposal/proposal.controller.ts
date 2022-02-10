@@ -17,7 +17,6 @@ import { ParsedRequest, CrudRequest } from '@nestjsx/crud';
 import {
   FindOneParams,
   HttpCacheInterceptor,
-  EntityQuery,
   FindAccountParams,
   QueryFailedErrorFilter,
 } from '@sputnik-v2/common';
@@ -26,6 +25,7 @@ import {
   Proposal,
   ProposalService,
   ProposalQuery,
+  AccountProposalQuery,
 } from '@sputnik-v2/proposal';
 
 import { ProposalCrudRequestInterceptor } from './interceptors/proposal-crud.interceptor';
@@ -76,10 +76,6 @@ export class ProposalController {
     return await this.proposalService.getById(id, accountId);
   }
 
-  @ApiParam({
-    name: 'accountId',
-    type: String,
-  })
   @ApiResponse({
     status: 200,
     description: 'List of Proposals by Account',
@@ -90,12 +86,16 @@ export class ProposalController {
   })
   @UseInterceptors(HttpCacheInterceptor, ProposalCrudRequestInterceptor)
   @UseFilters(new QueryFailedErrorFilter())
-  @ApiQuery({ type: EntityQuery })
   @Get('/proposals/account-proposals/:accountId')
   async proposalByAccount(
     @ParsedRequest() query: CrudRequest,
-    @Param() { accountId }: FindAccountParams,
+    @Query() params: AccountProposalQuery,
+    @Param('accountId') accountId: string,
   ): Promise<Proposal[] | ProposalResponse> {
-    return await this.proposalService.getFeedByAccountId(accountId, query);
+    return await this.proposalService.getFeedByAccountId(
+      accountId,
+      query,
+      params,
+    );
   }
 }
