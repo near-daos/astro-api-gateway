@@ -91,7 +91,7 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
 
   async getFeed(
     req: CrudRequest,
-    params: ProposalQuery,
+    params: AccountProposalQuery,
   ): Promise<ProposalResponse | Proposal[]> {
     const queryBuilder = await super.createBuilder(req.parsed, req.options);
     const proposalResponse = await super.doGetMany(
@@ -148,7 +148,7 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
 
   buildVotedQuery(
     query: SelectQueryBuilder<Proposal>,
-    params: ProposalQuery,
+    params: AccountProposalQuery,
   ): SelectQueryBuilder<Proposal> {
     if (params.accountId && typeof params.voted === 'boolean') {
       query.andWhere(
@@ -162,7 +162,7 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
   async getFeedByAccountId(
     accountId: string,
     req: CrudRequest,
-    params: AccountProposalQuery,
+    params: ProposalQuery,
   ): Promise<ProposalResponse | Proposal[]> {
     const queryBuilder = await super.createBuilder(req.parsed, req.options);
     queryBuilder

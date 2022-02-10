@@ -1,13 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString } from 'class-validator';
-import { AccountProposalQuery } from '@sputnik-v2/proposal/dto/account-proposal-query.dto';
+import { IsOptional } from 'class-validator';
+import { EntityQuery } from '@sputnik-v2/common';
+import { Transform } from 'class-transformer';
 
-export class ProposalQuery extends AccountProposalQuery {
+export class ProposalQuery extends EntityQuery {
   @ApiProperty({
-    description: 'Near Account ID to check permissions',
+    description: 'If true returns proposals voted by accountId',
     required: false,
+    type: Boolean,
   })
-  @IsString()
+  @Transform(({ value }) => (value ? value === 'true' : value))
   @IsOptional()
-  accountId?: string;
+  voted?: boolean;
 }

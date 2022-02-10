@@ -17,15 +17,14 @@ import { ParsedRequest, CrudRequest } from '@nestjsx/crud';
 import {
   FindOneParams,
   HttpCacheInterceptor,
-  FindAccountParams,
   QueryFailedErrorFilter,
 } from '@sputnik-v2/common';
 import {
   ProposalResponse,
   Proposal,
   ProposalService,
-  ProposalQuery,
   AccountProposalQuery,
+  ProposalQuery,
 } from '@sputnik-v2/proposal';
 
 import { ProposalCrudRequestInterceptor } from './interceptors/proposal-crud.interceptor';
@@ -48,7 +47,7 @@ export class ProposalController {
   @Get('/proposals')
   async proposals(
     @ParsedRequest() query: CrudRequest,
-    @Query() params: ProposalQuery,
+    @Query() params: AccountProposalQuery,
   ): Promise<Proposal[] | ProposalResponse> {
     return await this.proposalService.getFeed(query, params);
   }
@@ -89,7 +88,7 @@ export class ProposalController {
   @Get('/proposals/account-proposals/:accountId')
   async proposalByAccount(
     @ParsedRequest() query: CrudRequest,
-    @Query() params: AccountProposalQuery,
+    @Query() params: ProposalQuery,
     @Param('accountId') accountId: string,
   ): Promise<Proposal[] | ProposalResponse> {
     return await this.proposalService.getFeedByAccountId(
