@@ -143,6 +143,9 @@ Or run specific service you need:
 ### Database migration workflow
 
 1. Change entity definition
+
+- If creating new entity, make sure it's specified in `ormconfig.js`
+
 2. Generate migration via:
 
 - `yarn migration:generate`

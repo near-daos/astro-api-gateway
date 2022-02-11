@@ -56,6 +56,30 @@ export class InitialSchema1644442121519 implements MigrationInterface {
       `CREATE TABLE "dao_settings" ("is_archived" boolean NOT NULL DEFAULT false, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "dao_id" text NOT NULL, "settings" text NOT NULL, CONSTRAINT "PK_56b5d9e2f9b2ad035b27b96fddb" PRIMARY KEY ("dao_id"))`,
     );
     await queryRunner.query(
+      `CREATE TYPE "action_receipt_actions_action_kind_enum" AS ENUM('CREATE_ACCOUNT', 'DEPLOY_CONTRACT', 'FUNCTION_CALL', 'TRANSFER', 'STAKE', 'ADD_KEY', 'DELETE_KEY', 'DELETE_ACCOUNT')`,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "action_receipt_actions" ("receipt_id" character varying NOT NULL, "index_in_action_receipt" integer NOT NULL, "receipt_predecessor_account_id" character varying NOT NULL, "receipt_receiver_account_id" character varying NOT NULL, "action_kind" "action_receipt_actions_action_kind_enum" NOT NULL, "args" text NOT NULL, CONSTRAINT "PK_a911bb227e9ca404181b2e14fc5" PRIMARY KEY ("receipt_id", "index_in_action_receipt"))`,
+    );
+    await queryRunner.query(
+      `CREATE TYPE "transaction_actions_action_kind_enum" AS ENUM('CREATE_ACCOUNT', 'DEPLOY_CONTRACT', 'FUNCTION_CALL', 'TRANSFER', 'STAKE', 'ADD_KEY', 'DELETE_KEY', 'DELETE_ACCOUNT')`,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "transaction_actions" ("transaction_hash" character varying NOT NULL, "index_in_transaction" integer NOT NULL, "action_kind" "transaction_actions_action_kind_enum" NOT NULL, "args" jsonb, CONSTRAINT "PK_c5aa8731e8712ec225324e3ece0" PRIMARY KEY ("transaction_hash"))`,
+    );
+    await queryRunner.query(
+      `CREATE TYPE "transactions_status_enum" AS ENUM('UNKNOWN', 'FAILURE', 'SUCCESS_VALUE', 'SUCCESS_RECEIPT_ID')`,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "transactions" ("transaction_hash" character varying NOT NULL, "included_in_block_hash" character varying NOT NULL, "included_in_chunk_hash" character varying NOT NULL, "index_in_chunk" integer NOT NULL, "receiver_account_id" character varying NOT NULL, "signer_account_id" character varying NOT NULL, "signer_public_key" character varying NOT NULL, "nonce" bigint NOT NULL, "signature" character varying NOT NULL, "status" "transactions_status_enum" NOT NULL, "converted_into_receipt_id" character varying NOT NULL, "receipt_conversion_gas_burnt" character varying NOT NULL, "receipt_conversion_tokens_burnt" character varying NOT NULL, "block_timestamp" bigint NOT NULL, CONSTRAINT "REL_b53cfe42d3c5c88fe715b9432b" UNIQUE ("transaction_hash"), CONSTRAINT "PK_b53cfe42d3c5c88fe715b9432ba" PRIMARY KEY ("transaction_hash"))`,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "receipts" ("receipt_id" character varying NOT NULL, "predecessor_account_id" character varying NOT NULL, "receiver_account_id" character varying NOT NULL, "originated_from_transaction_hash" character varying NOT NULL, "included_in_block_timestamp" bigint NOT NULL, CONSTRAINT "PK_8613250be825686eb9bf90189b7" PRIMARY KEY ("receipt_id"))`,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "account_changes" ("id" character varying NOT NULL, "affected_account_id" character varying NOT NULL, "caused_by_transaction_hash" character varying, "changed_in_block_timestamp" bigint NOT NULL, "caused_by_receipt_id" character varying, CONSTRAINT "REL_4306755e44313b3514a2af2a4c" UNIQUE ("caused_by_receipt_id"), CONSTRAINT "PK_a653dacb3fa914a28f5b00ee0fd" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
       `CREATE TABLE "account_notification_settings" ("is_archived" boolean NOT NULL DEFAULT false, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "id" text NOT NULL, "account_id" character varying NOT NULL, "dao_id" character varying, "types" text array NOT NULL, "muted_until_timestamp" bigint, "is_all_muted" boolean NOT NULL, CONSTRAINT "PK_6aed8e9ac05a0dc41679df7ad4a" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
@@ -119,6 +143,15 @@ export class InitialSchema1644442121519 implements MigrationInterface {
       `ALTER TABLE "bounty_claim" ADD CONSTRAINT "FK_7ba05b97f63f5bc360af56f6d3f" FOREIGN KEY ("bounty_id") REFERENCES "bounty"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
+      `ALTER TABLE "transactions" ADD CONSTRAINT "FK_b53cfe42d3c5c88fe715b9432ba" FOREIGN KEY ("transaction_hash") REFERENCES "transaction_actions"("transaction_hash") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "receipts" ADD CONSTRAINT "FK_93d128dee44b66d36cadb92628a" FOREIGN KEY ("originated_from_transaction_hash") REFERENCES "transactions"("transaction_hash") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "account_changes" ADD CONSTRAINT "FK_4306755e44313b3514a2af2a4ca" FOREIGN KEY ("caused_by_receipt_id") REFERENCES "receipts"("receipt_id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
       `ALTER TABLE "notification" ADD CONSTRAINT "FK_fb4bd640547574cfd78255d3ac8" FOREIGN KEY ("dao_id") REFERENCES "dao"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
@@ -156,6 +189,15 @@ export class InitialSchema1644442121519 implements MigrationInterface {
     );
     await queryRunner.query(
       `ALTER TABLE "notification" DROP CONSTRAINT "FK_fb4bd640547574cfd78255d3ac8"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "account_changes" DROP CONSTRAINT "FK_4306755e44313b3514a2af2a4ca"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "receipts" DROP CONSTRAINT "FK_93d128dee44b66d36cadb92628a"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "transactions" DROP CONSTRAINT "FK_b53cfe42d3c5c88fe715b9432ba"`,
     );
     await queryRunner.query(
       `ALTER TABLE "bounty_claim" DROP CONSTRAINT "FK_7ba05b97f63f5bc360af56f6d3f"`,
@@ -198,6 +240,16 @@ export class InitialSchema1644442121519 implements MigrationInterface {
     await queryRunner.query(`DROP TABLE "account_notification"`);
     await queryRunner.query(`DROP TABLE "notification"`);
     await queryRunner.query(`DROP TABLE "account_notification_settings"`);
+    await queryRunner.query(`DROP TABLE "account_changes"`);
+    await queryRunner.query(`DROP TABLE "receipts"`);
+    await queryRunner.query(`DROP TABLE "transactions"`);
+    await queryRunner.query(`DROP TYPE "transactions_status_enum"`);
+    await queryRunner.query(`DROP TABLE "transaction_actions"`);
+    await queryRunner.query(`DROP TYPE "transaction_actions_action_kind_enum"`);
+    await queryRunner.query(`DROP TABLE "action_receipt_actions"`);
+    await queryRunner.query(
+      `DROP TYPE "action_receipt_actions_action_kind_enum"`,
+    );
     await queryRunner.query(`DROP TABLE "dao_settings"`);
     await queryRunner.query(`DROP TABLE "bounty_claim"`);
     await queryRunner.query(`DROP TABLE "bounty"`);
