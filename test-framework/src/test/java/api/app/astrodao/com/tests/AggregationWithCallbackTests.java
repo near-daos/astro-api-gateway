@@ -128,7 +128,6 @@ public class AggregationWithCallbackTests extends BaseTest {
     }
 
     @Test
-    @Tag("debugRun")
     @Severity(SeverityLevel.CRITICAL)
     @Story("User should be able to get newly created poll proposal via Sputnik v2 API")
     @DisplayName("User should be able to get newly created poll proposal via Sputnik v2 API")

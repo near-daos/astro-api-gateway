@@ -1,8 +1,9 @@
-package api.app.astrodao.com.tests;
+package api.app.astrodao.com.tests.bounty;
 
 import api.app.astrodao.com.openapi.models.Bounty;
 import api.app.astrodao.com.openapi.models.BountyResponse;
 import api.app.astrodao.com.steps.BountiesApiSteps;
+import api.app.astrodao.com.tests.BaseTest;
 import io.qameta.allure.Feature;
 import io.qameta.allure.Severity;
 import io.qameta.allure.SeverityLevel;
