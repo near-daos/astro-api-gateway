@@ -229,30 +229,19 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
         allow: ['name', 'kind', 'accountIds', 'permissions'],
       },
     };
-
-    req.parsed.search = {
-      $and: [
-        {},
-        {
-          $or: [
-            {
-              id: { $contL: params.query },
-            },
-            {
-              description: { $contL: params.query },
-            },
-            {
-              proposer: { $contL: params.query },
-            },
-            {
-              votes: { $contL: params.query },
-            },
-          ],
-        },
-      ],
-    };
-
-    return this.getFeed(req, params);
+    const likeQuery = `%${params.query.toLowerCase()}%`;
+    const queryBuilder = await super.createBuilder(req.parsed, req.options);
+    queryBuilder
+      .where(`lower("Proposal".id) like :likeQuery`, { likeQuery })
+      .orWhere(`lower("Proposal".description) like :likeQuery`, { likeQuery })
+      .orWhere(`lower("Proposal".proposer) like :likeQuery`, { likeQuery })
+      .orWhere(`lower("Proposal".votes::text) like :likeQuery`, { likeQuery });
+    const proposalResponse = await super.doGetMany(
+      this.buildVotedQuery(queryBuilder, params),
+      req.parsed,
+      req.options,
+    );
+    return this.mapProposalFeed(proposalResponse, params.accountId);
   }
 
   async findProposalsByDaoIds(
