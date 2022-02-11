@@ -28,14 +28,17 @@ export class PrometheusService {
     this.registry.setDefaultLabels({
       app: this.serviceTitle,
     });
-    collectDefaultMetrics({ register: this.registry, prefix: this.servicePrefix });
+    collectDefaultMetrics({
+      register: this.registry,
+      prefix: this.servicePrefix,
+    });
   }
 
   public registerMetrics(
     name: string,
     help: string,
     labelNames: string[],
-    buckets: number[]
+    buckets: number[],
   ): Histogram<string> {
     if (this.registeredMetrics[name] === undefined) {
       const histogram = new Histogram({ name, help, labelNames, buckets });
