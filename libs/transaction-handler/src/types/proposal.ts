@@ -8,6 +8,7 @@ import {
   Action,
   ProposalStatus,
   ProposalType,
+  ProposalTypeToPolicyLabel,
   ProposalVoteStatus,
 } from '@sputnik-v2/proposal/types';
 
@@ -35,6 +36,7 @@ export function castCreateProposal({
     proposer: signerId,
     kind,
     type: kind.kind.type,
+    policyLabel: ProposalTypeToPolicyLabel[kind.kind.type],
     bountyDoneId:
       kind.kind.type === ProposalType.BountyDone
         ? buildBountyId(dao.id, kind.kind.bountyId)
