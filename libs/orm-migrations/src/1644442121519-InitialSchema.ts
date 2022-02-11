@@ -116,10 +116,16 @@ export class InitialSchema1644442121519 implements MigrationInterface {
       `ALTER TABLE "role" ADD CONSTRAINT "FK_53048a7154e8741f547eccda643" FOREIGN KEY ("policy_dao_id") REFERENCES "policy"("dao_id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
+      `ALTER TABLE "dao" ADD CONSTRAINT "UQ_4daffbc13cc700ca118098230a9" UNIQUE ("id")`,
+    );
+    await queryRunner.query(
       `ALTER TABLE "dao" ADD CONSTRAINT "FK_4daffbc13cc700ca118098230a9" FOREIGN KEY ("id") REFERENCES "policy"("dao_id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
       `ALTER TABLE "comment_report" ADD CONSTRAINT "FK_a9c67256ef74f6639eaef698833" FOREIGN KEY ("comment_id") REFERENCES "comment"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "bounty_context" ADD CONSTRAINT "UQ_085fc106aa13666d72a6fcca1b7" UNIQUE ("id")`,
     );
     await queryRunner.query(
       `ALTER TABLE "bounty_context" ADD CONSTRAINT "FK_085fc106aa13666d72a6fcca1b7" FOREIGN KEY ("id") REFERENCES "proposal"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
@@ -141,6 +147,9 @@ export class InitialSchema1644442121519 implements MigrationInterface {
     );
     await queryRunner.query(
       `ALTER TABLE "bounty_claim" ADD CONSTRAINT "FK_7ba05b97f63f5bc360af56f6d3f" FOREIGN KEY ("bounty_id") REFERENCES "bounty"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "transactions" ADD CONSTRAINT "UQ_b53cfe42d3c5c88fe715b9432ba" UNIQUE ("transaction_hash")`,
     );
     await queryRunner.query(
       `ALTER TABLE "transactions" ADD CONSTRAINT "FK_b53cfe42d3c5c88fe715b9432ba" FOREIGN KEY ("transaction_hash") REFERENCES "transaction_actions"("transaction_hash") ON DELETE NO ACTION ON UPDATE NO ACTION`,
