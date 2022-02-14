@@ -1,9 +1,11 @@
+import camelcaseKeys from 'camelcase-keys';
 import { Injectable } from '@nestjs/common';
 import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 import { CrudRequest } from '@nestjsx/crud';
 import { Connection, In, Not, Repository } from 'typeorm';
 import {
+  Action,
   Proposal,
   ProposalService,
   ProposalStatus,
@@ -13,7 +15,13 @@ import { calculateFunds, getBlockTimestamp, paginate } from '@sputnik-v2/utils';
 import { TokenService } from '@sputnik-v2/token';
 import { DaoStatus, DaoVariant } from '@sputnik-v2/dao/types';
 
-import { DaoDto, DaoMemberVote, DaoResponse } from './dto';
+import {
+  DaoDto,
+  DaoMemberVote,
+  DaoResponse,
+  SearchMemberDto,
+  SearchMemberResponse,
+} from './dto';
 import { Dao, RoleKindType } from './entities';
 import { WeightKind } from '@sputnik-v2/sputnikdao';
 import { SearchQuery } from '@sputnik-v2/common';
@@ -104,6 +112,65 @@ export class DaoService extends TypeOrmCrudService<Dao> {
       .take(limit)
       .getManyAndCount();
     return paginate<Dao>(data, limit, offset, total);
+  }
+
+  async searchMember(
+    req: CrudRequest,
+    params: SearchQuery,
+  ): Promise<SearchMemberResponse> {
+    const likeQuery = `%${params.query.toLowerCase()}%`;
+    const { limit, offset } = req.parsed;
+    const query = await this.connection
+      .createQueryBuilder()
+      .select(['dao_id', 'account_id', 'name', 'kind', 'permissions'])
+      .addSelect((qb) => {
+        return qb
+          .subQuery()
+          .select('count(1)')
+          .from('proposal', 'p')
+          .leftJoin('proposal_action', 'pa', 'p.id = pa.proposal_id')
+          .where(
+            'p.dao_id = r.dao_id and pa.account_id = r.account_id and pa.action in (:...actions)',
+            {
+              actions: [
+                Action.VoteApprove,
+                Action.VoteReject,
+                Action.VoteRemove,
+              ],
+            },
+          );
+      }, 'vote_count')
+      .from((qb) => {
+        return qb
+          .subQuery()
+          .select([
+            'policy_dao_id as dao_id',
+            'unnest(account_ids) as account_id',
+            'name',
+            'kind',
+            'permissions',
+          ])
+          .from('role', 'role');
+      }, 'r')
+      .where('account_id ilike :likeQuery', { likeQuery });
+    const [data, total] = await Promise.all([
+      query
+        .clone()
+        .orderBy('account_id', 'ASC')
+        .limit(limit)
+        .offset(offset)
+        .getRawMany(),
+      query.clone().select('count(1) as count').getRawOne(),
+    ]);
+    return paginate<SearchMemberDto>(
+      data.map((raw) => ({
+        ...camelcaseKeys(raw),
+        voteCount: parseInt(raw.vote_count),
+      })),
+      limit,
+      offset,
+      parseInt(total?.count || 0),
+    );
   }
 
   async getDaoMembers(daoId: string): Promise<string[]> {
