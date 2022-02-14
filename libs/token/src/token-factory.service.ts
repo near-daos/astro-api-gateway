@@ -95,7 +95,9 @@ export class TokenFactoryService {
       limit: 1000,
     });
 
-    return nfts.map((nft: object) => camelcaseKeys(nft, { deep: true }));
+    return nfts.map((nft: Record<string, unknown>) =>
+      camelcaseKeys(nft, { deep: true }),
+    );
   }
 
   private getFTContract(contractId: string): Contract & any {
