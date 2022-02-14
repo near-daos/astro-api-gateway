@@ -223,19 +223,14 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
         alias: 'policy',
         allow: ['defaultVotePolicy'],
       },
-      'dao.policy.roles': {
-        eager: true,
-        alias: 'roles',
-        allow: ['name', 'kind', 'accountIds', 'permissions'],
-      },
     };
     const likeQuery = `%${params.query.toLowerCase()}%`;
     const queryBuilder = await super.createBuilder(req.parsed, req.options);
     queryBuilder
-      .where(`lower("Proposal".id) like :likeQuery`, { likeQuery })
-      .orWhere(`lower("Proposal".description) like :likeQuery`, { likeQuery })
-      .orWhere(`lower("Proposal".proposer) like :likeQuery`, { likeQuery })
-      .orWhere(`lower("Proposal".votes::text) like :likeQuery`, { likeQuery });
+      .where(`"Proposal".id ilike :likeQuery`, { likeQuery })
+      .orWhere(`"Proposal".description ilike :likeQuery`, { likeQuery })
+      .orWhere(`"Proposal".proposer ilike :likeQuery`, { likeQuery })
+      .orWhere(`"Proposal".votes::text ilike :likeQuery`, { likeQuery });
     const proposalResponse = await super.doGetMany(
       this.buildVotedQuery(queryBuilder, params),
       req.parsed,

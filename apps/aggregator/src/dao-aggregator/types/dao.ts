@@ -18,6 +18,10 @@ export function castDao(
   }: DaoInfo,
 ): SputnikDaoDto {
   const txUpdate = txs[txs.length - 1];
+  let metadata;
+  try {
+    metadata = JSON.parse(decodeBase64(config.metadata));
+  } catch (err) {}
   return {
     id: daoAccount.accountId,
     ...castDaoPolicy({
@@ -25,7 +29,7 @@ export function castDao(
       daoPolicy: policy,
     }),
     config,
-    metadata: decodeBase64(config.metadata),
+    metadata,
     stakingContract,
     totalSupply,
     lastProposalId,
@@ -57,6 +61,10 @@ export function castDaoById(
     amount,
   }: DaoInfo,
 ): Partial<SputnikDaoDto> {
+  let metadata;
+  try {
+    metadata = JSON.parse(decodeBase64(config.metadata));
+  } catch (err) {}
   return {
     id: daoId,
     ...castDaoPolicy({
@@ -64,7 +72,7 @@ export function castDaoById(
       daoPolicy: policy,
     }),
     config,
-    metadata: decodeBase64(config.metadata),
+    metadata,
     stakingContract,
     totalSupply,
     lastProposalId,

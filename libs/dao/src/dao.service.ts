@@ -84,11 +84,11 @@ export class DaoService extends TypeOrmCrudService<Dao> {
       ])
       .leftJoin('dao.policy', 'policy')
       .leftJoin('policy.roles', 'roles')
-      .where(`lower(dao.id) like :likeQuery`, { likeQuery })
-      .orWhere(`lower(dao.config) like :likeQuery`, { likeQuery })
-      .orWhere(`lower(dao.metadata) like :likeQuery`, { likeQuery })
-      .orWhere(`lower(dao.description) like :likeQuery`, { likeQuery })
-      .orWhere(`array_to_string(dao.accountIds, '||') like :likeQuery`, {
+      .where(`dao.id ilike :likeQuery`, { likeQuery })
+      .orWhere(`dao.config ->> 'purpose' ilike :likeQuery`, { likeQuery })
+      .orWhere(`dao.metadata ->> 'displayName' ilike :likeQuery`, { likeQuery })
+      .orWhere(`dao.description ilike :likeQuery`, { likeQuery })
+      .orWhere(`array_to_string(dao.accountIds, '||') ilike :likeQuery`, {
         likeQuery,
       })
       .orderBy(

@@ -56,11 +56,16 @@ export function castCreateDao({
   args,
   timestamp = getBlockTimestamp(),
 }): SputnikDaoDto {
+  let metadata;
+  try {
+    metadata = JSON.parse(decodeBase64(args.config.metadata));
+  } catch (err) {}
+
   return {
     id: daoId,
     config: args.config,
     ...castDaoPolicy({ daoId, daoPolicy: args.policy }),
-    metadata: decodeBase64(args.config.metadata),
+    metadata,
     amount: Number(amount),
     status: DaoStatus.Active,
     totalSupply: '0',
