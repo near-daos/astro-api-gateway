@@ -5,10 +5,10 @@ export class SchemaRefactoring1644851458056 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
-      `ALTER TABLE "dao" ALTER COLUMN "config" TYPE JSONB USING "config"::JSONB`,
+      `ALTER TABLE "dao" ALTER COLUMN "config" TYPE JSONB USING NULLIF("config", '')::JSONB`,
     );
     await queryRunner.query(
-      `ALTER TABLE "dao" ALTER COLUMN "metadata" TYPE JSONB USING "metadata"::JSONB`,
+      `ALTER TABLE "dao" ALTER COLUMN "metadata" TYPE JSONB USING NULLIF("metadata", '')::JSONB`,
     );
   }
 
