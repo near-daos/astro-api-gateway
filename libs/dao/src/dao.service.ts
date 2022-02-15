@@ -1,4 +1,3 @@
-import camelcaseKeys from 'camelcase-keys';
 import { Injectable } from '@nestjs/common';
 import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
@@ -122,24 +121,21 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     const { limit, offset } = req.parsed;
     const query = await this.connection
       .createQueryBuilder()
-      .select(['dao_id', 'account_id', 'name', 'kind', 'permissions'])
+      .select('account_id', 'accountId')
+      .addSelect(
+        `json_object_agg(dao_id, json_build_object('name', name, 'kind', kind, 'permissions', permissions))`,
+        'daos',
+      )
       .addSelect((qb) => {
         return qb
           .subQuery()
           .select('count(1)')
-          .from('proposal', 'p')
-          .leftJoin('proposal_action', 'pa', 'p.id = pa.proposal_id')
-          .where(
-            'p.dao_id = r.dao_id and pa.account_id = r.account_id and pa.action in (:...actions)',
-            {
-              actions: [
-                Action.VoteApprove,
-                Action.VoteReject,
-                Action.VoteRemove,
-              ],
-            },
-          );
-      }, 'vote_count')
+          .from('proposal_action', 'pa')
+          .where('pa.account_id = r.account_id')
+          .andWhere('pa.action in (:...actions)', {
+            actions: [Action.VoteApprove, Action.VoteReject, Action.VoteRemove],
+          });
+      }, 'voteCount')
       .from((qb) => {
         return qb
           .subQuery()
@@ -152,7 +148,8 @@ export class DaoService extends TypeOrmCrudService<Dao> {
           ])
           .from('role', 'role');
       }, 'r')
-      .where('account_id ilike :likeQuery', { likeQuery });
+      .where('account_id ilike :likeQuery', { likeQuery })
+      .groupBy('account_id');
     const [data, total] = await Promise.all([
       query
         .clone()
@@ -163,9 +160,9 @@ export class DaoService extends TypeOrmCrudService<Dao> {
       query.clone().select('count(1) as count').getRawOne(),
     ]);
     return paginate<SearchMemberDto>(
-      data.map((raw) => ({
-        ...camelcaseKeys(raw),
-        voteCount: parseInt(raw.vote_count),
+      data.map(({ voteCount, ...rest }) => ({
+        ...rest,
+        voteCount: parseInt(voteCount),
       })),
       limit,
       offset,
