@@ -123,8 +123,8 @@ export class DaoService extends TypeOrmCrudService<Dao> {
       .createQueryBuilder()
       .select('account_id', 'accountId')
       .addSelect(
-        `json_object_agg(dao_id, json_build_object('name', name, 'kind', kind, 'permissions', permissions))`,
-        'daos',
+        `json_agg(json_build_object('daoId', dao_id, 'name', name, 'kind', kind, 'permissions', permissions))`,
+        'roles',
       )
       .addSelect((qb) => {
         return qb

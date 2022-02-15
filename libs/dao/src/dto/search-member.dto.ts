@@ -3,6 +3,9 @@ import { RoleKindType } from '../entities/role.entity';
 
 export class SearchMemberRoleDto {
   @ApiProperty()
+  daoId: string;
+
+  @ApiProperty()
   name: string;
 
   @ApiProperty({ enum: RoleKindType })
@@ -16,8 +19,8 @@ export class SearchMemberDto {
   @ApiProperty()
   accountId: string;
 
-  @ApiProperty()
-  daos: Record<string, SearchMemberRoleDto[]>;
+  @ApiProperty({ type: [SearchMemberRoleDto] })
+  roles: SearchMemberRoleDto[];
 
   @ApiProperty()
   voteCount: number;
