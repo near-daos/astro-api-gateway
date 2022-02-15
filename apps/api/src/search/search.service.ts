@@ -37,6 +37,7 @@ export class SearchService {
         },
         query,
       ),
+      members: await this.daoService.searchMember(req, query),
     } as SearchResultDto;
   }
 }

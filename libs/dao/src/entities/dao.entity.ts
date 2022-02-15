@@ -12,12 +12,12 @@ export class Dao extends TransactionEntity {
   id: string;
 
   @ApiProperty({ type: DaoConfig })
-  @Column({ type: 'simple-json' })
+  @Column({ type: 'jsonb' })
   config: DaoConfig;
 
   @ApiProperty()
-  @Column({ nullable: true, type: 'text' })
-  metadata: string;
+  @Column({ nullable: true, type: 'jsonb' })
+  metadata: Record<string, any>;
 
   @ApiProperty()
   @Column({ type: 'numeric' })
