@@ -60,6 +60,11 @@ export class SputnikService {
     return proposals;
   }
 
+  public async getProposal(daoId: string, proposalId: number) {
+    const daoContract = this.nearApiService.getContract('sputnikDao', daoId);
+    return daoContract.get_proposal({ id: proposalId });
+  }
+
   public async findLastProposal(
     daoId: string,
     lastProposalId: number,

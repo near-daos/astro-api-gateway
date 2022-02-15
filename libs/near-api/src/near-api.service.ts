@@ -6,9 +6,10 @@ import { NearApiContract, NearApiProvider } from '@sputnik-v2/config/near-api';
 import {
   NearAccountState,
   NearTransactionStatus,
-  castTransactionAction,
   NearProvider,
+  castTransactionAction,
   castTransactionReceipt,
+  castTransactionStatus,
 } from './types';
 
 @Injectable()
@@ -42,6 +43,7 @@ export class NearApiService {
       [transactionHash, accountId],
     );
 
+    txStatus.status = castTransactionStatus(txStatus.status);
     txStatus.transaction.actions = txStatus.transaction.actions.map(
       castTransactionAction,
     );
