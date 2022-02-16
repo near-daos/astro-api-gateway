@@ -3,6 +3,7 @@ import PromisePool from '@supercharge/promise-pool';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { FinalExecutionStatus } from 'near-api-js/lib/providers';
 
 import { NearApiService } from '@sputnik-v2/near-api';
 import { SputnikService } from '@sputnik-v2/sputnikdao';
@@ -131,21 +132,30 @@ export class TransactionActionHandlerService {
   }
 
   async handleAddProposal(txAction: TransactionAction) {
-    const { receiverId, signerId, transactionHash, args, timestamp } = txAction;
-    const daoContract = this.nearApiService.getContract(
-      'sputnikDao',
+    const { receiverId, signerId, transactionHash, timestamp } = txAction;
+
+    const txStatus = await this.nearApiService.getTxStatus(
+      transactionHash,
       receiverId,
     );
+
+    const lastProposalId = parseInt(
+      (txStatus.status as FinalExecutionStatus)?.SuccessValue,
+    );
+
+    if (!lastProposalId) {
+      this.logger.warn(
+        `Error getting Proposal ID: ${lastProposalId} from transaction: ${transactionHash}`,
+      );
+      return;
+    }
+
     const daoEntity = await this.daoService.findOne(receiverId);
-    const lastProposalId = await daoContract.get_last_proposal_id();
-    const daoProposal = await this.sputnikService.findLastProposal(
+    const daoProposal = await this.sputnikService.getProposal(
       receiverId,
       lastProposalId,
-      {
-        ...args.proposal,
-        proposer: signerId,
-      },
     );
+
     const proposal = castCreateProposal({
       transactionHash,
       signerId,
