@@ -14,6 +14,7 @@ import {
   Receipt,
   TransactionAction,
   Transaction,
+  AssetsFtEvent,
   AssetsNftEvent,
   ExecutionOutcome,
 } from './entities';
@@ -34,6 +35,7 @@ import { NearIndexerService } from './near-indexer.service';
         ActionReceiptAction,
         ReceiptAction,
         AccountChange,
+        AssetsFtEvent,
         AssetsNftEvent,
         ExecutionOutcome,
       ],
