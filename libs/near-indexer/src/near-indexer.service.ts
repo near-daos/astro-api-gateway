@@ -10,6 +10,7 @@ import {
   Like,
   Repository,
   SelectQueryBuilder,
+  Brackets,
 } from 'typeorm';
 import {
   Account,
@@ -19,7 +20,7 @@ import {
   Receipt,
   AssetsNftEvent,
 } from './entities';
-import { buildLikeContractName, getBlockTimestamp } from '@sputnik-v2/utils';
+import { buildLikeContractName } from '@sputnik-v2/utils';
 import { ExecutionOutcomeStatus } from './types';
 
 @Injectable()
@@ -425,29 +426,31 @@ export class NearIndexerService {
     accountId: string,
     tokenId: string,
   ): Promise<Receipt[]> {
-    const oneDayAgo = new Date();
-    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
-    oneDayAgo.setHours(0, 0, 0, 0);
-
     const actions = await this.actionReceiptActionRepository
-      .createQueryBuilder('action_receipt_actions')
-      .select('action_receipt_actions.receiptId')
-      .where(
-        `receipt_included_in_block_timestamp > :blockTimestamp AND (receipt_receiver_account_id = :tokenId AND (args->'args_json'->>'receiver_id' = :accountId OR receipt_predecessor_account_id = :accountId))`,
-        {
-          tokenId,
-          accountId,
-          blockTimestamp: getBlockTimestamp(oneDayAgo),
-        },
+      .createQueryBuilder('ara')
+      .select('receipt_id')
+      .andWhere(`action_kind = 'FUNCTION_CALL'`)
+      .andWhere(`args->>'args_json' is not null`)
+      .andWhere(`args->>'method_name' like 'ft_%'`)
+      .andWhere('receipt_receiver_account_id = :tokenId', { tokenId })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where(`args->'args_json'->>'receiver_id' = :accountId`, {
+            accountId,
+          });
+          qb.orWhere(`receipt_predecessor_account_id = :accountId`, {
+            accountId,
+          });
+        }),
       )
-      .getMany();
+      .getRawMany();
 
     return actions.length > 0
       ? await this.receiptRepository
           .createQueryBuilder('receipt')
           .leftJoinAndSelect('receipt.receiptActions', 'action_receipt_actions')
           .where('receipt.receipt_id IN (:...ids)', {
-            ids: actions.map(({ receiptId }) => receiptId),
+            ids: actions.map(({ receipt_id }) => receipt_id),
           })
           .orderBy('included_in_block_timestamp', 'ASC')
           .getMany()
