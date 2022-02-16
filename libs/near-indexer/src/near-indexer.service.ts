@@ -17,6 +17,7 @@ import {
   AccountChange,
   ActionReceiptAction,
   Receipt,
+  AssetsFtEvent,
   AssetsNftEvent,
 } from './entities';
 import { buildLikeContractName, getBlockTimestamp } from '@sputnik-v2/utils';
@@ -41,6 +42,9 @@ export class NearIndexerService {
 
     @InjectRepository(AccountChange, NEAR_INDEXER_DB_CONNECTION)
     private readonly accountChangeRepository: Repository<AccountChange>,
+
+    @InjectRepository(AssetsFtEvent, NEAR_INDEXER_DB_CONNECTION)
+    private readonly assetsFtEventRepository: Repository<AssetsFtEvent>,
 
     @InjectRepository(AssetsNftEvent, NEAR_INDEXER_DB_CONNECTION)
     private readonly assetsNftEventRepository: Repository<AssetsNftEvent>,
@@ -382,6 +386,29 @@ export class NearIndexerService {
       .andWhere('nftEvent.token_id = :tokenId', { tokenId })
       .orderBy('emitted_at_block_timestamp', 'DESC')
       .getMany();
+  }
+
+  async findFTEventUpdates(
+    contractName: string,
+    fromBlockTimestamp: number,
+  ): Promise<AssetsFtEvent[]> {
+    // TODO optimize query, replace LIKE '%.contract.name' with IN ('1.contract.name', '2.contract.name', ...)
+    const accountId = buildLikeContractName(contractName);
+    return this.assetsFtEventRepository.find({
+      where: [
+        {
+          tokenOldOwnerAccountId: Like(accountId),
+          emittedAtBlockTimestamp: MoreThan(fromBlockTimestamp),
+        },
+        {
+          tokenNewOwnerAccountId: Like(accountId),
+          emittedAtBlockTimestamp: MoreThan(fromBlockTimestamp),
+        },
+      ],
+      order: {
+        emittedAtBlockTimestamp: 'DESC',
+      },
+    });
   }
 
   async findNFTEventUpdates(
