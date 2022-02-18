@@ -143,9 +143,9 @@ export class TransactionActionHandlerService {
       (txStatus.status as FinalExecutionStatus)?.SuccessValue,
     );
 
-    if (!lastProposalId) {
+    if (isNaN(lastProposalId)) {
       this.logger.warn(
-        `Error getting Proposal ID: ${lastProposalId} from transaction: ${transactionHash}`,
+        `Error getting Proposal ID from transaction: ${transactionHash}`,
       );
       return;
     }
