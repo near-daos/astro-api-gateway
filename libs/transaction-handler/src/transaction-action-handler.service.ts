@@ -241,6 +241,7 @@ export class TransactionActionHandlerService {
         });
         break;
 
+      case VoteAction.Finalize:
       case VoteAction.VoteReject:
         await this.handleRejectProposal({
           dao,
