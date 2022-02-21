@@ -51,4 +51,15 @@ public class BountiesApi {
 
         return httpClient.get(builder.toUriString(), new HttpEntity<>(httpHeaders), String.class);
     }
+
+    public ResponseEntity<String> getBountyContextsWithParams(Map<String, Object> queryParams) {
+        HttpHeaders httpHeaders = httpClient.getBasicHeaders();
+        httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(apiUrl);
+        builder.pathSegment("bounty-contexts");
+        queryParams.forEach(builder::queryParam);
+
+        return httpClient.get(builder.toUriString(), new HttpEntity<>(httpHeaders), String.class);
+    }
 }

@@ -23,8 +23,13 @@ public class BountiesApiSteps extends BaseSteps {
         return bountiesApi.getBounties(queryParams);
     }
 
-    @Step("Getting bounty-contexts without query params")
+    @Step("Getting Bounty-contexts without query params")
     public ResponseEntity<String> getBountyContexts() {
         return bountiesApi.getBountyContexts();
+    }
+
+    @Step("Getting Bounty-contexts with query params '{queryParams}'")
+    public ResponseEntity<String> getBountyContextsWithParams(Map<String, Object> queryParams) {
+        return bountiesApi.getBountyContextsWithParams(queryParams);
     }
 }
