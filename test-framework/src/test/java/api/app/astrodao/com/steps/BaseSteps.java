@@ -45,7 +45,7 @@ public abstract class BaseSteps {
     }
 
     @Step("User sees collection has size greater than '{greaterThanValue}'")
-    public void assertCollectionHasSizeGreaterThan(Collection<?> actual, int greaterThanValue) {
+    public void assertCollectionHasSizeGreaterThanOrEqualTo(Collection<?> actual, int greaterThanValue) {
         assertThat(actual.size())
                 .as("Collection should have correct size.")
                 .isGreaterThanOrEqualTo(greaterThanValue);
@@ -107,6 +107,15 @@ public abstract class BaseSteps {
                 .hasSize(actual.size());
     }
 
+    @Step("User sees '{fieldName}' fields has no value in a collection")
+    public <T> void assertCollectionElementsHasNoValue(Collection<T> actual,
+                                                     Predicate<? super T> predicate, String fieldName) {
+        assertThat(actual)
+                .as(String.format("'%s' field should have value in collection.", fieldName))
+                .filteredOn(predicate)
+                .hasSize(actual.size());
+    }
+
     @Step("User sees that fields '{fieldName}' has boolean value in a collection")
     public <T> void assertCollectionElementsHasBooleanValueAndSize(Collection<T> actual,
                                                      Predicate<? super T> predicate, String errorMessage,
@@ -115,6 +124,15 @@ public abstract class BaseSteps {
                 .as("%s " + "'%s'", errorMessage, fieldName)
                 .filteredOn(predicate)
                 .hasSize(actual.size());
+    }
+
+    @Step("User sees '{fieldName}' fields has value in a collection")
+    public <T> void assertCollectionElementsAtLeastOneValue(Collection<T> actual,
+                                                     Predicate<? super T> predicate, String fieldName) {
+        assertThat(actual)
+                .as(String.format("'%s' field should have value in collection.", fieldName))
+                .filteredOn(predicate)
+                .hasSizeGreaterThan(0);
     }
 
     @Step("User sees '{fieldName}' fields value match criteria in a collection")

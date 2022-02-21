@@ -4,6 +4,7 @@ test:
 #  accountId: automation-01.testnet
   dao: test-dao-1641395769436.sputnikv2.testnet
   proposal: test-dao-1641395769436.sputnikv2.testnet-911
+  bounty: test-dao-1641395769436.sputnikv2.testnet-1578
   aggregation.timeout: ${TEST_AGG_TIMEOUT:20}
 
 framework:
@@ -14,3 +15,7 @@ accounts:
     accountId: testdao2.testnet
     publicKey: ed25519:8kqG6dyAheDqzoZh4hk9HbjBngG6fTnCD4zTw6sVud9K
     signature: JJoq7fvBh6JXH9kVXtV0SoeT3YDSm9Gr6Ug4cmJNXAtuU2bZFu9/8bN26xw7MwYBRdWTZr2v81JZDO9zYaE8Dg==
+  account2:
+    accountId: automation-01.testnet
+    publicKey: ed25519:62vv9ViLDYnLtMZBUBgT8h5bB5yHLWYMbeeYKAVfChQF
+    signature: FLRzkKGeSdDUimtvkk4E7qMyViESPHxkMvBR1fTLKxfOCJqDWMYXciutO9O9nOJrXzp1d0u/aoR6kG4qwvHXCA==
