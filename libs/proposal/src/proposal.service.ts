@@ -381,7 +381,9 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
     }, []);
 
     return {
-      isCouncil: council ? council.accountIds.includes(accountId) : false,
+      isCouncil: council?.accountIds
+        ? council.accountIds.includes(accountId)
+        : false,
       canApprove: this.checkPermissions(
         proposal.kind.type,
         'VoteApprove',
