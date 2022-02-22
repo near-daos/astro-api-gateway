@@ -366,7 +366,8 @@ export class TransactionActionHandlerService {
     const proposalKindType = proposal.kind?.kind.type;
 
     if (
-      proposal.status === ProposalStatus.Rejected &&
+      (proposal.status === ProposalStatus.Rejected ||
+        proposal.status === ProposalStatus.Expired) &&
       proposalKindType === ProposalType.BountyDone
     ) {
       await this.handleDoneBounty({
