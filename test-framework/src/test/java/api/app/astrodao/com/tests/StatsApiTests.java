@@ -4,7 +4,6 @@ import api.app.astrodao.com.core.dto.api.stats.ProposalStatsEntries;
 import api.app.astrodao.com.core.dto.api.stats.StatsEntries;
 import api.app.astrodao.com.openapi.models.DaoStatsStateDto;
 import api.app.astrodao.com.steps.StatsApiSteps;
-import com.github.javafaker.Faker;
 import io.qameta.allure.Feature;
 import io.qameta.allure.Severity;
 import io.qameta.allure.SeverityLevel;
@@ -54,7 +53,7 @@ public class StatsApiTests extends BaseTest {
 
         StatsEntries statsEntries = statsApiSteps.getResponseDto(response, StatsEntries.class);
 
-        statsApiSteps.assertCollectionHasSizeGreaterThan(statsEntries, 3);
+        statsApiSteps.assertCollectionHasSizeGreaterThanOrEqualTo(statsEntries, 3);
         statsApiSteps.assertCollectionElementsHasValue(statsEntries, r -> r.getValue().intValue() >= 0, "value");
         statsApiSteps.assertCollectionElementsHasValue(statsEntries, r -> !r.getTimestamp().toString().isBlank(), "timestamp");
     }
@@ -71,7 +70,7 @@ public class StatsApiTests extends BaseTest {
 
         StatsEntries statsEntries = statsApiSteps.getResponseDto(response, StatsEntries.class);
 
-        statsApiSteps.assertCollectionHasSizeGreaterThan(statsEntries, 3);
+        statsApiSteps.assertCollectionHasSizeGreaterThanOrEqualTo(statsEntries, 3);
         statsApiSteps.assertCollectionElementsHasValue(statsEntries, r -> r.getValue().intValue() >= 0, "value");
         statsApiSteps.assertCollectionElementsHasValue(statsEntries, r -> !r.getTimestamp().toString().isBlank(), "timestamp");
     }
@@ -88,7 +87,7 @@ public class StatsApiTests extends BaseTest {
 
         StatsEntries statsEntries = statsApiSteps.getResponseDto(response, StatsEntries.class);
 
-        statsApiSteps.assertCollectionHasSizeGreaterThan(statsEntries, 3);
+        statsApiSteps.assertCollectionHasSizeGreaterThanOrEqualTo(statsEntries, 3);
         statsApiSteps.assertCollectionElementsHasValue(statsEntries, r -> r.getValue().intValue() >= 0, "value");
         statsApiSteps.assertCollectionElementsHasValue(statsEntries, r -> !r.getTimestamp().toString().isBlank(), "timestamp");
     }
@@ -105,7 +104,7 @@ public class StatsApiTests extends BaseTest {
 
         ProposalStatsEntries statsEntries = statsApiSteps.getResponseDto(response, ProposalStatsEntries.class);
 
-        statsApiSteps.assertCollectionHasSizeGreaterThan(statsEntries, 3);
+        statsApiSteps.assertCollectionHasSizeGreaterThanOrEqualTo(statsEntries, 3);
         statsApiSteps.assertCollectionElementsHasValue(statsEntries, r -> !r.getTimestamp().toString().isBlank(), "timestamp");
         statsApiSteps.assertCollectionElementsHasValue(statsEntries, r -> r.getTotal().intValue() >= 0, "total");
         statsApiSteps.assertCollectionElementsHasValue(statsEntries, r -> r.getActive().intValue() >= 0, "active");

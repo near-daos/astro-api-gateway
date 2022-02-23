@@ -73,7 +73,7 @@ public class TokenApiTests extends BaseTest {
 
         TokensList tokensList = tokenApiSteps.getResponseDto(response, TokensList.class);
 
-        tokenApiSteps.assertCollectionHasSizeGreaterThan(tokensList, 20);
+        tokenApiSteps.assertCollectionHasSizeGreaterThanOrEqualTo(tokensList, 20);
         tokenApiSteps.assertCollectionElementsHasValue(tokensList, r -> !r.getId().isBlank(), "id");
         tokenApiSteps.assertCollectionElementsHasValue(tokensList, r -> !r.getSymbol().isBlank(), "symbol");
     }
@@ -91,7 +91,7 @@ public class TokenApiTests extends BaseTest {
 
         TokensList tokensList = tokenApiSteps.getResponseDto(response, TokensList.class);
 
-        tokenApiSteps.assertCollectionHasSizeGreaterThan(tokensList, 20);
+        tokenApiSteps.assertCollectionHasSizeGreaterThanOrEqualTo(tokensList, 20);
         tokenApiSteps.assertCollectionElementsHasValue(tokensList, r -> !r.getId().isBlank(), "id");
         tokenApiSteps.assertCollectionElementsHasValue(tokensList, r -> !r.getSymbol().isBlank(), "symbol");
         //TODO: add verification that other fields are null
@@ -111,7 +111,7 @@ public class TokenApiTests extends BaseTest {
 
         TokensList tokensList = tokenApiSteps.getResponseDto(response, TokensList.class);
 
-        tokenApiSteps.assertCollectionHasSizeGreaterThan(tokensList, 20);
+        tokenApiSteps.assertCollectionHasSizeGreaterThanOrEqualTo(tokensList, 20);
         tokenApiSteps.assertCollectionElementsHasValue(tokensList, r -> !r.getId().isBlank(), "id");
         tokenApiSteps.assertCollectionElementsHasValue(tokensList, r -> !r.getSymbol().isBlank(), "symbol");
         tokenApiSteps.assertCollectionElementsContainsOnly(tokensList, Token::getDecimals, BigDecimal.valueOf(decimals), "decimals");
@@ -226,7 +226,7 @@ public class TokenApiTests extends BaseTest {
 
         NFTTokensList tokensList = tokenApiSteps.getResponseDto(response, NFTTokensList.class);
 
-        tokenApiSteps.assertCollectionHasSizeGreaterThan(tokensList, 20);
+        tokenApiSteps.assertCollectionHasSizeGreaterThanOrEqualTo(tokensList, 20);
         tokenApiSteps.assertCollectionElementsHasValue(tokensList, r -> !r.getId().isBlank(), "id");
         tokenApiSteps.assertCollectionElementsHasValue(tokensList, r -> !r.getTokenId().isBlank(), "ownerId");
         //TODO: add verification that other fields are null
