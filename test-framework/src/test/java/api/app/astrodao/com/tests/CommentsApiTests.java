@@ -19,7 +19,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Tags({@Tag("all"), @Tag("commentsApiTests")})
 @Feature("COMMENTS API TESTS")
@@ -59,6 +63,7 @@ public class CommentsApiTests extends BaseTest {
     @Test
     @Severity(SeverityLevel.CRITICAL)
     @Story("User should be able to get list of comments with query param: [sort, limit, offset]")
+    @DisplayName("User should be able to get list of comments with query param: [sort, limit, offset]")
     void getListOfCommentsWithSortLimitOffsetParams() {
         Map<String, Object> query = Map.of(
                 "sort", "createdAt,DESC",
@@ -78,11 +83,16 @@ public class CommentsApiTests extends BaseTest {
         commentsApiSteps.assertDtoValue(commentResponse, r -> r.getCount().intValue(), limit, "limit");
         commentsApiSteps.assertCollectionHasCorrectSize(commentResponse.getData(), limit);
         commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> !r.getMessage().isBlank(), "message");
+
+        List<OffsetDateTime> createdAtList = commentResponse.getData().stream().map(Comment::getCreatedAt).collect(Collectors.toList());
+        commentsApiSteps.assertOffsetDateTimesAreSortedCorrectly(createdAtList, Comparator.reverseOrder(),
+                "Comments should be sorted by 'createdAt field in DESC order");
     }
 
     @Test
     @Severity(SeverityLevel.CRITICAL)
-    @Story("User should be able to get list of comments with query param: [sort, limit, offset]")
+    @Story("User should be able to get list of comments with query param: [sort, page]")
+    @DisplayName("User should be able to get list of comments with query param: [sort, page]")
     void getListOfCommentsWithSortPageParams() {
         int count = 50;
         int page = 2;
@@ -101,11 +111,16 @@ public class CommentsApiTests extends BaseTest {
         commentsApiSteps.assertDtoValue(commentResponse, r -> r.getCount().intValue(), count, "limit");
         commentsApiSteps.assertCollectionHasCorrectSize(commentResponse.getData(), count);
         commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> !r.getMessage().isBlank(), "message");
+
+        List<OffsetDateTime> createdAtList = commentResponse.getData().stream().map(Comment::getCreatedAt).collect(Collectors.toList());
+        commentsApiSteps.assertOffsetDateTimesAreSortedCorrectly(createdAtList, Comparator.reverseOrder(),
+                "Comments should be sorted by 'createdAt field in DESC order");
     }
 
     @Test
     @Severity(SeverityLevel.CRITICAL)
     @Story("User should be able to get list of comments with query param: [sort, fields]")
+    @DisplayName("User should be able to get list of comments with query param: [sort, fields]")
     void getListOfCommentsWithSortFieldsParams() {
         int count = 50;
         int page = 1;
@@ -132,11 +147,16 @@ public class CommentsApiTests extends BaseTest {
         //TODO: Ask a question comment with 229 ID has a report data
         //commentsApiSteps.assertCollectionElementsValue(commentResponse.getData(), r -> r.getReports().isEmpty(), "reports");
         commentsApiSteps.assertCollectionElementsValue(commentResponse.getData(), r -> r.getAccountId() == null, "accountId");
+
+        List<BigDecimal> ids = commentResponse.getData().stream().map(Comment::getId).collect(Collectors.toList());
+        commentsApiSteps.assertBigDecimalsAreSortedCorrectly(ids, Comparator.reverseOrder(),
+                "Comments should be sorted by ID in DESC order");
     }
 
     @Test
     @Severity(SeverityLevel.CRITICAL)
     @Story("User should be able to get list of comments with query param: [sort, s]")
+    @DisplayName("User should be able to get list of comments with query param: [sort, s]")
     void getListOfCommentsSortSParams() {
         int count = 50;
         int page = 1;
@@ -157,11 +177,16 @@ public class CommentsApiTests extends BaseTest {
         commentsApiSteps.assertCollectionHasCorrectSize(commentResponse.getData(), count);
         commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> r.getId().longValue() > 0, "id");
         commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> accountId.equals(r.getAccountId()), "accountId");
+
+        List<OffsetDateTime> createdAtList = commentResponse.getData().stream().map(Comment::getCreatedAt).collect(Collectors.toList());
+        commentsApiSteps.assertOffsetDateTimesAreSortedCorrectly(createdAtList, Comparator.reverseOrder(),
+                "Comments should be sorted by 'createdAt field in DESC order");
     }
 
     @Test
     @Severity(SeverityLevel.CRITICAL)
     @Story("Creating new comment for a proposal")
+    @DisplayName("Creating new comment for a proposal")
     void createNewCommentForProposal() {
         String contextType = "Proposal";
         String commentMsg = WaitUtils.getEpochMillis() + faker.lorem().characters(15, 20);
@@ -204,7 +229,8 @@ public class CommentsApiTests extends BaseTest {
 
     @Test
     @Severity(SeverityLevel.CRITICAL)
-    @Story("Creating new comment for a proposal")
+    @Story("Creating new comment for a bounty")
+    @DisplayName("Creating new comment for a bounty")
     void createNewCommentForBounty() {
         String contextType = "BountyContext";
         String commentMsg = WaitUtils.getEpochMillis() + faker.lorem().characters(15, 20);
@@ -248,6 +274,7 @@ public class CommentsApiTests extends BaseTest {
     @Test
     @Severity(SeverityLevel.CRITICAL)
     @Story("User should not be able to create comment for a proposal (by using invalid public key)")
+    @DisplayName("User should not be able to create comment for a proposal (by using invalid public key)")
     void createNewCommentForProposalWithInvalidPublicKey() {
         String contextType = "Proposal";
         String errorMsg = String.format("Account %s identity is invalid - public key", account1Id);
@@ -264,6 +291,7 @@ public class CommentsApiTests extends BaseTest {
     @Test
     @Severity(SeverityLevel.CRITICAL)
     @Story("User should not be able to create comment for non-existing proposal")
+    @DisplayName("User should not be able to create comment for non-existing proposal")
     void createNewCommentForNonExistingProposal() {
         String contextType = "Proposal";
         String invalidContextId = "test-dao-1641395769436.sputnikv2.testnet-9111111";
@@ -281,6 +309,7 @@ public class CommentsApiTests extends BaseTest {
     @Test
     @Severity(SeverityLevel.CRITICAL)
     @Story("User should be to submit new report for a comment")
+    @DisplayName("User should be to submit new report for a comment")
     void createNewReportForComment() {
         String contextType = "Proposal";
         String reason = "Spam";
@@ -326,6 +355,7 @@ public class CommentsApiTests extends BaseTest {
     @Test
     @Severity(SeverityLevel.CRITICAL)
     @Story("User should not be to submit new report for a comment (by using invalid public key)")
+    @DisplayName("User should not be to submit new report for a comment (by using invalid public key)")
     void createNewReportForCommentWithInvalidPublicKey() {
         String contextType = "Proposal";
         String reason = "Spam";
@@ -347,6 +377,7 @@ public class CommentsApiTests extends BaseTest {
     @Test
     @Severity(SeverityLevel.CRITICAL)
     @Story("User should be able to delete existing comment for a proposal")
+    @DisplayName("User should be able to delete existing comment for a proposal")
     void deleteExistingCommentForProposal() {
         String contextType = "Proposal";
         String reason = "Language";
@@ -380,6 +411,7 @@ public class CommentsApiTests extends BaseTest {
     @Test
     @Severity(SeverityLevel.CRITICAL)
     @Story("User should not be able to delete non-existing comment for a proposal")
+    @DisplayName("User should not be able to delete non-existing comment for a proposal")
     void deleteNonExistingCommentForProposal() {
         String reason = "Language";
         BigDecimal invalidId = BigDecimal.valueOf(31313);
@@ -396,6 +428,7 @@ public class CommentsApiTests extends BaseTest {
     @Test
     @Severity(SeverityLevel.CRITICAL)
     @Story("User should not be able to delete existing comment for a proposal (by using invalid public key)")
+    @DisplayName("User should not be able to delete existing comment for a proposal (by using invalid public key)")
     void deleteExistingCommentForProposalWithInvalidPublicKey() {
         String contextType = "Proposal";
         String reason = "Language";

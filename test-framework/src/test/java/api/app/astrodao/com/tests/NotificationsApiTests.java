@@ -1,5 +1,6 @@
 package api.app.astrodao.com.tests;
 
+import api.app.astrodao.com.core.dto.api.notigications.Notification;
 import api.app.astrodao.com.core.dto.api.notigications.NotificationsResponse;
 import api.app.astrodao.com.steps.NotificationsApiSteps;
 import io.qameta.allure.Feature;
@@ -16,7 +17,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.time.OffsetDateTime;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Tags({@Tag("all"), @Tag("notificationsApiTests")})
 @Feature("NOTIFICATIONS API TESTS")
@@ -31,6 +36,7 @@ public class NotificationsApiTests extends BaseTest {
     @Test
     @Severity(SeverityLevel.CRITICAL)
     @Story("User should be able to get list of notifications with query param: [sort, limit, offset]")
+    @DisplayName("User should be able to get list of notifications with query param: [sort, limit, offset]")
     void getListOfNotificationsWithSortLimitOffsetParams() {
         Map<String, Object> query = Map.of(
                 "sort", "createdAt,DESC",
@@ -57,11 +63,16 @@ public class NotificationsApiTests extends BaseTest {
         notificationsApiSteps.assertCollectionElementsHasValue(notifications.getData(), r -> r.getType() != null, "data/type");
         notificationsApiSteps.assertCollectionElementsHasValue(notifications.getData(), r -> r.getStatus() != null, "data/status");
         notificationsApiSteps.assertCollectionElementsHasValue(notifications.getData(), r -> r.getMetadata() != null, "data/metadata");
+
+        List<OffsetDateTime> createdAtList = notifications.getData().stream().map(Notification::getCreatedAt).collect(Collectors.toList());
+        notificationsApiSteps.assertOffsetDateTimesAreSortedCorrectly(createdAtList, Comparator.reverseOrder(),
+                "Notifications should be sorted by 'createdAt field in DESC order");
     }
 
     @Test
     @Severity(SeverityLevel.CRITICAL)
-    @Story("User should be able to get list of notifications with query param: [sort, limit, offset]")
+    @Story("User should be able to get list of notifications with query param: [sort, page]")
+    @DisplayName("User should be able to get list of notifications with query param: [sort, page]")
     void getListOfNotificationsWithSortPageParams() {
         int count = 50;
         int page = 2;
@@ -87,12 +98,16 @@ public class NotificationsApiTests extends BaseTest {
         notificationsApiSteps.assertCollectionElementsHasValue(notifications.getData(), r -> r.getType() != null, "data/type");
         notificationsApiSteps.assertCollectionElementsHasValue(notifications.getData(), r -> r.getStatus() != null, "data/status");
         notificationsApiSteps.assertCollectionElementsHasValue(notifications.getData(), r -> r.getMetadata() != null, "data/metadata");
-        //TODO: Add verification that sorting is done correctly
+
+        List<OffsetDateTime> createdAtList = notifications.getData().stream().map(Notification::getCreatedAt).collect(Collectors.toList());
+        notificationsApiSteps.assertOffsetDateTimesAreSortedCorrectly(createdAtList, Comparator.reverseOrder(),
+                "Notifications should be sorted by 'createdAt field in DESC order");
     }
 
     @Test
     @Severity(SeverityLevel.CRITICAL)
     @Story("User should be able to get list of notifications with query param: [sort, fields]")
+    @DisplayName("User should be able to get list of notifications with query param: [sort, fields]")
     void getListOfNotificationsWithSortFieldsParams() {
         int count = 50;
         int page = 1;
@@ -121,11 +136,16 @@ public class NotificationsApiTests extends BaseTest {
         notificationsApiSteps.assertCollectionElementsHasNoValue(notifications.getData(), r -> r.getSignerId() == null, "data/signerId");
         notificationsApiSteps.assertCollectionElementsHasNoValue(notifications.getData(), r -> r.getType() == null, "data/type");
         notificationsApiSteps.assertCollectionElementsHasNoValue(notifications.getData(), r -> r.getStatus() == null, "data/status");
+
+        List<String> ids = notifications.getData().stream().map(Notification::getId).collect(Collectors.toList());
+        notificationsApiSteps.assertStringsAreSortedCorrectly(ids, Comparator.reverseOrder(),
+                "Notifications should be sorted by ID in DESC order");
     }
 
     @Test
     @Severity(SeverityLevel.CRITICAL)
     @Story("User should be able to get list of notifications with query param: [sort, s]")
+    @DisplayName("User should be able to get list of notifications with query param: [sort, s]")
     void getListOfNotificationsWithsSortSParams() {
         int count = 50;
         int page = 1;
@@ -151,5 +171,9 @@ public class NotificationsApiTests extends BaseTest {
         notificationsApiSteps.assertCollectionElementsHasValue(notifications.getData(), r -> r.getType() != null, "data/type");
         notificationsApiSteps.assertCollectionElementsHasValue(notifications.getData(), r -> r.getStatus() != null, "data/status");
         notificationsApiSteps.assertCollectionElementsHasValue(notifications.getData(), r -> r.getMetadata() != null, "data/metadata");
+
+        List<OffsetDateTime> createdAtList = notifications.getData().stream().map(Notification::getCreatedAt).collect(Collectors.toList());
+        notificationsApiSteps.assertOffsetDateTimesAreSortedCorrectly(createdAtList, Comparator.reverseOrder(),
+                "Notifications should be sorted by 'createdAt field in DESC order");
     }
 }
