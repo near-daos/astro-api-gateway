@@ -127,15 +127,6 @@ public abstract class BaseSteps {
                 .hasSize(actual.size());
     }
 
-    @Step("User sees '{fieldName}' fields has value in a collection")
-    public <T> void assertCollectionElementsAtLeastOneValue(Collection<T> actual,
-                                                     Predicate<? super T> predicate, String fieldName) {
-        assertThat(actual)
-                .as(String.format("'%s' field should have value in collection.", fieldName))
-                .filteredOn(predicate)
-                .hasSizeGreaterThan(0);
-    }
-
     @Step("User sees '{fieldName}' fields value match criteria in a collection")
     public <T> void assertCollectionElementsValue(Collection<T> actual,
                                                      Predicate<? super T> predicate, String fieldName) {
