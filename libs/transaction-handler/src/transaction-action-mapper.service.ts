@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { NearApiService, NearTransactionStatus } from '@sputnik-v2/near-api';
-import { AccountChange } from '@sputnik-v2/near-indexer';
+import { AccountChange, Transaction } from '@sputnik-v2/near-indexer';
 import { sleep } from '@sputnik-v2/utils';
 
 import {
@@ -50,7 +50,8 @@ export class TransactionActionMapperService {
 
     if (
       !originatedFromTransaction.transactionAction ||
-      !accountChange.causedByReceipt.receiptActions
+      !accountChange.causedByReceipt.receiptActions ||
+      this.isActFunctionCall(originatedFromTransaction)
     ) {
       const txStatus = await this.getTxStatus(
         originatedFromTransaction.transactionHash,
@@ -110,5 +111,12 @@ export class TransactionActionMapperService {
         ),
       )
       .flat();
+  }
+
+  private isActFunctionCall(transaction: Transaction): boolean {
+    return (
+      transaction.transactionAction?.args?.method_name === 'act_proposal' &&
+      transaction.transactionAction?.actionKind === 'FUNCTION_CALL'
+    );
   }
 }
