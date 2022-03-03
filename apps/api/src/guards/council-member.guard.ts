@@ -12,14 +12,18 @@ export class CouncilMemberGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest();
-    const { daoId } = req.params;
+    const daoId = req.params.daoId || req.body.daoId;
 
     const dao = await this.daoService.findById(daoId);
 
     if (!dao) {
       throw new NotFoundException(`DAO does not exist: ${daoId}`);
     }
-
-    return req.isAuthenticated && dao.council.includes(req.accountId);
+    return (
+      req.isAuthenticated &&
+      (dao.council.length === 0
+        ? dao.accountIds.includes(req.accountId)
+        : dao.council.includes(req.accountId))
+    );
   }
 }

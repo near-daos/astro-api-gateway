@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 import { Not, Repository } from 'typeorm';
@@ -22,6 +22,16 @@ export class BountyService extends TypeOrmCrudService<Bounty> {
 
   async createMultiple(bountyDtos: BountyDto[]): Promise<Bounty[]> {
     return this.bountyRepository.save(bountyDtos);
+  }
+
+  async deleteBounty(id: string, daoId: string): Promise<Bounty> {
+    const bounty = await this.bountyRepository.findOne({ id, daoId });
+
+    if (!bounty) {
+      throw new NotFoundException(`Bounty ${id} not found`);
+    }
+
+    return this.bountyRepository.save({ ...bounty, isArchived: true });
   }
 
   async getDaoActiveBountiesCount(daoId: string): Promise<number> {
