@@ -2,9 +2,9 @@ import {
   BadRequestException,
   Body,
   Controller,
-  Delete,
   Get,
   Param,
+  Patch,
   Query,
   UseFilters,
   UseGuards,
@@ -13,7 +13,6 @@ import {
 import {
   ApiBadRequestResponse,
   ApiForbiddenResponse,
-  ApiNotFoundResponse,
   ApiParam,
   ApiQuery,
   ApiResponse,
@@ -39,7 +38,7 @@ import {
 import { BountyCrudRequestInterceptor } from './interceptors/bounty-crud.interceptor';
 import { BountyContextCrudRequestInterceptor } from './interceptors/bounty-context-crud.interceptor';
 import { CouncilMemberGuard } from '../guards/council-member.guard';
-import { DeleteBountyBodyDto } from './dto/delete-bounty.dto';
+import { UpdateBountyContextDto } from './dto/update-bounty-context.dto';
 
 @ApiTags('Bounty')
 @Controller()
@@ -113,28 +112,17 @@ export class BountyController {
     return await this.bountyContextService.getMany(query, accountId);
   }
 
-  @ApiParam({
-    name: 'id',
-    type: String,
-  })
   @ApiResponse({
     status: 200,
-    description: 'Deleted',
-    type: Bounty,
+    description: 'OK',
   })
   @ApiForbiddenResponse({
     description:
       'Account <accountId> identity is invalid - public key / bad signature/public key size / Invalid signature',
   })
-  @ApiNotFoundResponse({
-    description: `No Bounty '<id>' found.`,
-  })
   @UseGuards(AccountAccessGuard, CouncilMemberGuard)
-  @Delete('/bounties/:id')
-  async deleteById(
-    @Param() { id }: FindOneParams,
-    @Body() { daoId }: DeleteBountyBodyDto,
-  ): Promise<Bounty> {
-    return this.bountyService.deleteBounty(id, daoId);
+  @Patch('/bounty-contexts')
+  async deleteById(@Body() body: UpdateBountyContextDto): Promise<void> {
+    await this.bountyContextService.updateMany(body);
   }
 }
