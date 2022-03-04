@@ -165,4 +165,35 @@ public class BountyContextsTests extends BaseTest {
 						});
 	}
 
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get a Bounty-contexts with [accountId, page, fields, limit] parameter for existed user")
+	@DisplayName("Get a Bounty-contexts with [accountId, page, fields, limit] parameter for existed user")
+	void getBountyContextsWithAccountIdPageFieldsParameter() {
+		int count = 10;
+		int page = 2;
+		int total = 1224;
+		int pageCount = 123;
+		Map<String, Object> queryParams = Map.of(
+				"accountId", testAccountId,
+				"limit", count,
+				"page", page,
+				"fields", "proposal,createdAt");
+
+		ResponseEntity<String> response = bountiesApiSteps.getBountyContextsWithParams(queryParams);
+		bountiesApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
+
+		BountyContextResponse bountyContextResponse = bountiesApiSteps.getResponseDto(response, BountyContextResponse.class);
+
+		bountiesApiSteps.assertDtoValue(bountyContextResponse, r -> r.getCount().intValue(), count, "count");
+		bountiesApiSteps.assertDtoValue(bountyContextResponse, r -> r.getPage().intValue(), page, "page");
+		bountiesApiSteps.assertDtoValueGreaterThanOrEqualTo(bountyContextResponse, r -> r.getTotal().intValue(), total, "total");
+		bountiesApiSteps.assertDtoValueGreaterThanOrEqualTo(bountyContextResponse, r -> r.getPageCount().intValue(), pageCount, "pageCount");
+		bountiesApiSteps.assertCollectionElementsHasValue(bountyContextResponse.getData(), r -> r.getProposal() != null, "proposal");
+		bountiesApiSteps.assertCollectionElementsHasValue(bountyContextResponse.getData(), r -> r.getCreatedAt() != null, "createdAt");
+		bountiesApiSteps.assertCollectionElementsHasValue(bountyContextResponse.getData(), r -> r.getId() != null, "id");
+		bountiesApiSteps.assertCollectionElementsHasNoValue(bountyContextResponse.getData(), r -> r.getIsArchived() == null, "isArchived");
+		bountiesApiSteps.assertCollectionElementsHasNoValue(bountyContextResponse.getData(), r -> r.getUpdatedAt() == null, "updatedAt");
+		bountiesApiSteps.assertCollectionElementsHasNoValue(bountyContextResponse.getData(), r -> r.getDaoId() == null, "daoId");
+	}
 }
