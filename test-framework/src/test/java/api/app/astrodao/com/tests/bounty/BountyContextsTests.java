@@ -1,5 +1,6 @@
 package api.app.astrodao.com.tests.bounty;
 
+import api.app.astrodao.com.openapi.models.BountyContext;
 import api.app.astrodao.com.openapi.models.BountyContextResponse;
 import api.app.astrodao.com.steps.BountiesApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
@@ -169,7 +170,7 @@ public class BountyContextsTests extends BaseTest {
 	@Severity(SeverityLevel.CRITICAL)
 	@Story("Get a Bounty-contexts with [accountId, page, fields, limit] parameter for existed user")
 	@DisplayName("Get a Bounty-contexts with [accountId, page, fields, limit] parameter for existed user")
-	void getBountyContextsWithAccountIdPageFieldsParameter() {
+	void getBountyContextsWithAccountIdPageFieldsLimitParameter() {
 		int count = 10;
 		int page = 2;
 		int total = 1224;
@@ -195,5 +196,33 @@ public class BountyContextsTests extends BaseTest {
 		bountiesApiSteps.assertCollectionElementsHasNoValue(bountyContextResponse.getData(), r -> r.getIsArchived() == null, "isArchived");
 		bountiesApiSteps.assertCollectionElementsHasNoValue(bountyContextResponse.getData(), r -> r.getUpdatedAt() == null, "updatedAt");
 		bountiesApiSteps.assertCollectionElementsHasNoValue(bountyContextResponse.getData(), r -> r.getDaoId() == null, "daoId");
+	}
+
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get a Bounty-contexts with [accountId, s] parameter for existed user")
+	@DisplayName("Get a Bounty-contexts with [accountId, s] parameter for existed user")
+	void getBountyContextsWithAccountIdAndSearchParameter() {
+		String id = "test-dao-1641395769436.sputnikv2.testnet-1823";
+		String daoId = "test-dao-1641395769436.sputnikv2.testnet";
+		int count = 1;
+		int total = 1;
+		int page = 1;
+		int pageCount = 1;
+		Map<String, Object> queryParams = Map.of(
+				"accountId", testAccountId,
+				"s", String.format("{\"id\": \"%s\"}", id));
+
+		ResponseEntity<String> response = bountiesApiSteps.getBountyContextsWithParams(queryParams);
+		bountiesApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
+
+		BountyContextResponse bountyContextResponse = bountiesApiSteps.getResponseDto(response, BountyContextResponse.class);
+
+		bountiesApiSteps.assertDtoValue(bountyContextResponse, r -> r.getCount().intValue(), count, "count");
+		bountiesApiSteps.assertDtoValue(bountyContextResponse, r -> r.getTotal().intValue(), total, "total");
+		bountiesApiSteps.assertDtoValue(bountyContextResponse, r -> r.getPage().intValue(), page, "page");
+		bountiesApiSteps.assertDtoValue(bountyContextResponse, r -> r.getPageCount().intValue(), pageCount, "pageCount");
+		bountiesApiSteps.assertCollectionElementsContainsOnly(bountyContextResponse.getData(), BountyContext::getId, id, "id");
+		bountiesApiSteps.assertCollectionElementsContainsOnly(bountyContextResponse.getData(), BountyContext::getDaoId, daoId, "id");
 	}
 }
