@@ -122,7 +122,9 @@ export class BountyController {
   })
   @UseGuards(AccountAccessGuard, CouncilMemberGuard)
   @Patch('/bounty-contexts')
-  async deleteById(@Body() body: UpdateBountyContextDto): Promise<void> {
+  async updateBountyContexts(
+    @Body() body: UpdateBountyContextDto,
+  ): Promise<void> {
     await this.bountyContextService.updateMany(body);
   }
 }
