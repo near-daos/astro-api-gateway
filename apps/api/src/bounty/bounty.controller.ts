@@ -1,14 +1,18 @@
 import {
   BadRequestException,
+  Body,
   Controller,
   Get,
   Param,
+  Patch,
   Query,
   UseFilters,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiForbiddenResponse,
   ApiParam,
   ApiQuery,
   ApiResponse,
@@ -20,6 +24,7 @@ import {
   HttpCacheInterceptor,
   EntityQuery,
   QueryFailedErrorFilter,
+  AccountAccessGuard,
 } from '@sputnik-v2/common';
 import {
   BountyService,
@@ -32,6 +37,8 @@ import {
 
 import { BountyCrudRequestInterceptor } from './interceptors/bounty-crud.interceptor';
 import { BountyContextCrudRequestInterceptor } from './interceptors/bounty-context-crud.interceptor';
+import { CouncilMemberGuard } from '../guards/council-member.guard';
+import { UpdateBountyContextDto } from './dto/update-bounty-context.dto';
 
 @ApiTags('Bounty')
 @Controller()
@@ -103,5 +110,21 @@ export class BountyController {
     @Query('accountId') accountId?: string,
   ): Promise<BountyContext[] | BountyContextResponse> {
     return await this.bountyContextService.getMany(query, accountId);
+  }
+
+  @ApiResponse({
+    status: 200,
+    description: 'OK',
+  })
+  @ApiForbiddenResponse({
+    description:
+      'Account <accountId> identity is invalid - public key / bad signature/public key size / Invalid signature',
+  })
+  @UseGuards(AccountAccessGuard, CouncilMemberGuard)
+  @Patch('/bounty-contexts')
+  async updateBountyContexts(
+    @Body() body: UpdateBountyContextDto,
+  ): Promise<void> {
+    await this.bountyContextService.updateMany(body);
   }
 }

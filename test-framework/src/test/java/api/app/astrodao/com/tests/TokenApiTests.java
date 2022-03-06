@@ -1,5 +1,6 @@
 package api.app.astrodao.com.tests;
 
+import api.app.astrodao.com.core.dto.api.tokens.AssetsNftEventList;
 import api.app.astrodao.com.core.dto.api.tokens.NFTTokensList;
 import api.app.astrodao.com.core.dto.api.tokens.TokensList;
 import api.app.astrodao.com.openapi.models.NFTTokenResponse;
@@ -73,7 +74,7 @@ public class TokenApiTests extends BaseTest {
 
         TokensList tokensList = tokenApiSteps.getResponseDto(response, TokensList.class);
 
-        tokenApiSteps.assertCollectionHasSizeGreaterThan(tokensList, 20);
+        tokenApiSteps.assertCollectionHasSizeGreaterThanOrEqualTo(tokensList, 20);
         tokenApiSteps.assertCollectionElementsHasValue(tokensList, r -> !r.getId().isBlank(), "id");
         tokenApiSteps.assertCollectionElementsHasValue(tokensList, r -> !r.getSymbol().isBlank(), "symbol");
     }
@@ -91,7 +92,7 @@ public class TokenApiTests extends BaseTest {
 
         TokensList tokensList = tokenApiSteps.getResponseDto(response, TokensList.class);
 
-        tokenApiSteps.assertCollectionHasSizeGreaterThan(tokensList, 20);
+        tokenApiSteps.assertCollectionHasSizeGreaterThanOrEqualTo(tokensList, 20);
         tokenApiSteps.assertCollectionElementsHasValue(tokensList, r -> !r.getId().isBlank(), "id");
         tokenApiSteps.assertCollectionElementsHasValue(tokensList, r -> !r.getSymbol().isBlank(), "symbol");
         //TODO: add verification that other fields are null
@@ -111,7 +112,7 @@ public class TokenApiTests extends BaseTest {
 
         TokensList tokensList = tokenApiSteps.getResponseDto(response, TokensList.class);
 
-        tokenApiSteps.assertCollectionHasSizeGreaterThan(tokensList, 20);
+        tokenApiSteps.assertCollectionHasSizeGreaterThanOrEqualTo(tokensList, 20);
         tokenApiSteps.assertCollectionElementsHasValue(tokensList, r -> !r.getId().isBlank(), "id");
         tokenApiSteps.assertCollectionElementsHasValue(tokensList, r -> !r.getSymbol().isBlank(), "symbol");
         tokenApiSteps.assertCollectionElementsContainsOnly(tokensList, Token::getDecimals, BigDecimal.valueOf(decimals), "decimals");
@@ -226,7 +227,7 @@ public class TokenApiTests extends BaseTest {
 
         NFTTokensList tokensList = tokenApiSteps.getResponseDto(response, NFTTokensList.class);
 
-        tokenApiSteps.assertCollectionHasSizeGreaterThan(tokensList, 20);
+        tokenApiSteps.assertCollectionHasSizeGreaterThanOrEqualTo(tokensList, 20);
         tokenApiSteps.assertCollectionElementsHasValue(tokensList, r -> !r.getId().isBlank(), "id");
         tokenApiSteps.assertCollectionElementsHasValue(tokensList, r -> !r.getTokenId().isBlank(), "ownerId");
         //TODO: add verification that other fields are null
@@ -275,12 +276,20 @@ public class TokenApiTests extends BaseTest {
     @Severity(SeverityLevel.CRITICAL)
     @Story("Getting events for valid NFT ID ")
     void getEventsForValidNftID() {
-        //TODO: Clarify how to get events for a NFT
-        String nftID = "space7.mintspace2.testnet-4";
+        String nftID = "mintickt.mintspace2.testnet-218";
 
         ResponseEntity<String> response = tokenApiSteps.getEventsForNFT(nftID);
         tokenApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
-        tokenApiSteps.assertStringContainsValue(response.getBody(), "[]");
+
+        AssetsNftEventList eventsResponse = tokenApiSteps.getResponseDto(response, AssetsNftEventList.class);
+
+        tokenApiSteps.assertCollectionHasSizeGreaterThanOrEqualTo(eventsResponse, 1);
+        tokenApiSteps.assertCollectionElementsHasValue(eventsResponse, r -> !r.getEmittedForReceiptId().isEmpty(), "emittedForReceiptId");
+        tokenApiSteps.assertCollectionElementsHasValue(eventsResponse, r -> !r.getEmittedByContractAccountId().isEmpty(), "emittedByContractAccountId");
+        tokenApiSteps.assertCollectionElementsHasValue(eventsResponse, r -> !r.getTokenId().isEmpty(), "tokenId");
+        tokenApiSteps.assertCollectionElementsHasValue(eventsResponse, r -> !r.getEventKind().isEmpty(), "eventKind");
+        tokenApiSteps.assertCollectionElementsHasValue(eventsResponse, r -> !r.getTokenNewOwnerAccountId().isEmpty(), "tokenNewOwnerAccountId");
+        tokenApiSteps.assertCollectionElementsHasValue(eventsResponse, r -> !r.getEventMemo().isEmpty(), "eventMemo");
     }
 
     @Test

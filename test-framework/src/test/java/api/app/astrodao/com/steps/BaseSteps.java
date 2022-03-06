@@ -6,8 +6,9 @@ import org.assertj.core.api.AssertionsForInterfaceTypes;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import java.util.Collection;
-import java.util.List;
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -45,7 +46,7 @@ public abstract class BaseSteps {
     }
 
     @Step("User sees collection has size greater than '{greaterThanValue}'")
-    public void assertCollectionHasSizeGreaterThan(Collection<?> actual, int greaterThanValue) {
+    public void assertCollectionHasSizeGreaterThanOrEqualTo(Collection<?> actual, int greaterThanValue) {
         assertThat(actual.size())
                 .as("Collection should have correct size.")
                 .isGreaterThanOrEqualTo(greaterThanValue);
@@ -100,6 +101,15 @@ public abstract class BaseSteps {
 
     @Step("User sees '{fieldName}' fields has value in a collection")
     public <T> void assertCollectionElementsHasValue(Collection<T> actual,
+                                                     Predicate<? super T> predicate, String fieldName) {
+        assertThat(actual)
+                .as(String.format("'%s' field should have value in collection.", fieldName))
+                .filteredOn(predicate)
+                .hasSize(actual.size());
+    }
+
+    @Step("User sees '{fieldName}' fields has no value in a collection")
+    public <T> void assertCollectionElementsHasNoValue(Collection<T> actual,
                                                      Predicate<? super T> predicate, String fieldName) {
         assertThat(actual)
                 .as(String.format("'%s' field should have value in collection.", fieldName))
@@ -165,5 +175,41 @@ public abstract class BaseSteps {
                 .as(String.format("'%s' field should have value in collection.", fieldName))
                 .filteredOn(predicate)
                 .hasSizeGreaterThan(0);
+    }
+
+    @Step("User sees collection is sorted correctly")
+    public void assertOffsetDateTimesAreSortedCorrectly(Collection<OffsetDateTime> original,
+                                                        Comparator<? super OffsetDateTime> comparator,
+                                                        String assertMsg) {
+        ArrayList<OffsetDateTime> sorted = new ArrayList<>(original);
+        sorted.sort(comparator);
+
+        assertThat(original)
+                .as(assertMsg)
+                .containsExactlyElementsOf(sorted);
+    }
+
+    @Step("User sees collection is sorted correctly")
+    public void assertStringsAreSortedCorrectly(Collection<String> original,
+                                                  Comparator<? super String> comparator,
+                                                  String assertMsg) {
+        ArrayList<String> sorted = new ArrayList<>(original);
+        sorted.sort(comparator);
+
+        assertThat(original)
+                .as(assertMsg)
+                .containsExactlyElementsOf(sorted);
+    }
+
+    @Step("User sees collection is sorted correctly")
+    public void assertBigDecimalsAreSortedCorrectly(Collection<BigDecimal> original,
+                                                  Comparator<? super BigDecimal> comparator,
+                                                  String assertMsg) {
+        ArrayList<BigDecimal> sorted = new ArrayList<>(original);
+        sorted.sort(comparator);
+
+        assertThat(original)
+                .as(assertMsg)
+                .containsExactlyElementsOf(sorted);
     }
 }

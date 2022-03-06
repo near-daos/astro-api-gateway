@@ -7,6 +7,8 @@ import { ProposalService } from '@sputnik-v2/proposal';
 
 import { BountyContextDto, BountyContextResponse } from './dto';
 import { BountyContext } from './entities';
+import { UpdateBountyContextDto } from '../../../apps/api/src/bounty/dto/update-bounty-context.dto';
+import { UpdateResult } from 'typeorm/query-builder/result/UpdateResult';
 
 @Injectable()
 export class BountyContextService extends TypeOrmCrudService<BountyContext> {
@@ -26,6 +28,22 @@ export class BountyContextService extends TypeOrmCrudService<BountyContext> {
     bountyContextDtos: BountyContextDto[],
   ): Promise<BountyContext[]> {
     return this.bountyContextRepository.save(bountyContextDtos);
+  }
+
+  async updateMany({
+    daoId,
+    ids,
+    isArchived,
+  }: UpdateBountyContextDto): Promise<UpdateResult> {
+    return this.bountyContextRepository
+      .createQueryBuilder()
+      .update(BountyContext)
+      .where('daoId = :daoId', {
+        daoId,
+      })
+      .andWhere('id IN (:...ids) ', { ids })
+      .set({ isArchived })
+      .execute();
   }
 
   async getMany(
