@@ -225,4 +225,29 @@ public class BountyContextsTests extends BaseTest {
 		bountiesApiSteps.assertCollectionElementsContainsOnly(bountyContextResponse.getData(), BountyContext::getId, id, "id");
 		bountiesApiSteps.assertCollectionElementsContainsOnly(bountyContextResponse.getData(), BountyContext::getDaoId, daoId, "id");
 	}
+
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get a Bounty-contexts with [accountId, filter] parameter for existed user")
+	@DisplayName("Get a Bounty-contexts with [accountId, filter] parameter for existed user")
+	void getBountyContextsWithAccountIdAndFilterParameter() {
+		String daoId = "twp-dao.sputnikv2.testnet";
+		int count = 6;
+		int total = 6;
+		int page = 1;
+		int pageCount = 1;
+		Map<String, Object> queryParams = Map.of(
+				"accountId", testAccountId,
+				"filter", "daoId||$eq||" + daoId);
+
+		ResponseEntity<String> response = bountiesApiSteps.getBountyContextsWithParams(queryParams);
+		bountiesApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
+
+		BountyContextResponse bountyContextResponse = bountiesApiSteps.getResponseDto(response, BountyContextResponse.class);
+		bountiesApiSteps.assertDtoValue(bountyContextResponse, r -> r.getCount().intValue(), count, "count");
+		bountiesApiSteps.assertDtoValue(bountyContextResponse, r -> r.getTotal().intValue(), total, "total");
+		bountiesApiSteps.assertDtoValue(bountyContextResponse, r -> r.getPage().intValue(), page, "page");
+		bountiesApiSteps.assertDtoValue(bountyContextResponse, r -> r.getPageCount().intValue(), pageCount, "pageCount");
+		bountiesApiSteps.assertCollectionElementsContainsOnly(bountyContextResponse.getData(), BountyContext::getDaoId, daoId, "id");
+	}
 }
