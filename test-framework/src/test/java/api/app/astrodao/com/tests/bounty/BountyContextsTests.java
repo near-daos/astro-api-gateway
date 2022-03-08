@@ -82,7 +82,7 @@ public class BountyContextsTests extends BaseTest {
 	@Story("Get a Bounty-contexts with parameters [limit, offset] and sorted by 'createdAt,DESC' as unauthorized user")
 	@DisplayName("Get a Bounty-contexts with parameters [limit, offset] and sorted by 'createdAt,DESC' as unauthorized user")
 	@Description("Params [limit, offset] = 10. Expected result - Page = 2. Sorted by createdAt,DESC")
-	void getBountyContextsWithAccountId() {
+	void getBountyContextsWithLimitOffsetSortParams() {
 		int count = 10;
 		int total = 1111;
 		int page = 2;
@@ -170,7 +170,7 @@ public class BountyContextsTests extends BaseTest {
 	@Severity(SeverityLevel.CRITICAL)
 	@Story("Get a Bounty-contexts with [accountId, page, fields, limit] parameter for existed user")
 	@DisplayName("Get a Bounty-contexts with [accountId, page, fields, limit] parameter for existed user")
-	void getBountyContextsWithAccountIdPageFieldsLimitParameter() {
+	void getBountyContextsWithAccountIdPageFieldsLimitParameters() {
 		int count = 10;
 		int page = 2;
 		int total = 1224;
@@ -202,7 +202,7 @@ public class BountyContextsTests extends BaseTest {
 	@Severity(SeverityLevel.CRITICAL)
 	@Story("Get a Bounty-contexts with [accountId, s] parameter for existed user")
 	@DisplayName("Get a Bounty-contexts with [accountId, s] parameter for existed user")
-	void getBountyContextsWithAccountIdAndSearchParameter() {
+	void getBountyContextsWithAccountIdAndSearchParameters() {
 		String id = "test-dao-1641395769436.sputnikv2.testnet-1823";
 		String daoId = "test-dao-1641395769436.sputnikv2.testnet";
 		int count = 1;
@@ -230,7 +230,7 @@ public class BountyContextsTests extends BaseTest {
 	@Severity(SeverityLevel.CRITICAL)
 	@Story("Get a Bounty-contexts with [accountId, filter] parameter for existed user")
 	@DisplayName("Get a Bounty-contexts with [accountId, filter] parameter for existed user")
-	void getBountyContextsWithAccountIdAndFilterParameter() {
+	void getBountyContextsWithAccountIdAndFilterParameters() {
 		String daoId = "twp-dao.sputnikv2.testnet";
 		int count = 6;
 		int total = 6;
@@ -249,5 +249,46 @@ public class BountyContextsTests extends BaseTest {
 		bountiesApiSteps.assertDtoValue(bountyContextResponse, r -> r.getPage().intValue(), page, "page");
 		bountiesApiSteps.assertDtoValue(bountyContextResponse, r -> r.getPageCount().intValue(), pageCount, "pageCount");
 		bountiesApiSteps.assertCollectionElementsContainsOnly(bountyContextResponse.getData(), BountyContext::getDaoId, daoId, "id");
+	}
+
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get a Bounty-contexts with [accountId, filter, or] parameter for existed user")
+	@DisplayName("Get a Bounty-contexts with [accountId, filter, or] parameter for existed user")
+	void getBountyContextsWithAccountIdFilterOrParameters() {
+		String daoId1 = "rs-dao-1.sputnikv2.testnet";
+		String daoId2 = "twp-dao.sputnikv2.testnet";
+		int count = 16;
+		int total = 16;
+		int page = 1;
+		int pageCount = 1;
+		Map<String, Object> queryParams = Map.of(
+				"accountId", testAccountId,
+				"filter", "daoId||$eq||" + daoId1,
+				"or", "daoId||$eq||" + daoId2);
+
+		ResponseEntity<String> response = bountiesApiSteps.getBountyContextsWithParams(queryParams);
+		bountiesApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
+
+		BountyContextResponse bountyContextResponse = bountiesApiSteps.getResponseDto(response, BountyContextResponse.class);
+
+		bountiesApiSteps.assertDtoValue(bountyContextResponse, r -> r.getCount().intValue(), count, "count");
+		bountiesApiSteps.assertDtoValue(bountyContextResponse, r -> r.getTotal().intValue(), total, "total");
+		bountiesApiSteps.assertDtoValue(bountyContextResponse, r -> r.getPage().intValue(), page, "page");
+		bountiesApiSteps.assertDtoValue(bountyContextResponse, r -> r.getPageCount().intValue(), pageCount, "pageCount");
+
+		long numberOfDaoIds1 = bountyContextResponse.getData().stream().map(BountyContext::getDaoId).filter(daoId -> daoId.equals(daoId1)).count();
+		long numberOfDaoIds2 = bountyContextResponse.getData().stream().map(BountyContext::getDaoId).filter(daoId -> daoId.equals(daoId2)).count();
+
+		SoftAssertions
+				.assertSoftly(
+						softly -> {
+							softly.assertThat(numberOfDaoIds1)
+									.describedAs("Number of daoIds '%s' in Bounty-contexts response", daoId1)
+									.isEqualTo(10);
+							softly.assertThat(numberOfDaoIds2)
+									.describedAs("Number of daoIds '%s' in Bounty-contexts response", daoId2)
+									.isEqualTo(6);
+						});
 	}
 }
