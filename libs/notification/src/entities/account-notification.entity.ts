@@ -24,6 +24,10 @@ export class AccountNotification extends BaseEntity {
   accountId: string;
 
   @ApiProperty()
+  @Column({ nullable: true })
+  phoneNumber: string;
+
+  @ApiProperty()
   @Column()
   isMuted: boolean;
 

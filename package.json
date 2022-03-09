@@ -76,6 +76,7 @@
     "rxjs": "^7.3.0",
     "socket.io": "^4.2.0",
     "swagger-ui-express": "^4.1.6",
+    "twilio": "^3.75.0",
     "typeorm": "^0.2.34",
     "typeorm-naming-strategies": "^2.0.0"
   },
@@ -166,7 +167,9 @@
       "@sputnik-v2/comment/(.*)": "<rootDir>/libs/comment/src/$1",
       "@sputnik-v2/comment": "<rootDir>/libs/comment/src",
       "@sputnik-v2/stats/(.*)": "<rootDir>/libs/stats/src/$1",
-      "@sputnik-v2/stats": "<rootDir>/libs/stats/src"
+      "@sputnik-v2/stats": "<rootDir>/libs/stats/src",
+      "@sputnik-v2/sms/(.*)": "<rootDir>/libs/sms/src/$1",
+      "@sputnik-v2/sms": "<rootDir>/libs/sms/src"
     }
   }
 }

@@ -42,7 +42,12 @@ export class AccountNotifierService {
         if (status.shouldNotify) {
           return [
             ...accountsNotifications,
-            castAccountNotification(accountId, notification, status.isDisabled),
+            castAccountNotification(
+              accountId,
+              notification,
+              status.isDisabled,
+              status.phoneNumber,
+            ),
           ];
         }
 
@@ -69,7 +74,7 @@ export class AccountNotifierService {
     accountId: string,
     notification: Notification,
     notificationSettings: AccountNotificationSettings[],
-  ): { isDisabled: boolean; shouldNotify: boolean } {
+  ): { isDisabled: boolean; shouldNotify: boolean; phoneNumber?: string } {
     const accountNotificationSettings = notificationSettings.filter(
       (ns) =>
         ns.accountId === accountId &&
@@ -91,10 +96,14 @@ export class AccountNotifierService {
     const shouldNotify = accountNotificationSettings.some((ans) =>
       ans.types.includes(notification.type),
     );
+    const phoneNumber = accountNotificationSettings.find(
+      (ans) => ans.enableSms,
+    )?.phoneNumber;
 
     return {
       isDisabled,
       shouldNotify,
+      phoneNumber,
     };
   }
 }

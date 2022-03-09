@@ -12,6 +12,7 @@ import { NotifierValidationSchema } from '@sputnik-v2/config/validation/notifier
 import configuration from '@sputnik-v2/config/notifier-config';
 import { validate } from '@sputnik-v2/config/notifier-config';
 import { TypeOrmConfigService } from '@sputnik-v2/config/typeorm-config.service';
+import { SmsModule } from '@sputnik-v2/sms';
 
 import { NotifierController } from './notifier.controller';
 import { NotificationHandlerModule } from './notification-handler/notification-handler.module';
@@ -38,6 +39,7 @@ import { AccountNotifierModule } from './account-notifier/account-notifier.modul
     NotificationHandlerModule,
     AccountNotifierModule,
     EventModule,
+    SmsModule,
   ],
   controllers: [NotifierController],
   providers: [NotificationHandlerService],

@@ -11,6 +11,7 @@ import {
 } from '@sputnik-v2/event';
 import { NotificationHandlerService } from './notification-handler/notification-handler.service';
 import { AccountNotifierService } from './account-notifier/account-notifier.service';
+import { SmsService } from '@sputnik-v2/sms';
 
 @Controller()
 export class NotifierController {
@@ -20,6 +21,7 @@ export class NotifierController {
     private readonly notificationHandlerService: NotificationHandlerService,
     private readonly accountNotifierService: AccountNotifierService,
     private readonly eventService: EventService,
+    private readonly smsService: SmsService,
   ) {}
 
   @EventPattern(EVENT_DAO_UPDATE_NOTIFICATION, Transport.REDIS)
@@ -33,6 +35,10 @@ export class NotifierController {
       const accountNotifications =
         await this.accountNotifierService.notifyAccounts(notification);
       await this.eventService.sendNewNotificationEvent(
+        notification,
+        accountNotifications,
+      );
+      await this.smsService.sendSmsNotification(
         notification,
         accountNotifications,
       );
@@ -52,6 +58,10 @@ export class NotifierController {
       const accountNotifications =
         await this.accountNotifierService.notifyAccounts(notification);
       await this.eventService.sendNewNotificationEvent(
+        notification,
+        accountNotifications,
+      );
+      await this.smsService.sendSmsNotification(
         notification,
         accountNotifications,
       );

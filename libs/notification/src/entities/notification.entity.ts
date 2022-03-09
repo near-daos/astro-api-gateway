@@ -38,7 +38,7 @@ export class Notification extends BaseEntity {
 
   @ApiProperty()
   @Column({ type: 'simple-json' })
-  metadata: Record<string, unknown>;
+  metadata: Record<string, any>;
 
   @ApiProperty()
   @Column({ type: 'bigint', nullable: true })
