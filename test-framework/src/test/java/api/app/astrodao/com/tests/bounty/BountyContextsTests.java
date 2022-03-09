@@ -291,4 +291,21 @@ public class BountyContextsTests extends BaseTest {
 									.isEqualTo(6);
 						});
 	}
+
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 400 for Bounty-contexts")
+	@DisplayName("Get HTTP 400 for Bounty-contexts")
+	void getHttp400ForBountyContexts() {
+		Map<String, Object> queryParams = Map.of(
+				"sort", "createdAt,DESC",
+				"limit", 50,
+				"offset", 0,
+				"page", 1,
+				"fields", "daoId,createdAt",
+				"s", "Invalid search request");
+
+		ResponseEntity<String> response = bountiesApiSteps.getBountyContextsWithParams(queryParams);
+		bountiesApiSteps.assertResponseStatusCode(response, HttpStatus.BAD_REQUEST);
+	}
 }
