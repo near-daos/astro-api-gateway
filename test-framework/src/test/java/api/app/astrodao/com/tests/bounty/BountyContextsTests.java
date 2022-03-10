@@ -22,8 +22,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Tags({@Tag("all"), @Tag("bountyContextsTests")})
-@Feature("BOUNTY-CONTEXTS API TESTS")
-@DisplayName("BOUNTY-CONTEXTS API TESTS")
+@Epic("Bounty")
+@Feature("/bounty-contexts API tests")
+@DisplayName("/bounty-contexts API tests")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class BountyContextsTests extends BaseTest {
 	private final BountiesApiSteps bountiesApiSteps;
