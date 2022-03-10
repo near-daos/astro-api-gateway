@@ -4,10 +4,7 @@ import api.app.astrodao.com.openapi.models.Bounty;
 import api.app.astrodao.com.openapi.models.BountyResponse;
 import api.app.astrodao.com.steps.BountiesApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
-import io.qameta.allure.Feature;
-import io.qameta.allure.Severity;
-import io.qameta.allure.SeverityLevel;
-import io.qameta.allure.Story;
+import io.qameta.allure.*;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -20,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import java.util.Map;
 
 @Tags({@Tag("all"), @Tag("bountyApiTests")})
+@Epic("Bounty")
 @Feature("BOUNTY API TESTS")
 @DisplayName("BOUNTY API TESTS")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -29,6 +27,7 @@ public class BountyApiTests extends BaseTest {
     @Test
     @Severity(SeverityLevel.CRITICAL)
     @Story("Getting a bounty by it's ID")
+    @DisplayName("Getting a bounty by it's ID")
     void getBountyById() {
         String daoId = "autotest-dao-1.sputnikv2.testnet";
         Integer bountyId = 1;
@@ -45,6 +44,7 @@ public class BountyApiTests extends BaseTest {
     @Test
     @Severity(SeverityLevel.CRITICAL)
     @Story("Get list of bounties with query param: [sort, limit, offset]")
+    @DisplayName("Get list of bounties with query param: [sort, limit, offset]")
     void getListOfBountiesWithSortLimitOffsetParams() {
         Map<String, Object> query = Map.of(
                 "sort","createdAt,DESC",
@@ -69,6 +69,7 @@ public class BountyApiTests extends BaseTest {
     @Test
     @Severity(SeverityLevel.CRITICAL)
     @Story("Get list of bounties with query param: [sort, page]")
+    @DisplayName("Get list of bounties with query param: [sort, page]")
     void getListOfBountiesWithSortPageParams() {
         int count = 50;
         int page = 2;
@@ -93,6 +94,7 @@ public class BountyApiTests extends BaseTest {
     @Test
     @Severity(SeverityLevel.CRITICAL)
     @Story("Get list of bounties with query param: [sort, fields]")
+    @DisplayName("Get list of bounties with query param: [sort, fields]")
     void getListOfBountiesWithSortFieldsParams() {
         int count = 50;
         int page = 1;
@@ -118,6 +120,7 @@ public class BountyApiTests extends BaseTest {
     @Test
     @Severity(SeverityLevel.CRITICAL)
     @Story("Get list of bounties with query param: [sort, s]")
+    @DisplayName("Get list of bounties with query param: [sort, s]")
     void getListOfBountiesWithSortSParams() {
         int count = 50;
         int page = 1;
