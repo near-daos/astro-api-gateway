@@ -16,30 +16,13 @@ import org.springframework.http.ResponseEntity;
 
 import java.util.Map;
 
-@Tags({@Tag("all"), @Tag("bountyApiTests")})
+@Tags({@Tag("all"), @Tag("bountiesApiTests")})
 @Epic("Bounty")
-@Feature("BOUNTY API TESTS")
-@DisplayName("BOUNTY API TESTS")
+@Feature("/bounties API tests")
+@DisplayName("/bounties API tests")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-public class BountyApiTests extends BaseTest {
+public class BountiesApiTests extends BaseTest {
     private final BountiesApiSteps bountiesApiSteps;
-
-    @Test
-    @Severity(SeverityLevel.CRITICAL)
-    @Story("Getting a bounty by it's ID")
-    @DisplayName("Getting a bounty by it's ID")
-    void getBountyById() {
-        String daoId = "autotest-dao-1.sputnikv2.testnet";
-        Integer bountyId = 1;
-        String fullBountyId = String.format("%s-%s", daoId, bountyId);
-        ResponseEntity<String> response = bountiesApiSteps.getBountyByID(fullBountyId);
-        bountiesApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
-
-        Bounty bountyResponse = bountiesApiSteps.getResponseDto(response, Bounty.class);
-
-        bountiesApiSteps.assertDtoValue(bountyResponse, Bounty::getDaoId, daoId, "daoId");
-        bountiesApiSteps.assertDtoValue(bountyResponse, p -> p.getBountyId().intValue(), bountyId, "bountyId");
-    }
 
     @Test
     @Severity(SeverityLevel.CRITICAL)
