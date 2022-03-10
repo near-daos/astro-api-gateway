@@ -1,11 +1,9 @@
-package api.app.astrodao.com.tests;
+package api.app.astrodao.com.tests.search;
 
 import api.app.astrodao.com.core.dto.api.search.SearchResultDto;
 import api.app.astrodao.com.steps.SearchApiSteps;
-import io.qameta.allure.Feature;
-import io.qameta.allure.Severity;
-import io.qameta.allure.SeverityLevel;
-import io.qameta.allure.Story;
+import api.app.astrodao.com.tests.BaseTest;
+import io.qameta.allure.*;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -18,8 +16,9 @@ import org.springframework.http.ResponseEntity;
 import java.util.Map;
 
 @Tags({@Tag("all"), @Tag("searchApiTests")})
-@Feature("SEARCH API TESTS")
-@DisplayName("SEARCH API TESTS")
+@Epic("Search")
+@Feature("/search API tests")
+@DisplayName("/search API tests")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class SearchApiTests extends BaseTest {
     private final SearchApiSteps searchApiSteps;
@@ -27,6 +26,7 @@ public class SearchApiTests extends BaseTest {
     @Test
     @Severity(SeverityLevel.CRITICAL)
     @Story("Performing search with query param: [limit, offset]")
+    @DisplayName("Performing search with query param: [limit, offset]")
     void performingSearchWithLimitOffsetParams() {
         int page = 1;
         int count = 5;
