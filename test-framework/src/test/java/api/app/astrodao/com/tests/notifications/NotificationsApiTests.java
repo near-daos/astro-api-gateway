@@ -1,12 +1,10 @@
-package api.app.astrodao.com.tests;
+package api.app.astrodao.com.tests.notifications;
 
 import api.app.astrodao.com.core.dto.api.notigications.Notification;
 import api.app.astrodao.com.core.dto.api.notigications.NotificationsResponse;
 import api.app.astrodao.com.steps.NotificationsApiSteps;
-import io.qameta.allure.Feature;
-import io.qameta.allure.Severity;
-import io.qameta.allure.SeverityLevel;
-import io.qameta.allure.Story;
+import api.app.astrodao.com.tests.BaseTest;
+import io.qameta.allure.*;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -24,8 +22,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Tags({@Tag("all"), @Tag("notificationsApiTests")})
-@Feature("NOTIFICATIONS API TESTS")
-@DisplayName("NOTIFICATIONS API TESTS")
+@Epic("Notifications")
+@Feature("/notifications API tests")
+@DisplayName("/notifications API tests")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class NotificationsApiTests extends BaseTest {
     private final NotificationsApiSteps notificationsApiSteps;
