@@ -2,6 +2,7 @@ package api.app.astrodao.com.tests.bounty;
 
 import api.app.astrodao.com.openapi.models.Bounty;
 import api.app.astrodao.com.steps.BountiesApiSteps;
+import api.app.astrodao.com.tests.BaseTest;
 import io.qameta.allure.*;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.DisplayName;
@@ -17,7 +18,7 @@ import org.springframework.http.ResponseEntity;
 @Feature("/bounties/{id} API tests")
 @DisplayName("/bounties/{id} API tests")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-public class BountiesIdApiTests {
+public class BountiesIdApiTests extends BaseTest {
 	private final BountiesApiSteps bountiesApiSteps;
 
 	@Test

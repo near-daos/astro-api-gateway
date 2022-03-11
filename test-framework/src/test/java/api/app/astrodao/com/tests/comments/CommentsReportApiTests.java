@@ -6,6 +6,7 @@ import api.app.astrodao.com.openapi.models.Comment;
 import api.app.astrodao.com.openapi.models.CommentReport;
 import api.app.astrodao.com.openapi.models.CommentResponse;
 import api.app.astrodao.com.steps.CommentsApiSteps;
+import api.app.astrodao.com.tests.BaseTest;
 import com.github.javafaker.Faker;
 import io.qameta.allure.*;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +26,7 @@ import java.util.Map;
 @Feature("/comments/report API tests")
 @DisplayName("/comments/report API tests")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-public class CommentsReportApiTests {
+public class CommentsReportApiTests extends BaseTest {
 	private final CommentsApiSteps commentsApiSteps;
 	private final Faker faker;
 
