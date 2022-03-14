@@ -52,4 +52,23 @@ public class SearchApiTests extends BaseTest {
         //searchApiSteps.assertDtoValue(searchResult, r -> r.getProposals().getCount().intValue(), count, "proposals/count");
         //searchApiSteps.assertDtoValueGreaterThan(searchResult, r -> r.getProposals().getTotal().intValue(), count, "proposals/total");
     }
+
+    @Test
+    @Severity(SeverityLevel.CRITICAL)
+    @Story("Get HTTP 400 for a Search")
+    @DisplayName("Get HTTP 400 for a Search")
+    void getHttp400ForSearch() {
+        int limit = 50;
+        int offset = 1;
+        int page = 1;
+        Map<String, Object> queryParams = Map.of(
+                "limit", limit,
+                "offset", offset,
+                "page", page
+        );
+
+        ResponseEntity<String> response = searchApiSteps.search(queryParams);
+        searchApiSteps.assertResponseStatusCode(response, HttpStatus.BAD_REQUEST);
+        searchApiSteps.assertStringContainsValue(response.getBody(), "query must be a string");
+    }
 }
