@@ -20,11 +20,7 @@ export class ProposalKindSwaggerDto {
   })
   config: DaoConfig;
 
-  @ApiProperty({
-    type: PolicyDto,
-    title: 'PolicyDto',
-    description: `For type: ${ProposalType.ChangePolicy}`,
-  })
+  @ApiProperty({ type: PolicyDto })
   policy: PolicyDto | string[];
 
   @ApiProperty({
