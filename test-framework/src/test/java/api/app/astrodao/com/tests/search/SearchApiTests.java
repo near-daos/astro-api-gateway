@@ -4,14 +4,14 @@ import api.app.astrodao.com.core.dto.api.search.SearchResultDto;
 import api.app.astrodao.com.steps.SearchApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import io.qameta.allure.*;
+import io.restassured.response.Response;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import api.app.astrodao.com.core.enums.HttpStatus;
 
 import java.util.Map;
 
@@ -36,7 +36,7 @@ public class SearchApiTests extends BaseTest {
                 "offset", 0
         );
 
-        ResponseEntity<String> response = searchApiSteps.search(query);
+        Response response = searchApiSteps.search(query);
         searchApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
         SearchResultDto searchResult = searchApiSteps.getResponseDto(response, SearchResultDto.class);
@@ -67,8 +67,8 @@ public class SearchApiTests extends BaseTest {
                 "page", page
         );
 
-        ResponseEntity<String> response = searchApiSteps.search(queryParams);
+        Response response = searchApiSteps.search(queryParams);
         searchApiSteps.assertResponseStatusCode(response, HttpStatus.BAD_REQUEST);
-        searchApiSteps.assertStringContainsValue(response.getBody(), "query must be a string");
+        searchApiSteps.assertStringContainsValue(response.body().asString(), "query must be a string");
     }
 }

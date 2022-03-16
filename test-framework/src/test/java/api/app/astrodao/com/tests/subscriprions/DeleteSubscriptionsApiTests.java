@@ -6,12 +6,12 @@ import api.app.astrodao.com.steps.SubscriptionsApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import com.github.javafaker.Faker;
 import io.qameta.allure.*;
+import io.restassured.response.Response;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import api.app.astrodao.com.core.enums.HttpStatus;
 
 @Tags({@Tag("all"), @Tag("deleteSubscriptionsApiTests")})
 @Epic("Subscription")
@@ -45,7 +45,7 @@ public class DeleteSubscriptionsApiTests extends BaseTest {
 		String dao = "autotest-dao-1.sputnikv2.testnet";
 		String subscriptionId = String.format("%s-%s", dao, accountId);
 
-		ResponseEntity<String> response = subscriptionsApiSteps.subscribeDao(accountId, accountPublicKey, accountSignature, dao);
+		Response response = subscriptionsApiSteps.subscribeDao(accountId, accountPublicKey, accountSignature, dao);
 		subscriptionsApiSteps.assertResponseStatusCode(response, HttpStatus.CREATED);
 
 		Subscription subscription = subscriptionsApiSteps.getResponseDto(response, Subscription.class);
@@ -70,9 +70,9 @@ public class DeleteSubscriptionsApiTests extends BaseTest {
 		String subscriptionId = String.format("%s-%s", dao, accountId);
 		String expectedResponse = String.format("Subscription with id %s not found", subscriptionId);
 
-		ResponseEntity<String> response = subscriptionsApiSteps.deleteSubscription(accountId, accountPublicKey, accountSignature, subscriptionId);
+		Response response = subscriptionsApiSteps.deleteSubscription(accountId, accountPublicKey, accountSignature, subscriptionId);
 		subscriptionsApiSteps.assertResponseStatusCode(response, HttpStatus.NOT_FOUND);
-		subscriptionsApiSteps.assertStringContainsValue(response.getBody(), expectedResponse);
+		subscriptionsApiSteps.assertStringContainsValue(response.body().asString(), expectedResponse);
 	}
 
 	@Test
@@ -85,9 +85,9 @@ public class DeleteSubscriptionsApiTests extends BaseTest {
 		String expectedResponse = "Invalid signature";
 		String invalidSignature = faker.lorem().characters(12, 24);
 
-		ResponseEntity<String> response = subscriptionsApiSteps.deleteSubscription(accountId, accountPublicKey, invalidSignature, subscriptionId);
+		Response response = subscriptionsApiSteps.deleteSubscription(accountId, accountPublicKey, invalidSignature, subscriptionId);
 		subscriptionsApiSteps.assertResponseStatusCode(response, HttpStatus.FORBIDDEN);
-		subscriptionsApiSteps.assertStringContainsValue(response.getBody(), expectedResponse);
+		subscriptionsApiSteps.assertStringContainsValue(response.body().asString(), expectedResponse);
 	}
 
 }

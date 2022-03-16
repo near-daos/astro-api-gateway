@@ -19,23 +19,24 @@ import api.app.astrodao.com.steps.ProposalsApiSteps;
 import api.app.astrodao.com.steps.TransactionsSteps;
 import com.github.javafaker.Faker;
 import io.qameta.allure.*;
+import io.restassured.response.Response;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import api.app.astrodao.com.core.enums.HttpStatus;
 
 import java.util.List;
 
 import static api.app.astrodao.com.core.utils.WaitUtils.getEpochMillis;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
+@Epic("Aggregation")
 @Tag("all")
-@Feature("AGGREGATION WITH CALLBACK TESTS")
-@DisplayName("AGGREGATION WITH CALLBACK TESTS")
+@Feature("Aggregation with callback tests")
+@DisplayName("Aggregation with callback tests")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class AggregationWithCallbackTests extends BaseTest {
     private final Faker faker;
@@ -99,10 +100,10 @@ public class AggregationWithCallbackTests extends BaseTest {
         daoApiSteps.assertDtoValue(viewConfig, Config::getName, daoName, "name");
         daoApiSteps.assertDtoValue(viewConfig, Config::getPurpose, daoPurpose, "purpose");
 
-        ResponseEntity<String> callbackResponse = transactionsSteps.triggerCallback(testAccountId, output.getTransactionHash());
+        Response callbackResponse = transactionsSteps.triggerCallback(testAccountId, output.getTransactionHash());
         proposalsApiSteps.assertResponseStatusCode(callbackResponse, HttpStatus.OK);
 
-        ResponseEntity<String> response = daoApiSteps.getDAOByID(daoId);
+        Response response = daoApiSteps.getDAOByID(daoId);
         daoApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
         DAODto daoDto = daoApiSteps.getResponseDto(response, DAODto.class);
@@ -147,10 +148,10 @@ public class AggregationWithCallbackTests extends BaseTest {
         proposalsApiSteps.assertDtoValue(viewProposal, ViewProposal::getDescription, pollProposal.getDescription(), "description");
         proposalsApiSteps.assertDtoValue(viewProposal, ViewProposal::getStatus, "InProgress", "status");
 
-        ResponseEntity<String> callbackResponse = transactionsSteps.triggerCallback(testAccountId, output.getTransactionHash());
+        Response callbackResponse = transactionsSteps.triggerCallback(testAccountId, output.getTransactionHash());
         proposalsApiSteps.assertResponseStatusCode(callbackResponse, HttpStatus.OK);
 
-        ResponseEntity<String> responseEntity = proposalsApiSteps.getProposalByID(proposalID);
+        Response responseEntity = proposalsApiSteps.getProposalByID(proposalID);
         proposalsApiSteps.assertResponseStatusCode(responseEntity, HttpStatus.OK);
 
         ProposalDto proposalDto = proposalsApiSteps.getResponseDto(responseEntity, ProposalDto.class);
@@ -185,10 +186,10 @@ public class AggregationWithCallbackTests extends BaseTest {
         proposalsApiSteps.assertDtoValue(viewProposal, ViewTransferProposal::getDescription, description, "description");
         proposalsApiSteps.assertDtoValue(viewProposal, ViewTransferProposal::getStatus, "InProgress", "status");
 
-        ResponseEntity<String> callbackResponse = transactionsSteps.triggerCallback(testAccountId, output.getTransactionHash());
+        Response callbackResponse = transactionsSteps.triggerCallback(testAccountId, output.getTransactionHash());
         proposalsApiSteps.assertResponseStatusCode(callbackResponse, HttpStatus.OK);
 
-        ResponseEntity<String> responseEntity = proposalsApiSteps.getProposalByID(proposalID);
+        Response responseEntity = proposalsApiSteps.getProposalByID(proposalID);
         proposalsApiSteps.assertResponseStatusCode(responseEntity, HttpStatus.OK);
 
         ProposalDto proposalDto = proposalsApiSteps.getResponseDto(responseEntity, ProposalDto.class);
@@ -229,10 +230,10 @@ public class AggregationWithCallbackTests extends BaseTest {
         proposalsApiSteps.assertDtoValue(viewProposal, ViewAddBountyProposal::getDescription, description, "description");
         proposalsApiSteps.assertDtoValue(viewProposal, ViewAddBountyProposal::getStatus, "InProgress", "status");
 
-        ResponseEntity<String> callbackResponse = transactionsSteps.triggerCallback(testAccountId, output.getTransactionHash());
+        Response callbackResponse = transactionsSteps.triggerCallback(testAccountId, output.getTransactionHash());
         proposalsApiSteps.assertResponseStatusCode(callbackResponse, HttpStatus.OK);
 
-        ResponseEntity<String> responseEntity = proposalsApiSteps.getProposalByID(proposalID);
+        Response responseEntity = proposalsApiSteps.getProposalByID(proposalID);
         proposalsApiSteps.assertResponseStatusCode(responseEntity, HttpStatus.OK);
 
         ProposalDto proposalDto = proposalsApiSteps.getResponseDto(responseEntity, ProposalDto.class);

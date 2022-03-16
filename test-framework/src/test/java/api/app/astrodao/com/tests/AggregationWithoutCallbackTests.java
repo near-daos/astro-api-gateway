@@ -13,12 +13,12 @@ import api.app.astrodao.com.core.dto.cli.proposals.poll.PollProposalDto;
 import api.app.astrodao.com.core.dto.cli.proposals.transfer.Transfer;
 import api.app.astrodao.com.core.dto.cli.proposals.transfer.TransferProposalDto;
 import api.app.astrodao.com.core.dto.cli.vote.VoteDto;
-import api.app.astrodao.com.steps.BountiesApiSteps;
 import api.app.astrodao.com.steps.DaoApiSteps;
 import api.app.astrodao.com.steps.NearCLISteps;
 import api.app.astrodao.com.steps.ProposalsApiSteps;
 import com.github.javafaker.Faker;
 import io.qameta.allure.*;
+import io.restassured.response.Response;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -28,8 +28,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import api.app.astrodao.com.core.enums.HttpStatus;
 
 import java.util.List;
 
@@ -37,21 +36,21 @@ import static api.app.astrodao.com.core.utils.WaitUtils.getEpochMillis;
 import static api.app.astrodao.com.core.utils.WaitUtils.getLocalDateTime;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
+@Epic("Aggregation")
 @Tags({@Tag("all"), @Tag("aggregationWithoutCallback")})
-@Feature("AGGREGATION WITHOUT CALLBACK TESTS")
-@DisplayName("AGGREGATION WITHOUT CALLBACK TESTS")
+@Feature("Aggregation with time-out tests")
+@DisplayName("Aggregation with time-out tests")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class AggregationWithoutCallbackTests extends BaseTest {
     private final Faker faker;
     private final NearCLISteps nearCLISteps;
     private final ProposalsApiSteps proposalsApiSteps;
-    private final BountiesApiSteps bountiesApiSteps;
     private final DaoApiSteps daoApiSteps;
 
     @Value("${test.accountId}")
     private String testAccountId;
 
-    @Value("${test.dao}")
+    @Value("${test.dao1}")
     private String testDao;
 
     @Value("${test.aggregation.timeout}")
@@ -106,7 +105,7 @@ public class AggregationWithoutCallbackTests extends BaseTest {
         NewDAODto newDaoDto = NewDAODto.of(daoName, daoArgs);
         CLIResponse cliResponse = nearCLISteps.createNewDao(newDaoDto, testAccountId, gasValue, deposit);
 
-        ResponseEntity<String> response = nearCLISteps.waitForAggregation(
+        Response response = nearCLISteps.waitForAggregation(
                 aggregationTimeout, () -> daoApiSteps.getDAOByID(daoId)
         );
         daoApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
@@ -149,7 +148,7 @@ public class AggregationWithoutCallbackTests extends BaseTest {
         AddProposalResponse output = nearCLISteps.addProposal(testDao, pollProposalDto, testAccountId, gasValue, deposit);
         String proposalID = String.format("%s-%s", testDao, output.getId());
 
-        ResponseEntity<String> responseEntity = nearCLISteps.waitForAggregation(
+        Response responseEntity = nearCLISteps.waitForAggregation(
                 aggregationTimeout, () -> proposalsApiSteps.getProposalByID(proposalID)
         );
         proposalsApiSteps.assertResponseStatusCode(responseEntity, HttpStatus.OK);
@@ -179,7 +178,7 @@ public class AggregationWithoutCallbackTests extends BaseTest {
         AddProposalResponse output = nearCLISteps.addProposal(testDao, transferProposal, testAccountId, gasValue, deposit);
         String proposalID = String.format("%s-%s", testDao, output.getId());
 
-        ResponseEntity<String> responseEntity = nearCLISteps.waitForAggregation(
+        Response responseEntity = nearCLISteps.waitForAggregation(
                 aggregationTimeout, () -> proposalsApiSteps.getProposalByID(proposalID)
         );
         proposalsApiSteps.assertResponseStatusCode(responseEntity, HttpStatus.OK);
@@ -215,7 +214,7 @@ public class AggregationWithoutCallbackTests extends BaseTest {
         AddProposalResponse output = nearCLISteps.addProposal(testDao, bountyProposal, testAccountId, gasValue, deposit);
         String proposalID = String.format("%s-%s", testDao, output.getId());
 
-        ResponseEntity<String> responseEntity = nearCLISteps.waitForAggregation(
+        Response responseEntity = nearCLISteps.waitForAggregation(
                 aggregationTimeout, () -> proposalsApiSteps.getProposalByID(proposalID)
         );
         proposalsApiSteps.assertResponseStatusCode(responseEntity, HttpStatus.OK);
@@ -251,7 +250,7 @@ public class AggregationWithoutCallbackTests extends BaseTest {
         AddProposalResponse output = nearCLISteps.addProposal(testDao, changeConfig, testAccountId, gasValue, deposit);
         String proposalID = String.format("%s-%s", testDao, output.getId());
 
-        ResponseEntity<String> responseEntity = nearCLISteps.waitForAggregation(
+        Response responseEntity = nearCLISteps.waitForAggregation(
                 aggregationTimeout, () -> proposalsApiSteps.getProposalByID(proposalID)
         );
         proposalsApiSteps.assertResponseStatusCode(responseEntity, HttpStatus.OK);
@@ -288,7 +287,7 @@ public class AggregationWithoutCallbackTests extends BaseTest {
         AddProposalResponse output = nearCLISteps.addProposal(testDao, changeConfig, testAccountId, gasValue, deposit);
         String proposalID = String.format("%s-%s", testDao, output.getId());
 
-        ResponseEntity<String> responseEntity = nearCLISteps.waitForAggregation(
+        Response responseEntity = nearCLISteps.waitForAggregation(
                 aggregationTimeout, () -> proposalsApiSteps.getProposalByID(proposalID)
         );
         proposalsApiSteps.assertResponseStatusCode(responseEntity, HttpStatus.OK);
@@ -329,7 +328,7 @@ public class AggregationWithoutCallbackTests extends BaseTest {
         AddProposalResponse output = nearCLISteps.addProposal(testDao, changeConfig, testAccountId, gasValue, deposit);
         String proposalID = String.format("%s-%s", testDao, output.getId());
 
-        ResponseEntity<String> responseEntity = nearCLISteps.waitForAggregation(
+        Response responseEntity = nearCLISteps.waitForAggregation(
                 aggregationTimeout, () -> proposalsApiSteps.getProposalByID(proposalID)
         );
         proposalsApiSteps.assertResponseStatusCode(responseEntity, HttpStatus.OK);
@@ -367,7 +366,7 @@ public class AggregationWithoutCallbackTests extends BaseTest {
         AddProposalResponse output = nearCLISteps.addProposal(testDao, changePolicy, testAccountId, gasValue, deposit);
         String proposalID = String.format("%s-%s", testDao, output.getId());
 
-        ResponseEntity<String> responseEntity = nearCLISteps.waitForAggregation(
+        Response responseEntity = nearCLISteps.waitForAggregation(
                 aggregationTimeout, () -> proposalsApiSteps.getProposalByID(proposalID)
         );
         proposalsApiSteps.assertResponseStatusCode(responseEntity, HttpStatus.OK);
@@ -406,7 +405,7 @@ public class AggregationWithoutCallbackTests extends BaseTest {
         AddProposalResponse output = nearCLISteps.addProposal(testDao, changePolicy, testAccountId, gasValue, deposit);
         String proposalID = String.format("%s-%s", testDao, output.getId());
 
-        ResponseEntity<String> responseEntity = nearCLISteps.waitForAggregation(
+        Response responseEntity = nearCLISteps.waitForAggregation(
                 aggregationTimeout, () -> proposalsApiSteps.getProposalByID(proposalID)
         );
         proposalsApiSteps.assertResponseStatusCode(responseEntity, HttpStatus.OK);
@@ -445,7 +444,7 @@ public class AggregationWithoutCallbackTests extends BaseTest {
         AddProposalResponse output = nearCLISteps.addProposal(testDao, changePolicy, testAccountId, gasValue, deposit);
         String proposalID = String.format("%s-%s", testDao, output.getId());
 
-        ResponseEntity<String> responseEntity = nearCLISteps.waitForAggregation(
+        Response responseEntity = nearCLISteps.waitForAggregation(
                 aggregationTimeout, () -> proposalsApiSteps.getProposalByID(proposalID)
         );
         proposalsApiSteps.assertResponseStatusCode(responseEntity, HttpStatus.OK);
@@ -484,7 +483,7 @@ public class AggregationWithoutCallbackTests extends BaseTest {
         AddProposalResponse output = nearCLISteps.addProposal(testDao, changePolicy, testAccountId, gasValue, deposit);
         String proposalID = String.format("%s-%s", testDao, output.getId());
 
-        ResponseEntity<String> responseEntity = nearCLISteps.waitForAggregation(
+        Response responseEntity = nearCLISteps.waitForAggregation(
                 aggregationTimeout, () -> proposalsApiSteps.getProposalByID(proposalID)
         );
         proposalsApiSteps.assertResponseStatusCode(responseEntity, HttpStatus.OK);
@@ -525,7 +524,7 @@ public class AggregationWithoutCallbackTests extends BaseTest {
         Integer proposalIndexId = addProposalNearCliResponse.getId();
         String proposalID = String.format("%s-%s", testDao, proposalIndexId);
 
-        ResponseEntity<String> response = nearCLISteps.waitForAggregation(
+        Response response = nearCLISteps.waitForAggregation(
                 aggregationTimeout, () -> proposalsApiSteps.getProposalByID(proposalID)
         );
         proposalsApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
@@ -563,7 +562,7 @@ public class AggregationWithoutCallbackTests extends BaseTest {
         Integer proposalIndexId = addProposalNearCliResponse.getId();
         String proposalID = String.format("%s-%s", testDao, proposalIndexId);
 
-        ResponseEntity<String> response = nearCLISteps.waitForAggregation(
+        Response response = nearCLISteps.waitForAggregation(
                 aggregationTimeout, () -> proposalsApiSteps.getProposalByID(proposalID)
         );
         proposalsApiSteps.assertResponseStatusCode(response, HttpStatus.OK);

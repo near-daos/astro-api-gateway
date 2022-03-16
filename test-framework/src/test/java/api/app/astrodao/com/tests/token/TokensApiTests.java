@@ -1,22 +1,21 @@
 package api.app.astrodao.com.tests.token;
 
-import api.app.astrodao.com.core.dto.api.tokens.AssetsNftEventList;
 import api.app.astrodao.com.core.dto.api.tokens.TokensList;
 import api.app.astrodao.com.openapi.models.Token;
 import api.app.astrodao.com.openapi.models.TokenResponse;
 import api.app.astrodao.com.steps.TokenApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import io.qameta.allure.*;
+import io.restassured.response.Response;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import api.app.astrodao.com.core.enums.HttpStatus;
 
 import java.math.BigDecimal;
 import java.util.Map;
 
-@Tags({@Tag("all"), @Tag("tokensApiTests")})
+@Tags({@Tag("all"), @Tag("tokensApiTests"), @Tag("tokensApiTests")})
 @Epic("Token")
 @Feature("/tokens API tests")
 @DisplayName("/tokens API tests")
@@ -37,7 +36,7 @@ public class TokensApiTests extends BaseTest {
         );
         int limit = 10;
         int page = 1;
-        ResponseEntity<String> response = tokenApiSteps.getTokens(query);
+        Response response = tokenApiSteps.getTokens(query);
         tokenApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
         TokenResponse tokenResponse = tokenApiSteps.getResponseDto(response, TokenResponse.class);
@@ -62,7 +61,7 @@ public class TokensApiTests extends BaseTest {
                 "sort","createdAt,DESC",
                 "page", page
         );
-        ResponseEntity<String> response = tokenApiSteps.getTokens(query);
+        Response response = tokenApiSteps.getTokens(query);
         tokenApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
         TokensList tokensList = tokenApiSteps.getResponseDto(response, TokensList.class);
@@ -81,7 +80,7 @@ public class TokensApiTests extends BaseTest {
                 "sort","id,DESC",
                 "fields", "id,symbol"
         );
-        ResponseEntity<String> response = tokenApiSteps.getTokens(query);
+        Response response = tokenApiSteps.getTokens(query);
         tokenApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
         TokensList tokensList = tokenApiSteps.getResponseDto(response, TokensList.class);
@@ -102,7 +101,7 @@ public class TokensApiTests extends BaseTest {
                 "sort","createdAt,DESC",
                 "s", String.format("{\"decimals\": %s}", decimals)
         );
-        ResponseEntity<String> response = tokenApiSteps.getTokens(query);
+        Response response = tokenApiSteps.getTokens(query);
         tokenApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
         TokensList tokensList = tokenApiSteps.getResponseDto(response, TokensList.class);
@@ -110,7 +109,7 @@ public class TokensApiTests extends BaseTest {
         tokenApiSteps.assertCollectionHasSizeGreaterThanOrEqualTo(tokensList, 20);
         tokenApiSteps.assertCollectionElementsHasValue(tokensList, r -> !r.getId().isBlank(), "id");
         tokenApiSteps.assertCollectionElementsHasValue(tokensList, r -> !r.getSymbol().isBlank(), "symbol");
-        tokenApiSteps.assertCollectionElementsContainsOnly(tokensList, Token::getDecimals, BigDecimal.valueOf(decimals), "decimals");
+        tokenApiSteps.assertCollectionContainsOnly(tokensList, Token::getDecimals, BigDecimal.valueOf(decimals), "decimals");
     }
 
     @Test
@@ -123,9 +122,9 @@ public class TokensApiTests extends BaseTest {
         );
         String expectedResponse = "LIMIT must not be negative";
 
-        ResponseEntity<String> response = tokenApiSteps.getTokens(query);
+        Response response = tokenApiSteps.getTokens(query);
         tokenApiSteps.assertResponseStatusCode(response, HttpStatus.BAD_REQUEST);
-        tokenApiSteps.assertStringContainsValue(response.getBody(), expectedResponse);
+        tokenApiSteps.assertStringContainsValue(response.body().asString(), expectedResponse);
     }
 
 }

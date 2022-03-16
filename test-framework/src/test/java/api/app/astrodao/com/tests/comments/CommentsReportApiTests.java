@@ -9,6 +9,7 @@ import api.app.astrodao.com.steps.CommentsApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import com.github.javafaker.Faker;
 import io.qameta.allure.*;
+import io.restassured.response.Response;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -16,8 +17,7 @@ import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import api.app.astrodao.com.core.enums.HttpStatus;
 
 import java.util.Map;
 
@@ -30,7 +30,7 @@ public class CommentsReportApiTests extends BaseTest {
 	private final CommentsApiSteps commentsApiSteps;
 	private final Faker faker;
 
-	@Value("${test.dao}")
+	@Value("${test.dao1}")
 	private String testDao;
 
 	@Value("${test.proposal}")
@@ -68,17 +68,17 @@ public class CommentsReportApiTests extends BaseTest {
 				"s", String.format("{\"message\": \"%s\"}", commentMsg)
 		);
 
-		ResponseEntity<String> newCommentResponse = commentsApiSteps.createComment(
+		Response newCommentResponse = commentsApiSteps.createComment(
 				account1Id, account1PublicKey, account1Signature, testProposal, contextType, commentMsg
 		);
 		commentsApiSteps.assertResponseStatusCode(newCommentResponse, HttpStatus.CREATED);
 
 		CreatedComment createdComment = commentsApiSteps.getResponseDto(newCommentResponse, CreatedComment.class);
 
-		ResponseEntity<String> newReportResponse = commentsApiSteps.reportComment(account2Id, account2PublicKey, account2Signature, createdComment.getId(), reason);
+		Response newReportResponse = commentsApiSteps.reportComment(account2Id, account2PublicKey, account2Signature, createdComment.getId(), reason);
 		commentsApiSteps.assertResponseStatusCode(newReportResponse, HttpStatus.CREATED);
 
-		ResponseEntity<String> commentsResponse = commentsApiSteps.getComments(queryToGetCreatedComment);
+		Response commentsResponse = commentsApiSteps.getComments(queryToGetCreatedComment);
 		commentsApiSteps.assertResponseStatusCode(commentsResponse, HttpStatus.OK);
 
 		CommentResponse commentResponse = commentsApiSteps.getResponseDto(commentsResponse, CommentResponse.class);
@@ -110,15 +110,15 @@ public class CommentsReportApiTests extends BaseTest {
 		String errorMsg = String.format("Account %s identity is invalid - public key", account2Id);
 		String commentMsg = WaitUtils.getEpochMillis() + faker.lorem().characters(15, 20);
 
-		ResponseEntity<String> newCommentResponse = commentsApiSteps.createComment(
+		Response newCommentResponse = commentsApiSteps.createComment(
 				account1Id, account1PublicKey, account1Signature, testProposal, contextType, commentMsg
 		);
 		commentsApiSteps.assertResponseStatusCode(newCommentResponse, HttpStatus.CREATED);
 
 		CreatedComment createdComment = commentsApiSteps.getResponseDto(newCommentResponse, CreatedComment.class);
-		ResponseEntity<String> reportResponse = commentsApiSteps.reportComment(account2Id, account1PublicKey, account2Signature, createdComment.getId(), reason);
+		Response reportResponse = commentsApiSteps.reportComment(account2Id, account1PublicKey, account2Signature, createdComment.getId(), reason);
 
 		commentsApiSteps.assertResponseStatusCode(reportResponse, HttpStatus.FORBIDDEN);
-		commentsApiSteps.assertStringContainsValue(reportResponse.getBody(), errorMsg);
+		commentsApiSteps.assertStringContainsValue(reportResponse.body().asString(), errorMsg);
 	}
 }

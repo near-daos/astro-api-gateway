@@ -5,12 +5,12 @@ import api.app.astrodao.com.openapi.models.Subscription;
 import api.app.astrodao.com.steps.SubscriptionsApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import io.qameta.allure.*;
+import io.restassured.response.Response;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import api.app.astrodao.com.core.enums.HttpStatus;
 
 @Tags({@Tag("all"), @Tag("accountSubscriptionsApiTests")})
 @Epic("Subscription")
@@ -43,7 +43,7 @@ public class AccountSubscriptionsApiTests extends BaseTest {
 		String dao = "spacex.sputnikv2.testnet";
 		String subscriptionId = String.format("%s-%s", dao, accountId);
 
-		ResponseEntity<String> response = subscriptionsApiSteps.accountSubscriptions(accountId);
+		Response response = subscriptionsApiSteps.accountSubscriptions(accountId);
 		subscriptionsApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
 		Subscriptions subscriptionsBefore = subscriptionsApiSteps.getResponseDto(response, Subscriptions.class);
@@ -65,15 +65,14 @@ public class AccountSubscriptionsApiTests extends BaseTest {
 	}
 
 	@Test
-	@Disabled("Looks like a bug, getting 200 instead of 400 status code")
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("User should be able to get subscriptions for account")
-	@DisplayName("User should be able to get subscriptions for account")
+	@Story("User should be able to get empty subscriptions for invalid account")
+	@DisplayName("User should be able to get empty subscriptions for invalid account")
 	void userShouldBeAbleToGetSubscriptionsForInvalidAccount() {
 		String accountId = "testdao3132498.testnet";
 
-		ResponseEntity<String> response = subscriptionsApiSteps.accountSubscriptions(accountId);
-		subscriptionsApiSteps.assertResponseStatusCode(response, HttpStatus.BAD_REQUEST);
+		Response response = subscriptionsApiSteps.accountSubscriptions(accountId);
+		subscriptionsApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
+		subscriptionsApiSteps.assertStringContainsValue(response.body().asString(), "[]");
 	}
-
 }

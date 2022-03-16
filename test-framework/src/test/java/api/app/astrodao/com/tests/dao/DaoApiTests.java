@@ -1,19 +1,17 @@
 package api.app.astrodao.com.tests.dao;
 
-import api.app.astrodao.com.openapi.models.Dao;
 import api.app.astrodao.com.openapi.models.DaoResponse;
 import api.app.astrodao.com.steps.DaoApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import io.qameta.allure.*;
+import io.restassured.response.Response;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import api.app.astrodao.com.core.enums.HttpStatus;
 
 import java.util.Map;
 
@@ -24,9 +22,6 @@ import java.util.Map;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class DaoApiTests extends BaseTest {
     private final DaoApiSteps daoApiSteps;
-
-    @Value("${test.dao}")
-    private String testDao;
 
     @Test
     @Severity(SeverityLevel.CRITICAL)
@@ -40,7 +35,7 @@ public class DaoApiTests extends BaseTest {
         );
         int limit = 10;
         int page = 1;
-        ResponseEntity<String> response = daoApiSteps.getDaos(query);
+        Response response = daoApiSteps.getDaos(query);
         daoApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
         DaoResponse daoResponse = daoApiSteps.getResponseDto(response, DaoResponse.class);
@@ -64,7 +59,7 @@ public class DaoApiTests extends BaseTest {
                 "sort","createdAt,DESC",
                 "page", page
         );
-        ResponseEntity<String> response = daoApiSteps.getDaos(query);
+        Response response = daoApiSteps.getDaos(query);
         daoApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
         DaoResponse daoResponse = daoApiSteps.getResponseDto(response, DaoResponse.class);
@@ -88,7 +83,7 @@ public class DaoApiTests extends BaseTest {
                 "sort","id,DESC",
                 "fields", "id,numberOfMembers"
         );
-        ResponseEntity<String> response = daoApiSteps.getDaos(query);
+        Response response = daoApiSteps.getDaos(query);
         daoApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
         DaoResponse daoResponse = daoApiSteps.getResponseDto(response, DaoResponse.class);
@@ -114,7 +109,7 @@ public class DaoApiTests extends BaseTest {
                 "s", String.format("{\"numberOfMembers\": %s}", numberOfMembers)
         );
 
-        ResponseEntity<String> response = daoApiSteps.getDaos(query);
+        Response response = daoApiSteps.getDaos(query);
         daoApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
         DaoResponse daoResponse = daoApiSteps.getResponseDto(response, DaoResponse.class);
