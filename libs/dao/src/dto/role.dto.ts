@@ -1,15 +1,16 @@
 import { RoleKindType } from '@sputnik-v2/dao/entities/role.entity';
 import { VotePolicy } from '@sputnik-v2/sputnikdao';
 import { ApiProperty } from '@nestjs/swagger';
+import { BaseEntity } from '@sputnik-v2/common';
 
-export class RoleDto {
+export class RoleDto extends BaseEntity {
   @ApiProperty()
   id: string;
 
   @ApiProperty()
   name: string;
 
-  @ApiProperty()
+  @ApiProperty({ enum: RoleKindType })
   kind: RoleKindType;
 
   @ApiProperty()
