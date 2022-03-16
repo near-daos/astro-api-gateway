@@ -1,6 +1,5 @@
 package api.app.astrodao.com.tests;
 
-
 import api.app.astrodao.com.core.config.FrameworkContextConfig;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.test.context.ContextConfiguration;

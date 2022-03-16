@@ -4,13 +4,13 @@ import api.app.astrodao.com.core.dto.api.stats.StatsEntries;
 import api.app.astrodao.com.steps.StatsApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import io.qameta.allure.*;
+import io.restassured.response.Response;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import api.app.astrodao.com.core.enums.HttpStatus;
 
-@Tags({@Tag("all"), @Tag("statsDaoFundsApiTests")})
+@Tags({@Tag("all"), @Tag("statsApiTests"), @Tag("statsDaoFundsApiTests")})
 @Epic("Stats")
 @Feature("/stats/dao/{id}/funds API tests")
 @DisplayName("/stats/dao/{id}/funds API tests")
@@ -18,7 +18,6 @@ import org.springframework.http.ResponseEntity;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class StatsDaoFundsApiTests extends BaseTest {
 	private final StatsApiSteps statsApiSteps;
-
 
 	@Test
 	@Severity(SeverityLevel.CRITICAL)
@@ -28,7 +27,7 @@ public class StatsDaoFundsApiTests extends BaseTest {
 		//TODO: Add steps to retrieve data for DAO from CLI
 		String dao = "gaming.sputnikv2.testnet";
 
-		ResponseEntity<String> response = statsApiSteps.getFundsForDao(dao);
+		Response response = statsApiSteps.getFundsForDao(dao);
 		statsApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
 		StatsEntries statsEntries = statsApiSteps.getResponseDto(response, StatsEntries.class);

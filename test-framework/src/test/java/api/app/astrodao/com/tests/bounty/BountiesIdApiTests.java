@@ -4,14 +4,14 @@ import api.app.astrodao.com.openapi.models.Bounty;
 import api.app.astrodao.com.steps.BountiesApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import io.qameta.allure.*;
+import io.restassured.response.Response;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import api.app.astrodao.com.core.enums.HttpStatus;
 
 @Tags({@Tag("all"), @Tag("bountiesIdApiTests")})
 @Epic("Bounty")
@@ -29,7 +29,7 @@ public class BountiesIdApiTests extends BaseTest {
 		String daoId = "autotest-dao-1.sputnikv2.testnet";
 		Integer bountyId = 1;
 		String fullBountyId = String.format("%s-%s", daoId, bountyId);
-		ResponseEntity<String> response = bountiesApiSteps.getBountyByID(fullBountyId);
+		Response response = bountiesApiSteps.getBountyByID(fullBountyId);
 		bountiesApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
 		Bounty bountyResponse = bountiesApiSteps.getResponseDto(response, Bounty.class);

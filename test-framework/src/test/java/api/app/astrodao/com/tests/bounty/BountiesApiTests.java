@@ -1,18 +1,17 @@
 package api.app.astrodao.com.tests.bounty;
 
-import api.app.astrodao.com.openapi.models.Bounty;
+import api.app.astrodao.com.core.enums.HttpStatus;
 import api.app.astrodao.com.openapi.models.BountyResponse;
 import api.app.astrodao.com.steps.BountiesApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import io.qameta.allure.*;
+import io.restassured.response.Response;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 
 import java.util.Map;
 
@@ -36,7 +35,7 @@ public class BountiesApiTests extends BaseTest {
         );
         int limit = 10;
         int page = 1;
-        ResponseEntity<String> response = bountiesApiSteps.getBounties(query);
+        Response response = bountiesApiSteps.getBounties(query);
         bountiesApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
         BountyResponse bountyResponse = bountiesApiSteps.getResponseDto(response, BountyResponse.class);
@@ -61,7 +60,7 @@ public class BountiesApiTests extends BaseTest {
                 "page", page
         );
 
-        ResponseEntity<String> response = bountiesApiSteps.getBounties(query);
+        Response response = bountiesApiSteps.getBounties(query);
         bountiesApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
         BountyResponse bountyResponse = bountiesApiSteps.getResponseDto(response, BountyResponse.class);
@@ -86,7 +85,7 @@ public class BountiesApiTests extends BaseTest {
                 "fields", "id,numberOfClaims"
         );
 
-        ResponseEntity<String> response = bountiesApiSteps.getBounties(query);
+        Response response = bountiesApiSteps.getBounties(query);
         bountiesApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
         BountyResponse bountyResponse = bountiesApiSteps.getResponseDto(response, BountyResponse.class);
@@ -112,7 +111,7 @@ public class BountiesApiTests extends BaseTest {
                 "s", "{\"numberOfClaims\": 0}"
         );
 
-        ResponseEntity<String> response = bountiesApiSteps.getBounties(query);
+        Response response = bountiesApiSteps.getBounties(query);
         bountiesApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
         BountyResponse bountyResponse = bountiesApiSteps.getResponseDto(response, BountyResponse.class);

@@ -1,2 +1,2 @@
 framework:
-  api.url: https://api.dev.app.astrodao.com/api/v1
+  api.base.uri: https://api.dev.app.astrodao.com

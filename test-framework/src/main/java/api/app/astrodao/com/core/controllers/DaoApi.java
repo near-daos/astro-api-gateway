@@ -1,65 +1,32 @@
 package api.app.astrodao.com.core.controllers;
 
-import api.app.astrodao.com.core.clients.HttpClient;
+import io.restassured.http.ContentType;
+import io.restassured.response.Response;
+import io.restassured.specification.RequestSpecification;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.Collections;
 import java.util.Map;
+
+import static api.app.astrodao.com.core.Constants.Endpoints.DAOS;
+import static api.app.astrodao.com.core.Constants.Endpoints.DAOS_ID;
+import static io.restassured.RestAssured.given;
 
 @Component
 @RequiredArgsConstructor
 public class DaoApi {
-    protected final HttpClient httpClient;
+    private final RequestSpecification requestSpec;
 
-    @Value("${framework.api.url}")
-    private String apiUrl;
-
-    public ResponseEntity<String> getDaoByID(String daoId) {
-        HttpHeaders httpHeaders = httpClient.getBasicHeaders();
-        httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-
-        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(apiUrl);
-        builder.pathSegment("daos", daoId);
-
-        return httpClient.get(builder.toUriString(), new HttpEntity<>(httpHeaders), String.class);
+    public Response getDaoByID(String daoId) {
+        return given().spec(requestSpec)
+                .accept(ContentType.JSON)
+                .get(DAOS_ID, daoId);
     }
 
-    public ResponseEntity<String> getDaos(Map<String, Object> queryParams) {
-        HttpHeaders httpHeaders = httpClient.getBasicHeaders();
-        httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-
-        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(apiUrl);
-        builder.pathSegment("daos");
-        queryParams.forEach((key, value) -> builder.queryParam(key, value));
-
-        return httpClient.get(builder.toUriString(), new HttpEntity<>(httpHeaders), String.class);
-    }
-
-    public ResponseEntity<String> getDaosFeed(Map<String, Object> queryParams) {
-        HttpHeaders httpHeaders = httpClient.getBasicHeaders();
-        httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-
-        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(apiUrl);
-        builder.pathSegment("daos", "feed");
-        queryParams.forEach((key, value) -> builder.queryParam(key, value));
-
-        return httpClient.get(builder.toUriString(), new HttpEntity<>(httpHeaders), String.class);
-    }
-
-    public ResponseEntity<String> getDaoFeed(String id) {
-        HttpHeaders httpHeaders = httpClient.getBasicHeaders();
-        httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-
-        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(apiUrl);
-        builder.pathSegment("daos", "feed", id);
-
-        return httpClient.get(builder.toUriString(), new HttpEntity<>(httpHeaders), String.class);
+    public Response getDaos(Map<String, Object> queryParams) {
+        return given().spec(requestSpec)
+                .queryParams(queryParams)
+                .accept(ContentType.JSON)
+                .get(DAOS);
     }
 }

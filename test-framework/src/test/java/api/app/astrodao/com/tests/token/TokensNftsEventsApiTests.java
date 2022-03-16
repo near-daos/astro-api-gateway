@@ -4,13 +4,13 @@ import api.app.astrodao.com.core.dto.api.tokens.AssetsNftEventList;
 import api.app.astrodao.com.steps.TokenApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import io.qameta.allure.*;
+import io.restassured.response.Response;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import api.app.astrodao.com.core.enums.HttpStatus;
 
-@Tags({@Tag("all"), @Tag("tokensNftsEventsApiTests")})
+@Tags({@Tag("all"), @Tag("tokensApiTests"), @Tag("tokensNftsEventsApiTests")})
 @Epic("Token")
 @Feature("/tokens/nfts/{id}/events API tests")
 @DisplayName("/tokens/nfts/{id}/events API tests")
@@ -26,7 +26,7 @@ public class TokensNftsEventsApiTests extends BaseTest {
 	void getEventsForValidNftID() {
 		String nftID = "mintickt.mintspace2.testnet-218";
 
-		ResponseEntity<String> response = tokenApiSteps.getEventsForNFT(nftID);
+		Response response = tokenApiSteps.getEventsForNFT(nftID);
 		tokenApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
 		AssetsNftEventList eventsResponse = tokenApiSteps.getResponseDto(response, AssetsNftEventList.class);
@@ -48,8 +48,8 @@ public class TokensNftsEventsApiTests extends BaseTest {
 		String nftID = "space7.mintspace2.testnet-123";
 		String errorMsg = String.format("NFT with id %s not found", nftID);
 
-		ResponseEntity<String> response = tokenApiSteps.getEventsForNFT(nftID);
+		Response response = tokenApiSteps.getEventsForNFT(nftID);
 		tokenApiSteps.assertResponseStatusCode(response, HttpStatus.NOT_FOUND);
-		tokenApiSteps.assertStringContainsValue(response.getBody(), errorMsg);
+		tokenApiSteps.assertStringContainsValue(response.body().asString(), errorMsg);
 	}
 }

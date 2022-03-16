@@ -2,24 +2,25 @@ package api.app.astrodao.com.steps;
 
 import api.app.astrodao.com.core.utils.JsonUtils;
 import io.qameta.allure.Step;
+import io.restassured.response.Response;
 import org.assertj.core.api.AssertionsForInterfaceTypes;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import api.app.astrodao.com.core.enums.HttpStatus;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 public abstract class BaseSteps {
+
     @Step("Verify http status code is correct")
-    public void assertResponseStatusCode(ResponseEntity<?> actual, HttpStatus status) {
-        assertThat(actual.getStatusCode())
+    public void assertResponseStatusCode(Response actual, HttpStatus status) {
+        assertThat(HttpStatus.valueOf(actual.getStatusCode()))
                 .as("http status code should be correct.")
                 .isEqualTo(status);
     }
@@ -137,9 +138,9 @@ public abstract class BaseSteps {
     }
 
     @Step("User sees '{fieldName}' field has only desired value in collection")
-    public <T, D> void assertCollectionElementsContainsOnly(Collection<T> collection,
-                                                     Function<T, D> predicate, D expectedValue, String fieldName) {
-        List<D> mapped = collection.stream().map(predicate).distinct().collect(Collectors.toList());
+    public <T, D> void assertCollectionContainsOnly(Collection<T> collection,
+                                                    Function<T, D> predicate, D expectedValue, String fieldName) {
+        List<D> mapped = collection.stream().map(predicate).distinct().collect(toList());
 
         assertThat(mapped)
                 .as(String.format("'%s' field should have only one value.", fieldName))
@@ -148,6 +149,17 @@ public abstract class BaseSteps {
         assertThat(mapped.get(0))
                 .as(String.format("'%s' field should have correct value.", fieldName))
                 .isEqualTo(expectedValue);
+    }
+
+    @Step("User sees collection contains only desired values")
+    public <T, D> void assertCollectionContainsExactlyInAnyOrder(Collection<T> collection, Function<T, D> predicate,
+                                                                 D... expectedElements) {
+        List<D> actualCollection = collection.stream().map(predicate).collect(toList());
+        List<D> distinctCollection = actualCollection.stream().distinct().collect(toList());
+
+        assertThat(distinctCollection)
+                .as("Collection should contain only following elements: '%s'", Arrays.asList(expectedElements))
+                .containsExactlyInAnyOrder(expectedElements);
     }
 
     @Step("User sees '{fieldName}' field has no value")
@@ -164,17 +176,8 @@ public abstract class BaseSteps {
                 .contains(expectedValue);
     }
 
-    public <T> T getResponseDto(ResponseEntity<String> entity, Class<T> clazz) {
-        return JsonUtils.readValue(entity.getBody(), clazz);
-    }
-
-    @Step("User sees '{fieldName}' fields has value in a collection")
-    public <T> void assertCollectionElementsHasAtLeastOneValue(Collection<T> actual,
-                                                            Predicate<? super T> predicate, String fieldName) {
-        assertThat(actual)
-                .as(String.format("'%s' field should have value in collection.", fieldName))
-                .filteredOn(predicate)
-                .hasSizeGreaterThan(0);
+    public <T> T getResponseDto(Response response, Class<T> clazz) {
+        return JsonUtils.readValue(response.body().asString(), clazz);
     }
 
     @Step("User sees collection is sorted correctly")

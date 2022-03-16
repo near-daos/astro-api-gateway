@@ -8,6 +8,7 @@ import api.app.astrodao.com.steps.CommentsApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import com.github.javafaker.Faker;
 import io.qameta.allure.*;
+import io.restassured.response.Response;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -15,8 +16,7 @@ import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import api.app.astrodao.com.core.enums.HttpStatus;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -34,7 +34,7 @@ public class CommentsApiTests extends BaseTest {
     private final CommentsApiSteps commentsApiSteps;
     private final Faker faker;
 
-    @Value("${test.dao}")
+    @Value("${test.dao1}")
     private String testDao;
 
     @Value("${test.proposal}")
@@ -73,7 +73,7 @@ public class CommentsApiTests extends BaseTest {
         );
         int limit = 10;
         int page = 1;
-        ResponseEntity<String> response = commentsApiSteps.getComments(query);
+        Response response = commentsApiSteps.getComments(query);
         commentsApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
         CommentResponse commentResponse = commentsApiSteps.getResponseDto(response, CommentResponse.class);
@@ -101,7 +101,7 @@ public class CommentsApiTests extends BaseTest {
                 "sort", "createdAt,DESC",
                 "page", page
         );
-        ResponseEntity<String> response = commentsApiSteps.getComments(query);
+        Response response = commentsApiSteps.getComments(query);
         commentsApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
         CommentResponse commentResponse = commentsApiSteps.getResponseDto(response, CommentResponse.class);
@@ -129,7 +129,7 @@ public class CommentsApiTests extends BaseTest {
                 "sort", "id,DESC",
                 "fields", "id,message"
         );
-        ResponseEntity<String> response = commentsApiSteps.getComments(query);
+        Response response = commentsApiSteps.getComments(query);
         commentsApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
         CommentResponse commentResponse = commentsApiSteps.getResponseDto(response, CommentResponse.class);
@@ -167,7 +167,7 @@ public class CommentsApiTests extends BaseTest {
                 "s", String.format("{\"accountId\": \"%s\"}", accountId)
         );
 
-        ResponseEntity<String> response = commentsApiSteps.getComments(query);
+        Response response = commentsApiSteps.getComments(query);
         commentsApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
         CommentResponse commentResponse = commentsApiSteps.getResponseDto(response, CommentResponse.class);
@@ -197,7 +197,7 @@ public class CommentsApiTests extends BaseTest {
                 "s", String.format("{\"message\": \"%s\"}", commentMsg)
         );
 
-        ResponseEntity<String> newCommentResponse = commentsApiSteps.createComment(
+        Response newCommentResponse = commentsApiSteps.createComment(
                 account1Id, account1PublicKey, account1Signature, testProposal, contextType, commentMsg
         );
         commentsApiSteps.assertResponseStatusCode(newCommentResponse, HttpStatus.CREATED);
@@ -210,7 +210,7 @@ public class CommentsApiTests extends BaseTest {
         commentsApiSteps.assertDtoValue(createdComment, CreatedComment::getPublicKey, account1PublicKey, "publicKey");
         commentsApiSteps.assertDtoHasValue(createdComment, CreatedComment::getId, "id");
 
-        ResponseEntity<String> commentsResponse = commentsApiSteps.getComments(queryToGetCreatedComment);
+        Response commentsResponse = commentsApiSteps.getComments(queryToGetCreatedComment);
         commentsApiSteps.assertResponseStatusCode(commentsResponse, HttpStatus.OK);
 
         CommentResponse commentResponse = commentsApiSteps.getResponseDto(commentsResponse, CommentResponse.class);
@@ -241,7 +241,7 @@ public class CommentsApiTests extends BaseTest {
                 "s", String.format("{\"message\": \"%s\"}", commentMsg)
         );
 
-        ResponseEntity<String> newCommentResponse = commentsApiSteps.createComment(
+        Response newCommentResponse = commentsApiSteps.createComment(
                 account1Id, account1PublicKey, account1Signature, testBounty, contextType, commentMsg
         );
         commentsApiSteps.assertResponseStatusCode(newCommentResponse, HttpStatus.CREATED);
@@ -254,7 +254,7 @@ public class CommentsApiTests extends BaseTest {
         commentsApiSteps.assertDtoValue(createdComment, CreatedComment::getPublicKey, account1PublicKey, "publicKey");
         commentsApiSteps.assertDtoHasValue(createdComment, CreatedComment::getId, "id");
 
-        ResponseEntity<String> commentsResponse = commentsApiSteps.getComments(queryToGetCreatedComment);
+        Response commentsResponse = commentsApiSteps.getComments(queryToGetCreatedComment);
         commentsApiSteps.assertResponseStatusCode(commentsResponse, HttpStatus.OK);
 
         CommentResponse commentResponse = commentsApiSteps.getResponseDto(commentsResponse, CommentResponse.class);
@@ -281,12 +281,12 @@ public class CommentsApiTests extends BaseTest {
         String errorMsg = String.format("Account %s identity is invalid - public key", account1Id);
         String commentMsg = WaitUtils.getEpochMillis() + faker.lorem().characters(15, 20);
 
-        ResponseEntity<String> newCommentResponse = commentsApiSteps.createComment(
+        Response newCommentResponse = commentsApiSteps.createComment(
                 account1Id, account2PublicKey, account1Signature, testProposal, contextType, commentMsg
         );
 
         commentsApiSteps.assertResponseStatusCode(newCommentResponse, HttpStatus.FORBIDDEN);
-        commentsApiSteps.assertStringContainsValue(newCommentResponse.getBody(), errorMsg);
+        commentsApiSteps.assertStringContainsValue(newCommentResponse.body().asString(), errorMsg);
     }
 
     @Test
@@ -299,12 +299,12 @@ public class CommentsApiTests extends BaseTest {
         String errorMsg = String.format("Proposal with id %s not found", invalidContextId);
         String commentMsg = WaitUtils.getEpochMillis() + faker.lorem().characters(15, 20);
 
-        ResponseEntity<String> newCommentResponse = commentsApiSteps.createComment(
+        Response newCommentResponse = commentsApiSteps.createComment(
                 account1Id, account1PublicKey, account1Signature, invalidContextId, contextType, commentMsg
         );
 
         commentsApiSteps.assertResponseStatusCode(newCommentResponse, HttpStatus.NOT_FOUND);
-        commentsApiSteps.assertStringContainsValue(newCommentResponse.getBody(), errorMsg);
+        commentsApiSteps.assertStringContainsValue(newCommentResponse.body().asString(), errorMsg);
     }
 
     @Test
@@ -321,16 +321,16 @@ public class CommentsApiTests extends BaseTest {
                 "s", String.format("{\"message\": \"%s\"}", commentMsg)
         );
 
-        ResponseEntity<String> newCommentResponse = commentsApiSteps.createComment(
+        Response newCommentResponse = commentsApiSteps.createComment(
                 account1Id, account1PublicKey, account1Signature, testProposal, contextType, commentMsg
         );
         commentsApiSteps.assertResponseStatusCode(newCommentResponse, HttpStatus.CREATED);
         CreatedComment createdComment = commentsApiSteps.getResponseDto(newCommentResponse, CreatedComment.class);
 
-        ResponseEntity<String> deleteResponse = commentsApiSteps.deleteComment(account1Id, account1PublicKey, account1Signature, createdComment.getId(), reason);
+        Response deleteResponse = commentsApiSteps.deleteComment(account1Id, account1PublicKey, account1Signature, createdComment.getId(), reason);
         commentsApiSteps.assertResponseStatusCode(deleteResponse, HttpStatus.OK);
 
-        ResponseEntity<String> commentsResponse = commentsApiSteps.getComments(queryToGetCreatedComment);
+        Response commentsResponse = commentsApiSteps.getComments(queryToGetCreatedComment);
         commentsApiSteps.assertResponseStatusCode(commentsResponse, HttpStatus.OK);
 
         CommentResponse commentResponse = commentsApiSteps.getResponseDto(commentsResponse, CommentResponse.class);
@@ -350,12 +350,12 @@ public class CommentsApiTests extends BaseTest {
         BigDecimal invalidId = BigDecimal.valueOf(31313);
         String errorMsg = String.format("Comment with commentId %s not found", invalidId);
 
-        ResponseEntity<String> deleteResponse = commentsApiSteps.deleteComment(
+        Response deleteResponse = commentsApiSteps.deleteComment(
                 account1Id, account1PublicKey, account1Signature, invalidId, reason
         );
 
         commentsApiSteps.assertResponseStatusCode(deleteResponse, HttpStatus.NOT_FOUND);
-        commentsApiSteps.assertStringContainsValue(deleteResponse.getBody(), errorMsg);
+        commentsApiSteps.assertStringContainsValue(deleteResponse.body().asString(), errorMsg);
     }
 
     @Test
@@ -368,15 +368,15 @@ public class CommentsApiTests extends BaseTest {
         String errorMsg = String.format("Account %s identity is invalid - public key", account1Id);
         String commentMsg = WaitUtils.getEpochMillis() + faker.lorem().characters(15, 20);
 
-        ResponseEntity<String> newCommentResponse = commentsApiSteps.createComment(
+        Response newCommentResponse = commentsApiSteps.createComment(
                 account1Id, account1PublicKey, account1Signature, testProposal, contextType, commentMsg
         );
         commentsApiSteps.assertResponseStatusCode(newCommentResponse, HttpStatus.CREATED);
         CreatedComment createdComment = commentsApiSteps.getResponseDto(newCommentResponse, CreatedComment.class);
 
-        ResponseEntity<String> deleteResponse = commentsApiSteps.deleteComment(account1Id, account2PublicKey, account1Signature, createdComment.getId(), reason);
+        Response deleteResponse = commentsApiSteps.deleteComment(account1Id, account2PublicKey, account1Signature, createdComment.getId(), reason);
 
         commentsApiSteps.assertResponseStatusCode(deleteResponse, HttpStatus.FORBIDDEN);
-        commentsApiSteps.assertStringContainsValue(deleteResponse.getBody(), errorMsg);
+        commentsApiSteps.assertStringContainsValue(deleteResponse.body().asString(), errorMsg);
     }
 }

@@ -4,13 +4,13 @@ import api.app.astrodao.com.core.dto.api.stats.StatsEntries;
 import api.app.astrodao.com.steps.StatsApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import io.qameta.allure.*;
+import io.restassured.response.Response;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import api.app.astrodao.com.core.enums.HttpStatus;
 
-@Tags({@Tag("all"), @Tag("statsDaoBountiesApiTests")})
+@Tags({@Tag("all"), @Tag("statsApiTests"), @Tag("statsDaoBountiesApiTests")})
 @Epic("Stats")
 @Feature("/stats/dao/{id}/bounties API tests")
 @DisplayName("/stats/dao/{id}/bounties API tests")
@@ -27,7 +27,7 @@ public class StatsDaoBountiesApiTests extends BaseTest {
 		//TODO: Add steps to retrieve data for DAO from CLI
 		String dao = "gaming.sputnikv2.testnet";
 
-		ResponseEntity<String> response = statsApiSteps.getBountiesForDao(dao);
+		Response response = statsApiSteps.getBountiesForDao(dao);
 		statsApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
 		StatsEntries statsEntries = statsApiSteps.getResponseDto(response, StatsEntries.class);

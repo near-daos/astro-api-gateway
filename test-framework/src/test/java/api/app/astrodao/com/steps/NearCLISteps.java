@@ -7,13 +7,12 @@ import api.app.astrodao.com.core.dto.cli.CLIResponse;
 import api.app.astrodao.com.core.dto.cli.dao.Config;
 import api.app.astrodao.com.core.dto.cli.dao.NewDAODto;
 import api.app.astrodao.com.core.dto.cli.dao.Policy;
-import api.app.astrodao.com.core.dto.cli.proposals.view.ViewProposal;
 import api.app.astrodao.com.core.utils.CLIUtils;
 import api.app.astrodao.com.core.utils.JsonUtils;
 import api.app.astrodao.com.core.utils.WaitUtils;
 import io.qameta.allure.Step;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import io.restassured.response.Response;
+import api.app.astrodao.com.core.enums.HttpStatus;
 
 import java.time.Duration;
 import java.util.List;
@@ -36,32 +35,31 @@ public class NearCLISteps {
     }
 
     @Step("User waits '{aggregationTimeout}' seconds for data to be aggregated")
-    public ResponseEntity<String> waitForAggregation(int aggregationTimeout,
-                                                     Supplier<ResponseEntity<String>> supplier,
+    public Response waitForAggregation(int aggregationTimeout,
+                                                     Supplier<Response> supplier,
                                                      HttpStatus httpStatus) {
-        AtomicReference<ResponseEntity<String>> responseEntity = new AtomicReference<>();
+        AtomicReference<Response> response = new AtomicReference<>();
         await().timeout(aggregationTimeout, TimeUnit.SECONDS)
                 .alias("Failed because aggregation timeout didn't work or there's a delay on the blockchain")
                 .pollInterval(Duration.ofSeconds(1))
                 .until(() -> {
-                    responseEntity.set(supplier.get());
-                    return responseEntity.get().getStatusCode().equals(httpStatus);
+                    response.set(supplier.get());
+                    return response.get().getStatusCode() == httpStatus.value();
                 });
-        return responseEntity.get();
+        return response.get();
     }
 
     @Step("User waits '{aggregationTimeout}' seconds for data to be aggregated")
-    public ResponseEntity<String> waitForAggregation(int aggregationTimeout,
-                                                     Supplier<ResponseEntity<String>> supplier) {
-        AtomicReference<ResponseEntity<String>> responseEntity = new AtomicReference<>();
+    public Response waitForAggregation(int aggregationTimeout, Supplier<Response> supplier) {
+        AtomicReference<Response> response = new AtomicReference<>();
         await().timeout(aggregationTimeout, TimeUnit.SECONDS)
                 .alias("Failed because aggregation timeout didn't work or there's a delay on the blockchain")
                 .pollInterval(Duration.ofSeconds(1))
                 .until(() -> {
-                    responseEntity.set(supplier.get());
-                    return responseEntity.get().getStatusCode().equals(HttpStatus.OK);
+                    response.set(supplier.get());
+                    return response.get().getStatusCode() == HttpStatus.OK.value();
                 });
-        return responseEntity.get();
+        return response.get();
     }
 
     @Step("User calls 'view {accountId} get_config' in NEAR CLI")

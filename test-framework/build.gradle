@@ -3,7 +3,7 @@ buildscript {
         aspectjVersion = '1.9.4'
         springVersion = '5.3.5'
         lombokVersion = '1.18.8'
-        allureVersion = '2.16.1'
+        allureVersion = '2.17.3'
         selenideVersion = '5.20.0'
         junitVersion = '5.8.1'
         commonsVersion = '3.12.0'
@@ -12,6 +12,8 @@ buildscript {
         assertjVersion = '3.19.0'
         okhttpVersion = '4.9.1'
         jacksonVersion = '2.12.3'
+        restAssuredVersion = '4.5.1'
+        swaggerCoverageVersion = '1.4.5'
     }
 }
 
@@ -39,7 +41,6 @@ def sourceFolder = 'src/main/java'
 dependencies {
     implementation "org.aspectj:aspectjweaver:${aspectjVersion}"
     implementation "org.springframework:spring-context:${springVersion}"
-    implementation "org.springframework:spring-web:${springVersion}"
     implementation "org.springframework:spring-test:${springVersion}"
     implementation "org.springframework:spring-aop:${springVersion}"
     implementation "org.yaml:snakeyaml:${snakeyamlVersion}"
@@ -57,7 +58,11 @@ dependencies {
     implementation "org.awaitility:awaitility:4.1.1"
 
     implementation "io.qameta.allure:allure-java-commons:${allureVersion}"
-    implementation "io.qameta.allure:allure-spring-web:${allureVersion}"
+    implementation "io.qameta.allure:allure-rest-assured:${allureVersion}"
+    implementation "io.rest-assured:rest-assured:${restAssuredVersion}"
+    implementation "com.github.viclovsky:swagger-coverage-rest-assured:${swaggerCoverageVersion}"
+    implementation "io.swagger.core.v3:swagger-models:2.1.11"
+    implementation "io.swagger:swagger-models:1.6.3"
 
     implementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
     implementation "org.junit.jupiter:junit-jupiter-params:${junitVersion}"
@@ -67,9 +72,6 @@ dependencies {
     implementation "com.github.javafaker:javafaker:1.0.2"
     implementation "org.javatuples:javatuples:1.2"
 
-    implementation "com.github.viclovsky:swagger-coverage-commons:1.4.4"
-    implementation "io.swagger.core.v3:swagger-models:2.1.11"
-    implementation "io.swagger:swagger-models:1.6.3"
     implementation "com.google.code.findbugs:jsr305:3.0.2"
     implementation "com.google.code.findbugs:annotations:3.0.1"
 }

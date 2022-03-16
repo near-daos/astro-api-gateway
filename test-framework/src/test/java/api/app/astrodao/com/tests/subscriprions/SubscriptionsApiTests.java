@@ -5,12 +5,12 @@ import api.app.astrodao.com.steps.SubscriptionsApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import com.github.javafaker.Faker;
 import io.qameta.allure.*;
+import io.restassured.response.Response;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import api.app.astrodao.com.core.enums.HttpStatus;
 
 @Tags({@Tag("all"), @Tag("subscriptionsApiTests")})
 @Epic("Subscription")
@@ -42,7 +42,7 @@ public class SubscriptionsApiTests extends BaseTest {
     void userShouldBeAbleToSubscribeToADao() {
         String dao = "marmaj.sputnikv2.testnet";
         String subscriptionId = String.format("%s-%s", dao, accountId);
-        ResponseEntity<String> response = subscriptionsApiSteps.subscribeDao(accountId, accountPublicKey, accountSignature, dao);
+        Response response = subscriptionsApiSteps.subscribeDao(accountId, accountPublicKey, accountSignature, dao);
         subscriptionsApiSteps.assertResponseStatusCode(response, HttpStatus.CREATED);
 
         Subscription subscription = subscriptionsApiSteps.getResponseDto(response, Subscription.class);
@@ -58,9 +58,9 @@ public class SubscriptionsApiTests extends BaseTest {
         String dao = "ewqeerdel.sputnikv2.testnet";
         String expectedResponse = String.format("No DAO '%s' and/or Account 'testdao2.testnet' found.", dao);
 
-        ResponseEntity<String> response = subscriptionsApiSteps.subscribeDao(accountId, accountPublicKey, accountSignature, dao);
+        Response response = subscriptionsApiSteps.subscribeDao(accountId, accountPublicKey, accountSignature, dao);
         subscriptionsApiSteps.assertResponseStatusCode(response, HttpStatus.BAD_REQUEST);
-        subscriptionsApiSteps.assertStringContainsValue(response.getBody(), expectedResponse);
+        subscriptionsApiSteps.assertStringContainsValue(response.body().asString(), expectedResponse);
     }
 
     @Test
@@ -71,9 +71,8 @@ public class SubscriptionsApiTests extends BaseTest {
         String expectedResponse = "Invalid signature";
         String invalidSignature = faker.lorem().characters(12, 24);
 
-        ResponseEntity<String> response = subscriptionsApiSteps.subscribeDao(accountId, accountPublicKey, invalidSignature, dao);
+        Response response = subscriptionsApiSteps.subscribeDao(accountId, accountPublicKey, invalidSignature, dao);
         subscriptionsApiSteps.assertResponseStatusCode(response, HttpStatus.FORBIDDEN);
-        subscriptionsApiSteps.assertStringContainsValue(response.getBody(), expectedResponse);
+        subscriptionsApiSteps.assertStringContainsValue(response.body().asString(), expectedResponse);
     }
-
 }
