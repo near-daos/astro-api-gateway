@@ -10,7 +10,7 @@ export class RoleDto extends BaseEntity {
   @ApiProperty()
   name: string;
 
-  @ApiProperty({ enum: RoleKindType })
+  @ApiProperty()
   kind: RoleKindType;
 
   @ApiProperty()
