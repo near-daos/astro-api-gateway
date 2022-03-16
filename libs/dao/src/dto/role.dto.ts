@@ -3,6 +3,11 @@ import { VotePolicy } from '@sputnik-v2/sputnikdao';
 import { ApiProperty } from '@nestjs/swagger';
 import { BaseEntity } from '@sputnik-v2/common';
 
+class RoleKindDto {
+  @ApiProperty()
+  group: string[];
+}
+
 export class RoleDto extends BaseEntity {
   @ApiProperty()
   id: string;
@@ -10,22 +15,7 @@ export class RoleDto extends BaseEntity {
   @ApiProperty()
   name: string;
 
-  @ApiProperty({
-    oneOf: [
-      { type: 'string' },
-      {
-        type: 'object',
-        properties: {
-          group: {
-            type: 'array',
-            items: {
-              type: 'string',
-            },
-          },
-        },
-      },
-    ],
-  })
+  @ApiProperty({ type: RoleKindDto })
   kind: RoleKindType;
 
   @ApiProperty()
