@@ -10,7 +10,22 @@ export class RoleDto extends BaseEntity {
   @ApiProperty()
   name: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    oneOf: [
+      { type: 'string' },
+      {
+        type: 'object',
+        properties: {
+          group: {
+            type: 'array',
+            items: {
+              type: 'string',
+            },
+          },
+        },
+      },
+    ],
+  })
   kind: RoleKindType;
 
   @ApiProperty()
