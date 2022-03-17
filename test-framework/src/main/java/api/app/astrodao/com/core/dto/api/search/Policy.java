@@ -1,9 +1,11 @@
 package api.app.astrodao.com.core.dto.api.search;
 
-import java.util.List;
 import lombok.Data;
 
-public @Data class Policy{
+import java.util.List;
+
+@Data
+public class Policy {
 	private String daoId;
 	private DefaultVotePolicy defaultVotePolicy;
 	private String proposalPeriod;

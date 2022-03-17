@@ -1,9 +1,11 @@
 package api.app.astrodao.com.core.dto.api.search;
 
-import java.util.List;
 import lombok.Data;
 
-public @Data class DataItem{
+import java.util.List;
+
+@Data
+public class DataItem {
 	private String accountId;
 	private List<RolesItem> roles;
 	private int voteCount;
@@ -20,7 +22,7 @@ public @Data class DataItem{
 	private Dao dao;
 	private int commentsCount;
 	private Permissions permissions;
-	private Votes votes;
+	private Object votes;
 	private String id;
 	private String updatedAt;
 	private String status;

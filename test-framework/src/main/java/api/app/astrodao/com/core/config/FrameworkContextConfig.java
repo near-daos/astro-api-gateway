@@ -4,8 +4,13 @@ import com.github.javafaker.Faker;
 import com.github.viclovsky.swagger.coverage.FileSystemOutputWriter;
 import com.github.viclovsky.swagger.coverage.SwaggerCoverageV3RestAssured;
 import io.qameta.allure.restassured.AllureRestAssured;
+import io.restassured.RestAssured;
 import io.restassured.builder.RequestSpecBuilder;
+import io.restassured.builder.ResponseSpecBuilder;
+import io.restassured.filter.log.LogDetail;
+import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
+import io.restassured.specification.ResponseSpecification;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.*;
@@ -29,6 +34,7 @@ public class FrameworkContextConfig {
     public RequestSpecification requestSpec(@Value("${framework.api.base.uri}") String baseUri) {
         return new RequestSpecBuilder()
                 .setBaseUri(baseUri)
+                .log(LogDetail.ALL)
                 .addFilter(new AllureRestAssured())
                 .addFilter(new SwaggerCoverageV3RestAssured(
                         new FileSystemOutputWriter(Paths.get("build/swagger-coverage-output")))

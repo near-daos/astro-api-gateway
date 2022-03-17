@@ -4,7 +4,8 @@ import lombok.Data;
 
 import java.util.List;
 
-public @Data class Kind{
+@Data
+public class Kind {
 	private Bounty bounty;
 	private String type;
 	private Policy policy;

@@ -1,9 +1,11 @@
 package api.app.astrodao.com.core.dto.api.search;
 
-import java.util.List;
 import lombok.Data;
 
-public @Data class RolesItem{
+import java.util.List;
+
+@Data
+public class RolesItem {
 	private String daoId;
 	private Object kind;
 	private List<String> permissions;

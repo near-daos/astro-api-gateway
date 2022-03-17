@@ -2,7 +2,8 @@ package api.app.astrodao.com.core.dto.api.search;
 
 import lombok.Data;
 
-public @Data class Bounty{
+@Data
+public class Bounty {
 	private String amount;
 	private int times;
 	private String description;

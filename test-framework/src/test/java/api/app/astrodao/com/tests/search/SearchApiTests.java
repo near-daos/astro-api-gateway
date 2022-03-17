@@ -2,6 +2,7 @@ package api.app.astrodao.com.tests.search;
 
 import api.app.astrodao.com.core.dto.api.search.DataItem;
 import api.app.astrodao.com.core.dto.api.search.SearchResultDto;
+import api.app.astrodao.com.core.enums.HttpStatus;
 import api.app.astrodao.com.steps.SearchApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import io.qameta.allure.*;
@@ -12,9 +13,10 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import api.app.astrodao.com.core.enums.HttpStatus;
 
 import java.util.Map;
+
+import static java.net.HttpURLConnection.HTTP_OK;
 
 @Tags({@Tag("all"), @Tag("searchApiTests")})
 @Epic("Search")
@@ -90,18 +92,20 @@ public class SearchApiTests extends BaseTest {
                 "accountId", accountId
         );
 
-        ResponseEntity<String> response = searchApiSteps.search(query);
-        searchApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
-
-        SearchResultDto searchResult = searchApiSteps.getResponseDto(response, SearchResultDto.class);
+        Response response = searchApiSteps.search(query);
+        SearchResultDto searchResult = response
+                .then()
+                .log().ifValidationFails()
+                .statusCode(HTTP_OK)
+                .extract().as(SearchResultDto.class);
 
         searchApiSteps.assertDtoValue(searchResult, r -> r.getDaos().getCount(), count, "daos/count");
         searchApiSteps.assertDtoValue(searchResult, r -> r.getDaos().getTotal(), total, "daos/total");
         searchApiSteps.assertDtoValue(searchResult, r -> r.getDaos().getPage(), page, "daos/page");
         searchApiSteps.assertDtoValue(searchResult, r -> r.getDaos().getPageCount(), pageCount, "daos/pageCount");
-        searchApiSteps.assertCollectionElementsContainsOnly(searchResult.getDaos().getData(), DataItem::getId, daoId, "id");
-        searchApiSteps.assertCollectionElementsContainsOnly(searchResult.getProposals().getData(), DataItem::getDaoId, daoId, "proposals/daoId");
-        searchApiSteps.assertCollectionElementsContainsOnly(searchResult.getProposals().getData(), DataItem::getProposer, accountId, "proposals/proposer");
+        searchApiSteps.assertCollectionContainsOnly(searchResult.getDaos().getData(), DataItem::getId, daoId, "id");
+        searchApiSteps.assertCollectionContainsOnly(searchResult.getProposals().getData(), DataItem::getDaoId, daoId, "proposals/daoId");
+        searchApiSteps.assertCollectionContainsOnly(searchResult.getProposals().getData(), DataItem::getProposer, accountId, "proposals/proposer");
         searchApiSteps.assertDtoValue(searchResult, r -> r.getProposals().getPageCount(), pageCount, "proposals/pageCount");
         searchApiSteps.assertDtoValue(searchResult, r -> r.getProposals().getTotal(), 5, "proposals/total");
         searchApiSteps.assertDtoValue(searchResult, r -> r.getProposals().getPage(), page, "proposals/page");
