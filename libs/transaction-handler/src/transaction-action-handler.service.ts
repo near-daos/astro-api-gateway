@@ -72,20 +72,32 @@ export class TransactionActionHandlerService {
     ];
   }
 
-  async handleTransactionActions(actions: TransactionAction[]) {
-    // Actions are handled one by one to keep order of transactions
-    const { errors } = await PromisePool.withConcurrency(1)
-      .for(actions)
-      .process(async (action) => this.handleTransactionAction(action));
+  async handleTransactionActions(
+    actions: TransactionAction[],
+  ): Promise<string[]> {
+    const handledTxHashes = [];
 
-    errors.forEach((error) => {
-      this.logger.error(
-        `Failed to handle transaction ${error.item.transactionHash} with error: ${error}`,
-      );
-    });
+    // Actions are handled one by one to keep order of transactions
+    for (const action of actions) {
+      try {
+        await this.handleTransactionAction(action);
+        handledTxHashes.push(action.transactionHash);
+      } catch (error) {
+        this.logger.error(
+          `Failed to handle transaction ${action.transactionHash} with error: ${error}`,
+        );
+
+        // If some action failed stop handling
+        return handledTxHashes;
+      }
+    }
+
+    return handledTxHashes;
   }
 
   async handleTransactionAction(action: TransactionAction) {
+    this.logger.log(`Handling transaction: ${action.transactionHash}`);
+
     const tx = await this.transactionRepository.findOne({
       transactionHash: action.transactionHash,
     });
@@ -107,6 +119,10 @@ export class TransactionActionHandlerService {
         return handler(action);
       }
     });
+
+    this.logger.log(
+      `Transaction successfully handled: ${action.transactionHash}`,
+    );
   }
 
   async handleCreateDao(txAction: TransactionAction) {
