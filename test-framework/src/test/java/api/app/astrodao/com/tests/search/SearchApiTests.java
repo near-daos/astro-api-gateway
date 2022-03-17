@@ -1,5 +1,6 @@
 package api.app.astrodao.com.tests.search;
 
+import api.app.astrodao.com.core.dto.api.search.DataItem;
 import api.app.astrodao.com.core.dto.api.search.SearchResultDto;
 import api.app.astrodao.com.steps.SearchApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
@@ -41,10 +42,10 @@ public class SearchApiTests extends BaseTest {
 
         SearchResultDto searchResult = searchApiSteps.getResponseDto(response, SearchResultDto.class);
 
-        searchApiSteps.assertDtoValue(searchResult, r -> r.getDaos().getPage().intValue(), page, "daos/page");
-        searchApiSteps.assertDtoValueGreaterThan(searchResult, r -> r.getDaos().getPageCount().intValue(), page, "daos/pageCount");
-        searchApiSteps.assertDtoValue(searchResult, r -> r.getDaos().getCount().intValue(), count, "daos/count");
-        searchApiSteps.assertDtoValueGreaterThan(searchResult, r -> r.getDaos().getTotal().intValue(), count, "daos/total");
+        searchApiSteps.assertDtoValue(searchResult, r -> r.getDaos().getPage(), page, "daos/page");
+        searchApiSteps.assertDtoValueGreaterThan(searchResult, r -> r.getDaos().getPageCount(), page, "daos/pageCount");
+        searchApiSteps.assertDtoValue(searchResult, r -> r.getDaos().getCount(), count, "daos/count");
+        searchApiSteps.assertDtoValueGreaterThan(searchResult, r -> r.getDaos().getTotal(), count, "daos/total");
 
         //TODO: Uncomment after adding proper model
         //searchApiSteps.assertDtoValue(searchResult, r -> r.getProposals().getPage().intValue(), page, "proposals/page");
@@ -70,5 +71,44 @@ public class SearchApiTests extends BaseTest {
         Response response = searchApiSteps.search(queryParams);
         searchApiSteps.assertResponseStatusCode(response, HttpStatus.BAD_REQUEST);
         searchApiSteps.assertStringContainsValue(response.body().asString(), "query must be a string");
+    }
+
+    @Test
+    @Severity(SeverityLevel.CRITICAL)
+    @Story("Performing search with query param: [query, accountId]")
+    @DisplayName("Performing search with query param: [query, accountId]")
+    void performingSearchWithQueryAccountIdParams() {
+        int page = 1;
+        int pageCount = 1;
+        int count = 1;
+        int total = 1;
+        String daoId = "testdao1.sputnikv2.testnet";
+        String accountId = "testdao2.testnet";
+
+        Map<String, Object> query = Map.of(
+                "query",daoId,
+                "accountId", accountId
+        );
+
+        ResponseEntity<String> response = searchApiSteps.search(query);
+        searchApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
+
+        SearchResultDto searchResult = searchApiSteps.getResponseDto(response, SearchResultDto.class);
+
+        searchApiSteps.assertDtoValue(searchResult, r -> r.getDaos().getCount(), count, "daos/count");
+        searchApiSteps.assertDtoValue(searchResult, r -> r.getDaos().getTotal(), total, "daos/total");
+        searchApiSteps.assertDtoValue(searchResult, r -> r.getDaos().getPage(), page, "daos/page");
+        searchApiSteps.assertDtoValue(searchResult, r -> r.getDaos().getPageCount(), pageCount, "daos/pageCount");
+        searchApiSteps.assertCollectionElementsContainsOnly(searchResult.getDaos().getData(), DataItem::getId, daoId, "id");
+        searchApiSteps.assertCollectionElementsContainsOnly(searchResult.getProposals().getData(), DataItem::getDaoId, daoId, "proposals/daoId");
+        searchApiSteps.assertCollectionElementsContainsOnly(searchResult.getProposals().getData(), DataItem::getProposer, accountId, "proposals/proposer");
+        searchApiSteps.assertDtoValue(searchResult, r -> r.getProposals().getPageCount(), pageCount, "proposals/pageCount");
+        searchApiSteps.assertDtoValue(searchResult, r -> r.getProposals().getTotal(), 5, "proposals/total");
+        searchApiSteps.assertDtoValue(searchResult, r -> r.getProposals().getPage(), page, "proposals/page");
+        searchApiSteps.assertDtoValue(searchResult, r -> r.getProposals().getPageCount(), pageCount, "proposals/pageCount");
+        searchApiSteps.assertDtoValue(searchResult, r -> r.getMembers().getPage(), page, "members/page");
+        searchApiSteps.assertDtoValue(searchResult, r -> r.getMembers().getPageCount(), pageCount, "members/pageCount");
+        searchApiSteps.assertDtoValue(searchResult, r -> r.getMembers().getCount(), 0, "members/count");
+        searchApiSteps.assertDtoValue(searchResult, r -> r.getMembers().getTotal(), 0, "members/total");
     }
 }
