@@ -369,6 +369,7 @@ export class AggregatorService {
       return;
     }
 
+    this.logger.log(`Found transactions: ${newAccountChanges.length}`);
     const transactions =
       await this.transactionHandlerService.handleNearIndexerAccountChanges(
         newAccountChanges,
@@ -377,6 +378,9 @@ export class AggregatorService {
     this.logger.log('Storing aggregated Transactions...');
     await this.transactionService.createMultiple(transactions);
 
+    this.logger.log(
+      `Successfully aggregated transactions: ${transactions.length}/${newAccountChanges.length}`,
+    );
     // TODO: https://app.clickup.com/t/1ty89nk
     await this.cacheService.clearCache();
 
