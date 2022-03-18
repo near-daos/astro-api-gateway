@@ -1,50 +1,32 @@
 package api.app.astrodao.com.tests.bounty;
 
-import api.app.astrodao.com.openapi.models.Bounty;
+import api.app.astrodao.com.core.enums.HttpStatus;
 import api.app.astrodao.com.openapi.models.BountyResponse;
 import api.app.astrodao.com.steps.BountiesApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
-import io.qameta.allure.Feature;
-import io.qameta.allure.Severity;
-import io.qameta.allure.SeverityLevel;
-import io.qameta.allure.Story;
+import io.qameta.allure.*;
+import io.restassured.response.Response;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 
 import java.util.Map;
 
-@Tags({@Tag("all"), @Tag("bountyApiTests")})
-@Feature("BOUNTY API TESTS")
-@DisplayName("BOUNTY API TESTS")
+@Tags({@Tag("all"), @Tag("bountiesApiTests")})
+@Epic("Bounty")
+@Feature("/bounties API tests")
+@DisplayName("/bounties API tests")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-public class BountyApiTests extends BaseTest {
+public class BountiesApiTests extends BaseTest {
     private final BountiesApiSteps bountiesApiSteps;
 
     @Test
     @Severity(SeverityLevel.CRITICAL)
-    @Story("Getting a bounty by it's ID")
-    void getBountyById() {
-        String daoId = "autotest-dao-1.sputnikv2.testnet";
-        Integer bountyId = 1;
-        String fullBountyId = String.format("%s-%s", daoId, bountyId);
-        ResponseEntity<String> response = bountiesApiSteps.getBountyByID(fullBountyId);
-        bountiesApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
-
-        Bounty bountyResponse = bountiesApiSteps.getResponseDto(response, Bounty.class);
-
-        bountiesApiSteps.assertDtoValue(bountyResponse, Bounty::getDaoId, daoId, "daoId");
-        bountiesApiSteps.assertDtoValue(bountyResponse, p -> p.getBountyId().intValue(), bountyId, "bountyId");
-    }
-
-    @Test
-    @Severity(SeverityLevel.CRITICAL)
     @Story("Get list of bounties with query param: [sort, limit, offset]")
+    @DisplayName("Get list of bounties with query param: [sort, limit, offset]")
     void getListOfBountiesWithSortLimitOffsetParams() {
         Map<String, Object> query = Map.of(
                 "sort","createdAt,DESC",
@@ -53,7 +35,7 @@ public class BountyApiTests extends BaseTest {
         );
         int limit = 10;
         int page = 1;
-        ResponseEntity<String> response = bountiesApiSteps.getBounties(query);
+        Response response = bountiesApiSteps.getBounties(query);
         bountiesApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
         BountyResponse bountyResponse = bountiesApiSteps.getResponseDto(response, BountyResponse.class);
@@ -69,6 +51,7 @@ public class BountyApiTests extends BaseTest {
     @Test
     @Severity(SeverityLevel.CRITICAL)
     @Story("Get list of bounties with query param: [sort, page]")
+    @DisplayName("Get list of bounties with query param: [sort, page]")
     void getListOfBountiesWithSortPageParams() {
         int count = 50;
         int page = 2;
@@ -77,7 +60,7 @@ public class BountyApiTests extends BaseTest {
                 "page", page
         );
 
-        ResponseEntity<String> response = bountiesApiSteps.getBounties(query);
+        Response response = bountiesApiSteps.getBounties(query);
         bountiesApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
         BountyResponse bountyResponse = bountiesApiSteps.getResponseDto(response, BountyResponse.class);
@@ -93,6 +76,7 @@ public class BountyApiTests extends BaseTest {
     @Test
     @Severity(SeverityLevel.CRITICAL)
     @Story("Get list of bounties with query param: [sort, fields]")
+    @DisplayName("Get list of bounties with query param: [sort, fields]")
     void getListOfBountiesWithSortFieldsParams() {
         int count = 50;
         int page = 1;
@@ -101,7 +85,7 @@ public class BountyApiTests extends BaseTest {
                 "fields", "id,numberOfClaims"
         );
 
-        ResponseEntity<String> response = bountiesApiSteps.getBounties(query);
+        Response response = bountiesApiSteps.getBounties(query);
         bountiesApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
         BountyResponse bountyResponse = bountiesApiSteps.getResponseDto(response, BountyResponse.class);
@@ -118,6 +102,7 @@ public class BountyApiTests extends BaseTest {
     @Test
     @Severity(SeverityLevel.CRITICAL)
     @Story("Get list of bounties with query param: [sort, s]")
+    @DisplayName("Get list of bounties with query param: [sort, s]")
     void getListOfBountiesWithSortSParams() {
         int count = 50;
         int page = 1;
@@ -126,7 +111,7 @@ public class BountyApiTests extends BaseTest {
                 "s", "{\"numberOfClaims\": 0}"
         );
 
-        ResponseEntity<String> response = bountiesApiSteps.getBounties(query);
+        Response response = bountiesApiSteps.getBounties(query);
         bountiesApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
         BountyResponse bountyResponse = bountiesApiSteps.getResponseDto(response, BountyResponse.class);

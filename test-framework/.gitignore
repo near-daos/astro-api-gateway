@@ -17,6 +17,7 @@ out/
 # Ignore stuff
 .allure
 allure-results
+openapi
 
 # Ignore Gradle project-specific cache directory
 .gradle

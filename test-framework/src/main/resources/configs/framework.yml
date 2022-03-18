@@ -2,13 +2,11 @@ test:
   env: ${TEST_ENV:dev}
   accountId: testdao2.testnet
 #  accountId: automation-01.testnet
-  dao: test-dao-1641395769436.sputnikv2.testnet
+  dao1: test-dao-1641395769436.sputnikv2.testnet
+  dao2: test-dao-1647325144337.sputnikv2.testnet
   proposal: test-dao-1641395769436.sputnikv2.testnet-911
   bounty: test-dao-1641395769436.sputnikv2.testnet-1578
   aggregation.timeout: ${TEST_AGG_TIMEOUT:20}
-
-framework:
-  http.timeout: 20
 
 accounts:
   account1:

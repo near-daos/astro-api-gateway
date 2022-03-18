@@ -1,32 +1,21 @@
 package api.app.astrodao.com.core.config;
 
-import api.app.astrodao.com.core.interceptor.SwaggerCoverageV3RestTemplate;
 import com.github.javafaker.Faker;
-import io.qameta.allure.springweb.AllureRestTemplate;
+import com.github.viclovsky.swagger.coverage.FileSystemOutputWriter;
+import com.github.viclovsky.swagger.coverage.SwaggerCoverageV3RestAssured;
+import io.qameta.allure.restassured.AllureRestAssured;
+import io.restassured.RestAssured;
+import io.restassured.builder.RequestSpecBuilder;
+import io.restassured.builder.ResponseSpecBuilder;
+import io.restassured.filter.log.LogDetail;
+import io.restassured.http.ContentType;
+import io.restassured.specification.RequestSpecification;
+import io.restassured.specification.ResponseSpecification;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.OkHttpClient;
-import org.assertj.core.util.Lists;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.*;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.client.BufferingClientHttpRequestFactory;
-import org.springframework.http.client.ClientHttpRequestFactory;
-import org.springframework.http.client.OkHttp3ClientHttpRequestFactory;
-import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.converter.StringHttpMessageConverter;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.web.client.DefaultResponseErrorHandler;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.DefaultUriBuilderFactory;
 
-import java.net.CookieManager;
-import java.net.CookiePolicy;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
-import static org.springframework.http.converter.json.AbstractJsonHttpMessageConverter.DEFAULT_CHARSET;
+import java.nio.file.Paths;
 
 @Slf4j
 @Configuration
@@ -36,63 +25,21 @@ import static org.springframework.http.converter.json.AbstractJsonHttpMessageCon
 @PropertySource(factory = YamlPropertySourceFactory.class, value = "classpath:configs/${test.env}.yml")
 public class FrameworkContextConfig {
 
-    @Value("${framework.http.timeout}")
-    private int timeoutInSeconds;
-
     @Bean
     public Faker faker() {
         return new Faker();
     }
 
     @Bean
-    public OkHttpClient okHttpClient() {
-        final CookieManager cookieManager = new CookieManager();
-        cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
-
-        return new OkHttpClient.Builder()
-                .pingInterval(10, TimeUnit.SECONDS)
-                .callTimeout(20, TimeUnit.SECONDS)
-                .connectTimeout(15, TimeUnit.SECONDS)
-                .readTimeout(15, TimeUnit.SECONDS)
-                .writeTimeout(15, TimeUnit.SECONDS)
-                .followRedirects(true)
-                .followSslRedirects(true)
-                .hostnameVerifier((hostname, session) -> true)
-                .retryOnConnectionFailure(true).build();
-    }
-
-    @Bean
-    public RestTemplate restTemplate(OkHttpClient okHttpClient) {
-        ClientHttpRequestFactory factory = new BufferingClientHttpRequestFactory(new OkHttp3ClientHttpRequestFactory(okHttpClient));
-        RestTemplate template = new RestTemplate(new BufferingClientHttpRequestFactory(factory));
-
-        DefaultUriBuilderFactory handler = new DefaultUriBuilderFactory();
-        handler.setEncodingMode(DefaultUriBuilderFactory.EncodingMode.NONE);
-        template.setUriTemplateHandler(handler);
-
-        for (HttpMessageConverter converter : template.getMessageConverters()) {
-            if (converter instanceof StringHttpMessageConverter) {
-                ((StringHttpMessageConverter) converter).setWriteAcceptCharset(false);
-            }
-        }
-
-        template.setInterceptors(List.of(new SwaggerCoverageV3RestTemplate(), new AllureRestTemplate()));
-        template.getMessageConverters().add(textMessageConverter());
-        template.setErrorHandler(new DefaultResponseErrorHandler() {
-            @Override
-            public boolean hasError(@NotNull HttpStatus statusCode) {
-                return false;
-            }
-        });
-
-        return template;
-    }
-
-    private HttpMessageConverter textMessageConverter() {
-        MappingJackson2HttpMessageConverter textMessageConverter = new MappingJackson2HttpMessageConverter();
-        textMessageConverter.setSupportedMediaTypes(Lists.newArrayList(
-                new MediaType("text", "javascript", DEFAULT_CHARSET))
-        );
-        return textMessageConverter;
+    public RequestSpecification requestSpec(@Value("${framework.api.base.uri}") String baseUri) {
+        return new RequestSpecBuilder()
+                .setBaseUri(baseUri)
+                .log(LogDetail.ALL)
+                .addFilter(new AllureRestAssured())
+                .addFilter(new SwaggerCoverageV3RestAssured(
+                        new FileSystemOutputWriter(Paths.get("build/swagger-coverage-output")))
+                )
+                .addHeader("User-Agent", "API Test Framework")
+                .build();
     }
 }

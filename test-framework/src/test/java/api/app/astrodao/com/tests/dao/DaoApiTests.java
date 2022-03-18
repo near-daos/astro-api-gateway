@@ -1,50 +1,32 @@
-package api.app.astrodao.com.tests;
+package api.app.astrodao.com.tests.dao;
 
-import api.app.astrodao.com.openapi.models.Dao;
 import api.app.astrodao.com.openapi.models.DaoResponse;
 import api.app.astrodao.com.steps.DaoApiSteps;
-import io.qameta.allure.Feature;
-import io.qameta.allure.Severity;
-import io.qameta.allure.SeverityLevel;
-import io.qameta.allure.Story;
+import api.app.astrodao.com.tests.BaseTest;
+import io.qameta.allure.*;
+import io.restassured.response.Response;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import api.app.astrodao.com.core.enums.HttpStatus;
 
 import java.util.Map;
 
 @Tags({@Tag("all"), @Tag("daoApiTests")})
-@Feature("DAO API TESTS")
-@DisplayName("DAO API TESTS")
+@Epic("DAO")
+@Feature("/dao API tests")
+@DisplayName("/dao API tests")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class DaoApiTests extends BaseTest {
     private final DaoApiSteps daoApiSteps;
 
-    @Value("${test.dao}")
-    private String testDao;
-
-    @Test
-    @Severity(SeverityLevel.CRITICAL)
-    @Story("Getting a DAO by it's ID")
-    void getDaoById() {
-        ResponseEntity<String> response = daoApiSteps.getDAOByID(testDao);
-        daoApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
-
-        Dao dao = daoApiSteps.getResponseDto(response, Dao.class);
-
-        daoApiSteps.assertDtoValue(dao, Dao::getId, testDao, "id");
-        daoApiSteps.assertDtoValueGreaterThan(dao, p -> p.getTotalDaoFunds().intValue(), 10, "totalDaoFunds");
-    }
-
     @Test
     @Severity(SeverityLevel.CRITICAL)
     @Story("Get list of DAOs with query param: [sort, limit, offset]")
+    @DisplayName("Get list of DAOs with query param: [sort, limit, offset]")
     void getListOfDaosWithSortLimitOffsetParams() {
         Map<String, Object> query = Map.of(
                 "sort","createdAt,DESC",
@@ -53,7 +35,7 @@ public class DaoApiTests extends BaseTest {
         );
         int limit = 10;
         int page = 1;
-        ResponseEntity<String> response = daoApiSteps.getDaos(query);
+        Response response = daoApiSteps.getDaos(query);
         daoApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
         DaoResponse daoResponse = daoApiSteps.getResponseDto(response, DaoResponse.class);
@@ -69,6 +51,7 @@ public class DaoApiTests extends BaseTest {
     @Test
     @Severity(SeverityLevel.CRITICAL)
     @Story("Get list of DAOs with query param: [sort, page]")
+    @DisplayName("Get list of DAOs with query param: [sort, page]")
     void getListOfDaosWithSortPageParams() {
         int count = 50;
         int page = 2;
@@ -76,7 +59,7 @@ public class DaoApiTests extends BaseTest {
                 "sort","createdAt,DESC",
                 "page", page
         );
-        ResponseEntity<String> response = daoApiSteps.getDaos(query);
+        Response response = daoApiSteps.getDaos(query);
         daoApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
         DaoResponse daoResponse = daoApiSteps.getResponseDto(response, DaoResponse.class);
@@ -92,6 +75,7 @@ public class DaoApiTests extends BaseTest {
     @Test
     @Severity(SeverityLevel.CRITICAL)
     @Story("Get list of DAOs with query param: [sort, fields]")
+    @DisplayName("Get list of DAOs with query param: [sort, fields]")
     void getListOfDaosWithSortFieldsParams() {
         int count = 50;
         int page = 1;
@@ -99,7 +83,7 @@ public class DaoApiTests extends BaseTest {
                 "sort","id,DESC",
                 "fields", "id,numberOfMembers"
         );
-        ResponseEntity<String> response = daoApiSteps.getDaos(query);
+        Response response = daoApiSteps.getDaos(query);
         daoApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
         DaoResponse daoResponse = daoApiSteps.getResponseDto(response, DaoResponse.class);
@@ -115,6 +99,7 @@ public class DaoApiTests extends BaseTest {
     @Test
     @Severity(SeverityLevel.CRITICAL)
     @Story("Get list of DAOs with query param: [sort, s]")
+    @DisplayName("Get list of DAOs with query param: [sort, s]")
     void getListOfDaosSortSParams() {
         int count = 50;
         int page = 1;
@@ -124,7 +109,7 @@ public class DaoApiTests extends BaseTest {
                 "s", String.format("{\"numberOfMembers\": %s}", numberOfMembers)
         );
 
-        ResponseEntity<String> response = daoApiSteps.getDaos(query);
+        Response response = daoApiSteps.getDaos(query);
         daoApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
         DaoResponse daoResponse = daoApiSteps.getResponseDto(response, DaoResponse.class);

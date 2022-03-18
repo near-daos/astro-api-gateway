@@ -1,50 +1,34 @@
 package api.app.astrodao.com.core.controllers;
 
-import api.app.astrodao.com.core.clients.HttpClient;
 import api.app.astrodao.com.core.utils.JsonUtils;
 import api.app.astrodao.com.openapi.models.CommentDeleteDto;
 import api.app.astrodao.com.openapi.models.CommentDto;
 import api.app.astrodao.com.openapi.models.CommentReportDto;
+import io.restassured.response.Response;
+import io.restassured.specification.RequestSpecification;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.math.BigDecimal;
-import java.util.Collections;
 import java.util.Map;
+
+import static api.app.astrodao.com.core.Constants.Endpoints.*;
+import static io.restassured.RestAssured.given;
+import static io.restassured.http.ContentType.JSON;
 
 @Component
 @RequiredArgsConstructor
 public class CommentsApi {
-    protected final HttpClient httpClient;
+    private final RequestSpecification requestSpec;
 
-    @Value("${framework.api.url}")
-    private String apiUrl;
-
-    public ResponseEntity<String> getComments(Map<String, Object> queryParams) {
-        HttpHeaders httpHeaders = httpClient.getBasicHeaders();
-        httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-
-        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(apiUrl);
-        builder.pathSegment("comments");
-        queryParams.forEach((key, value) -> builder.queryParam(key, value));
-
-        return httpClient.get(builder.toUriString(), new HttpEntity<>(httpHeaders), String.class);
+    public Response getComments(Map<String, Object> queryParams) {
+        return given().spec(requestSpec)
+                .accept(JSON)
+                .queryParams(queryParams)
+                .get(COMMENTS);
     }
 
-    public ResponseEntity<String> createComment(String accountId, String publicKey, String signature, String contextId, String contextType, String message) {
-        HttpHeaders httpHeaders = httpClient.getBasicHeaders();
-        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-        httpHeaders.setAccept(Collections.singletonList(MediaType.ALL));
-
-        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(apiUrl);
-        builder.pathSegment("comments");
-
+    public Response createComment(String accountId, String publicKey, String signature, String contextId, String contextType, String message) {
         CommentDto commentDto = new CommentDto();
         commentDto.setAccountId(accountId);
         commentDto.setPublicKey(publicKey);
@@ -53,18 +37,14 @@ public class CommentsApi {
         commentDto.setContextType(contextType);
         commentDto.setMessage(message);
 
-        HttpEntity<?> httpEntity = new HttpEntity<>(JsonUtils.writeValueAsString(commentDto), httpHeaders);
-        return httpClient.post(builder.toUriString(), httpEntity, String.class);
+        return given().spec(requestSpec)
+                .accept(JSON)
+                .contentType(JSON)
+                .body(JsonUtils.writeValueAsString(commentDto))
+                .post(COMMENTS);
     }
 
-    public ResponseEntity<String> reportComment(String accountId, String publicKey, String signature, BigDecimal commentId, String reason) {
-        HttpHeaders httpHeaders = httpClient.getBasicHeaders();
-        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-        httpHeaders.setAccept(Collections.singletonList(MediaType.ALL));
-
-        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(apiUrl);
-        builder.pathSegment("comments", "report");
-
+    public Response reportComment(String accountId, String publicKey, String signature, BigDecimal commentId, String reason) {
         CommentReportDto commentDto = new CommentReportDto();
         commentDto.setAccountId(accountId);
         commentDto.setPublicKey(publicKey);
@@ -72,25 +52,24 @@ public class CommentsApi {
         commentDto.setCommentId(commentId);
         commentDto.setReason(reason);
 
-        HttpEntity<?> httpEntity = new HttpEntity<>(JsonUtils.writeValueAsString(commentDto), httpHeaders);
-        return httpClient.post(builder.toUriString(), httpEntity, String.class);
+        return given().spec(requestSpec)
+                .accept(JSON)
+                .contentType(JSON)
+                .body(JsonUtils.writeValueAsString(commentDto))
+                .post(COMMENTS_REPORT);
     }
 
-    public ResponseEntity<String> deleteComment(String accountId, String publicKey, String signature, BigDecimal commentId, String reason) {
-        HttpHeaders httpHeaders = httpClient.getBasicHeaders();
-        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-        httpHeaders.setAccept(Collections.singletonList(MediaType.ALL));
-
-        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(apiUrl);
-        builder.pathSegment("comments", commentId.toString());
-
+    public Response deleteComment(String accountId, String publicKey, String signature, BigDecimal commentId, String reason) {
         CommentDeleteDto commentDto = new CommentDeleteDto();
         commentDto.setAccountId(accountId);
         commentDto.setPublicKey(publicKey);
         commentDto.setSignature(signature);
         commentDto.setReason(reason);
 
-        HttpEntity<?> httpEntity = new HttpEntity<>(JsonUtils.writeValueAsString(commentDto), httpHeaders);
-        return httpClient.delete(builder.toUriString(), httpEntity, String.class);
+        return given().spec(requestSpec)
+                .accept(JSON)
+                .contentType(JSON)
+                .body(JsonUtils.writeValueAsString(commentDto))
+                .delete(COMMENTS_ID, commentId.toString());
     }
 }

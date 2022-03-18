@@ -30,10 +30,13 @@ export class TransactionHandlerService {
       await this.transactionActionMapperService.getActionsByNearIndexerAccountChanges(
         accountChanges,
       );
-    await this.transactionActionHandlerService.handleTransactionActions(
-      actions,
-    );
+    const handledTransactions =
+      await this.transactionActionHandlerService.handleTransactionActions(
+        actions,
+      );
 
-    return transactions;
+    return transactions.filter((tx) =>
+      handledTransactions.includes(tx.transactionHash),
+    );
   }
 }
