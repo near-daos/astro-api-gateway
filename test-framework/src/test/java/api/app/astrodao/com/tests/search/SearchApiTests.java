@@ -2,7 +2,6 @@ package api.app.astrodao.com.tests.search;
 
 import api.app.astrodao.com.core.dto.api.search.DataItem;
 import api.app.astrodao.com.core.dto.api.search.SearchResultDto;
-import api.app.astrodao.com.core.enums.HttpStatus;
 import api.app.astrodao.com.steps.SearchApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import io.qameta.allure.*;
@@ -14,8 +13,11 @@ import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_OK;
 
 @Tags({@Tag("all"), @Tag("searchApiTests")})
@@ -40,20 +42,19 @@ public class SearchApiTests extends BaseTest {
         );
 
         Response response = searchApiSteps.search(query);
-        searchApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
-
-        SearchResultDto searchResult = searchApiSteps.getResponseDto(response, SearchResultDto.class);
+        SearchResultDto searchResult = response.then()
+                .statusCode(HTTP_OK)
+                .extract().as(SearchResultDto.class);
 
         searchApiSteps.assertDtoValue(searchResult, r -> r.getDaos().getPage(), page, "daos/page");
         searchApiSteps.assertDtoValueGreaterThan(searchResult, r -> r.getDaos().getPageCount(), page, "daos/pageCount");
         searchApiSteps.assertDtoValue(searchResult, r -> r.getDaos().getCount(), count, "daos/count");
         searchApiSteps.assertDtoValueGreaterThan(searchResult, r -> r.getDaos().getTotal(), count, "daos/total");
 
-        //TODO: Uncomment after adding proper model
-        //searchApiSteps.assertDtoValue(searchResult, r -> r.getProposals().getPage().intValue(), page, "proposals/page");
-        //searchApiSteps.assertDtoValueGreaterThan(searchResult, r -> r.getProposals().getPageCount().intValue(), page, "proposals/pageCount");
-        //searchApiSteps.assertDtoValue(searchResult, r -> r.getProposals().getCount().intValue(), count, "proposals/count");
-        //searchApiSteps.assertDtoValueGreaterThan(searchResult, r -> r.getProposals().getTotal().intValue(), count, "proposals/total");
+        searchApiSteps.assertDtoValue(searchResult, r -> r.getProposals().getPage(), page, "proposals/page");
+        searchApiSteps.assertDtoValueGreaterThan(searchResult, r -> r.getProposals().getPageCount(), page, "proposals/pageCount");
+        searchApiSteps.assertDtoValue(searchResult, r -> r.getProposals().getCount(), count, "proposals/count");
+        searchApiSteps.assertDtoValueGreaterThan(searchResult, r -> r.getProposals().getTotal(), count, "proposals/total");
     }
 
     @Test
@@ -71,7 +72,8 @@ public class SearchApiTests extends BaseTest {
         );
 
         Response response = searchApiSteps.search(queryParams);
-        searchApiSteps.assertResponseStatusCode(response, HttpStatus.BAD_REQUEST);
+
+        response.then().statusCode(HTTP_BAD_REQUEST);
         searchApiSteps.assertStringContainsValue(response.body().asString(), "query must be a string");
     }
 
@@ -93,9 +95,7 @@ public class SearchApiTests extends BaseTest {
         );
 
         Response response = searchApiSteps.search(query);
-        SearchResultDto searchResult = response
-                .then()
-                .log().ifValidationFails()
+        SearchResultDto searchResult = response.then()
                 .statusCode(HTTP_OK)
                 .extract().as(SearchResultDto.class);
 
@@ -114,5 +114,41 @@ public class SearchApiTests extends BaseTest {
         searchApiSteps.assertDtoValue(searchResult, r -> r.getMembers().getPageCount(), pageCount, "members/pageCount");
         searchApiSteps.assertDtoValue(searchResult, r -> r.getMembers().getCount(), 0, "members/count");
         searchApiSteps.assertDtoValue(searchResult, r -> r.getMembers().getTotal(), 0, "members/total");
+    }
+
+    @Test
+    @Severity(SeverityLevel.CRITICAL)
+    @Story("Performing search with query param: [sort, query, accountId]")
+    @DisplayName("Performing search with query param: [sort, query, accountId]")
+    void performingSearchWithSortQueryAccountIdParams() {
+        String searchQuery = "testdao";
+        String accountId = "testdao2.testnet";
+        String sort = "createdAt,ASC";
+        int limit = 5;
+
+        Map<String, Object> query = Map.of(
+                "query",searchQuery,
+                "accountId", accountId,
+                "sort", sort,
+                "limit", limit
+        );
+
+        Response response = searchApiSteps.search(query);
+        SearchResultDto searchResult = response.then()
+                .statusCode(HTTP_OK)
+                .extract().as(SearchResultDto.class);
+
+        List<String> daosCreatedAtList = searchResult.getDaos().getData().stream()
+                .map(DataItem::getCreatedAt)
+                .collect(Collectors.toList());
+
+        List<String> proposalsCreatedAtList = searchResult.getProposals().getData().stream()
+                .map(DataItem::getCreatedAt)
+                .collect(Collectors.toList());
+
+        searchApiSteps.assertStringsAreSortedCorrectly(daosCreatedAtList, String::compareTo, "DAOs should be sorted by 'createdAt' in ASC order");
+        searchApiSteps.assertStringsAreSortedCorrectly(proposalsCreatedAtList, String::compareTo, "Proposals should be sorted by 'createdAt' in ASC order");
+        searchApiSteps.assertDtoValue(searchResult, r -> r.getDaos().getCount(), limit, "daos/count");
+        searchApiSteps.assertDtoValue(searchResult, r -> r.getProposals().getCount(), limit, "proposals/count");
     }
 }
