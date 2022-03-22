@@ -3,7 +3,6 @@ package api.app.astrodao.com.tests;
 import api.app.astrodao.com.core.dto.api.dao.DAODto;
 import api.app.astrodao.com.core.dto.api.proposals.ProposalDto;
 import api.app.astrodao.com.core.dto.cli.AddProposalResponse;
-import api.app.astrodao.com.core.dto.cli.CLIResponse;
 import api.app.astrodao.com.core.dto.cli.dao.*;
 import api.app.astrodao.com.core.dto.cli.proposals.bounty.*;
 import api.app.astrodao.com.core.dto.cli.proposals.config.ChangeConfigDto;
@@ -13,6 +12,7 @@ import api.app.astrodao.com.core.dto.cli.proposals.poll.PollProposalDto;
 import api.app.astrodao.com.core.dto.cli.proposals.transfer.Transfer;
 import api.app.astrodao.com.core.dto.cli.proposals.transfer.TransferProposalDto;
 import api.app.astrodao.com.core.dto.cli.vote.VoteDto;
+import api.app.astrodao.com.core.enums.HttpStatus;
 import api.app.astrodao.com.steps.DaoApiSteps;
 import api.app.astrodao.com.steps.NearCLISteps;
 import api.app.astrodao.com.steps.ProposalsApiSteps;
@@ -28,12 +28,12 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import api.app.astrodao.com.core.enums.HttpStatus;
 
 import java.util.List;
 
 import static api.app.astrodao.com.core.utils.WaitUtils.getEpochMillis;
 import static api.app.astrodao.com.core.utils.WaitUtils.getLocalDateTime;
+import static java.net.HttpURLConnection.HTTP_OK;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @Epic("Aggregation")
@@ -103,14 +103,15 @@ public class AggregationWithoutCallbackTests extends BaseTest {
                 .setConfig(config);
 
         NewDAODto newDaoDto = NewDAODto.of(daoName, daoArgs);
-        CLIResponse cliResponse = nearCLISteps.createNewDao(newDaoDto, testAccountId, gasValue, deposit);
+        nearCLISteps.createNewDao(newDaoDto, testAccountId, gasValue, deposit);
 
         Response response = nearCLISteps.waitForAggregation(
                 aggregationTimeout, () -> daoApiSteps.getDAOByID(daoId)
         );
-        daoApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
-        DAODto daoDto = daoApiSteps.getResponseDto(response, DAODto.class);
+        DAODto daoDto = response.then()
+                .statusCode(HTTP_OK)
+                .extract().as( DAODto.class);
         //daoApiSteps.assertDtoValue(daoDto, DAODto::getIsArchived, Boolean.FALSE, "isArchived");
         daoApiSteps.assertDtoValue(daoDto, DAODto::getId, daoId, "id");
         //TODO: Ask a question or raise a bug, sometimes TransactionHash is not available after DAO creation
