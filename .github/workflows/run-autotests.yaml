@@ -127,7 +127,7 @@ jobs:
       env:
         KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
       with:
-        args: cp -n sputnik-v2-development test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/allure-report/history/* ${{ steps.get_pod.outputs.kubectl-out }}:/app/${{ steps.set_environment.outputs.environment }}/history
+        args: cp -n sputnik-v2-development test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/allure-report/history ${{ steps.get_pod.outputs.kubectl-out }}:/app/${{ steps.set_environment.outputs.environment }}/
 
     - name: Add Annotation
       run: |
