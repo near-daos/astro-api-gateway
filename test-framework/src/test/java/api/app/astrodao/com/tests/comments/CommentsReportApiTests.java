@@ -33,7 +33,7 @@ public class CommentsReportApiTests extends BaseTest {
 	@Value("${test.dao1}")
 	private String testDao;
 
-	@Value("${test.proposal}")
+	@Value("${test.proposal1}")
 	private String testProposal;
 
 	@Value("${accounts.account1.accountId}")

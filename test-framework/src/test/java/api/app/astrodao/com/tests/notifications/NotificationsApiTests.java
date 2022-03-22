@@ -184,7 +184,7 @@ public class NotificationsApiTests extends BaseTest {
     @Story("User should be able to get list of notifications with query param: [limit, filter, or]")
     @DisplayName("User should be able to get list of notifications with query param: [limit, filter, or]")
     void getListOfNotificationsWithFilterAndOrParameters() {
-        int count = 100;
+        int count = 1000;
         int page = 1;
         Map<String, Object> queryParams = Map.of(
                 "limit", count,
