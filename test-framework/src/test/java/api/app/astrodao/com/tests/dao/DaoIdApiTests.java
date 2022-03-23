@@ -4,7 +4,6 @@ import api.app.astrodao.com.openapi.models.Dao;
 import api.app.astrodao.com.steps.DaoApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import io.qameta.allure.*;
-import io.restassured.response.Response;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -12,7 +11,8 @@ import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import api.app.astrodao.com.core.enums.HttpStatus;
+
+import static java.net.HttpURLConnection.HTTP_OK;
 
 @Tags({@Tag("all"), @Tag("daosIdApiTests")})
 @Epic("DAO")
@@ -30,10 +30,9 @@ public class DaoIdApiTests extends BaseTest {
 	@Story("Getting a DAO by it's ID")
 	@DisplayName("Getting a DAO by it's ID")
 	void getDaoById() {
-		Response response = daoApiSteps.getDAOByID(testDao);
-		daoApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
-
-		Dao dao = daoApiSteps.getResponseDto(response, Dao.class);
+		Dao dao = daoApiSteps.getDAOByID(testDao).then()
+				.statusCode(HTTP_OK)
+				.extract().as(Dao.class);
 
 		daoApiSteps.assertDtoValue(dao, Dao::getId, testDao, "id");
 		daoApiSteps.assertDtoValueGreaterThan(dao, p -> p.getTotalDaoFunds().intValue(), 10, "totalDaoFunds");

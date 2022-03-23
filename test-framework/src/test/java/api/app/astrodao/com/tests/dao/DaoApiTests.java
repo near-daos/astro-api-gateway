@@ -15,6 +15,8 @@ import api.app.astrodao.com.core.enums.HttpStatus;
 
 import java.util.Map;
 
+import static java.net.HttpURLConnection.HTTP_OK;
+
 @Tags({@Tag("all"), @Tag("daoApiTests")})
 @Epic("DAO")
 @Feature("/dao API tests")
@@ -35,10 +37,10 @@ public class DaoApiTests extends BaseTest {
         );
         int limit = 10;
         int page = 1;
-        Response response = daoApiSteps.getDaos(query);
-        daoApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
-        DaoResponse daoResponse = daoApiSteps.getResponseDto(response, DaoResponse.class);
+        DaoResponse daoResponse = daoApiSteps.getDaos(query).then()
+                .statusCode(HTTP_OK)
+                .extract().as(DaoResponse.class);
 
         daoApiSteps.assertDtoValueGreaterThan(daoResponse, r -> r.getTotal().intValue(), limit, "total");
         daoApiSteps.assertDtoValueGreaterThan(daoResponse, r -> r.getPageCount().intValue(), 1, "pageCount");
@@ -59,10 +61,10 @@ public class DaoApiTests extends BaseTest {
                 "sort","createdAt,DESC",
                 "page", page
         );
-        Response response = daoApiSteps.getDaos(query);
-        daoApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
-        DaoResponse daoResponse = daoApiSteps.getResponseDto(response, DaoResponse.class);
+        DaoResponse daoResponse = daoApiSteps.getDaos(query).then()
+                .statusCode(HTTP_OK)
+                .extract().as(DaoResponse.class);
 
         daoApiSteps.assertDtoValueGreaterThan(daoResponse, r -> r.getTotal().intValue(), count, "total");
         daoApiSteps.assertDtoValueGreaterThan(daoResponse, r -> r.getPageCount().intValue(), 1, "pageCount");
@@ -83,10 +85,10 @@ public class DaoApiTests extends BaseTest {
                 "sort","id,DESC",
                 "fields", "id,numberOfMembers"
         );
-        Response response = daoApiSteps.getDaos(query);
-        daoApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
-        DaoResponse daoResponse = daoApiSteps.getResponseDto(response, DaoResponse.class);
+        DaoResponse daoResponse = daoApiSteps.getDaos(query).then()
+                .statusCode(HTTP_OK)
+                .extract().as(DaoResponse.class);
 
         daoApiSteps.assertDtoValueGreaterThan(daoResponse, r -> r.getTotal().intValue(), count, "total");
         daoApiSteps.assertDtoValueGreaterThan(daoResponse, r -> r.getPageCount().intValue(), page, "pageCount");
@@ -109,10 +111,9 @@ public class DaoApiTests extends BaseTest {
                 "s", String.format("{\"numberOfMembers\": %s}", numberOfMembers)
         );
 
-        Response response = daoApiSteps.getDaos(query);
-        daoApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
-
-        DaoResponse daoResponse = daoApiSteps.getResponseDto(response, DaoResponse.class);
+        DaoResponse daoResponse = daoApiSteps.getDaos(query).then()
+                .statusCode(HTTP_OK)
+                .extract().as(DaoResponse.class);
 
         daoApiSteps.assertDtoValueGreaterThan(daoResponse, r -> r.getTotal().intValue(), count, "total");
         daoApiSteps.assertDtoValueGreaterThan(daoResponse, r -> r.getPageCount().intValue(), page, "pageCount");
