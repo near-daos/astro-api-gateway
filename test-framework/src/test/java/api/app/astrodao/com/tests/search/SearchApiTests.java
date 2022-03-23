@@ -41,8 +41,7 @@ public class SearchApiTests extends BaseTest {
                 "offset", 0
         );
 
-        Response response = searchApiSteps.search(query);
-        SearchResultDto searchResult = response.then()
+        SearchResultDto searchResult = searchApiSteps.search(query).then()
                 .statusCode(HTTP_OK)
                 .extract().as(SearchResultDto.class);
 
@@ -71,10 +70,9 @@ public class SearchApiTests extends BaseTest {
                 "page", page
         );
 
-        Response response = searchApiSteps.search(queryParams);
-
-        response.then().statusCode(HTTP_BAD_REQUEST);
-        searchApiSteps.assertStringContainsValue(response.body().asString(), "query must be a string");
+        searchApiSteps.search(queryParams).then()
+                .statusCode(HTTP_BAD_REQUEST)
+                .extract().body().path("message", "query must be a string");
     }
 
     @Test
@@ -94,8 +92,7 @@ public class SearchApiTests extends BaseTest {
                 "accountId", accountId
         );
 
-        Response response = searchApiSteps.search(query);
-        SearchResultDto searchResult = response.then()
+        SearchResultDto searchResult = searchApiSteps.search(query).then()
                 .statusCode(HTTP_OK)
                 .extract().as(SearchResultDto.class);
 
@@ -133,8 +130,7 @@ public class SearchApiTests extends BaseTest {
                 "limit", limit
         );
 
-        Response response = searchApiSteps.search(query);
-        SearchResultDto searchResult = response.then()
+        SearchResultDto searchResult = searchApiSteps.search(query).then()
                 .statusCode(HTTP_OK)
                 .extract().as(SearchResultDto.class);
 
