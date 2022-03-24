@@ -10,7 +10,9 @@ import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import api.app.astrodao.com.core.enums.HttpStatus;
+
+import static java.net.HttpURLConnection.HTTP_CREATED;
+import static java.net.HttpURLConnection.HTTP_OK;
 
 @Tags({@Tag("all"), @Tag("accountSubscriptionsApiTests")})
 @Epic("Subscription")
@@ -43,18 +45,17 @@ public class AccountSubscriptionsApiTests extends BaseTest {
 		String dao = "spacex.sputnikv2.testnet";
 		String subscriptionId = String.format("%s-%s", dao, accountId);
 
-		Response response = subscriptionsApiSteps.accountSubscriptions(accountId);
-		subscriptionsApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
+		Subscriptions subscriptionsBefore = subscriptionsApiSteps.accountSubscriptions(accountId).then()
+				.statusCode(HTTP_OK)
+				.extract().as(Subscriptions.class);
 
-		Subscriptions subscriptionsBefore = subscriptionsApiSteps.getResponseDto(response, Subscriptions.class);
+		subscriptionsApiSteps.subscribeDao(accountId, accountPublicKey, accountSignature, dao).then()
+				.statusCode(HTTP_CREATED);
 
-		response = subscriptionsApiSteps.subscribeDao(accountId, accountPublicKey, accountSignature, dao);
-		subscriptionsApiSteps.assertResponseStatusCode(response, HttpStatus.CREATED);
+		Subscriptions subscriptionsAfter = subscriptionsApiSteps.accountSubscriptions(accountId).then()
+				.statusCode(HTTP_OK)
+				.extract().as(Subscriptions.class);
 
-		response = subscriptionsApiSteps.accountSubscriptions(accountId);
-		subscriptionsApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
-
-		Subscriptions subscriptionsAfter = subscriptionsApiSteps.getResponseDto(response, Subscriptions.class);
 		subscriptionsApiSteps.assertCollectionHasCorrectSize(subscriptionsAfter, subscriptionsBefore.size() + 1);
 
 		Subscription createdSubscription = subscriptionsApiSteps.getCreatedSubscription(subscriptionsAfter, subscriptionId);
@@ -72,7 +73,7 @@ public class AccountSubscriptionsApiTests extends BaseTest {
 		String accountId = "testdao3132498.testnet";
 
 		Response response = subscriptionsApiSteps.accountSubscriptions(accountId);
-		subscriptionsApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
+		subscriptionsApiSteps.assertResponseStatusCode(response, HTTP_OK);
 		subscriptionsApiSteps.assertStringContainsValue(response.body().asString(), "[]");
 	}
 }

@@ -25,6 +25,13 @@ public abstract class BaseSteps {
                 .isEqualTo(status);
     }
 
+    @Step("Verify http status code is correct")
+    public void assertResponseStatusCode(Response actual, int status) {
+        assertThat(actual.getStatusCode())
+                .as("http status code should be correct.")
+                .isEqualTo(status);
+    }
+
     @Step("Verify response collection is not empty")
     public void assertCollectionResponseIsNotEmpty(Collection<?> actual) {
         assertThat(actual)

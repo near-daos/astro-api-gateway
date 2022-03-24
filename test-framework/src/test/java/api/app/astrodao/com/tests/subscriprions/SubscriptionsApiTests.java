@@ -1,5 +1,6 @@
 package api.app.astrodao.com.tests.subscriprions;
 
+import api.app.astrodao.com.core.enums.HttpStatus;
 import api.app.astrodao.com.openapi.models.Subscription;
 import api.app.astrodao.com.steps.SubscriptionsApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
@@ -10,7 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import api.app.astrodao.com.core.enums.HttpStatus;
+
+import static java.net.HttpURLConnection.HTTP_CREATED;
 
 @Tags({@Tag("all"), @Tag("subscriptionsApiTests")})
 @Epic("Subscription")
@@ -42,10 +44,13 @@ public class SubscriptionsApiTests extends BaseTest {
     void userShouldBeAbleToSubscribeToADao() {
         String dao = "marmaj.sputnikv2.testnet";
         String subscriptionId = String.format("%s-%s", dao, accountId);
-        Response response = subscriptionsApiSteps.subscribeDao(accountId, accountPublicKey, accountSignature, dao);
-        subscriptionsApiSteps.assertResponseStatusCode(response, HttpStatus.CREATED);
 
-        Subscription subscription = subscriptionsApiSteps.getResponseDto(response, Subscription.class);
+        Subscription subscription = subscriptionsApiSteps.subscribeDao(accountId, accountPublicKey, accountSignature, dao).then()
+                .statusCode(HTTP_CREATED)
+                .extract().as(Subscription.class);
+//        subscriptionsApiSteps.assertResponseStatusCode(response, HttpStatus.CREATED);
+//        Subscription subscription = subscriptionsApiSteps.getResponseDto(response, Subscription.class);
+
         subscriptionsApiSteps.assertDtoValue(subscription, Subscription::getId, subscriptionId, "id");
         subscriptionsApiSteps.assertDtoValue(subscription, Subscription::getAccountId, accountId, "accountId");
         subscriptionsApiSteps.assertDtoValue(subscription, Subscription::getDaoId, dao, "daoId");
