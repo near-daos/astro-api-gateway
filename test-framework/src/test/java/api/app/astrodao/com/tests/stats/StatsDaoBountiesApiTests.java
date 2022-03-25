@@ -29,9 +29,6 @@ public class StatsDaoBountiesApiTests extends BaseTest {
 		//TODO: Add steps to retrieve data for DAO from CLI
 		String dao = "gaming.sputnikv2.testnet";
 
-		Response response = statsApiSteps.getBountiesForDao(dao);
-		statsApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
-
 		StatsEntries statsEntries = statsApiSteps.getBountiesForDao(dao).then()
 				.statusCode(HTTP_OK)
 				.extract().as(StatsEntries.class);

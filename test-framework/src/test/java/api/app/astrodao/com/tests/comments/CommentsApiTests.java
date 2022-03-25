@@ -288,7 +288,7 @@ public class CommentsApiTests extends BaseTest {
                 account1Id, account2PublicKey, account1Signature, testProposal, contextType, commentMsg
         );
 
-        commentsApiSteps.assertResponseStatusCode(newCommentResponse, HttpStatus.FORBIDDEN);
+        commentsApiSteps.assertResponseStatusCode(newCommentResponse, HTTP_FORBIDDEN);
         commentsApiSteps.assertStringContainsValue(newCommentResponse.body().asString(), errorMsg);
     }
 

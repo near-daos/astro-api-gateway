@@ -12,7 +12,7 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
-import static java.net.HttpURLConnection.HTTP_CREATED;
+import static java.net.HttpURLConnection.*;
 
 @Tags({@Tag("all"), @Tag("subscriptionsApiTests")})
 @Epic("Subscription")
@@ -64,7 +64,7 @@ public class SubscriptionsApiTests extends BaseTest {
         String expectedResponse = String.format("No DAO '%s' and/or Account 'testdao2.testnet' found.", dao);
 
         Response response = subscriptionsApiSteps.subscribeDao(accountId, accountPublicKey, accountSignature, dao);
-        subscriptionsApiSteps.assertResponseStatusCode(response, HttpStatus.BAD_REQUEST);
+        subscriptionsApiSteps.assertResponseStatusCode(response, HTTP_BAD_REQUEST);
         subscriptionsApiSteps.assertStringContainsValue(response.body().asString(), expectedResponse);
     }
 
@@ -77,7 +77,7 @@ public class SubscriptionsApiTests extends BaseTest {
         String invalidSignature = faker.lorem().characters(12, 24);
 
         Response response = subscriptionsApiSteps.subscribeDao(accountId, accountPublicKey, invalidSignature, dao);
-        subscriptionsApiSteps.assertResponseStatusCode(response, HttpStatus.FORBIDDEN);
+        subscriptionsApiSteps.assertResponseStatusCode(response, HTTP_FORBIDDEN);
         subscriptionsApiSteps.assertStringContainsValue(response.body().asString(), expectedResponse);
     }
 }

@@ -23,6 +23,7 @@ import java.util.function.Supplier;
 
 import static api.app.astrodao.com.core.Constants.CLICommands.*;
 import static api.app.astrodao.com.core.utils.JsonUtils.writeValueAsString;
+import static java.net.HttpURLConnection.HTTP_OK;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.awaitility.Awaitility.await;
 
@@ -57,7 +58,7 @@ public class NearCLISteps {
                 .pollInterval(Duration.ofSeconds(1))
                 .until(() -> {
                     response.set(supplier.get());
-                    return response.get().getStatusCode() == HttpStatus.OK.value();
+                    return response.get().getStatusCode() == HTTP_OK;
                 });
         return response.get();
     }
