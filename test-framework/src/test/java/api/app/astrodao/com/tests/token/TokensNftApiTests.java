@@ -1,5 +1,6 @@
 package api.app.astrodao.com.tests.token;
 
+import api.app.astrodao.com.core.enums.HttpStatus;
 import api.app.astrodao.com.openapi.models.NFTTokenResponse;
 import api.app.astrodao.com.steps.TokenApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
@@ -8,9 +9,11 @@ import io.restassured.response.Response;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import api.app.astrodao.com.core.enums.HttpStatus;
 
 import java.util.Map;
+
+import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
+import static java.net.HttpURLConnection.HTTP_OK;
 
 @Tags({@Tag("all"), @Tag("tokensApiTests"), @Tag("tokensNftApiTests")})
 @Epic("Token")
@@ -33,10 +36,10 @@ public class TokensNftApiTests extends BaseTest {
 		);
 		int limit = 10;
 		int page = 1;
-		Response response = tokenApiSteps.getNFTs(query);
-		tokenApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
-		NFTTokenResponse tokenResponse = tokenApiSteps.getResponseDto(response, NFTTokenResponse.class);
+		NFTTokenResponse tokenResponse = tokenApiSteps.getNFTs(query).then()
+				.statusCode(HTTP_OK)
+				.extract().as(NFTTokenResponse.class);
 
 		tokenApiSteps.assertDtoValueGreaterThan(tokenResponse, r -> r.getTotal().intValue(), limit, "total");
 		tokenApiSteps.assertDtoValueGreaterThan(tokenResponse, r -> r.getPageCount().intValue(), 1, "pageCount");
@@ -61,10 +64,10 @@ public class TokensNftApiTests extends BaseTest {
 				"sort","createdAt,DESC",
 				"page", page
 		);
-		Response response = tokenApiSteps.getNFTs(query);
-		tokenApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
-		NFTTokenResponse tokenResponse = tokenApiSteps.getResponseDto(response, NFTTokenResponse.class);
+		NFTTokenResponse tokenResponse = tokenApiSteps.getNFTs(query).then()
+				.statusCode(HTTP_OK)
+				.extract().as(NFTTokenResponse.class);
 
 		tokenApiSteps.assertDtoValue(tokenResponse, r -> r.getPage().intValue(), page, "page");
 		tokenApiSteps.assertCollectionElementsHasValue(tokenResponse.getData(), r -> !r.getId().isBlank(), "id");
@@ -86,10 +89,10 @@ public class TokensNftApiTests extends BaseTest {
 				"sort","id,DESC",
 				"fields", "id,ownerId"
 		);
-		Response response = tokenApiSteps.getNFTs(query);
-		tokenApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
-		NFTTokenResponse tokenResponse = tokenApiSteps.getResponseDto(response, NFTTokenResponse.class);
+		NFTTokenResponse tokenResponse = tokenApiSteps.getNFTs(query).then()
+				.statusCode(HTTP_OK)
+				.extract().as(NFTTokenResponse.class);
 
 		tokenApiSteps.assertDtoValue(tokenResponse, r -> r.getPage().intValue(), page, "page");
 		tokenApiSteps.assertCollectionElementsHasValue(tokenResponse.getData(), r -> !r.getId().isBlank(), "id");
@@ -111,10 +114,10 @@ public class TokensNftApiTests extends BaseTest {
 				"sort","createdAt,DESC",
 				"s", String.format("{\"contractId\": \"%s\"}", contractId)
 		);
-		Response response = tokenApiSteps.getNFTs(query);
-		tokenApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
-		NFTTokenResponse tokenResponse = tokenApiSteps.getResponseDto(response, NFTTokenResponse.class);
+		NFTTokenResponse tokenResponse = tokenApiSteps.getNFTs(query).then()
+				.statusCode(HTTP_OK)
+				.extract().as(NFTTokenResponse.class);
 
 		tokenApiSteps.assertDtoValue(tokenResponse, r -> r.getPage().intValue(), 1, "page");
 		tokenApiSteps.assertDtoValueGreaterThanOrEqualTo(tokenResponse, r -> r.getPageCount().intValue(), 1, "pageCount");
@@ -138,7 +141,7 @@ public class TokensNftApiTests extends BaseTest {
 		String expectedResponse = "LIMIT must not be negative";
 
 		Response response = tokenApiSteps.getNFTs(query);
-		tokenApiSteps.assertResponseStatusCode(response, HttpStatus.BAD_REQUEST);
+		tokenApiSteps.assertResponseStatusCode(response, HTTP_BAD_REQUEST);
 		tokenApiSteps.assertStringContainsValue(response.body().asString(), expectedResponse);
 	}
 }

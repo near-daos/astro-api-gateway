@@ -10,9 +10,11 @@ import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import api.app.astrodao.com.core.enums.HttpStatus;
 
 import java.math.BigDecimal;
+
+import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
+import static java.net.HttpURLConnection.HTTP_OK;
 
 @Tags({@Tag("all"), @Tag("tokensApiTests"), @Tag("accountTokensApiTests")})
 @Epic("Token")
@@ -31,10 +33,9 @@ public class AccountTokensApiTests extends BaseTest {
 	@Story("Get list of token for valid DAO")
 	@DisplayName("Get list of token for valid DAO")
 	void getListOfTokensForValidDao() {
-		Response response = tokenApiSteps.getTokensForDao(testDao);
-		tokenApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
-
-		TokensList tokensList = tokenApiSteps.getResponseDto(response, TokensList.class);
+		TokensList tokensList = tokenApiSteps.getTokensForDao(testDao).then()
+				.statusCode(HTTP_OK)
+				.extract().as(TokensList.class);
 
 		tokenApiSteps.assertCollectionHasCorrectSize(tokensList, 1);
 		tokenApiSteps.assertDtoValue(tokensList.get(0), Token::getId, "NEAR", "id");
@@ -53,6 +54,6 @@ public class AccountTokensApiTests extends BaseTest {
 	void getListOfTokensForInvalidDao() {
 		Response response = tokenApiSteps.getTokensForDao("wqeqrrr.sputnikv2.testnet");
 
-		tokenApiSteps.assertResponseStatusCode(response, HttpStatus.BAD_REQUEST);
+		tokenApiSteps.assertResponseStatusCode(response, HTTP_BAD_REQUEST);
 	}
 }
