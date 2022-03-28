@@ -47,8 +47,6 @@ public class SubscriptionsApiTests extends BaseTest {
         Subscription subscription = subscriptionsApiSteps.subscribeDao(accountId, accountPublicKey, accountSignature, dao).then()
                 .statusCode(HTTP_CREATED)
                 .extract().as(Subscription.class);
-//        subscriptionsApiSteps.assertResponseStatusCode(response, HttpStatus.CREATED);
-//        Subscription subscription = subscriptionsApiSteps.getResponseDto(response, Subscription.class);
 
         subscriptionsApiSteps.assertDtoValue(subscription, Subscription::getId, subscriptionId, "id");
         subscriptionsApiSteps.assertDtoValue(subscription, Subscription::getAccountId, accountId, "accountId");
