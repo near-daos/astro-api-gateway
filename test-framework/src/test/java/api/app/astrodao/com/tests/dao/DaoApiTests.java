@@ -13,7 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Map;
 
+import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_OK;
+import static org.hamcrest.Matchers.equalTo;
 
 @Tags({@Tag("all"), @Tag("daoApiTests")})
 @Epic("DAO")
@@ -121,4 +123,25 @@ public class DaoApiTests extends BaseTest {
         daoApiSteps.assertCollectionElementsHasValue(daoResponse.getData(), r -> !r.getId().isBlank(), "id");
         daoApiSteps.assertCollectionElementsHasValue(daoResponse.getData(), r -> r.getNumberOfMembers().intValue() == numberOfMembers, "id");
     }
+
+    @Test
+    @Severity(SeverityLevel.CRITICAL)
+    @Story("Get HTTP 400 for DAOs")
+    @DisplayName("Get HTTP 400 for DAOs")
+    void getHttp400ForDaos() {
+        Map<String, Object> query = Map.of(
+                "sort", "createdAt,DESC",
+                "limit", 50,
+                "offset", 0,
+                "page", 1,
+                "fields", "daoId,createdAt",
+                "s", "Invalid search request");
+
+        daoApiSteps.getDaos(query).then()
+                .statusCode(HTTP_BAD_REQUEST)
+                .body("statusCode", equalTo(400),
+                      "message", equalTo("Invalid search param. JSON expected"),
+                      "error", equalTo("Bad Request"));
+    }
+
 }

@@ -7,6 +7,7 @@ import api.app.astrodao.com.tests.BaseTest;
 import io.qameta.allure.*;
 import io.restassured.response.Response;
 import lombok.RequiredArgsConstructor;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Tags;
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
 
 import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_OK;
+import static org.hamcrest.Matchers.equalTo;
 
 @Tags({@Tag("all"), @Tag("searchApiTests")})
 @Epic("Search")
@@ -72,7 +74,7 @@ public class SearchApiTests extends BaseTest {
 
         searchApiSteps.search(queryParams).then()
                 .statusCode(HTTP_BAD_REQUEST)
-                .extract().body().path("message", "query must be a string");
+                .body("message", equalTo("query must be a string"));
     }
 
     @Test
