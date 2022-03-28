@@ -1,11 +1,9 @@
 package api.app.astrodao.com.tests.stats;
 
 import api.app.astrodao.com.core.dto.api.stats.StatsEntries;
-import api.app.astrodao.com.core.enums.HttpStatus;
 import api.app.astrodao.com.steps.StatsApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import io.qameta.allure.*;
-import io.restassured.response.Response;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;

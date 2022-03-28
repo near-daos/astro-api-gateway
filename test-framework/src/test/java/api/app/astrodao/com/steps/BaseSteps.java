@@ -4,7 +4,6 @@ import api.app.astrodao.com.core.utils.JsonUtils;
 import io.qameta.allure.Step;
 import io.restassured.response.Response;
 import org.assertj.core.api.AssertionsForInterfaceTypes;
-import api.app.astrodao.com.core.enums.HttpStatus;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -17,13 +16,6 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 public abstract class BaseSteps {
-
-    @Step("Verify http status code is correct")
-    public void assertResponseStatusCode(Response actual, HttpStatus status) {
-        assertThat(HttpStatus.valueOf(actual.getStatusCode()))
-                .as("http status code should be correct.")
-                .isEqualTo(status);
-    }
 
     @Step("Verify http status code is correct")
     public void assertResponseStatusCode(Response actual, int status) {

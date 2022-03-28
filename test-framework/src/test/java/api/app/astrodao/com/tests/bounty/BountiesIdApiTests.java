@@ -4,14 +4,12 @@ import api.app.astrodao.com.openapi.models.Bounty;
 import api.app.astrodao.com.steps.BountiesApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import io.qameta.allure.*;
-import io.restassured.response.Response;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import api.app.astrodao.com.core.enums.HttpStatus;
 
 import static java.net.HttpURLConnection.HTTP_OK;
 

@@ -1,7 +1,6 @@
 package api.app.astrodao.com.tests.comments;
 
 import api.app.astrodao.com.core.dto.api.comments.CreatedComment;
-import api.app.astrodao.com.core.enums.HttpStatus;
 import api.app.astrodao.com.core.utils.WaitUtils;
 import api.app.astrodao.com.openapi.models.Comment;
 import api.app.astrodao.com.openapi.models.CommentResponse;

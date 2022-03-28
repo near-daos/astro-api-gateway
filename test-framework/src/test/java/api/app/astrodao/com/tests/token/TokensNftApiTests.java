@@ -1,6 +1,5 @@
 package api.app.astrodao.com.tests.token;
 
-import api.app.astrodao.com.core.enums.HttpStatus;
 import api.app.astrodao.com.openapi.models.NFTTokenResponse;
 import api.app.astrodao.com.steps.TokenApiSteps;
 import api.app.astrodao.com.tests.BaseTest;

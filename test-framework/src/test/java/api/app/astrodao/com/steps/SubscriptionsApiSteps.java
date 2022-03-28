@@ -8,7 +8,6 @@ import api.app.astrodao.com.openapi.models.Subscription;
 import io.qameta.allure.Step;
 import io.restassured.response.Response;
 import lombok.RequiredArgsConstructor;
-import api.app.astrodao.com.core.enums.HttpStatus;
 
 import java.util.Objects;
 

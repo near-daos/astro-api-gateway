@@ -1,7 +1,6 @@
 package api.app.astrodao.com.tests.token;
 
 import api.app.astrodao.com.core.dto.api.tokens.TokensList;
-import api.app.astrodao.com.core.enums.HttpStatus;
 import api.app.astrodao.com.openapi.models.Token;
 import api.app.astrodao.com.openapi.models.TokenResponse;
 import api.app.astrodao.com.steps.TokenApiSteps;

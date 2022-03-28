@@ -9,7 +9,6 @@ import api.app.astrodao.com.steps.CommentsApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import com.github.javafaker.Faker;
 import io.qameta.allure.*;
-import io.restassured.response.Response;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -17,7 +16,6 @@ import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import api.app.astrodao.com.core.enums.HttpStatus;
 
 import java.util.Map;
 

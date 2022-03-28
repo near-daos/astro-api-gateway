@@ -1,12 +1,10 @@
 package api.app.astrodao.com.tests.bounty;
 
-import api.app.astrodao.com.core.enums.HttpStatus;
 import api.app.astrodao.com.openapi.models.BountyContext;
 import api.app.astrodao.com.openapi.models.BountyContextResponse;
 import api.app.astrodao.com.steps.BountiesApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import io.qameta.allure.*;
-import io.restassured.response.Response;
 import lombok.RequiredArgsConstructor;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.DisplayName;

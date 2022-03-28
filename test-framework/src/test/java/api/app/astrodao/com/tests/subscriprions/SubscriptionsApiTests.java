@@ -1,6 +1,5 @@
 package api.app.astrodao.com.tests.subscriprions;
 
-import api.app.astrodao.com.core.enums.HttpStatus;
 import api.app.astrodao.com.openapi.models.Subscription;
 import api.app.astrodao.com.steps.SubscriptionsApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
