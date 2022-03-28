@@ -49,6 +49,7 @@ public class BountiesApiTests extends BaseTest {
         );
         int limit = 10;
         int page = 1;
+
         BountyResponse bountyResponse = bountiesApiSteps.getBounties(query).then()
                 .statusCode(HTTP_OK)
                 .extract().as(BountyResponse.class);

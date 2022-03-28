@@ -1,7 +1,7 @@
 package api.app.astrodao.com.tests.notifications;
 
-import api.app.astrodao.com.core.dto.api.notigications.Notification;
-import api.app.astrodao.com.core.dto.api.notigications.NotificationsResponse;
+import api.app.astrodao.com.core.dto.api.notifications.Notification;
+import api.app.astrodao.com.core.dto.api.notifications.NotificationsResponse;
 import api.app.astrodao.com.steps.NotificationsApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import io.qameta.allure.*;
@@ -13,13 +13,14 @@ import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import api.app.astrodao.com.core.enums.HttpStatus;
 
 import java.time.OffsetDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static java.net.HttpURLConnection.HTTP_OK;
 
 @Tags({@Tag("all"), @Tag("notificationsApiTests")})
 @Epic("Notifications")
@@ -48,7 +49,7 @@ public class NotificationsApiTests extends BaseTest {
         int limit = 10;
         int page = 1;
         Response response = notificationsApiSteps.getNotifications(query);
-        notificationsApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
+        notificationsApiSteps.assertResponseStatusCode(response, HTTP_OK);
 
         NotificationsResponse notifications = notificationsApiSteps.getResponseDto(response, NotificationsResponse.class);
 
@@ -83,7 +84,7 @@ public class NotificationsApiTests extends BaseTest {
                 "page", page
         );
         Response response = notificationsApiSteps.getNotifications(query);
-        notificationsApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
+        notificationsApiSteps.assertResponseStatusCode(response, HTTP_OK);
 
         NotificationsResponse notifications = notificationsApiSteps.getResponseDto(response, NotificationsResponse.class);
 
@@ -118,7 +119,7 @@ public class NotificationsApiTests extends BaseTest {
                 "fields", "createdAt,id,metadata"
         );
         Response response = notificationsApiSteps.getNotifications(query);
-        notificationsApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
+        notificationsApiSteps.assertResponseStatusCode(response, HTTP_OK);
 
         NotificationsResponse notifications = notificationsApiSteps.getResponseDto(response, NotificationsResponse.class);
 
@@ -156,7 +157,7 @@ public class NotificationsApiTests extends BaseTest {
                 "s", String.format("{\"daoId\": \"%s\"}", testDao1)
         );
         Response response = notificationsApiSteps.getNotifications(query);
-        notificationsApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
+        notificationsApiSteps.assertResponseStatusCode(response, HTTP_OK);
 
         NotificationsResponse notifications = notificationsApiSteps.getResponseDto(response, NotificationsResponse.class);
 
@@ -193,7 +194,7 @@ public class NotificationsApiTests extends BaseTest {
         );
 
         Response response = notificationsApiSteps.getNotifications(queryParams);
-        notificationsApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
+        notificationsApiSteps.assertResponseStatusCode(response, HTTP_OK);
 
         NotificationsResponse notifications = notificationsApiSteps.getResponseDto(response, NotificationsResponse.class);
 

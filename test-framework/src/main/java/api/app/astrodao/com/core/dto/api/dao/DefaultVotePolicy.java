@@ -6,8 +6,8 @@ import java.util.List;
 
 @Data
 public class DefaultVotePolicy {
-    public String weightKind;
-    public String quorum;
-    public String kind;
-    public List<Integer> ratio;
+	private String weightKind;
+	private String kind;
+	private String quorum;
+	private List<Integer> ratio;
 }

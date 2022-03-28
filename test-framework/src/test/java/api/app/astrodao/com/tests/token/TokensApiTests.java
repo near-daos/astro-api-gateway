@@ -10,10 +10,12 @@ import io.restassured.response.Response;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import api.app.astrodao.com.core.enums.HttpStatus;
 
 import java.math.BigDecimal;
 import java.util.Map;
+
+import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
+import static java.net.HttpURLConnection.HTTP_OK;
 
 @Tags({@Tag("all"), @Tag("tokensApiTests"), @Tag("tokensApiTests")})
 @Epic("Token")
@@ -36,10 +38,10 @@ public class TokensApiTests extends BaseTest {
         );
         int limit = 10;
         int page = 1;
-        Response response = tokenApiSteps.getTokens(query);
-        tokenApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
-        TokenResponse tokenResponse = tokenApiSteps.getResponseDto(response, TokenResponse.class);
+        TokenResponse tokenResponse = tokenApiSteps.getTokens(query).then()
+                .statusCode(HTTP_OK)
+                .extract().as(TokenResponse.class);
 
         tokenApiSteps.assertDtoValueGreaterThan(tokenResponse, r -> r.getTotal().intValue(), limit, "total");
         tokenApiSteps.assertDtoValueGreaterThan(tokenResponse, r -> r.getPageCount().intValue(), 1, "pageCount");
@@ -61,10 +63,10 @@ public class TokensApiTests extends BaseTest {
                 "sort","createdAt,DESC",
                 "page", page
         );
-        Response response = tokenApiSteps.getTokens(query);
-        tokenApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
-        TokensList tokensList = tokenApiSteps.getResponseDto(response, TokensList.class);
+        TokensList tokensList = tokenApiSteps.getTokens(query).then()
+                .statusCode(HTTP_OK)
+                .extract().as(TokensList.class);
 
         tokenApiSteps.assertCollectionHasSizeGreaterThanOrEqualTo(tokensList, 20);
         tokenApiSteps.assertCollectionElementsHasValue(tokensList, r -> !r.getId().isBlank(), "id");
@@ -80,10 +82,10 @@ public class TokensApiTests extends BaseTest {
                 "sort","id,DESC",
                 "fields", "id,symbol"
         );
-        Response response = tokenApiSteps.getTokens(query);
-        tokenApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
-        TokensList tokensList = tokenApiSteps.getResponseDto(response, TokensList.class);
+        TokensList tokensList = tokenApiSteps.getTokens(query).then()
+                .statusCode(HTTP_OK)
+                .extract().as(TokensList.class);
 
         tokenApiSteps.assertCollectionHasSizeGreaterThanOrEqualTo(tokensList, 20);
         tokenApiSteps.assertCollectionElementsHasValue(tokensList, r -> !r.getId().isBlank(), "id");
@@ -101,10 +103,10 @@ public class TokensApiTests extends BaseTest {
                 "sort","createdAt,DESC",
                 "s", String.format("{\"decimals\": %s}", decimals)
         );
-        Response response = tokenApiSteps.getTokens(query);
-        tokenApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
-        TokensList tokensList = tokenApiSteps.getResponseDto(response, TokensList.class);
+        TokensList tokensList = tokenApiSteps.getTokens(query).then()
+                .statusCode(HTTP_OK)
+                .extract().as(TokensList.class);
 
         tokenApiSteps.assertCollectionHasSizeGreaterThanOrEqualTo(tokensList, 20);
         tokenApiSteps.assertCollectionElementsHasValue(tokensList, r -> !r.getId().isBlank(), "id");
@@ -123,7 +125,7 @@ public class TokensApiTests extends BaseTest {
         String expectedResponse = "LIMIT must not be negative";
 
         Response response = tokenApiSteps.getTokens(query);
-        tokenApiSteps.assertResponseStatusCode(response, HttpStatus.BAD_REQUEST);
+        tokenApiSteps.assertResponseStatusCode(response, HTTP_BAD_REQUEST);
         tokenApiSteps.assertStringContainsValue(response.body().asString(), expectedResponse);
     }
 

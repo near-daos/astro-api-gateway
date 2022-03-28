@@ -5,7 +5,6 @@ import api.app.astrodao.com.openapi.models.BountyContextResponse;
 import api.app.astrodao.com.steps.BountiesApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import io.qameta.allure.*;
-import io.restassured.response.Response;
 import lombok.RequiredArgsConstructor;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.DisplayName;
@@ -14,12 +13,14 @@ import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import api.app.astrodao.com.core.enums.HttpStatus;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
+import static java.net.HttpURLConnection.HTTP_OK;
 
 @Tags({@Tag("all"), @Tag("bountyContextsTests")})
 @Epic("Bounty")
@@ -44,10 +45,9 @@ public class BountyContextsTests extends BaseTest {
 		int pageCount = 22;
 		String errorMessage = "Unauthorized user has permission to vote. Should be 'false' but was 'true'. Permission field:";
 
-		Response response = bountiesApiSteps.getBountyContexts();
-		bountiesApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
-
-		BountyContextResponse bountyContextResponse = bountiesApiSteps.getResponseDto(response,BountyContextResponse.class);
+		BountyContextResponse bountyContextResponse = bountiesApiSteps.getBountyContexts().then()
+				.statusCode(HTTP_OK)
+				.extract().as(BountyContextResponse.class);
 
 		bountiesApiSteps.assertDtoValue(bountyContextResponse, r -> r.getCount().intValue(), count, "count");
 		bountiesApiSteps.assertDtoValue(bountyContextResponse, r -> r.getPage().intValue(), page, "page");
@@ -96,10 +96,9 @@ public class BountyContextsTests extends BaseTest {
 				"offset", offset
 		);
 
-		Response response = bountiesApiSteps.getBountyContextsWithParams(queryParams);
-		bountiesApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
-
-		BountyContextResponse bountyContextResponse = bountiesApiSteps.getResponseDto(response,BountyContextResponse.class);
+		BountyContextResponse bountyContextResponse = bountiesApiSteps.getBountyContextsWithParams(queryParams).then()
+				.statusCode(HTTP_OK)
+				.extract().as(BountyContextResponse.class);
 
 		BigDecimal nearestDate = bountyContextResponse.getData().stream()
 				.map(bountyContext -> bountyContext.getProposal().getCreateTimestamp())
@@ -127,10 +126,9 @@ public class BountyContextsTests extends BaseTest {
 		int pageCount = 25;
 		Map<String, Object> queryParams = Map.of("accountId", testAccountId);
 
-		Response response = bountiesApiSteps.getBountyContextsWithParams(queryParams);
-		bountiesApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
-
-		BountyContextResponse bountyContextResponse = bountiesApiSteps.getResponseDto(response, BountyContextResponse.class);
+		BountyContextResponse bountyContextResponse = bountiesApiSteps.getBountyContextsWithParams(queryParams).then()
+				.statusCode(HTTP_OK)
+				.extract().as(BountyContextResponse.class);
 
 		bountiesApiSteps.assertDtoValue(bountyContextResponse, r -> r.getCount().intValue(), count, "count");
 		bountiesApiSteps.assertDtoValue(bountyContextResponse, r -> r.getPage().intValue(), page, "page");
@@ -182,10 +180,9 @@ public class BountyContextsTests extends BaseTest {
 				"page", page,
 				"fields", "proposal,createdAt");
 
-		Response response = bountiesApiSteps.getBountyContextsWithParams(queryParams);
-		bountiesApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
-
-		BountyContextResponse bountyContextResponse = bountiesApiSteps.getResponseDto(response, BountyContextResponse.class);
+		BountyContextResponse bountyContextResponse = bountiesApiSteps.getBountyContextsWithParams(queryParams).then()
+				.statusCode(HTTP_OK)
+				.extract().as(BountyContextResponse.class);
 
 		bountiesApiSteps.assertDtoValue(bountyContextResponse, r -> r.getCount().intValue(), count, "count");
 		bountiesApiSteps.assertDtoValue(bountyContextResponse, r -> r.getPage().intValue(), page, "page");
@@ -214,10 +211,9 @@ public class BountyContextsTests extends BaseTest {
 				"accountId", testAccountId,
 				"s", String.format("{\"id\": \"%s\"}", id));
 
-		Response response = bountiesApiSteps.getBountyContextsWithParams(queryParams);
-		bountiesApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
-
-		BountyContextResponse bountyContextResponse = bountiesApiSteps.getResponseDto(response, BountyContextResponse.class);
+		BountyContextResponse bountyContextResponse = bountiesApiSteps.getBountyContextsWithParams(queryParams).then()
+				.statusCode(HTTP_OK)
+				.extract().as(BountyContextResponse.class);
 
 		bountiesApiSteps.assertDtoValue(bountyContextResponse, r -> r.getCount().intValue(), count, "count");
 		bountiesApiSteps.assertDtoValue(bountyContextResponse, r -> r.getTotal().intValue(), total, "total");
@@ -241,10 +237,10 @@ public class BountyContextsTests extends BaseTest {
 				"accountId", testAccountId,
 				"filter", "daoId||$eq||" + daoId);
 
-		Response response = bountiesApiSteps.getBountyContextsWithParams(queryParams);
-		bountiesApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
+		BountyContextResponse bountyContextResponse = bountiesApiSteps.getBountyContextsWithParams(queryParams).then()
+				.statusCode(HTTP_OK)
+				.extract().as(BountyContextResponse.class);
 
-		BountyContextResponse bountyContextResponse = bountiesApiSteps.getResponseDto(response, BountyContextResponse.class);
 		bountiesApiSteps.assertDtoValue(bountyContextResponse, r -> r.getCount().intValue(), count, "count");
 		bountiesApiSteps.assertDtoValue(bountyContextResponse, r -> r.getTotal().intValue(), total, "total");
 		bountiesApiSteps.assertDtoValue(bountyContextResponse, r -> r.getPage().intValue(), page, "page");
@@ -269,10 +265,9 @@ public class BountyContextsTests extends BaseTest {
 				"or", "daoId||$eq||" + daoId2
 		);
 
-		Response response = bountiesApiSteps.getBountyContextsWithParams(queryParams);
-		bountiesApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
-
-		BountyContextResponse bountyContextResponse = bountiesApiSteps.getResponseDto(response, BountyContextResponse.class);
+		BountyContextResponse bountyContextResponse = bountiesApiSteps.getBountyContextsWithParams(queryParams).then()
+				.statusCode(HTTP_OK)
+				.extract().as(BountyContextResponse.class);
 
 		bountiesApiSteps.assertDtoValue(bountyContextResponse, r -> r.getCount().intValue(), count, "count");
 		bountiesApiSteps.assertDtoValue(bountyContextResponse, r -> r.getTotal().intValue(), total, "total");
@@ -307,7 +302,6 @@ public class BountyContextsTests extends BaseTest {
 				"fields", "daoId,createdAt",
 				"s", "Invalid search request");
 
-		Response response = bountiesApiSteps.getBountyContextsWithParams(queryParams);
-		bountiesApiSteps.assertResponseStatusCode(response, HttpStatus.BAD_REQUEST);
+		bountiesApiSteps.getBountyContextsWithParams(queryParams).then().statusCode(HTTP_BAD_REQUEST);
 	}
 }

@@ -1,4 +1,4 @@
-package api.app.astrodao.com.core.dto.api.notigications;
+package api.app.astrodao.com.core.dto.api.notifications;
 
 import lombok.Data;
 

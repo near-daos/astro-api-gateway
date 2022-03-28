@@ -8,7 +8,9 @@ import io.restassured.response.Response;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import api.app.astrodao.com.core.enums.HttpStatus;
+
+import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
+import static java.net.HttpURLConnection.HTTP_OK;
 
 @Tags({@Tag("all"), @Tag("tokensApiTests"), @Tag("tokensNftsEventsApiTests")})
 @Epic("Token")
@@ -26,10 +28,9 @@ public class TokensNftsEventsApiTests extends BaseTest {
 	void getEventsForValidNftID() {
 		String nftID = "mintickt.mintspace2.testnet-218";
 
-		Response response = tokenApiSteps.getEventsForNFT(nftID);
-		tokenApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
-
-		AssetsNftEventList eventsResponse = tokenApiSteps.getResponseDto(response, AssetsNftEventList.class);
+		AssetsNftEventList eventsResponse = tokenApiSteps.getEventsForNFT(nftID).then()
+				.statusCode(HTTP_OK)
+				.extract().as(AssetsNftEventList.class);
 
 		tokenApiSteps.assertCollectionHasSizeGreaterThanOrEqualTo(eventsResponse, 1);
 		tokenApiSteps.assertCollectionElementsHasValue(eventsResponse, r -> !r.getEmittedForReceiptId().isEmpty(), "emittedForReceiptId");
@@ -49,7 +50,7 @@ public class TokensNftsEventsApiTests extends BaseTest {
 		String errorMsg = String.format("NFT with id %s not found", nftID);
 
 		Response response = tokenApiSteps.getEventsForNFT(nftID);
-		tokenApiSteps.assertResponseStatusCode(response, HttpStatus.NOT_FOUND);
+		tokenApiSteps.assertResponseStatusCode(response, HTTP_NOT_FOUND);
 		tokenApiSteps.assertStringContainsValue(response.body().asString(), errorMsg);
 	}
 }
