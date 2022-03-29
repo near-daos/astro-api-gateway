@@ -18,12 +18,12 @@ export class CreateAccountNotificationSettingsDto extends AccountBearer {
   mutedUntilTimestamp: string;
 
   @ApiProperty()
-  @IsString()
-  phoneNumber: string;
+  @IsBoolean()
+  enableSms: boolean;
 
   @ApiProperty()
   @IsBoolean()
-  enableSms: boolean;
+  enableEmail: boolean;
 
   @ApiProperty()
   @IsBoolean()

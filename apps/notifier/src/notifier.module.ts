@@ -7,12 +7,10 @@ import { AccountModule, Account } from '@sputnik-v2/account';
 import { NotificationModule } from '@sputnik-v2/notification';
 import { DaoModule } from '@sputnik-v2/dao';
 import { ProposalModule } from '@sputnik-v2/proposal';
-import { EventModule } from '@sputnik-v2/event';
 import { NotifierValidationSchema } from '@sputnik-v2/config/validation/notifier.schema';
 import configuration from '@sputnik-v2/config/notifier-config';
 import { validate } from '@sputnik-v2/config/notifier-config';
 import { TypeOrmConfigService } from '@sputnik-v2/config/typeorm-config.service';
-import { SmsModule } from '@sputnik-v2/sms';
 
 import { NotifierController } from './notifier.controller';
 import { NotificationHandlerModule } from './notification-handler/notification-handler.module';
@@ -38,8 +36,6 @@ import { AccountNotifierModule } from './account-notifier/account-notifier.modul
     ProposalModule,
     NotificationHandlerModule,
     AccountNotifierModule,
-    EventModule,
-    SmsModule,
   ],
   controllers: [NotifierController],
   providers: [NotificationHandlerService],

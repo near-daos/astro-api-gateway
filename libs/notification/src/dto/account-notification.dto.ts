@@ -6,6 +6,7 @@ export interface AccountNotificationDto {
   accountId: string;
   isMuted: boolean;
   isRead: boolean;
-  phoneNumber?: string;
+  isPhone: boolean;
+  isEmail: boolean;
   notification?: Notification;
 }

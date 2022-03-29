@@ -32,9 +32,9 @@ export class AccountNotificationSettings extends BaseEntity {
 
   @ApiProperty()
   @Column({ nullable: true })
-  phoneNumber: string;
+  enableSms: boolean;
 
   @ApiProperty()
   @Column({ nullable: true })
-  enableSms: boolean;
+  enableEmail: boolean;
 }

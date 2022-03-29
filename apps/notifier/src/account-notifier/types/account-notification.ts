@@ -5,15 +5,17 @@ export function castAccountNotification(
   accountId: string,
   notification: Notification,
   isDisabled: boolean,
-  phoneNumber?: string,
+  isPhone: boolean,
+  isEmail: boolean,
 ): AccountNotificationDto {
   return {
     id: buildAccountNotificationId(accountId, notification.id),
     notificationId: notification.id,
     notification,
     accountId: accountId,
-    phoneNumber,
     isMuted: isDisabled,
     isRead: isDisabled,
+    isPhone,
+    isEmail,
   };
 }

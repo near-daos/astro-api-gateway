@@ -27,8 +27,8 @@ export class AccountNotificationSettingsService extends TypeOrmCrudService<Accou
       types: dto.types,
       mutedUntilTimestamp: Number(dto.mutedUntilTimestamp),
       isAllMuted: dto.isAllMuted,
-      phoneNumber: dto.phoneNumber,
       enableSms: !!dto.enableSms,
+      enableEmail: !!dto.enableEmail,
     });
   }
 }

@@ -136,11 +136,17 @@
       "@sputnik-v2/stats/*": [
         "libs/stats/src/*"
       ],
-      "@sputnik-v2/sms": [
-        "libs/sms/src"
+      "@sputnik-v2/notifi-client": [
+        "libs/notifi-client/src"
       ],
-      "@sputnik-v2/sms/*": [
-        "libs/sms/src/*"
+      "@sputnik-v2/notifi-client/*": [
+        "libs/notifi-client/src/*"
+      ],
+      "@sputnik-v2/otp": [
+        "libs/otp/src"
+      ],
+      "@sputnik-v2/otp/*": [
+        "libs/otp/src/*"
       ]
     }
   }

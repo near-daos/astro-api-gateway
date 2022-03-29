@@ -1,5 +1,10 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
 import { DatabaseValidationSchema } from './db.schema';
+
+enum NotifiEnvironment {
+  Development = 'Development',
+  Production = 'Production',
+}
 
 export class NotifierValidationSchema extends DatabaseValidationSchema {
   @IsString()
@@ -16,13 +21,13 @@ export class NotifierValidationSchema extends DatabaseValidationSchema {
 
   @IsString()
   @IsNotEmpty()
-  TWILIO_ACCOUNT_SID: string;
+  NOTIFI_SID: string;
 
   @IsString()
   @IsNotEmpty()
-  TWILIO_AUTH_TOKEN: string;
+  NOTIFI_SECRET: string;
 
-  @IsString()
+  @IsEnum(NotifiEnvironment)
   @IsNotEmpty()
-  TWILIO_PHONE_NUMBER: string;
+  NOTIFI_ENV: NotifiEnvironment;
 }

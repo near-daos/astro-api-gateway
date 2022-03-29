@@ -222,13 +222,22 @@
         "tsConfigPath": "libs/stats/tsconfig.lib.json"
       }
     },
-    "sms": {
+    "notifi-client": {
       "type": "library",
-      "root": "libs/sms",
+      "root": "libs/notifi-client",
       "entryFile": "index",
-      "sourceRoot": "libs/sms/src",
+      "sourceRoot": "libs/notifi-client/src",
       "compilerOptions": {
-        "tsConfigPath": "libs/sms/tsconfig.lib.json"
+        "tsConfigPath": "libs/notifi-client/tsconfig.lib.json"
+      }
+    },
+    "otp": {
+      "type": "library",
+      "root": "libs/otp",
+      "entryFile": "index",
+      "sourceRoot": "libs/otp/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/otp/tsconfig.lib.json"
       }
     }
   }

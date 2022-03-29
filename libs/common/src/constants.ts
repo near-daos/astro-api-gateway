@@ -29,3 +29,5 @@ export const DB_FOREIGN_KEY_VIOLATION = '23503';
 export const PROPOSAL_DESC_SEPARATOR = '$$$$';
 
 export const COMMENT_DELETE_VOTES_REQUIRED = 3;
+
+export const OTP_TTL = 300000; // 5 minutes
