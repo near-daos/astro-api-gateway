@@ -1,5 +1,6 @@
 package api.app.astrodao.com.tests.dao;
 
+import api.app.astrodao.com.openapi.models.Dao;
 import api.app.astrodao.com.openapi.models.DaoResponse;
 import api.app.astrodao.com.steps.DaoApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
@@ -122,6 +123,34 @@ public class DaoApiTests extends BaseTest {
         daoApiSteps.assertCollectionHasCorrectSize(daoResponse.getData(), count);
         daoApiSteps.assertCollectionElementsHasValue(daoResponse.getData(), r -> !r.getId().isBlank(), "id");
         daoApiSteps.assertCollectionElementsHasValue(daoResponse.getData(), r -> r.getNumberOfMembers().intValue() == numberOfMembers, "id");
+    }
+
+    @Test
+    @Severity(SeverityLevel.CRITICAL)
+    @Story("Get list of DAOs with query param: [filter, or]")
+    @DisplayName("Get list of DAOs with query param: [filter, or]")
+    void getListOfDaosWithFilterAndOrParameters() {
+        String dao1 = "test-dao-1648481547427.sputnikv2.testnet";
+        String dao2 = "test-dao-1648481408344.sputnikv2.testnet";
+        int count = 2;
+        int page = 1;
+        Map<String, Object> query = Map.of(
+                "filter", "id||$eq||" + dao1,
+                "or", "id||$eq||" + dao2
+        );
+
+        DaoResponse daoResponse = daoApiSteps.getDaos(query).then()
+                .statusCode(HTTP_OK)
+                .extract().as(DaoResponse.class);
+
+        daoApiSteps.assertDtoValue(daoResponse, r -> r.getTotal().intValue(), count, "total");
+        daoApiSteps.assertDtoValue(daoResponse, r -> r.getPageCount().intValue(), page, "pageCount");
+        daoApiSteps.assertDtoValue(daoResponse, r -> r.getPage().intValue(), page, "page");
+        daoApiSteps.assertDtoValue(daoResponse, r -> r.getCount().intValue(), count, "count");
+        daoApiSteps.assertCollectionHasCorrectSize(daoResponse.getData(), count);
+        daoApiSteps.assertCollectionElementsHasValue(daoResponse.getData(), r -> !r.getId().isBlank(), "id");
+        daoApiSteps.assertCollectionElementsHasValue(daoResponse.getData(), r -> r.getNumberOfMembers().intValue() == 1, "id");
+        daoApiSteps.assertCollectionContainsExactlyInAnyOrder(daoResponse.getData(), Dao::getId, dao1, dao2);
     }
 
     @Test

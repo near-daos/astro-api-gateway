@@ -38,6 +38,9 @@ public class CommentsApiTests extends BaseTest {
     @Value("${test.dao1}")
     private String testDao;
 
+    @Value("${test.accountId}")
+    private String testAccountId;
+
     @Value("${test.proposal1}")
     private String testProposal;
 
@@ -84,7 +87,15 @@ public class CommentsApiTests extends BaseTest {
         commentsApiSteps.assertDtoValue(commentResponse, r -> r.getPage().intValue(), page, "page");
         commentsApiSteps.assertDtoValue(commentResponse, r -> r.getCount().intValue(), limit, "limit");
         commentsApiSteps.assertCollectionHasCorrectSize(commentResponse.getData(), limit);
-        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> !r.getMessage().isBlank(), "message");
+        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> r.getCreatedAt() != null, "data/createdAt");
+        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> r.getUpdatedAt() != null, "data/updatedAt");
+        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> r.getId().longValue() > 0, "data/id");
+        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> r.getDaoId().endsWith(".sputnikv2.testnet"), "data/daoId");
+        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> !r.getContextId().isBlank(), "data/contextId");
+        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> r.getContextType() != null, "data/contextType");
+        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> !r.getAccountId().isBlank(), "data/accountId");
+        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> !r.getMessage().isBlank(), "data/message");
+        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> r.getReports() != null, "data/message");
 
         List<OffsetDateTime> createdAtList = commentResponse.getData().stream().map(Comment::getCreatedAt).collect(Collectors.toList());
         commentsApiSteps.assertOffsetDateTimesAreSortedCorrectly(createdAtList, Comparator.reverseOrder(),
@@ -112,7 +123,15 @@ public class CommentsApiTests extends BaseTest {
         commentsApiSteps.assertDtoValue(commentResponse, r -> r.getPage().intValue(), page, "page");
         commentsApiSteps.assertDtoValue(commentResponse, r -> r.getCount().intValue(), count, "limit");
         commentsApiSteps.assertCollectionHasCorrectSize(commentResponse.getData(), count);
-        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> !r.getMessage().isBlank(), "message");
+        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> r.getCreatedAt() != null, "data/createdAt");
+        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> r.getUpdatedAt() != null, "data/updatedAt");
+        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> r.getId().longValue() > 0, "data/id");
+        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> r.getDaoId().endsWith(".sputnikv2.testnet"), "data/daoId");
+        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> !r.getContextId().isBlank(), "data/contextId");
+        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> r.getContextType() != null, "data/contextType");
+        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> !r.getAccountId().isBlank(), "data/accountId");
+        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> !r.getMessage().isBlank(), "data/message");
+        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> r.getReports() != null, "data/message");
 
         List<OffsetDateTime> createdAtList = commentResponse.getData().stream().map(Comment::getCreatedAt).collect(Collectors.toList());
         commentsApiSteps.assertOffsetDateTimesAreSortedCorrectly(createdAtList, Comparator.reverseOrder(),
@@ -142,13 +161,13 @@ public class CommentsApiTests extends BaseTest {
         commentsApiSteps.assertCollectionHasCorrectSize(commentResponse.getData(), count);
         commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> r.getId().longValue() > 0, "id");
         commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> !r.getMessage().isBlank(), "message");
-        commentsApiSteps.assertCollectionElementsValue(commentResponse.getData(), r -> r.getDaoId() == null, "daoId");
-        commentsApiSteps.assertCollectionElementsValue(commentResponse.getData(), r -> r.getProposalId() == null, "proposalId");
-        commentsApiSteps.assertCollectionElementsValue(commentResponse.getData(), r -> r.getContextId() == null, "contextId");
-        commentsApiSteps.assertCollectionElementsValue(commentResponse.getData(), r -> r.getContextType() == null, "contextType");
+        commentsApiSteps.assertCollectionElementsHasNoValue(commentResponse.getData(), r -> r.getDaoId() == null, "daoId");
+        commentsApiSteps.assertCollectionElementsHasNoValue(commentResponse.getData(), r -> r.getProposalId() == null, "proposalId");
+        commentsApiSteps.assertCollectionElementsHasNoValue(commentResponse.getData(), r -> r.getContextId() == null, "contextId");
+        commentsApiSteps.assertCollectionElementsHasNoValue(commentResponse.getData(), r -> r.getContextType() == null, "contextType");
         //TODO: Ask a question comment with 229 ID has a report data
         //commentsApiSteps.assertCollectionElementsValue(commentResponse.getData(), r -> r.getReports().isEmpty(), "reports");
-        commentsApiSteps.assertCollectionElementsValue(commentResponse.getData(), r -> r.getAccountId() == null, "accountId");
+        commentsApiSteps.assertCollectionElementsHasNoValue(commentResponse.getData(), r -> r.getAccountId() == null, "accountId");
 
         List<BigDecimal> ids = commentResponse.getData().stream().map(Comment::getId).collect(Collectors.toList());
         commentsApiSteps.assertBigDecimalsAreSortedCorrectly(ids, Comparator.reverseOrder(),
@@ -177,12 +196,54 @@ public class CommentsApiTests extends BaseTest {
         commentsApiSteps.assertDtoValue(commentResponse, r -> r.getPage().intValue(), page, "page");
         commentsApiSteps.assertDtoValue(commentResponse, r -> r.getCount().intValue(), count, "count");
         commentsApiSteps.assertCollectionHasCorrectSize(commentResponse.getData(), count);
-        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> r.getId().longValue() > 0, "id");
-        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> accountId.equals(r.getAccountId()), "accountId");
+        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> r.getCreatedAt() != null, "data/createdAt");
+        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> r.getUpdatedAt() != null, "data/updatedAt");
+        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> r.getId().longValue() > 0, "data/id");
+        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> r.getDaoId().endsWith(".sputnikv2.testnet"), "data/daoId");
+        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> !r.getContextId().isBlank(), "data/contextId");
+        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> r.getContextType() != null, "data/contextType");
+        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> accountId.equals(r.getAccountId()), "data/accountId");
+        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> !r.getMessage().isBlank(), "data/message");
+        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> r.getReports() != null, "data/message");
 
         List<OffsetDateTime> createdAtList = commentResponse.getData().stream().map(Comment::getCreatedAt).collect(Collectors.toList());
         commentsApiSteps.assertOffsetDateTimesAreSortedCorrectly(createdAtList, Comparator.reverseOrder(),
                 "Comments should be sorted by 'createdAt field in DESC order");
+    }
+
+    @Test
+    @Severity(SeverityLevel.CRITICAL)
+    @Story("User should be able to get list of comments with query param: [filter, or]")
+    @DisplayName("User should be able to get list of comments with query param: [filter, or]")
+    void getListOfCommentsWithFilterAndOrParameters() {
+        String dao1 = "test-dao-1648481547427.sputnikv2.testnet";
+        String dao2 = "test-dao-1648481408344.sputnikv2.testnet";
+        int count = 4;
+        int page = 1;
+        Map<String, Object> query = Map.of(
+                "filter", "daoId||$eq||" + dao1,
+                "or", "daoId||$eq||" + dao2
+        );
+
+        CommentResponse commentResponse = commentsApiSteps.getComments(query).then()
+                .statusCode(HTTP_OK)
+                .extract().as(CommentResponse.class);
+
+        commentsApiSteps.assertDtoValue(commentResponse, r -> r.getTotal().intValue(), count, "total");
+        commentsApiSteps.assertDtoValue(commentResponse, r -> r.getPageCount().intValue(), page, "pageCount");
+        commentsApiSteps.assertDtoValue(commentResponse, r -> r.getPage().intValue(), page, "page");
+        commentsApiSteps.assertDtoValue(commentResponse, r -> r.getCount().intValue(), count, "count");
+        commentsApiSteps.assertCollectionHasCorrectSize(commentResponse.getData(), count);
+        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> r.getCreatedAt() != null, "data/createdAt");
+        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> r.getUpdatedAt() != null, "data/updatedAt");
+        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> r.getId().longValue() > 0, "data/id");
+        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> r.getDaoId().endsWith(".sputnikv2.testnet"), "data/daoId");
+        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> !r.getContextId().isBlank(), "data/contextId");
+        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> r.getContextType() != null, "data/contextType");
+        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> testAccountId.equals(r.getAccountId()), "data/accountId");
+        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> !r.getMessage().isBlank(), "data/message");
+        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> r.getReports() != null, "data/message");
+        commentsApiSteps.assertCollectionContainsExactlyInAnyOrder(commentResponse.getData(), Comment::getDaoId, dao1, dao2);
     }
 
     @Test
