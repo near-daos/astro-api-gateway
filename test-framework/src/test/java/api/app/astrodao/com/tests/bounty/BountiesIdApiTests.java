@@ -9,9 +9,13 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_OK;
+import static org.hamcrest.Matchers.equalTo;
 
 @Tags({@Tag("all"), @Tag("bountiesIdApiTests")})
 @Epic("Bounty")
@@ -36,5 +40,16 @@ public class BountiesIdApiTests extends BaseTest {
 
 		bountiesApiSteps.assertDtoValue(response, Bounty::getDaoId, daoId, "daoId");
 		bountiesApiSteps.assertDtoValue(response, p -> p.getBountyId().intValue(), bountyId, "bountyId");
+	}
+
+	@ParameterizedTest
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 400 for an for an invalid bounty")
+	@DisplayName("Get HTTP 400 for an for an invalid bounty")
+	@CsvSource({"proposal", "2212332141", "dao-1.sputnikv2.test"})
+	void getHttp400ForInvalidBounty(String invalidBountyId) {
+		bountiesApiSteps.getBountyByID(invalidBountyId).then()
+				.statusCode(HTTP_BAD_REQUEST)
+				.body("message", equalTo("Invalid Bounty ID"));
 	}
 }

@@ -32,7 +32,7 @@ public class TokensApiTests extends BaseTest {
     @DisplayName("Get list of tokens with query param: [sort, limit, offset]")
     void getListOfTokensWithSortLimitOffsetParams() {
         Map<String, Object> query = Map.of(
-                "sort","createdAt,DESC",
+                "sort", "createdAt,DESC",
                 "limit", 10,
                 "offset", 0
         );
@@ -60,7 +60,7 @@ public class TokensApiTests extends BaseTest {
         //TODO: Need to clarify this case
         int page = 1;
         Map<String, Object> query = Map.of(
-                "sort","createdAt,DESC",
+                "sort", "createdAt,DESC",
                 "page", page
         );
 
@@ -79,7 +79,7 @@ public class TokensApiTests extends BaseTest {
     @DisplayName("Get list of tokens with query param: [sort, fields]")
     void getListOfTokensWithSortFieldsParams() {
         Map<String, Object> query = Map.of(
-                "sort","id,DESC",
+                "sort", "id,DESC",
                 "fields", "id,symbol"
         );
 
@@ -100,7 +100,7 @@ public class TokensApiTests extends BaseTest {
     void getListOfTokensWithSortAndSParams() {
         int decimals = 18;
         Map<String, Object> query = Map.of(
-                "sort","createdAt,DESC",
+                "sort", "createdAt,DESC",
                 "s", String.format("{\"decimals\": %s}", decimals)
         );
 
@@ -116,11 +116,32 @@ public class TokensApiTests extends BaseTest {
 
     @Test
     @Severity(SeverityLevel.CRITICAL)
+    @Story("Get list of tokens with query param: [filter, or]")
+    @DisplayName("Get list of tokens with query param: [filter, or]")
+    void getListOfTokensWithFilterAndOrParameters() {
+        String symbol1 = "DAI";
+        String symbol2 = "PARAS";
+        Map<String, Object> query = Map.of(
+                "filter", "symbol||$eq||" + symbol1,
+                "or", "symbol||$eq||" + symbol2
+        );
+
+        TokensList tokensList = tokenApiSteps.getTokens(query).then()
+                .statusCode(HTTP_OK)
+                .extract().as(TokensList.class);
+
+        tokenApiSteps.assertCollectionHasSizeGreaterThanOrEqualTo(tokensList, 2);
+        tokenApiSteps.assertCollectionElementsHasValue(tokensList, r -> !r.getId().isBlank(), "id");
+        tokenApiSteps.assertCollectionContainsExactlyInAnyOrder(tokensList, Token::getSymbol, symbol1, symbol2);
+    }
+
+    @Test
+    @Severity(SeverityLevel.CRITICAL)
     @Story("User should not be able to get tokens for request with invalid params")
     @DisplayName("User should not be able to get tokens for request with invalid params")
     void userShouldNotBeAbleToGetTokensForRequestWithInvalidParams() {
         Map<String, Object> query = Map.of(
-                "limit","-1"
+                "limit", "-1"
         );
         String expectedResponse = "LIMIT must not be negative";
 
