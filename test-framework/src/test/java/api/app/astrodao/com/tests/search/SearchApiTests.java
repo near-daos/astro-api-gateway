@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
 
 @Tags({@Tag("all"), @Tag("searchApiTests")})
 @Epic("Search")
@@ -74,7 +75,7 @@ public class SearchApiTests extends BaseTest {
 
         searchApiSteps.search(queryParams).then()
                 .statusCode(HTTP_BAD_REQUEST)
-                .body("message", equalTo("query must be a string"));
+                .body("message", hasItem("query must be a string"));
     }
 
     @Test
