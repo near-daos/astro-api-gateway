@@ -147,8 +147,8 @@ public class TokensNftApiTests extends BaseTest {
 
 	@Test
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("Get list of tokens with query params: [filter, or]")
-	@DisplayName("Get list of tokens with query params: [filter, or]")
+	@Story("Get list of NFTs with query params: [filter, or]")
+	@DisplayName("Get list of NFTs with query params: [filter, or]")
 	void getListOfNftsWithQueryParamsFilterOr() {
 		int count = 2;
 		int total = 2;
