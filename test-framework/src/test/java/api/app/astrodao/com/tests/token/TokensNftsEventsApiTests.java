@@ -23,8 +23,8 @@ public class TokensNftsEventsApiTests extends BaseTest {
 
 	@Test
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("Getting events for valid NFT ID ")
-	@DisplayName("Getting events for valid NFT ID ")
+	@Story("Getting events for valid NFT ID")
+	@DisplayName("Getting events for valid NFT ID")
 	void getEventsForValidNftID() {
 		String nftID = "mintickt.mintspace2.testnet-218";
 
@@ -43,8 +43,8 @@ public class TokensNftsEventsApiTests extends BaseTest {
 
 	@Test
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("Getting events for invalid NFT ID ")
-	@DisplayName("Getting events for invalid NFT ID ")
+	@Story("Getting events for invalid NFT ID")
+	@DisplayName("Getting events for invalid NFT ID")
 	void getEventsForInvalidNftID() {
 		String nftID = "space7.mintspace2.testnet-123";
 		String errorMsg = String.format("NFT with id %s not found", nftID);
