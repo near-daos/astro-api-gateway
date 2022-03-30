@@ -168,7 +168,7 @@ public class TokensNftApiTests extends BaseTest {
 
 		tokenApiSteps.assertDtoValueGreaterThanOrEqualTo(tokenResponse, r -> r.getCount().intValue(), count, "count");
 		tokenApiSteps.assertDtoValueGreaterThanOrEqualTo(tokenResponse, r -> r.getTotal().intValue(), total, "total");
-		tokenApiSteps.assertDtoValue(tokenResponse, r -> r.getPage().intValue(), 1, "page");
+		tokenApiSteps.assertDtoValue(tokenResponse, r -> r.getPage().intValue(), page, "page");
 		tokenApiSteps.assertDtoValueGreaterThanOrEqualTo(tokenResponse, r -> r.getPageCount().intValue(), pageCount, "pageCount");
 		tokenApiSteps.assertCollectionContainsExactlyInAnyOrder(tokenResponse.getData(), NFTToken::getId, nftId1, nftId2);
 
