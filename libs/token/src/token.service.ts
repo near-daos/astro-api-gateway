@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 import { IsNull, Not, Repository } from 'typeorm';
@@ -77,7 +77,11 @@ export class TokenService extends TypeOrmCrudService<Token> {
     }));
 
     const nearToken = await this.getNearToken();
-    nearToken.balance = await this.nearApiService.getAccountAmount(accountId);
+    nearToken.balance = await this.nearApiService
+      .getAccountAmount(accountId)
+      .catch(() => {
+        throw new BadRequestException(`Account ${accountId} does not exist`);
+      });
     nearToken.tokenId = '';
 
     return [nearToken, ...tokens];

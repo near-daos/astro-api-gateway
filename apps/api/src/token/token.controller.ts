@@ -72,7 +72,7 @@ export class TokenController {
     description: 'List of Fungible Tokens by Account',
     type: Token,
   })
-  @ApiBadRequestResponse({ description: 'Invalid Dao ID' })
+  @ApiBadRequestResponse({ description: 'Invalid Account ID' })
   @Get('/account-tokens/:accountId')
   async tokensByDao(
     @Param() { accountId }: FindAccountParams,
