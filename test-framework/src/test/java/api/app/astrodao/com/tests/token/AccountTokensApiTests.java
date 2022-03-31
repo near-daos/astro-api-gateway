@@ -46,8 +46,6 @@ public class AccountTokensApiTests extends BaseTest {
 	}
 
 	@Test
-	@Disabled("Getting INTERNAL_SERVER_ERROR instead of BAD_REQUEST")
-	@Issue("https://github.com/near-daos/astro-api-gateway/issues/198")
 	@Severity(SeverityLevel.CRITICAL)
 	@Story("Get list of token for valid DAO")
 	@DisplayName("Get list of token for valid DAO")
