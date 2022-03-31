@@ -35,4 +35,21 @@ public class StatsDaoBountiesApiTests extends BaseTest {
 		statsApiSteps.assertCollectionElementsHasValue(statsEntries, r -> r.getValue().intValue() >= 0, "value");
 		statsApiSteps.assertCollectionElementsHasValue(statsEntries, r -> !r.getTimestamp().toString().isBlank(), "timestamp");
 	}
+
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Getting NFTs for a DAO")
+	@DisplayName("Getting NFTs for a DAO")
+	void gettingNFTsForDao() {
+		//TODO: Add steps to retrieve data for DAO from CLI
+		String dao = "gaming.sputnikv2.testnet";
+
+		StatsEntries statsEntries = statsApiSteps.getBountiesForDao(dao).then()
+				.statusCode(HTTP_OK)
+				.extract().as(StatsEntries.class);
+
+		statsApiSteps.assertCollectionHasSizeGreaterThanOrEqualTo(statsEntries, 3);
+		statsApiSteps.assertCollectionElementsHasValue(statsEntries, r -> r.getValue().intValue() >= 0, "value");
+		statsApiSteps.assertCollectionElementsHasValue(statsEntries, r -> !r.getTimestamp().toString().isBlank(), "timestamp");
+	}
 }
