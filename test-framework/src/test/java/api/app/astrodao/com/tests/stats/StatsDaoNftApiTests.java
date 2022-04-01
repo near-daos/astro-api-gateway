@@ -35,12 +35,12 @@ public class StatsDaoNftApiTests extends BaseTest {
 				.statusCode(HTTP_OK)
 				.extract().as(StatsEntries.class);
 
-		statsApiSteps.assertCollectionHasCorrectSize(statsEntries, 72);
+		statsApiSteps.assertCollectionHasSizeGreaterThanOrEqualTo(statsEntries, 73);
 
 		List<BigDecimal> values1 = statsEntries.stream().map(StatsEntryDto::getValue).filter(bigDecimal -> bigDecimal.equals(BigDecimal.valueOf(0))).collect(Collectors.toList());
 		List<BigDecimal> values2 = statsEntries.stream().map(StatsEntryDto::getValue).filter(bigDecimal -> bigDecimal.equals(BigDecimal.valueOf(2))).collect(Collectors.toList());
 
 		statsApiSteps.assertCollectionHasCorrectSize(values1, 2);
-		statsApiSteps.assertCollectionHasCorrectSize(values2, 70);
+		statsApiSteps.assertCollectionHasSizeGreaterThanOrEqualTo(values2, 71);
 	}
 }
