@@ -12,7 +12,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
+import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_OK;
+import static org.hamcrest.Matchers.equalTo;
 
 @Tags({@Tag("all"), @Tag("daosIdApiTests")})
 @Epic("DAO")
@@ -36,5 +38,17 @@ public class DaoIdApiTests extends BaseTest {
 
 		daoApiSteps.assertDtoValue(dao, Dao::getId, testDao, "id");
 		daoApiSteps.assertDtoValueGreaterThan(dao, p -> p.getTotalDaoFunds().intValue(), 10, "totalDaoFunds");
+	}
+
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 400 for invalid DAO name")
+	@DisplayName("Get HTTP 400 for invalid DAO name")
+	void getHttp400ForInvalidDaoName() {
+		daoApiSteps.getDAOByID("InvaliDaoName").then()
+				.statusCode(HTTP_BAD_REQUEST)
+				.body("statusCode", equalTo(400),
+				      "message", equalTo("Invalid Dao ID"),
+				      "error", equalTo("Bad Request"));
 	}
 }
