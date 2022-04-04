@@ -165,6 +165,50 @@ public class ProposalsApiTests extends BaseTest {
                 "Bounties should be sorted by createdAt in DESC order");
     }
 
+
+    @Test
+    @Severity(SeverityLevel.CRITICAL)
+    @Story("Get list of proposals with query param: [sort, fields]")
+    @DisplayName("Get list of proposals with query param: [sort, fields]")
+    void getListOfProposalsWithSortAndFieldsParams() {
+        int count = 50;
+        int page = 1;
+        Map<String, Object> query = Map.of(
+                "sort","createdAt,DESC",
+                "fields", "createdAt,id,kind,description"
+        );
+
+        ProposalResponse proposalResponse = proposalsApiSteps.getProposals(query).then()
+                .statusCode(HTTP_OK)
+                .extract().as(ProposalResponse.class);
+
+        proposalsApiSteps.assertDtoValueGreaterThan(proposalResponse, r -> r.getTotal().intValue(), count, "total");
+        proposalsApiSteps.assertDtoValueGreaterThan(proposalResponse, r -> r.getPageCount().intValue(), 1, "pageCount");
+        proposalsApiSteps.assertDtoValue(proposalResponse, r -> r.getPage().intValue(), page, "page");
+        proposalsApiSteps.assertDtoValue(proposalResponse, r -> r.getCount().intValue(), count, "limit");
+        proposalsApiSteps.assertCollectionHasCorrectSize(proposalResponse.getData(), count);
+
+        proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getCreatedAt() != null, "data/createdAt");
+        proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getId().contains(".sputnikv2.testnet-"), "data/id");
+        proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> !r.getDescription().isEmpty(), "data/description");
+        proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getKind() != null, "data/kind");
+        proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getDao() != null, "data/dao");
+        proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getActions() != null, "data/actions");
+        proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getCommentsCount() >= 0, "data/commentsCount");
+        proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getPermissions() != null, "data/permissions");
+
+        proposalsApiSteps.assertCollectionElementsHasNoValue(proposalResponse.getData(), r -> r.getUpdatedAt() == null, "data/updatedAt");
+        proposalsApiSteps.assertCollectionElementsHasNoValue(proposalResponse.getData(), r -> r.getTransactionHash() == null, "data/transactionHash");
+        proposalsApiSteps.assertCollectionElementsHasNoValue(proposalResponse.getData(), r -> r.getProposalId() == null, "data/proposalId");
+        proposalsApiSteps.assertCollectionElementsHasNoValue(proposalResponse.getData(), r -> r.getDaoId() == null, "data/daoId");
+        proposalsApiSteps.assertCollectionElementsHasNoValue(proposalResponse.getData(), r -> r.getProposer() == null, "data/proposer");
+        proposalsApiSteps.assertCollectionElementsHasNoValue(proposalResponse.getData(), r -> r.getStatus() == null, "data/status");
+        proposalsApiSteps.assertCollectionElementsHasNoValue(proposalResponse.getData(), r -> r.getVoteStatus() == null, "data/voteStatus");
+        proposalsApiSteps.assertCollectionElementsHasNoValue(proposalResponse.getData(), r -> r.getType() == null, "data/type");
+        proposalsApiSteps.assertCollectionElementsHasNoValue(proposalResponse.getData(), r -> r.getVotes() == null, "data/votes");
+        proposalsApiSteps.assertCollectionElementsHasNoValue(proposalResponse.getData(), r -> r.getVotePeriodEnd() == null, "data/votePeriodEnd");
+    }
+
     @Test
     @Severity(SeverityLevel.CRITICAL)
     @Story("Get list of proposals with query param: [filter, or]")
@@ -213,9 +257,11 @@ public class ProposalsApiTests extends BaseTest {
             "sort; createdAt,DES; Invalid sort order. ASC,DESC expected",
             "limit; -50; LIMIT must not be negative",
             "offset; -5; OFFSET must not be negative",
-//            "page; -2; PAGE must not be negative",
-//            "fields; ids; PAGE must not be negative",
-            "s; query; Invalid search param. JSON expected"
+            "page; -2; PAGE must not be negative",
+            "s; query; Invalid search param. JSON expected",
+            "fields; ids; id field is required",
+            "fields; id; kind field is required",
+            "fields; id,kind; createdAt field is required",
     }, delimiter = 59)
     @Severity(SeverityLevel.CRITICAL)
     @Story("Get HTTP 400 status code for proposals")
