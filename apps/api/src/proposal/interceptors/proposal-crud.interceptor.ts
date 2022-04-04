@@ -21,12 +21,17 @@ export class ProposalCrudRequestInterceptor extends BaseCrudRequestInterceptor {
     'createdAt',
     'updatedAt',
   ];
+  public static readonly requiredFields = ['id', 'kind', 'createdAt'];
 
   getCrudRequest(
     parser: RequestQueryParser,
     crudOptions: Partial<MergedCrudOptions>,
   ): CrudRequest {
-    const crudRequest = super.getCrudRequest(parser, crudOptions);
+    const crudRequest = super.getCrudRequest(
+      parser,
+      crudOptions,
+      ProposalCrudRequestInterceptor.requiredFields,
+    );
 
     if (!crudRequest.parsed.fields?.length) {
       crudRequest.parsed.fields = ProposalCrudRequestInterceptor.defaultFields;
