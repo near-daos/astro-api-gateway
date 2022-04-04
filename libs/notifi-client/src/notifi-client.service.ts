@@ -29,15 +29,9 @@ export class NotifiClientService {
     phone?: string,
   ): Promise<string> {
     const jwt = await this.getToken();
-    console.log(jwt);
-    console.log({
-      userId: accountNotifiId,
-      emailAddresses: email ? [email] : undefined,
-      phoneNumbers: phone ? [phone] : undefined,
-    });
     const { id } = await this.client.createDirectPushAlert(jwt, {
       userId: accountNotifiId,
-      emailAddresses: email ? [email] : undefined,
+      emailAddresses: email ? [email.toLowerCase()] : undefined,
       phoneNumbers: phone ? [phone] : undefined,
     });
     return id;

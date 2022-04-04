@@ -110,9 +110,7 @@ export class AccountService {
       throw new BadRequestException(`No email found for account: ${accountId}`);
     }
 
-    console.log(`Email: ${account.email} message: ${message}`);
-    return;
-    // return this.notifiClientService.sendMessage(accountId, message);
+    return this.notifiClientService.sendMessage(accountId, message);
   }
 
   async sendSms(accountId: string, message: string): Promise<void> {
@@ -124,9 +122,7 @@ export class AccountService {
       );
     }
 
-    console.log(`Phone: ${account.phoneNumber} message: ${message}`);
-    return;
-    // return this.notifiClientService.sendMessage(accountId, message);
+    return this.notifiClientService.sendMessage(accountId, message);
   }
 
   async sendNotification(
@@ -145,15 +141,10 @@ export class AccountService {
         isEmail,
         isPhone,
       );
-      console.log(isEmail ? `Email: ${account.email} message: ${message}` : '');
-      console.log(
-        isPhone ? `Phone: ${account.phoneNumber} message: ${message}` : '',
+      await this.notifiClientService.sendMessage(
+        accountNotification.accountId,
+        message,
       );
-
-      // await this.notifiClientService.sendMessage(
-      //   accountNotification.accountId,
-      //   message,
-      // );
     }
   }
 
