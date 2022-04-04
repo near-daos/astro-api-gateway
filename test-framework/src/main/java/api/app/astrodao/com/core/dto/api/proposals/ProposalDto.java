@@ -22,7 +22,7 @@ public class ProposalDto {
     private String daoId;
     private String proposer;
     private String description;
-    private Proposal.StatusEnum status;
+    private String status;
     private Proposal.VoteStatusEnum voteStatus;
     private Kind kind;
     private String type;
