@@ -27,7 +27,7 @@ export class OtpService {
 
   async verifyOtp(key: string, otpToVerify: string): Promise<boolean> {
     const otp = await this.getOtp(key);
-    return bcrypt.compare(otpToVerify, otp.hash);
+    return !!otp && bcrypt.compare(otpToVerify, otp.hash);
   }
 
   private static generateOtp(otpLength = 6) {
