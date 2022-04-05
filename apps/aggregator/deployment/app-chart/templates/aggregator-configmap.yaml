@@ -12,3 +12,4 @@ data:
   AGGREGATOR_DAO_STATUS_POLLING_INTERVAL: "{{ .Values.environment.aggregator_dao_status_polling_interval }}"
   AGGREGATOR_DAO_STATS_CRON_TIME: "{{ .Values.environment.aggregator_dao_stats_cron_time }}"
   NEAR_TOKEN_API_URL: "{{ .Values.environment.near_token_api_url }}"
+  NOTIFI_ENV: "{{ .Values.environment.notifi_env }}"

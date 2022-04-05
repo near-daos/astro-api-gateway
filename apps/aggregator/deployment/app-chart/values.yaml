@@ -103,3 +103,4 @@ environment:
   aggregator_dao_stats_cron_time: "55 23 * * *"
   wallet_callback_url: ""
   near_token_api_url: "https://sodaki.com/api"
+  notifi_env: "Development"

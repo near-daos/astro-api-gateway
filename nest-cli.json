@@ -221,6 +221,24 @@
       "compilerOptions": {
         "tsConfigPath": "libs/stats/tsconfig.lib.json"
       }
+    },
+    "notifi-client": {
+      "type": "library",
+      "root": "libs/notifi-client",
+      "entryFile": "index",
+      "sourceRoot": "libs/notifi-client/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/notifi-client/tsconfig.lib.json"
+      }
+    },
+    "otp": {
+      "type": "library",
+      "root": "libs/otp",
+      "entryFile": "index",
+      "sourceRoot": "libs/otp/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/otp/tsconfig.lib.json"
+      }
     }
   }
 }

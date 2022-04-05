@@ -4,11 +4,7 @@ import {
   EVENT_DAO_UPDATE_NOTIFICATION,
   EVENT_PROPOSAL_UPDATE_NOTIFICATION,
 } from '@sputnik-v2/common';
-import {
-  DaoUpdateDto,
-  EventService,
-  ProposalUpdateDto,
-} from '@sputnik-v2/event';
+import { DaoUpdateDto, ProposalUpdateDto } from '@sputnik-v2/event';
 import { NotificationHandlerService } from './notification-handler/notification-handler.service';
 import { AccountNotifierService } from './account-notifier/account-notifier.service';
 
@@ -19,7 +15,6 @@ export class NotifierController {
   constructor(
     private readonly notificationHandlerService: NotificationHandlerService,
     private readonly accountNotifierService: AccountNotifierService,
-    private readonly eventService: EventService,
   ) {}
 
   @EventPattern(EVENT_DAO_UPDATE_NOTIFICATION, Transport.REDIS)
@@ -28,15 +23,7 @@ export class NotifierController {
 
     const notification =
       await this.notificationHandlerService.handleDaoUpdateNotification(data);
-
-    if (notification) {
-      const accountNotifications =
-        await this.accountNotifierService.notifyAccounts(notification);
-      await this.eventService.sendNewNotificationEvent(
-        notification,
-        accountNotifications,
-      );
-    }
+    await this.accountNotifierService.notifyAccounts(notification);
   }
 
   @EventPattern(EVENT_PROPOSAL_UPDATE_NOTIFICATION, Transport.REDIS)
@@ -47,14 +34,6 @@ export class NotifierController {
       await this.notificationHandlerService.handleProposalUpdateNotification(
         data,
       );
-
-    if (notification) {
-      const accountNotifications =
-        await this.accountNotifierService.notifyAccounts(notification);
-      await this.eventService.sendNewNotificationEvent(
-        notification,
-        accountNotifications,
-      );
-    }
+    await this.accountNotifierService.notifyAccounts(notification);
   }
 }

@@ -10,3 +10,4 @@ data:
   ADMIN_ACCOUNTS: "{{ .Values.environment.admin_accounts }}"
   NEAR_CREDENTIALS_DIR: ".near-credentials"
   LOG_LEVELS: "log,warn,error"
+  NOTIFI_ENV: "{{ .Values.environment.notifi_env }}"

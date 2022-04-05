@@ -7,23 +7,55 @@ import {
   AccountNotificationSettingsService,
   AccountNotificationSettings,
   AccountNotification,
+  NotificationService,
 } from '@sputnik-v2/notification';
 import { SubscriptionService } from '@sputnik-v2/subscription';
 import { DaoService } from '@sputnik-v2/dao';
 import { getBlockTimestamp } from '@sputnik-v2/utils';
+import { EventService } from '@sputnik-v2/event';
+import { AccountService } from '@sputnik-v2/account';
 
 import { castAccountNotification } from './types/account-notification';
+import PromisePool from '@supercharge/promise-pool';
 
 @Injectable()
 export class AccountNotifierService {
   constructor(
     private readonly accountNotificationService: AccountNotificationService,
     private readonly accountNotificationSettingsService: AccountNotificationSettingsService,
+    private readonly notificationService: NotificationService,
     private readonly subscriptionService: SubscriptionService,
     private readonly daoService: DaoService,
+    private readonly eventService: EventService,
+    private readonly accountService: AccountService,
   ) {}
 
-  async notifyAccounts(
+  async notifyAccounts(notification: Notification) {
+    if (notification) {
+      const accountNotifications = await this.createAccountNotifications(
+        notification,
+      );
+      const message =
+        this.notificationService.getNotificationMessage(notification);
+
+      await this.eventService.sendNewNotificationEvent(
+        notification,
+        accountNotifications,
+      );
+
+      // Notify accounts via email and sms
+      await PromisePool.withConcurrency(1)
+        .for(accountNotifications.filter(({ isMuted }) => !isMuted))
+        .process(async (accountNotification) => {
+          return this.accountService.sendNotification(
+            accountNotification,
+            message,
+          );
+        });
+    }
+  }
+
+  async createAccountNotifications(
     notification: Notification,
   ): Promise<AccountNotification[]> {
     const daoSubscribers = await this.getDaoSubscribers(notification.daoId);
@@ -42,7 +74,13 @@ export class AccountNotifierService {
         if (status.shouldNotify) {
           return [
             ...accountsNotifications,
-            castAccountNotification(accountId, notification, status.isDisabled),
+            castAccountNotification(
+              accountId,
+              notification,
+              status.isDisabled,
+              status.isPhone,
+              status.isEmail,
+            ),
           ];
         }
 
@@ -69,7 +107,12 @@ export class AccountNotifierService {
     accountId: string,
     notification: Notification,
     notificationSettings: AccountNotificationSettings[],
-  ): { isDisabled: boolean; shouldNotify: boolean } {
+  ): {
+    isDisabled: boolean;
+    shouldNotify: boolean;
+    isPhone: boolean;
+    isEmail: boolean;
+  } {
     const accountNotificationSettings = notificationSettings.filter(
       (ns) =>
         ns.accountId === accountId &&
@@ -78,7 +121,12 @@ export class AccountNotifierService {
 
     // If no settings, notify by default
     if (accountNotificationSettings.length === 0) {
-      return { isDisabled: false, shouldNotify: true };
+      return {
+        isDisabled: false,
+        shouldNotify: true,
+        isPhone: false,
+        isEmail: false,
+      };
     }
 
     const currentTimestamp = getBlockTimestamp();
@@ -91,10 +139,14 @@ export class AccountNotifierService {
     const shouldNotify = accountNotificationSettings.some((ans) =>
       ans.types.includes(notification.type),
     );
+    const isPhone = accountNotificationSettings.some((ans) => ans.enableSms);
+    const isEmail = accountNotificationSettings.some((ans) => ans.enableEmail);
 
     return {
       isDisabled,
       shouldNotify,
+      isPhone,
+      isEmail,
     };
   }
 }

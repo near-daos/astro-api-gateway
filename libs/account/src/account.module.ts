@@ -1,11 +1,13 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { NotifiClientModule } from '@sputnik-v2/notifi-client';
+import { OtpModule } from '@sputnik-v2/otp';
 
 import { Account } from './entities';
 import { AccountService } from './account.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Account])],
+  imports: [TypeOrmModule.forFeature([Account]), NotifiClientModule, OtpModule],
   providers: [AccountService],
   exports: [AccountService],
 })

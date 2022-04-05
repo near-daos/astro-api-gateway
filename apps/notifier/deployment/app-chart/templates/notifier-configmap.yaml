@@ -6,3 +6,4 @@ data:
   NODE_OPTIONS: ' --max-old-space-size={{ include "node.maxOldSpaceSize" . }} '
   PORT: "3000"
   NEST_APP_TYPE: notifier
+  NOTIFI_ENV: "{{ .Values.environment.notifi_env }}"
