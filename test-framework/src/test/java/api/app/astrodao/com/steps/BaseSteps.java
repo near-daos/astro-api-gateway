@@ -161,6 +161,17 @@ public abstract class BaseSteps {
                 .containsExactlyInAnyOrder(expectedElements);
     }
 
+    @Step("User sees collection by field '{fieldName}' contains only desired values")
+    public <T, D> void assertCollectionHasSameElementsAs(Collection<T> collection, Function<T, D> predicate,
+                                                                 List expectedElements, String fieldName) {
+        List<D> actualCollection = collection.stream().map(predicate).collect(toList());
+        List<D> distinctCollection = actualCollection.stream().distinct().collect(toList());
+
+        assertThat(distinctCollection)
+                .as("Collection by field '%s' should contain only following elements: '%s'", fieldName, expectedElements)
+                .hasSameElementsAs(expectedElements);
+    }
+
     @Step("User sees '{fieldName}' field has no value")
     public <T, D> void assertDtoValueIsNull(T dto, Function<T, D> valueExtractor, String fieldName) {
         assertThat(valueExtractor.apply(dto))

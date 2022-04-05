@@ -22,4 +22,9 @@ public class DaoApiSteps extends BaseSteps {
     public Response getDaos(Map<String, Object> queryParams) {
         return daoApi.getDaos(queryParams);
     }
+
+    @Step("Getting Account DAOs by account id '{accountId}'")
+    public Response getAccountDaos(String accountId) {
+        return daoApi.getAccountDaos(accountId);
+    }
 }

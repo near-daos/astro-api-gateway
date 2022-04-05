@@ -21,6 +21,7 @@ public class Constants {
 	public class Endpoints {
 		public static final String DAOS = "/api/v1/daos";
 		public static final String DAOS_ID = "/api/v1/daos/{id}";
+		public static final String ACCOUNT_DAOS = "/api/v1/daos/account-daos/{accountId}";
 
 		public static final String PROPOSALS = "/api/v1/proposals";
 		public static final String PROPOSALS_ID = "/api/v1/proposals/{id}";
