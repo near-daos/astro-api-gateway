@@ -14,7 +14,6 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import {
-  Account,
   AccountEmailDto,
   AccountPhoneDto,
   AccountResponse,
