@@ -75,7 +75,7 @@ export class AccountService {
   ): Promise<Account> {
     let account = await this.accountRepository.findOne(accountId);
 
-    if (!account.notifiUserId) {
+    if (!account?.notifiUserId) {
       const notifiUserId = await this.notifiClientService.createUser(accountId);
       account = await this.accountRepository.save({
         ...account,
