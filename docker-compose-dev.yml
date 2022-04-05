@@ -2,7 +2,6 @@ version: '3.1'
 
 services:
   postgres:
-    container_name: postgres
     image: postgres
     restart: always
     ports:
@@ -17,7 +16,6 @@ services:
   pgadmin:
     links:
       - postgres:postgres
-    container_name: pgadmin
     image: dpage/pgadmin4
     ports:
       - '8080:80'
