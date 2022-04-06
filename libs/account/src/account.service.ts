@@ -179,7 +179,7 @@ export class AccountService {
   ): Promise<VerificationStatus> {
     const account = await this.accountRepository.findOne(accountId);
 
-    if (!account.email) {
+    if (!account?.email) {
       throw new BadRequestException(`No email found for account: ${accountId}`);
     }
 
@@ -249,7 +249,7 @@ export class AccountService {
   ): Promise<VerificationStatus> {
     const account = await this.accountRepository.findOne(accountId);
 
-    if (!account.phoneNumber) {
+    if (!account?.phoneNumber) {
       throw new BadRequestException(
         `No phone number found for account: ${accountId}`,
       );
