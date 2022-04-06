@@ -13,14 +13,15 @@ import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.EmptySource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.util.Arrays;
 import java.util.List;
 
+import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_OK;
+import static org.hamcrest.Matchers.equalTo;
 
 @Tags({@Tag("all"), @Tag("daoAccountDaosAccountIdApiTests")})
 @Epic("DAO")
@@ -61,10 +62,23 @@ public class DaoAccountDaosAccountIdApiTests extends BaseTest {
 	@Severity(SeverityLevel.CRITICAL)
 	@Story("Get empty response for invalid DAO accountId")
 	@DisplayName("Get empty response for invalid DAO accountId")
-	@CsvSource({"invalidAccountId", "2212332141", "-1", "0", "null", "another-magic.near"})
+	@CsvSource({"invalidAccountId", "2212332141", "-1", "0",
+			"*", "null", "autotest-dao-1.sputnikv2.testnet-1", "another-magic.near"})
 	void getEmptyResponseWithInvalidDaoIdForAccountDaos(String accountIdParam) {
 		Response response =  daoApiSteps.getAccountDaos(accountIdParam);
 		daoApiSteps.assertResponseStatusCode(response, HTTP_OK);
 		daoApiSteps.assertStringContainsValue(response.body().asString(), "[]");
+	}
+
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 400 for Account-daos")
+	@DisplayName("Get HTTP 400 for Account-daos")
+	void getHttp400ForAccountDaos() {
+		daoApiSteps.getAccountDaos("").then()
+				.statusCode(HTTP_BAD_REQUEST)
+				.body("statusCode", equalTo(400),
+				      "message", equalTo("Invalid Dao ID"),
+				      "error", equalTo("Bad Request"));
 	}
 }
