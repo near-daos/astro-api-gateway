@@ -5,11 +5,15 @@ import api.app.astrodao.com.openapi.models.Dao;
 import api.app.astrodao.com.steps.DaoApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import io.qameta.allure.*;
+import io.restassured.response.Response;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.EmptySource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -26,7 +30,6 @@ import static java.net.HttpURLConnection.HTTP_OK;
 public class DaoAccountDaosAccountIdApiTests extends BaseTest {
 	private final DaoApiSteps daoApiSteps;
 
-//	@Value("${test.accountId}")
 	@Value("${accounts.account2.accountId}")
 	private String testAccountId;
 
@@ -52,5 +55,16 @@ public class DaoAccountDaosAccountIdApiTests extends BaseTest {
 		daoApiSteps.assertCollectionHasCorrectSize(accountDaos, 8);
 		daoApiSteps.assertCollectionHasSameElementsAs(accountDaos, Dao::getId, expectedDaoIds, "id");
 		daoApiSteps.assertCollectionContainsOnly(accountDaos, Dao::getStatus, "Inactive", "status");
+	}
+
+	@ParameterizedTest
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get empty response for invalid DAO accountId")
+	@DisplayName("Get empty response for invalid DAO accountId")
+	@CsvSource({"invalidAccountId", "2212332141", "-1", "0", "null", "another-magic.near"})
+	void getEmptyResponseWithInvalidDaoIdForAccountDaos(String accountIdParam) {
+		Response response =  daoApiSteps.getAccountDaos(accountIdParam);
+		daoApiSteps.assertResponseStatusCode(response, HTTP_OK);
+		daoApiSteps.assertStringContainsValue(response.body().asString(), "[]");
 	}
 }
