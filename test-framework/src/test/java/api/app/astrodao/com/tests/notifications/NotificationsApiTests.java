@@ -33,9 +33,6 @@ public class NotificationsApiTests extends BaseTest {
     @Value("${test.dao1}")
     private String testDao1;
 
-    @Value("${test.dao2}")
-    private String testDao2;
-
     @Test
     @Severity(SeverityLevel.CRITICAL)
     @Story("User should be able to get list of notifications with query param: [sort, limit, offset]")
