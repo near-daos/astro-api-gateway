@@ -22,6 +22,7 @@ import {
   ProposalType,
   ProposalVoteStatus,
   ProposalPermissions,
+  ProposalPolicyLabel,
 } from '../types';
 import { ProposalAction } from './proposal-action.entity';
 
@@ -84,6 +85,13 @@ export class Proposal extends TransactionEntity {
   })
   type: ProposalType;
 
+  @Column({
+    type: 'enum',
+    enum: ProposalPolicyLabel,
+    nullable: true,
+  })
+  policyLabel: ProposalPolicyLabel;
+
   @ApiProperty()
   @Column({ type: 'bigint' })
   submissionTime: number;
@@ -93,7 +101,7 @@ export class Proposal extends TransactionEntity {
   voteCounts: Record<string, number[]>;
 
   @ApiProperty({ type: 'object' })
-  @Column({ type: 'simple-json' })
+  @Column({ type: 'jsonb' })
   votes: Record<string, Vote>;
 
   @ApiProperty({ type: [ProposalAction] })
@@ -117,6 +125,10 @@ export class Proposal extends TransactionEntity {
   })
   @JoinColumn({ name: 'bounty_done_id' })
   bounty: Bounty;
+
+  @ApiProperty()
+  @Column({ nullable: true })
+  bountyClaimId: string;
 
   commentsCount: number;
 

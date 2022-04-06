@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { QuerySort } from '@nestjsx/crud-request';
 import { IsNumber, IsOptional } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class PagingQuery {
   @ApiProperty({
@@ -9,29 +10,35 @@ export class PagingQuery {
     required: false,
     default: 'createdAt,DESC',
   })
-  sort: QuerySort[];
+  @IsOptional()
+  sort?: QuerySort[];
 
   @ApiProperty({
     description: 'Receive N amount of entities.',
     default: 50,
     required: false,
   })
+  @Type(() => Number)
   @IsNumber()
-  limit: number = 50;
+  @IsOptional()
+  limit?: number = 50;
 
   @ApiProperty({
     description: 'Limit the amount of received resources.',
     default: 0,
     required: false,
   })
+  @Type(() => Number)
   @IsNumber()
-  offset: number = 0;
+  @IsOptional()
+  offset?: number = 0;
 
   @ApiProperty({
     description: 'Receive a portion of limited amount of resources.',
     required: false,
   })
-  @IsOptional()
+  @Type(() => Number)
   @IsNumber()
-  page: number = 1;
+  @IsOptional()
+  page?: number = 1;
 }

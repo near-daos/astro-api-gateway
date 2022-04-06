@@ -173,3 +173,7 @@ export const getGrowth = (current: number, prev?: number) => {
     ? Math.round(((current - prev) / (current || 1)) * 10000) / 100
     : 0;
 };
+
+export const buildLikeContractName = (contractName: string) => {
+  return `%.${contractName}`;
+};

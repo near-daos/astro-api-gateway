@@ -3,23 +3,32 @@ import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 import { CrudRequest } from '@nestjsx/crud';
 import {
+  Brackets,
   Connection,
   DeleteResult,
   FindConditions,
   In,
   Not,
   Repository,
+  SelectQueryBuilder,
   UpdateResult,
 } from 'typeorm';
-import { Role } from '@sputnik-v2/dao/entities';
+import { Role, RoleKindType } from '@sputnik-v2/dao/entities';
+import { SearchQuery } from '@sputnik-v2/common';
 
-import { ProposalDto, ProposalResponse } from './dto';
+import {
+  AccountProposalQuery,
+  ProposalDto,
+  ProposalQuery,
+  ProposalResponse,
+} from './dto';
 import { Proposal } from './entities';
 import {
-  ProposalTypeToContractType,
-  ProposalStatus,
-  ProposalVoteStatus,
   ProposalPermissions,
+  ProposalStatus,
+  ProposalType,
+  ProposalTypeToPolicyLabel,
+  ProposalVoteStatus,
 } from './types';
 
 @Injectable()
@@ -75,30 +84,111 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
 
     return this.populateProposalPermissions(
       proposal,
-      proposal.dao?.policy?.roles || [],
+      proposal.dao.policy.roles,
       permissionsAccountId,
     );
   }
 
   async getFeed(
     req: CrudRequest,
-    permissionsAccountId?: string,
+    params: AccountProposalQuery,
   ): Promise<ProposalResponse | Proposal[]> {
-    const proposalResponse = await super.getMany(req);
-    return this.mapProposalFeed(proposalResponse, permissionsAccountId);
+    const queryBuilder = await super.createBuilder(req.parsed, req.options);
+    const proposalResponse = await super.doGetMany(
+      this.buildVotedQuery(queryBuilder, params),
+      req.parsed,
+      req.options,
+    );
+    return this.mapProposalFeed(proposalResponse, params.accountId);
+  }
+
+  buildPermissionsSubQuery(
+    query: SelectQueryBuilder<any>,
+    accountId?: string,
+    accountBalance?: bigint,
+  ): SelectQueryBuilder<any> {
+    query
+      .select('pt.dao_id, array_agg(pt.perms) as dao_permissions')
+      .from((subQuery) => {
+        subQuery
+          .select('r.policy_dao_id as dao_id, unnest(r.permissions) as perms')
+          .from('role', 'r')
+          .where('r.kind = :kindEveryone', {
+            kindEveryone: RoleKindType.Everyone,
+          });
+
+        if (accountId) {
+          subQuery.orWhere(
+            new Brackets((qb) => {
+              qb.where('r.kind = :kindGroup', {
+                kindGroup: RoleKindType.Group,
+              }).andWhere(':accountId = ANY(r.account_ids)', { accountId });
+            }),
+          );
+        }
+
+        if (accountBalance) {
+          subQuery.orWhere(
+            new Brackets((qb) => {
+              qb.where('r.kind = :kindMember', {
+                kindMember: RoleKindType.Member,
+              }).andWhere(':balance >= r.balance', {
+                balance: String(accountBalance),
+              });
+            }),
+          );
+        }
+
+        return subQuery;
+      }, 'pt')
+      .groupBy('dao_id');
+
+    return query;
+  }
+
+  buildVotedQuery(
+    query: SelectQueryBuilder<Proposal>,
+    params: AccountProposalQuery,
+  ): SelectQueryBuilder<Proposal> {
+    if (params.accountId && typeof params.voted === 'boolean') {
+      query.andWhere(
+        `${params.voted ? '' : 'NOT'} (votes ? '${params.accountId}')`,
+      );
+    }
+
+    return query;
   }
 
   async getFeedByAccountId(
     accountId: string,
     req: CrudRequest,
+    params: ProposalQuery,
   ): Promise<ProposalResponse | Proposal[]> {
     const queryBuilder = await super.createBuilder(req.parsed, req.options);
-    queryBuilder.andWhere(
-      '(:accountId = ANY(dao.accountIds) OR proposer = :accountId)',
-      { accountId },
-    );
+    queryBuilder
+      .leftJoin(
+        (subQuery) => this.buildPermissionsSubQuery(subQuery, accountId),
+        'perms',
+        'perms.dao_id = Proposal.dao_id',
+      )
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('proposer = :accountId', { accountId })
+            .orWhere(':accountId = ANY(dao.accountIds)', { accountId })
+            .orWhere(
+              `array['*:*', '*:VoteApprove', Proposal.policy_label || ':VoteApprove'] && perms.dao_permissions`,
+            )
+            .orWhere(
+              `array['*:*', '*:VoteReject', Proposal.policy_label || ':VoteReject'] && perms.dao_permissions`,
+            )
+            .orWhere(
+              `array['*:*', '*:VoteRemove', Proposal.policy_label || ':VoteRemove'] && perms.dao_permissions`,
+            );
+        }),
+      );
+
     const proposalResponse = await super.doGetMany(
-      queryBuilder,
+      this.buildVotedQuery(queryBuilder, { ...params, accountId }),
       req.parsed,
       req.options,
     );
@@ -120,8 +210,7 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
 
   async search(
     req: CrudRequest,
-    query: string,
-    accountId?: string,
+    params: SearchQuery,
   ): Promise<Proposal[] | ProposalResponse> {
     req.options.query.join = {
       dao: {
@@ -135,30 +224,19 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
         allow: ['defaultVotePolicy'],
       },
     };
-
-    req.parsed.search = {
-      $and: [
-        {},
-        {
-          $or: [
-            {
-              id: { $contL: query },
-            },
-            {
-              description: { $contL: query },
-            },
-            {
-              proposer: { $contL: query },
-            },
-            {
-              votes: { $contL: query },
-            },
-          ],
-        },
-      ],
-    };
-
-    return this.getFeed(req, accountId);
+    const likeQuery = `%${params.query.toLowerCase()}%`;
+    const queryBuilder = await super.createBuilder(req.parsed, req.options);
+    queryBuilder
+      .where(`"Proposal".id ilike :likeQuery`, { likeQuery })
+      .orWhere(`"Proposal".description ilike :likeQuery`, { likeQuery })
+      .orWhere(`"Proposal".proposer ilike :likeQuery`, { likeQuery })
+      .orWhere(`"Proposal".votes::text ilike :likeQuery`, { likeQuery });
+    const proposalResponse = await super.doGetMany(
+      this.buildVotedQuery(queryBuilder, params),
+      req.parsed,
+      req.options,
+    );
+    return this.mapProposalFeed(proposalResponse, params.accountId);
   }
 
   async findProposalsByDaoIds(
@@ -243,42 +321,27 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
       return proposalResponse;
     }
 
-    if (permissionsAccountId) {
-      const roles = await this.roleRepository
+    const daoIds = [...new Set(proposals.map((proposal) => proposal.daoId))];
+    let daoRoles = [];
+
+    if (daoIds.length) {
+      daoRoles = await this.roleRepository
         .createQueryBuilder('role')
-        .select([
-          'policy.daoId',
-          'role.permissions',
-          'role.name',
-          'role.accountIds',
-        ])
-        .leftJoin('role.policy', 'policy')
-        .where('policy.daoId = ANY(ARRAY[:...ids])', {
-          ids: [
-            ...new Set(proposals.map(({ dao, daoId }) => dao?.id || daoId)),
-          ],
-        })
+        .leftJoinAndSelect('role.policy', 'policy')
+        .where('policy_dao_id IN (:...daoIds)', { daoIds })
         .getMany();
-      const daoRolesMap = roles.reduce((daoRolesMap, role) => {
-        if (!daoRolesMap[role.policy.daoId]) {
-          daoRolesMap[role.policy.daoId] = [role];
-        } else {
-          daoRolesMap[role.policy.daoId].push(role);
-        }
-        return daoRolesMap;
-      }, {});
-      proposals = proposals.map((proposal) =>
-        this.populateProposalPermissions(
-          proposal,
-          daoRolesMap[proposal.dao?.id || proposal.daoId],
-          permissionsAccountId,
-        ),
-      );
-    } else {
-      proposals = proposals.map((proposal) =>
-        this.populateProposalPermissions(proposal, []),
-      );
     }
+
+    proposals = proposals.map((proposal) => {
+      const roles = daoRoles.filter(
+        (role) => role.policy.daoId === proposal.daoId,
+      );
+      return this.populateProposalPermissions(
+        proposal,
+        roles,
+        permissionsAccountId,
+      );
+    });
 
     if (proposalResponse instanceof Array) {
       return proposals;
@@ -294,80 +357,61 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
   ): Proposal {
     return {
       ...proposal,
-      permissions: accountId
-        ? this.getAccountPermissions(accountId, proposal, roles)
-        : {
-            canApprove: false,
-            canReject: false,
-            canDelete: false,
-            isCouncil: false,
-          },
+      permissions: this.getAccountPermissions(proposal, roles, accountId),
     } as Proposal;
   }
 
   private getAccountPermissions(
-    accountId: string,
     proposal: Proposal,
     roles: Role[],
+    accountId?: string,
+    accountBalance?: bigint,
   ): ProposalPermissions {
-    const groupRole = roles.filter(({ accountIds }) => {
-      return accountIds?.includes(accountId);
-    });
+    const council = roles.find((role) => role.name.toLowerCase() === 'council');
+    const permissions = roles.reduce((roles, role) => {
+      if (
+        role.kind === RoleKindType.Everyone ||
+        (role.kind === RoleKindType.Group &&
+          role.accountIds.includes(accountId)) ||
+        (role.kind === RoleKindType.Member && accountBalance >= role.balance)
+      ) {
+        return [...roles, ...role.permissions];
+      }
+      return roles;
+    }, []);
 
-    return groupRole.reduce(
-      (acc, { permissions, name }) => {
-        const { canApprove, canReject, canDelete, isCouncil } = acc;
-
-        if (!isCouncil) {
-          acc.isCouncil = name.toLowerCase() === 'council';
-        }
-
-        if (!canApprove) {
-          acc.canApprove = this.checkPermissions(
-            proposal,
-            'VoteApprove',
-            permissions,
-          );
-        }
-
-        if (!canReject) {
-          acc.canReject = this.checkPermissions(
-            proposal,
-            'VoteReject',
-            permissions,
-          );
-        }
-
-        if (!canDelete) {
-          acc.canDelete = this.checkPermissions(
-            proposal,
-            'VoteRemove',
-            permissions,
-          );
-        }
-
-        return acc;
-      },
-      {
-        canApprove: false,
-        canReject: false,
-        canDelete: false,
-        isCouncil: false,
-      } as ProposalPermissions,
-    );
+    return {
+      isCouncil: council?.accountIds
+        ? council.accountIds.includes(accountId)
+        : false,
+      canApprove: this.checkPermissions(
+        proposal.kind.type,
+        'VoteApprove',
+        permissions,
+      ),
+      canReject: this.checkPermissions(
+        proposal.kind.type,
+        'VoteReject',
+        permissions,
+      ),
+      canDelete: this.checkPermissions(
+        proposal.kind.type,
+        'VoteRemove',
+        permissions,
+      ),
+    };
   }
 
   private checkPermissions(
-    proposal: Proposal,
+    type: ProposalType,
     permission: string,
     permissions: string[],
   ): boolean {
-    const type = ProposalTypeToContractType[proposal.kind.type];
-
+    const policyLabel = ProposalTypeToPolicyLabel[type];
     return (
       permissions.includes('*:*') ||
       permissions.includes(`*:${permission}`) ||
-      permissions.includes(`${type}:${permission}`)
+      permissions.includes(`${policyLabel}:${permission}`)
     );
   }
 }

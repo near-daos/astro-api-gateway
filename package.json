@@ -28,7 +28,14 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test-api:e2e": "jest --config ./apps/api/test/jest-e2e.json",
     "test-aggregator:e2e": "jest --config ./apps/aggregator/test/jest-e2e.json",
-    "test-notifier:e2e": "jest --config ./apps/notifier/test/jest-e2e.json"
+    "test-notifier:e2e": "jest --config ./apps/notifier/test/jest-e2e.json",
+    "migration:show": "node -r ts-node/register -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:show",
+    "migration:run": "node -r ts-node/register -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:run",
+    "migration:generate": "node -r ts-node/register -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:generate -n SchemaRefactoring",
+    "migration:revert": "node -r ts-node/register -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:revert",
+    "schema:log": "node -r ts-node/register -r tsconfig-paths/register ./node_modules/typeorm/cli.js schema:log",
+    "schema:sync": "node -r ts-node/register -r tsconfig-paths/register ./node_modules/typeorm/cli.js schema:sync",
+    "schema:drop": "node -r ts-node/register -r tsconfig-paths/register ./node_modules/typeorm/cli.js schema:drop"
   },
   "dependencies": {
     "@hapi/joi": "^17.1.1",
@@ -94,7 +101,7 @@
     "ts-jest": "^26.5.4",
     "ts-loader": "^8.0.18",
     "ts-node": "^9.1.1",
-    "tsconfig-paths": "^3.9.0",
+    "tsconfig-paths": "^3.12.0",
     "typescript": "^4.2.3"
   },
   "jest": {
@@ -126,6 +133,8 @@
       "@sputnik-v2/subscription": "<rootDir>/libs/subscription/src",
       "@sputnik-v2/dao/(.*)": "<rootDir>/libs/dao/src/$1",
       "@sputnik-v2/dao": "<rootDir>/libs/dao/src",
+      "@sputnik-v2/dao-settings/(.*)": "<rootDir>/libs/dao-settings/src/$1",
+      "@sputnik-v2/dao-settings": "<rootDir>/libs/dao-settings/src",
       "@sputnik-v2/account/(.*)": "<rootDir>/libs/account/src/$1",
       "@sputnik-v2/account": "<rootDir>/libs/account/src",
       "@sputnik-v2/near-indexer/(.*)": "<rootDir>/libs/near-indexer/src/$1",

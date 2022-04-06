@@ -1,5 +1,6 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsOptional, IsString, IsUrl } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 export class WalletCallbackParams {
   @ApiPropertyOptional({
@@ -8,7 +9,7 @@ export class WalletCallbackParams {
   })
   @IsOptional()
   @IsString()
-  transactionHashes = '';
+  transactionHashes: string;
 
   @ApiPropertyOptional({
     description: 'Redirect URL',
@@ -30,4 +31,13 @@ export class WalletCallbackParams {
   @IsOptional()
   @IsString()
   errorMessage: string;
+
+  @ApiProperty({
+    description: 'If true skip redirection',
+    required: false,
+    type: Boolean,
+  })
+  @Transform(({ value }) => (value ? value === 'true' : value))
+  @IsOptional()
+  noRedirect?: boolean;
 }

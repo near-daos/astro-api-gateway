@@ -15,6 +15,7 @@ import {
   TransactionAction,
   Transaction,
   AssetsNftEvent,
+  ExecutionOutcome,
 } from './entities';
 import { NearIndexerService } from './near-indexer.service';
 
@@ -34,6 +35,7 @@ import { NearIndexerService } from './near-indexer.service';
         ReceiptAction,
         AccountChange,
         AssetsNftEvent,
+        ExecutionOutcome,
       ],
       NEAR_INDEXER_DB_CONNECTION,
     ),

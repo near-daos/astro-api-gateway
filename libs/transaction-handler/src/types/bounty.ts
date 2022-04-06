@@ -60,6 +60,7 @@ export function castClaimBounty({
   transactionHash,
   bountyClaims,
   numberOfClaims,
+  removedClaim,
   timestamp = getBlockTimestamp(),
 }): BountyDto {
   const claims = castBountyClaims({
@@ -68,14 +69,13 @@ export function castClaimBounty({
     bountyId: bounty.bountyId,
     bountyClaims,
   });
+  const filteredClaims = removedClaim
+    ? bounty.bountyClaims.filter((claim) => claim.id !== removedClaim?.id)
+    : bounty.bountyClaims;
 
   return {
     ...bounty,
-    bountyClaims: bounty.bountyClaims
-      ? bounty.bountyClaims
-          .filter((claim) => claim.accountId !== accountId)
-          .concat(claims)
-      : claims,
+    bountyClaims: filteredClaims ? filteredClaims.concat(claims) : claims,
     numberOfClaims: numberOfClaims,
     updateTransactionHash: transactionHash,
     updateTimestamp: timestamp,
@@ -102,9 +102,7 @@ export function castDoneBounty({
     ...bounty,
     times: bountyData.times,
     bountyClaims: bounty.bountyClaims
-      ? bounty.bountyClaims
-          .filter((claim) => claim.accountId !== accountId)
-          .concat(claims)
+      ? bounty.bountyClaims.concat(claims)
       : claims,
     numberOfClaims: numberOfClaims,
     updateTransactionHash: transactionHash,

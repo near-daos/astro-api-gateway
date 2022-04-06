@@ -30,6 +30,7 @@ import {
 } from '@sputnik-v2/notification/entities';
 import { Comment, CommentReport } from '@sputnik-v2/comment/entities';
 import { DaoStats } from '@sputnik-v2/stats/entities';
+import { DaoSettings } from '@sputnik-v2/dao-settings';
 
 export default registerAs('db_default', () => ({
   type: 'postgres',
@@ -41,6 +42,7 @@ export default registerAs('db_default', () => ({
   entities: [
     Subscription,
     Dao,
+    DaoSettings,
     Policy,
     Role,
     Bounty,
@@ -66,11 +68,6 @@ export default registerAs('db_default', () => ({
     CommentReport,
     DaoStats,
   ],
-  synchronize: true,
-  migrationsTableName: 'migration_table',
-  migrations: ['migration/*.js'],
-  cli: {
-    migrationsDir: 'migration',
-  },
+  synchronize: false,
   namingStrategy: new SnakeNamingStrategy(),
 }));

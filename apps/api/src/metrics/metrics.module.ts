@@ -6,6 +6,6 @@ import { PrometheusModule } from '../prometheus/prometheus.module';
 @Module({
   imports: [PrometheusModule],
   providers: [MetricsService],
-  controllers: [MetricsController]
+  controllers: [MetricsController],
 })
 export class MetricsModule {}

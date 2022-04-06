@@ -14,6 +14,6 @@ export interface DaoDto extends TransactionInfo {
   link: string;
   description: string;
   createdBy: string;
-  metadata?: string;
+  metadata?: Record<string, any>;
   status?: DaoStatus;
 }

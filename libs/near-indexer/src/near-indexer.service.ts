@@ -3,12 +3,15 @@ import { ConfigService } from '@nestjs/config';
 import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 import PromisePool from '@supercharge/promise-pool';
 import { NEAR_INDEXER_DB_CONNECTION } from '@sputnik-v2/common';
+import { TokenUpdateDto } from '@sputnik-v2/token';
 import {
-  NFTTokenActionDto,
-  NFTTokenUpdateDto,
-  TokenUpdateDto,
-} from '@sputnik-v2/token';
-import { Connection, Repository, SelectQueryBuilder } from 'typeorm';
+  Connection,
+  MoreThan,
+  Like,
+  Repository,
+  SelectQueryBuilder,
+  Brackets,
+} from 'typeorm';
 import {
   Account,
   Transaction,
@@ -17,7 +20,8 @@ import {
   Receipt,
   AssetsNftEvent,
 } from './entities';
-import { getBlockTimestamp } from '@sputnik-v2/utils';
+import { buildLikeContractName } from '@sputnik-v2/utils';
+import { ExecutionOutcomeStatus } from './types';
 
 @Injectable()
 export class NearIndexerService {
@@ -71,7 +75,9 @@ export class NearIndexerService {
       .createQueryBuilder('account')
       .leftJoinAndSelect('account.receipt', 'receipts')
       .leftJoinAndSelect('receipts.originatedFromTransaction', 'transactions')
-      .where('account.account_id like :id', { id: `%.${contractName}%` })
+      .where('account.account_id like :id', {
+        id: buildLikeContractName(contractName),
+      })
       .getMany();
   }
 
@@ -171,7 +177,7 @@ export class NearIndexerService {
 
   async findReceiptByTransactionHashAndPredecessor(
     transactionHash: string,
-    predecessorAccountId: string,
+    predecessorContractName: string,
   ): Promise<Receipt> {
     //TODO: Revise a possibility of multiple receipts with the query below
     return this.receiptRepository
@@ -181,7 +187,7 @@ export class NearIndexerService {
         transactionHash,
       })
       .andWhere('receipt.predecessor_account_id like :id', {
-        id: `%${predecessorAccountId}%`,
+        id: buildLikeContractName(predecessorContractName),
       })
       .getOne();
   }
@@ -278,9 +284,10 @@ export class NearIndexerService {
   }
 
   async findLikelyTokenUpdates(
-    accountId: string,
+    contractName: string,
     fromBlockTimestamp: number,
   ): Promise<TokenUpdateDto[]> {
+    const accountId = buildLikeContractName(contractName);
     const { bridgeTokenFactoryContractName } = this.configService.get('near');
 
     const received = `
@@ -290,7 +297,7 @@ export class NearIndexerService {
             and action_kind = 'FUNCTION_CALL'
             and args->>'args_json' is not null
             and args->>'method_name' in ('ft_transfer', 'ft_transfer_call','ft_mint')
-            and receipt_included_in_block_timestamp  > $2
+            and receipt_included_in_block_timestamp > $2
     `;
 
     const mintedWithBridge = `
@@ -311,7 +318,7 @@ export class NearIndexerService {
         where receipt_predecessor_account_id like $1
             and action_kind = 'FUNCTION_CALL'
             and (args->>'method_name' like 'ft_%' or args->>'method_name' = 'storage_deposit')
-        and receipt_included_in_block_timestamp  > $2
+        and receipt_included_in_block_timestamp > $2
     `;
 
     const [receivedTokens, mintedWithBridgeTokens, calledByUserTokens] =
@@ -335,7 +342,7 @@ export class NearIndexerService {
   // Account Likely NFTs - taken from NEAR Helper Indexer middleware
   // https://github.com/near/near-contract-helper/blob/master/middleware/indexer.js
   async findLikelyNFTs(accountId: string): Promise<string[]> {
-    const received = `
+    const ownershipChangeFunctionCalls = `
         select distinct receipt_receiver_account_id as receiver_account_id
         from action_receipt_actions
         where args->'args_json'->>'receiver_id' = $1
@@ -344,46 +351,24 @@ export class NearIndexerService {
             and args->>'method_name' like 'nft_%'
     `;
 
-    const receivedTokens = await this.connection.query(received, [accountId]);
-
-    return receivedTokens.map(({ receiver_account_id }) => receiver_account_id);
-  }
-
-  async findLikelyNFTsUpdates(
-    accountId: string,
-    fromBlockTimestamp: number,
-  ): Promise<NFTTokenUpdateDto[]> {
-    const received = `
-        select distinct receipt_receiver_account_id as nft, args->'args_json'->>'receiver_id' as account, receipt_included_in_block_timestamp as timestamp
-        from action_receipt_actions
-        where args->'args_json'->>'receiver_id' like $1
-            and action_kind = 'FUNCTION_CALL'
-            and args->>'args_json' is not null
-            and args->>'method_name' like 'nft_%'
-        and receipt_included_in_block_timestamp  > $2
+    const ownershipChangeEvents = `
+        select distinct emitted_by_contract_account_id as receiver_account_id 
+        from assets__non_fungible_token_events
+        where token_new_owner_account_id = $1
     `;
 
-    return this.connection.query(received, [accountId, fromBlockTimestamp]);
-  }
-
-  async findContractsNFTsActions(
-    contractNames: string[],
-    fromBlockTimestamp: number,
-  ): Promise<NFTTokenActionDto[]> {
-    const received = `
-        select distinct receipt_receiver_account_id as nft, args->'args_json' as args, receipt_included_in_block_timestamp as timestamp
-        from action_receipt_actions
-        where receipt_receiver_account_id like any (array[$1])
-            and action_kind = 'FUNCTION_CALL'
-            and args->>'args_json' is not null
-            and args->>'method_name' like 'nft_%'
-        and receipt_included_in_block_timestamp  > $2
-    `;
-
-    return this.connection.query(received, [
-      contractNames.join(','),
-      fromBlockTimestamp,
+    const receivedTokens = await Promise.all([
+      this.connection.query(ownershipChangeFunctionCalls, [accountId]),
+      this.connection.query(ownershipChangeEvents, [accountId]),
     ]);
+
+    return [
+      ...new Set(
+        receivedTokens
+          .flat()
+          .map(({ receiver_account_id }) => receiver_account_id),
+      ),
+    ];
   }
 
   async findNFTEvents(
@@ -398,6 +383,29 @@ export class NearIndexerService {
       .andWhere('nftEvent.token_id = :tokenId', { tokenId })
       .orderBy('emitted_at_block_timestamp', 'DESC')
       .getMany();
+  }
+
+  async findNFTEventUpdates(
+    contractName: string,
+    fromBlockTimestamp: number,
+  ): Promise<AssetsNftEvent[]> {
+    // TODO optimize query, replace LIKE '%.contract.name' with IN ('1.contract.name', '2.contract.name', ...)
+    const accountId = buildLikeContractName(contractName);
+    return this.assetsNftEventRepository.find({
+      where: [
+        {
+          tokenOldOwnerAccountId: Like(accountId),
+          emittedAtBlockTimestamp: MoreThan(fromBlockTimestamp),
+        },
+        {
+          tokenNewOwnerAccountId: Like(accountId),
+          emittedAtBlockTimestamp: MoreThan(fromBlockTimestamp),
+        },
+      ],
+      order: {
+        emittedAtBlockTimestamp: 'DESC',
+      },
+    });
   }
 
   async receiptsByAccount(accountId: string): Promise<Receipt[]> {
@@ -418,29 +426,31 @@ export class NearIndexerService {
     accountId: string,
     tokenId: string,
   ): Promise<Receipt[]> {
-    const oneDayAgo = new Date();
-    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
-    oneDayAgo.setHours(0, 0, 0, 0);
-
     const actions = await this.actionReceiptActionRepository
-      .createQueryBuilder('action_receipt_actions')
-      .select('action_receipt_actions.receiptId')
-      .where(
-        `receipt_included_in_block_timestamp > :blockTimestamp AND (receipt_receiver_account_id = :tokenId AND (args->'args_json'->>'receiver_id' = :accountId OR receipt_predecessor_account_id = :accountId))`,
-        {
-          tokenId,
-          accountId,
-          blockTimestamp: getBlockTimestamp(oneDayAgo),
-        },
+      .createQueryBuilder('ara')
+      .select('receipt_id')
+      .andWhere(`action_kind = 'FUNCTION_CALL'`)
+      .andWhere(`args->>'args_json' is not null`)
+      .andWhere(`args->>'method_name' like 'ft_%'`)
+      .andWhere('receipt_receiver_account_id = :tokenId', { tokenId })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where(`args->'args_json'->>'receiver_id' = :accountId`, {
+            accountId,
+          });
+          qb.orWhere(`receipt_predecessor_account_id = :accountId`, {
+            accountId,
+          });
+        }),
       )
-      .getMany();
+      .getRawMany();
 
     return actions.length > 0
       ? await this.receiptRepository
           .createQueryBuilder('receipt')
           .leftJoinAndSelect('receipt.receiptActions', 'action_receipt_actions')
           .where('receipt.receipt_id IN (:...ids)', {
-            ids: actions.map(({ receiptId }) => receiptId),
+            ids: actions.map(({ receipt_id }) => receipt_id),
           })
           .orderBy('included_in_block_timestamp', 'ASC')
           .getMany()
@@ -503,7 +513,7 @@ export class NearIndexerService {
       .createQueryBuilder('account_change')
       .orderBy('account_change.changed_in_block_timestamp', 'DESC')
       .where('account_change.affected_account_id like :id', {
-        id: `%${contractName}%`,
+        id: buildLikeContractName(contractName),
       });
 
     queryBuilder = fromBlockTimestamp
@@ -531,8 +541,17 @@ export class NearIndexerService {
         'transaction_actions',
       )
       .leftJoinAndSelect('receipts.receiptActions', 'action_receipt_actions')
+      .leftJoin(
+        'execution_outcomes',
+        'execution_outcomes',
+        'execution_outcomes.receipt_id = receipts.receipt_id',
+      )
       .where('account_change.affected_account_id like :id', {
-        id: `%${contractName}%`,
+        // Need to find all DAOs + factory contract changes
+        id: `%${contractName}`,
+      })
+      .andWhere('execution_outcomes.status != :failStatus', {
+        failStatus: ExecutionOutcomeStatus.Failure,
       })
       .andWhere('account_change.changed_in_block_timestamp > :from', {
         from: fromBlockTimestamp,

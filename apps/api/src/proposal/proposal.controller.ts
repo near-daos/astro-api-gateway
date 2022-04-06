@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Controller,
   Get,
   Param,
@@ -18,14 +17,14 @@ import { ParsedRequest, CrudRequest } from '@nestjsx/crud';
 import {
   FindOneParams,
   HttpCacheInterceptor,
-  EntityQuery,
-  FindAccountParams,
   QueryFailedErrorFilter,
 } from '@sputnik-v2/common';
 import {
   ProposalResponse,
   Proposal,
   ProposalService,
+  AccountProposalQuery,
+  ProposalQuery,
 } from '@sputnik-v2/proposal';
 
 import { ProposalCrudRequestInterceptor } from './interceptors/proposal-crud.interceptor';
@@ -45,18 +44,12 @@ export class ProposalController {
   })
   @UseInterceptors(HttpCacheInterceptor, ProposalCrudRequestInterceptor)
   @UseFilters(new QueryFailedErrorFilter())
-  @ApiQuery({ type: EntityQuery })
-  @ApiQuery({
-    name: 'accountId',
-    required: false,
-    type: String,
-  })
   @Get('/proposals')
   async proposals(
     @ParsedRequest() query: CrudRequest,
-    @Query('accountId') accountId?: string,
+    @Query() params: AccountProposalQuery,
   ): Promise<Proposal[] | ProposalResponse> {
-    return await this.proposalService.getFeed(query, accountId);
+    return await this.proposalService.getFeed(query, params);
   }
 
   @ApiParam({
@@ -82,10 +75,6 @@ export class ProposalController {
     return await this.proposalService.getById(id, accountId);
   }
 
-  @ApiParam({
-    name: 'accountId',
-    type: String,
-  })
   @ApiResponse({
     status: 200,
     description: 'List of Proposals by Account',
@@ -96,12 +85,16 @@ export class ProposalController {
   })
   @UseInterceptors(HttpCacheInterceptor, ProposalCrudRequestInterceptor)
   @UseFilters(new QueryFailedErrorFilter())
-  @ApiQuery({ type: EntityQuery })
   @Get('/proposals/account-proposals/:accountId')
   async proposalByAccount(
     @ParsedRequest() query: CrudRequest,
-    @Param() { accountId }: FindAccountParams,
+    @Query() params: ProposalQuery,
+    @Param('accountId') accountId: string,
   ): Promise<Proposal[] | ProposalResponse> {
-    return await this.proposalService.getFeedByAccountId(accountId, query);
+    return await this.proposalService.getFeedByAccountId(
+      accountId,
+      query,
+      params,
+    );
   }
 }

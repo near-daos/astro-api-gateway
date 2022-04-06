@@ -5,12 +5,7 @@ import {
   UseFilters,
   UseInterceptors,
 } from '@nestjs/common';
-import {
-  ApiBadRequestResponse,
-  ApiQuery,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBadRequestResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ParsedRequest, CrudRequest } from '@nestjsx/crud';
 import {
   HttpCacheInterceptor,
@@ -36,18 +31,11 @@ export class SearchController {
   @ApiBadRequestResponse({ description: 'query should not be empty' })
   @UseInterceptors(HttpCacheInterceptor, BaseCrudRequestInterceptor)
   @UseFilters(new QueryFailedErrorFilter())
-  @ApiQuery({ type: SearchQuery })
-  @ApiQuery({
-    name: 'accountId',
-    required: false,
-    type: String,
-  })
   @Get('/search')
   async search(
     @ParsedRequest() req: CrudRequest,
-    @Query('query') query: string,
-    @Query('accountId') accountId?: string,
+    @Query() query: SearchQuery,
   ): Promise<SearchResultDto> {
-    return await this.searchService.search(req, query, accountId);
+    return await this.searchService.search(req, query);
   }
 }

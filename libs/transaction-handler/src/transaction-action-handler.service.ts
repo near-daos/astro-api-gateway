@@ -3,11 +3,13 @@ import PromisePool from '@supercharge/promise-pool';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { FinalExecutionStatus } from 'near-api-js/lib/providers';
 
 import { NearApiService } from '@sputnik-v2/near-api';
 import { SputnikService } from '@sputnik-v2/sputnikdao';
 import { DaoService } from '@sputnik-v2/dao';
 import {
+  ProposalKindBountyDone,
   ProposalService,
   ProposalStatus,
   ProposalType,
@@ -70,20 +72,32 @@ export class TransactionActionHandlerService {
     ];
   }
 
-  async handleTransactionActions(actions: TransactionAction[]) {
-    // Actions are handled one by one to keep order of transactions
-    const { errors } = await PromisePool.withConcurrency(1)
-      .for(actions)
-      .process(async (action) => this.handleTransactionAction(action));
+  async handleTransactionActions(
+    actions: TransactionAction[],
+  ): Promise<string[]> {
+    const handledTxHashes = [];
 
-    errors.forEach((error) => {
-      this.logger.error(
-        `Failed to handle transaction ${error.item.transactionHash} with error: ${error}`,
-      );
-    });
+    // Actions are handled one by one to keep order of transactions
+    for (const action of actions) {
+      try {
+        await this.handleTransactionAction(action);
+        handledTxHashes.push(action.transactionHash);
+      } catch (error) {
+        this.logger.error(
+          `Failed to handle transaction ${action.transactionHash} with error: ${error}`,
+        );
+
+        // If some action failed stop handling
+        return handledTxHashes;
+      }
+    }
+
+    return handledTxHashes;
   }
 
   async handleTransactionAction(action: TransactionAction) {
+    this.logger.log(`Handling transaction: ${action.transactionHash}`);
+
     const tx = await this.transactionRepository.findOne({
       transactionHash: action.transactionHash,
     });
@@ -105,6 +119,10 @@ export class TransactionActionHandlerService {
         return handler(action);
       }
     });
+
+    this.logger.log(
+      `Transaction successfully handled: ${action.transactionHash}`,
+    );
   }
 
   async handleCreateDao(txAction: TransactionAction) {
@@ -130,21 +148,30 @@ export class TransactionActionHandlerService {
   }
 
   async handleAddProposal(txAction: TransactionAction) {
-    const { receiverId, signerId, transactionHash, args, timestamp } = txAction;
-    const daoContract = this.nearApiService.getContract(
-      'sputnikDao',
+    const { receiverId, signerId, transactionHash, timestamp } = txAction;
+
+    const txStatus = await this.nearApiService.getTxStatus(
+      transactionHash,
       receiverId,
     );
+
+    const lastProposalId = parseInt(
+      (txStatus.status as FinalExecutionStatus)?.SuccessValue,
+    );
+
+    if (isNaN(lastProposalId)) {
+      this.logger.warn(
+        `Error getting Proposal ID from transaction: ${transactionHash}`,
+      );
+      return;
+    }
+
     const daoEntity = await this.daoService.findOne(receiverId);
-    const lastProposalId = await daoContract.get_last_proposal_id();
-    const daoProposal = await this.sputnikService.findLastProposal(
+    const daoProposal = await this.sputnikService.getProposal(
       receiverId,
       lastProposalId,
-      {
-        ...args.proposal,
-        proposer: signerId,
-      },
     );
+
     const proposal = castCreateProposal({
       transactionHash,
       signerId,
@@ -158,6 +185,16 @@ export class TransactionActionHandlerService {
       transactionHash,
       timestamp,
     });
+
+    if (proposal.type === ProposalType.BountyDone) {
+      const proposalKind = proposal.kind.kind as ProposalKindBountyDone;
+      const bountyClaim = await this.bountyService.getLastBountyClaim(
+        buildBountyId(dao.id, proposalKind.bountyId),
+        proposalKind.receiverId,
+        timestamp,
+      );
+      proposal.bountyClaimId = bountyClaim.id;
+    }
 
     this.logger.log(`Storing Proposal: ${proposal.id} due to transaction`);
     await this.proposalService.create(proposal);
@@ -220,6 +257,7 @@ export class TransactionActionHandlerService {
         });
         break;
 
+      case VoteAction.Finalize:
       case VoteAction.VoteReject:
         await this.handleRejectProposal({
           dao,
@@ -344,7 +382,8 @@ export class TransactionActionHandlerService {
     const proposalKindType = proposal.kind?.kind.type;
 
     if (
-      proposal.status === ProposalStatus.Rejected &&
+      (proposal.status === ProposalStatus.Rejected ||
+        proposal.status === ProposalStatus.Expired) &&
       proposalKindType === ProposalType.BountyDone
     ) {
       await this.handleDoneBounty({
@@ -497,6 +536,7 @@ export class TransactionActionHandlerService {
     receiverId,
     signerId,
     transactionHash,
+    methodName,
     args,
     timestamp,
   }: TransactionAction) {
@@ -517,6 +557,15 @@ export class TransactionActionHandlerService {
       id: bounty.bountyId,
     });
 
+    const getRemovedClaim = () =>
+      methodName === 'bounty_giveup'
+        ? this.bountyService.findLastClaim(
+            bounty.bountyClaims,
+            signerId,
+            timestamp,
+          )
+        : undefined;
+
     this.logger.log(`Updating Bounty: ${bounty.id} due to transaction`);
     await this.bountyService.create(
       castClaimBounty({
@@ -525,6 +574,7 @@ export class TransactionActionHandlerService {
         transactionHash,
         bountyClaims,
         numberOfClaims,
+        removedClaim: getRemovedClaim(),
         timestamp,
       }),
     );

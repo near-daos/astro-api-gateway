@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 //import { HealthService } from "../health/health.service";
-import { PrometheusService } from "../prometheus/prometheus.service";
+import { PrometheusService } from '../prometheus/prometheus.service';
 @Injectable()
 export class MetricsService {
   public get metrics(): Promise<string> {
@@ -9,7 +9,6 @@ export class MetricsService {
   }
 
   constructor(
-    private promClientService: PrometheusService,
-    //private healthService: HealthService
+    private promClientService: PrometheusService, //private healthService: HealthService
   ) {}
 }

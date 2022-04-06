@@ -25,14 +25,16 @@ export class BountyContext extends BaseEntity {
   @Column()
   daoId: string;
 
+  @ApiProperty({ type: () => Proposal })
   @OneToOne(() => Proposal)
   @JoinColumn({ name: 'id', referencedColumnName: 'id' })
   proposal: Proposal;
 
-  @ApiProperty()
+  @ApiProperty({ type: () => Bounty })
   @OneToOne(() => Bounty, (bounty) => bounty.bountyContext, { nullable: true })
   bounty: Bounty;
 
+  @ApiProperty()
   commentsCount: number;
 
   @AfterLoad()

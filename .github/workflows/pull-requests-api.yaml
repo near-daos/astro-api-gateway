@@ -5,8 +5,9 @@ on:
     branches:
     - '**'
     paths:
-    - 'apps/api/**'
-    - 'libs/**'
+      - '**'
+      - '!apps/aggregator/**'
+      - '!apps/notifier/**'
 
 jobs:
   build:

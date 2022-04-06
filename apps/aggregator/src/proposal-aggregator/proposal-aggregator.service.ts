@@ -34,7 +34,10 @@ export class ProposalAggregatorService {
       .map((proposal) => ({ id: proposal.id, daoId: proposal.daoId }));
 
     const removedProposalIds = (
-      await this.proposalService.findProposalsByDaoIds([dao.id])
+      await this.proposalService.find({
+        where: { daoId: dao.id },
+        select: ['id'],
+      })
     )
       .filter(({ id }) =>
         proposalDtos.every((proposalDto) => proposalDto.id !== id),
@@ -45,9 +48,9 @@ export class ProposalAggregatorService {
       await this.proposalService.removeMultiple(removedProposalIds);
     }
 
-    const createdProposals = await this.proposalService.createMultiple(
-      proposalDtos,
-    );
+    const { results: createdProposals } = await PromisePool.withConcurrency(5)
+      .for(proposalDtos)
+      .process((proposalDto) => this.proposalService.create(proposalDto));
 
     await this.bountyContextService.createMultiple(bountyContextDtos);
 

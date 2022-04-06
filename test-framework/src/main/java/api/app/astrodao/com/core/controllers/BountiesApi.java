@@ -1,44 +1,44 @@
 package api.app.astrodao.com.core.controllers;
 
-import api.app.astrodao.com.core.clients.HttpClient;
+import io.restassured.http.ContentType;
+import io.restassured.response.Response;
+import io.restassured.specification.RequestSpecification;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.Collections;
 import java.util.Map;
+
+import static api.app.astrodao.com.core.Constants.Endpoints.*;
+import static io.restassured.RestAssured.given;
 
 @Component
 @RequiredArgsConstructor
 public class BountiesApi {
-    protected final HttpClient httpClient;
+    private final RequestSpecification requestSpec;
 
-    @Value("${framework.api.url}")
-    private String apiUrl;
-
-    public ResponseEntity<String> getBountyByID(String bountyId) {
-        HttpHeaders httpHeaders = httpClient.getBasicHeaders();
-        httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-
-        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(apiUrl);
-        builder.pathSegment("bounties", bountyId);
-
-        return httpClient.get(builder.toUriString(), new HttpEntity<>(httpHeaders), String.class);
+    public Response getBountyByID(String bountyId) {
+        return given().spec(requestSpec)
+                .accept(ContentType.JSON)
+                .get(BOUNTIES_ID, bountyId);
     }
 
-    public ResponseEntity<String> getBounties(Map<String, Object> queryParams) {
-        HttpHeaders httpHeaders = httpClient.getBasicHeaders();
-        httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+    public Response getBounties(Map<String, Object> queryParams) {
+        return given().spec(requestSpec)
+                .accept(ContentType.JSON)
+                .queryParams(queryParams)
+                .get(BOUNTIES);
+    }
 
-        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(apiUrl);
-        builder.pathSegment("bounties");
-        queryParams.forEach((key, value) -> builder.queryParam(key, value));
+    public Response getBountyContexts() {
+        return given().spec(requestSpec)
+                .accept(ContentType.JSON)
+                .get(BOUNTY_CONTEXTS);
+    }
 
-        return httpClient.get(builder.toUriString(), new HttpEntity<>(httpHeaders), String.class);
+    public Response getBountyContextsWithParams(Map<String, Object> queryParams) {
+        return given().spec(requestSpec)
+                .accept(ContentType.JSON)
+                .queryParams(queryParams)
+                .get(BOUNTY_CONTEXTS);
     }
 }

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CrudRequest } from '@nestjsx/crud';
 import { DaoService } from '@sputnik-v2/dao';
 import { ProposalService } from '@sputnik-v2/proposal';
+import { SearchQuery } from '@sputnik-v2/common';
 
 import { DaoCrudRequestInterceptor } from '../dao/interceptors/dao-crud.interceptor';
 import { ProposalCrudRequestInterceptor } from '../proposal/interceptors/proposal-crud.interceptor';
@@ -14,11 +15,7 @@ export class SearchService {
     private readonly proposalService: ProposalService,
   ) {}
 
-  async search(
-    req: CrudRequest,
-    query: string,
-    accountId?: string,
-  ): Promise<SearchResultDto> {
+  async search(req: CrudRequest, query: SearchQuery): Promise<SearchResultDto> {
     return {
       daos: await this.daoService.search(
         {
@@ -39,8 +36,8 @@ export class SearchService {
           },
         },
         query,
-        accountId,
       ),
+      members: await this.daoService.searchMember(req, query),
     } as SearchResultDto;
   }
 }

@@ -28,57 +28,27 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       updated-apps: ${{ steps.updated-apps.outputs.apps }}
-      aggregator: ${{ steps.updated-apps.outputs.aggregator }}
-      api: ${{ steps.updated-apps.outputs.api }}
-      notifier: ${{ steps.updated-apps.outputs.notifier }}
     steps:
     - uses: actions/checkout@v2
       with:
         fetch-depth: 2
-    - uses: tj-actions/changed-files@v11.6
-      id: changed-files
 
     - id: updated-apps
       shell: bash
       run: |
+        array_to_json () {
+          echo "[$(echo $1 | xargs | sed -e 's| |", "|g;s|.*|"&"|')]"
+        }
+
         if [[ "${{ github.event.inputs.apps }}" != "" ]]
         then
           echo "List of apps was provided manually: ${{ github.event.inputs.apps }}"
-          echo "::set-output name=apps::${{ github.event.inputs.apps }}"
-          for app in ${{ github.event.inputs.apps }}
-          do
-            echo "::set-output name=$app::true"
-          done
+          export UPDATED_APPS=$(array_to_json "${{ github.event.inputs.apps }}")
+          echo "::set-output name=apps::$UPDATED_APPS"
           exit 0
         fi
-        for file in ${{ join(steps.changed-files.outputs.modified_files, ' ') }}
-        do
-          echo "$file was updated, checking if it is libs file"
-          if [[ "$file" =~ ^libs/.* ]]
-          then
-            echo "$file matched libs"
-            echo "::set-output name=apps::aggregator api notifier"
-            echo "::set-output name=aggregator::true"
-            echo "::set-output name=api::true"
-            echo "::set-output name=notifier::true"
-            exit 0
-          fi
-        done
-        for app in aggregator api notifier
-        do
-          for file in ${{ join(steps.changed-files.outputs.modified_files, ' ') }}
-          do
-            echo "$file was updated, checking if it is $app file"
-            if [[ "$file" =~ ^apps/$app/.* ]]
-            then
-              echo "$file is part of $app"
-              export UPDATED_APPS="$UPDATED_APPS $app"
-              echo "::set-output name=$app::true"
-              break
-            fi
-          done
-        done
-        echo "::set-output name=apps::$UPDATED_APPS"
+
+        echo "::set-output name=apps::[\"aggregator\", \"api\", \"notifier\"]"
 
   get-environment:
     name: Get Environment
@@ -106,11 +76,11 @@ jobs:
           echo "::set-output name=environment::${{ github.event.inputs.environment }}"
         fi
 
-  build-image-aggregator:
-    name: Build Image Aggregator
-    if: needs.get-updated-apps.outputs.aggregator
-    env:
-      APP_NAME: aggregator
+  build-images:
+    name: Build Image
+    strategy:
+      matrix:
+        app: ${{ fromJSON(needs.get-updated-apps.outputs.updated-apps) }}
     runs-on: ubuntu-latest
     needs:
     - get-updated-apps
@@ -125,60 +95,20 @@ jobs:
         cat ".github/env.common" | grep -E -v '^\ *#' >>$GITHUB_ENV
         cat ".github/env.${{ needs.get-environment.outputs.environment }}" | grep -E -v '^\ *#' >>$GITHUB_ENV
     - name: Docker Build Publish
-      uses: ./.github/actions/docker-build-publish
-
-  build-image-api:
-    name: Build Image API
-    if: needs.get-updated-apps.outputs.api
-    env:
-      APP_NAME: api
-    runs-on: ubuntu-latest
-    needs:
-    - get-updated-apps
-    - get-environment
-    environment:
-      name: ${{ needs.get-environment.outputs.environment }}
-    steps:
-    - uses: actions/checkout@v2
-    - name: Set Environment
-      run: |
-        echo DOCKER_ENV_TAG=${{ needs.get-environment.outputs.environment }}-$GITHUB_SHA >> $GITHUB_ENV
-        cat ".github/env.common" | grep -E -v '^\ *#' >>$GITHUB_ENV
-        cat ".github/env.${{ needs.get-environment.outputs.environment }}" | grep -E -v '^\ *#' >>$GITHUB_ENV
-    - name: Docker Build Publish
-      uses: ./.github/actions/docker-build-publish
-
-  build-image-notifier:
-    name: Build Image Notifier
-    if: needs.get-updated-apps.outputs.notifier
-    env:
-      APP_NAME: notifier
-    runs-on: ubuntu-latest
-    needs:
-    - get-updated-apps
-    - get-environment
-    environment:
-      name: ${{ needs.get-environment.outputs.environment }}
-    steps:
-    - uses: actions/checkout@v2
-    - name: Set Environment
-      run: |
-        echo DOCKER_ENV_TAG=${{ needs.get-environment.outputs.environment }}-$GITHUB_SHA >> $GITHUB_ENV
-        cat ".github/env.common" | grep -E -v '^\ *#' >>$GITHUB_ENV
-        cat ".github/env.${{ needs.get-environment.outputs.environment }}" | grep -E -v '^\ *#' >>$GITHUB_ENV
-    - name: Docker Build Publish
+      env:
+        APP_NAME: ${{ matrix.app }}
       uses: ./.github/actions/docker-build-publish
 
   helm-deploy:
     name: Helm Deploy
     runs-on: ubuntu-latest
-    if: always()
+    strategy:
+      matrix:
+        app: ${{ fromJSON(needs.get-updated-apps.outputs.updated-apps) }}
     needs:
     - get-updated-apps
     - get-environment
-    - build-image-aggregator
-    - build-image-api
-    - build-image-notifier
+    - build-images
     environment:
       name: ${{ needs.get-environment.outputs.environment }}
     steps:
@@ -193,23 +123,21 @@ jobs:
       with:
         command: |
           set -x
-          for APP_NAME in ${{ needs.get-updated-apps.outputs.updated-apps }}
-          do
-            export CHART_FOLDER=apps/${APP_NAME}/deployment/app-chart
-            helm lint $CHART_FOLDER
-            helm -n $DEPLOYMENT_NAMESPACE upgrade --install --create-namespace --wait --timeout 10m sputnik-v2-$APP_NAME $CHART_FOLDER \
-              --set image.tag=$DOCKER_ENV_TAG \
-              --set environment.near_env=$NEAR_ENV \
-              --set environment.near_contract_name=$NEAR_CONTRACT_NAME \
-              --set environment.near_token_factory_contract_name=$NEAR_TOKEN_FACTORY_CONTRACT_NAME \
-              --set environment.near_bridge_token_factory_contract_name=$NEAR_BRIDGE_TOKEN_FACTORY_CONTRACT_NAME \
-              --set environment.wallet_callback_url=$WALLET_CALLBACK_URL \
-              --set environment.near_token_api_url=$NEAR_TOKEN_API_URL \
-              --set environment.api_rate_ttl=$API_RATE_TTL \
-              --set environment.api_rate_limit=$API_RATE_LIMIT \
-              --set environment.admin_accounts=$ADMIN_ACCOUNTS \
-              --set ingress.host=$K8S_INGRESS_HOST
-          done
+
+          export CHART_FOLDER=apps/${{ matrix.app }}/deployment/app-chart
+          helm lint $CHART_FOLDER
+          helm -n $DEPLOYMENT_NAMESPACE upgrade --install --create-namespace --wait --timeout 10m sputnik-v2-${{ matrix.app }} $CHART_FOLDER \
+            --set image.tag=$DOCKER_ENV_TAG \
+            --set environment.near_env=$NEAR_ENV \
+            --set environment.near_contract_name=$NEAR_CONTRACT_NAME \
+            --set environment.near_token_factory_contract_name=$NEAR_TOKEN_FACTORY_CONTRACT_NAME \
+            --set environment.near_bridge_token_factory_contract_name=$NEAR_BRIDGE_TOKEN_FACTORY_CONTRACT_NAME \
+            --set environment.wallet_callback_url=$WALLET_CALLBACK_URL \
+            --set environment.near_token_api_url=$NEAR_TOKEN_API_URL \
+            --set environment.api_rate_ttl=$API_RATE_TTL \
+            --set environment.api_rate_limit=$API_RATE_LIMIT \
+            --set environment.admin_accounts=$ADMIN_ACCOUNTS \
+            --set ingress.host=$K8S_INGRESS_HOST
 
   # experimental sleep to nail down issue with tests failing after deploy
   wait-for-aggregator:

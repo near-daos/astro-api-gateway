@@ -4,6 +4,7 @@ import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 import { CrudRequest } from '@nestjsx/crud';
 import { Connection, In, Not, Repository } from 'typeorm';
 import {
+  Action,
   Proposal,
   ProposalService,
   ProposalStatus,
@@ -13,9 +14,16 @@ import { calculateFunds, getBlockTimestamp, paginate } from '@sputnik-v2/utils';
 import { TokenService } from '@sputnik-v2/token';
 import { DaoStatus, DaoVariant } from '@sputnik-v2/dao/types';
 
-import { DaoDto, DaoMemberVote, DaoResponse } from './dto';
+import {
+  DaoDto,
+  DaoMemberVote,
+  DaoResponse,
+  SearchMemberDto,
+  SearchMemberResponse,
+} from './dto';
 import { Dao, RoleKindType } from './entities';
 import { WeightKind } from '@sputnik-v2/sputnikdao';
+import { SearchQuery } from '@sputnik-v2/common';
 
 @Injectable()
 export class DaoService extends TypeOrmCrudService<Dao> {
@@ -67,8 +75,11 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     return this.daoRepository.save(daoDto);
   }
 
-  async search(req: CrudRequest, query: string): Promise<Dao[] | DaoResponse> {
-    const likeQuery = `%${query.toLowerCase()}%`;
+  async search(
+    req: CrudRequest,
+    params: SearchQuery,
+  ): Promise<Dao[] | DaoResponse> {
+    const likeQuery = `%${params.query.toLowerCase()}%`;
     const { limit, offset, fields } = req.parsed;
     const [data, total] = await this.daoRepository
       .createQueryBuilder('dao')
@@ -80,11 +91,11 @@ export class DaoService extends TypeOrmCrudService<Dao> {
       ])
       .leftJoin('dao.policy', 'policy')
       .leftJoin('policy.roles', 'roles')
-      .where(`lower(dao.id) like :likeQuery`, { likeQuery })
-      .orWhere(`lower(dao.config) like :likeQuery`, { likeQuery })
-      .orWhere(`lower(dao.metadata) like :likeQuery`, { likeQuery })
-      .orWhere(`lower(dao.description) like :likeQuery`, { likeQuery })
-      .orWhere(`array_to_string(dao.accountIds, '||') like :likeQuery`, {
+      .where(`dao.id ilike :likeQuery`, { likeQuery })
+      .orWhere(`dao.config ->> 'purpose' ilike :likeQuery`, { likeQuery })
+      .orWhere(`dao.metadata ->> 'displayName' ilike :likeQuery`, { likeQuery })
+      .orWhere(`dao.description ilike :likeQuery`, { likeQuery })
+      .orWhere(`array_to_string(dao.accountIds, '||') ilike :likeQuery`, {
         likeQuery,
       })
       .orderBy(
@@ -97,9 +108,66 @@ export class DaoService extends TypeOrmCrudService<Dao> {
         ),
       )
       .skip(offset)
-      .limit(limit)
+      .take(limit)
       .getManyAndCount();
     return paginate<Dao>(data, limit, offset, total);
+  }
+
+  async searchMember(
+    req: CrudRequest,
+    params: SearchQuery,
+  ): Promise<SearchMemberResponse> {
+    const likeQuery = `%${params.query.toLowerCase()}%`;
+    const { limit, offset } = req.parsed;
+    const query = await this.connection
+      .createQueryBuilder()
+      .select('account_id', 'accountId')
+      .addSelect(
+        `json_agg(json_build_object('daoId', dao_id, 'name', name, 'kind', kind, 'permissions', permissions))`,
+        'roles',
+      )
+      .addSelect((qb) => {
+        return qb
+          .subQuery()
+          .select('count(1)')
+          .from('proposal_action', 'pa')
+          .where('pa.account_id = r.account_id')
+          .andWhere('pa.action in (:...actions)', {
+            actions: [Action.VoteApprove, Action.VoteReject, Action.VoteRemove],
+          });
+      }, 'voteCount')
+      .from((qb) => {
+        return qb
+          .subQuery()
+          .select([
+            'policy_dao_id as dao_id',
+            'unnest(account_ids) as account_id',
+            'name',
+            'kind',
+            'permissions',
+          ])
+          .from('role', 'role');
+      }, 'r')
+      .where('account_id ilike :likeQuery', { likeQuery })
+      .groupBy('account_id');
+    const [data, total] = await Promise.all([
+      query
+        .clone()
+        .orderBy('account_id', 'ASC')
+        .limit(limit)
+        .offset(offset)
+        .getRawMany(),
+      query.clone().select('count(1) as count').getRawOne(),
+    ]);
+    return paginate<SearchMemberDto>(
+      data.map(({ voteCount, ...rest }) => ({
+        ...rest,
+        voteCount: parseInt(voteCount),
+      })),
+      limit,
+      offset,
+      parseInt(total?.count || 0),
+    );
   }
 
   async getDaoMembers(daoId: string): Promise<string[]> {

@@ -1,4 +1,4 @@
-import { btoaJSON } from '@sputnik-v2/utils';
+import { btoaJSON, decodeBase64 } from '@sputnik-v2/utils';
 
 export type NearTransactionAction = {
   Transfer: { deposit: string };
@@ -25,3 +25,14 @@ export function castTransactionAction(action): NearTransactionAction {
 
   return action;
 }
+
+export const castTransactionStatus = (status) => {
+  if ('SuccessValue' in status) {
+    return {
+      ...status,
+      SuccessValue: decodeBase64(status.SuccessValue),
+    };
+  }
+
+  return status;
+};
