@@ -7,3 +7,5 @@ data:
   PORT: "3000"
   NEST_APP_TYPE: notifier
   NOTIFI_ENV: "{{ .Values.environment.notifi_env }}"
+  NOTIFI_SID: "{{ .Values.environment.notifi_sid }}"
+  NOTIFI_SECRET: "{{ .Values.environment.notifi_secret }}"

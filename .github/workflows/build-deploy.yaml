@@ -21,6 +21,8 @@ env:
   AWS_ECR_URL: ${{ secrets.AWS_ECR_URL }}
   EKS_CLUSTER_NAME: ${{ secrets.EKS_CLUSTER_NAME }}
   KUBE_CONFIG_DATA:  ${{ secrets.KUBE_CONFIG_DATA }}
+  NOTIFI_SID:  ${{ secrets.NOTIFI_SID }}
+  NOTIFI_SECRET:  ${{ secrets.NOTIFI_SECRET }}
 
 jobs:
   get-updated-apps:
@@ -137,6 +139,8 @@ jobs:
             --set environment.api_rate_ttl=$API_RATE_TTL \
             --set environment.api_rate_limit=$API_RATE_LIMIT \
             --set environment.admin_accounts=$ADMIN_ACCOUNTS \
+            --set environment.notifi_sid=$NOTIFI_SID \
+            --set environment.notifi_secret=$NOTIFI_SECRET \
             --set ingress.host=$K8S_INGRESS_HOST
 
   # experimental sleep to nail down issue with tests failing after deploy
