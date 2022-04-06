@@ -1,19 +1,22 @@
 package api.app.astrodao.com.tests.dao;
 
+import api.app.astrodao.com.openapi.models.Dao;
 import api.app.astrodao.com.openapi.models.DaoResponse;
 import api.app.astrodao.com.steps.DaoApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import io.qameta.allure.*;
-import io.restassured.response.Response;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import api.app.astrodao.com.core.enums.HttpStatus;
 
 import java.util.Map;
+
+import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
+import static java.net.HttpURLConnection.HTTP_OK;
+import static org.hamcrest.Matchers.equalTo;
 
 @Tags({@Tag("all"), @Tag("daoApiTests")})
 @Epic("DAO")
@@ -35,10 +38,10 @@ public class DaoApiTests extends BaseTest {
         );
         int limit = 10;
         int page = 1;
-        Response response = daoApiSteps.getDaos(query);
-        daoApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
-        DaoResponse daoResponse = daoApiSteps.getResponseDto(response, DaoResponse.class);
+        DaoResponse daoResponse = daoApiSteps.getDaos(query).then()
+                .statusCode(HTTP_OK)
+                .extract().as(DaoResponse.class);
 
         daoApiSteps.assertDtoValueGreaterThan(daoResponse, r -> r.getTotal().intValue(), limit, "total");
         daoApiSteps.assertDtoValueGreaterThan(daoResponse, r -> r.getPageCount().intValue(), 1, "pageCount");
@@ -59,10 +62,10 @@ public class DaoApiTests extends BaseTest {
                 "sort","createdAt,DESC",
                 "page", page
         );
-        Response response = daoApiSteps.getDaos(query);
-        daoApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
-        DaoResponse daoResponse = daoApiSteps.getResponseDto(response, DaoResponse.class);
+        DaoResponse daoResponse = daoApiSteps.getDaos(query).then()
+                .statusCode(HTTP_OK)
+                .extract().as(DaoResponse.class);
 
         daoApiSteps.assertDtoValueGreaterThan(daoResponse, r -> r.getTotal().intValue(), count, "total");
         daoApiSteps.assertDtoValueGreaterThan(daoResponse, r -> r.getPageCount().intValue(), 1, "pageCount");
@@ -83,10 +86,10 @@ public class DaoApiTests extends BaseTest {
                 "sort","id,DESC",
                 "fields", "id,numberOfMembers"
         );
-        Response response = daoApiSteps.getDaos(query);
-        daoApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
-        DaoResponse daoResponse = daoApiSteps.getResponseDto(response, DaoResponse.class);
+        DaoResponse daoResponse = daoApiSteps.getDaos(query).then()
+                .statusCode(HTTP_OK)
+                .extract().as(DaoResponse.class);
 
         daoApiSteps.assertDtoValueGreaterThan(daoResponse, r -> r.getTotal().intValue(), count, "total");
         daoApiSteps.assertDtoValueGreaterThan(daoResponse, r -> r.getPageCount().intValue(), page, "pageCount");
@@ -109,10 +112,9 @@ public class DaoApiTests extends BaseTest {
                 "s", String.format("{\"numberOfMembers\": %s}", numberOfMembers)
         );
 
-        Response response = daoApiSteps.getDaos(query);
-        daoApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
-
-        DaoResponse daoResponse = daoApiSteps.getResponseDto(response, DaoResponse.class);
+        DaoResponse daoResponse = daoApiSteps.getDaos(query).then()
+                .statusCode(HTTP_OK)
+                .extract().as(DaoResponse.class);
 
         daoApiSteps.assertDtoValueGreaterThan(daoResponse, r -> r.getTotal().intValue(), count, "total");
         daoApiSteps.assertDtoValueGreaterThan(daoResponse, r -> r.getPageCount().intValue(), page, "pageCount");
@@ -122,4 +124,53 @@ public class DaoApiTests extends BaseTest {
         daoApiSteps.assertCollectionElementsHasValue(daoResponse.getData(), r -> !r.getId().isBlank(), "id");
         daoApiSteps.assertCollectionElementsHasValue(daoResponse.getData(), r -> r.getNumberOfMembers().intValue() == numberOfMembers, "id");
     }
+
+    @Test
+    @Severity(SeverityLevel.CRITICAL)
+    @Story("Get list of DAOs with query param: [filter, or]")
+    @DisplayName("Get list of DAOs with query param: [filter, or]")
+    void getListOfDaosWithFilterAndOrParameters() {
+        String dao1 = "test-dao-1648481547427.sputnikv2.testnet";
+        String dao2 = "test-dao-1648481408344.sputnikv2.testnet";
+        int count = 2;
+        int page = 1;
+        Map<String, Object> query = Map.of(
+                "filter", "id||$eq||" + dao1,
+                "or", "id||$eq||" + dao2
+        );
+
+        DaoResponse daoResponse = daoApiSteps.getDaos(query).then()
+                .statusCode(HTTP_OK)
+                .extract().as(DaoResponse.class);
+
+        daoApiSteps.assertDtoValue(daoResponse, r -> r.getTotal().intValue(), count, "total");
+        daoApiSteps.assertDtoValue(daoResponse, r -> r.getPageCount().intValue(), page, "pageCount");
+        daoApiSteps.assertDtoValue(daoResponse, r -> r.getPage().intValue(), page, "page");
+        daoApiSteps.assertDtoValue(daoResponse, r -> r.getCount().intValue(), count, "count");
+        daoApiSteps.assertCollectionHasCorrectSize(daoResponse.getData(), count);
+        daoApiSteps.assertCollectionElementsHasValue(daoResponse.getData(), r -> !r.getId().isBlank(), "id");
+        daoApiSteps.assertCollectionElementsHasValue(daoResponse.getData(), r -> r.getNumberOfMembers().intValue() == 1, "id");
+        daoApiSteps.assertCollectionContainsExactlyInAnyOrder(daoResponse.getData(), Dao::getId, dao1, dao2);
+    }
+
+    @Test
+    @Severity(SeverityLevel.CRITICAL)
+    @Story("Get HTTP 400 for DAOs")
+    @DisplayName("Get HTTP 400 for DAOs")
+    void getHttp400ForDaos() {
+        Map<String, Object> query = Map.of(
+                "sort", "createdAt,DESC",
+                "limit", 50,
+                "offset", 0,
+                "page", 1,
+                "fields", "daoId,createdAt",
+                "s", "Invalid search request");
+
+        daoApiSteps.getDaos(query).then()
+                .statusCode(HTTP_BAD_REQUEST)
+                .body("statusCode", equalTo(400),
+                      "message", equalTo("Invalid search param. JSON expected"),
+                      "error", equalTo("Bad Request"));
+    }
+
 }

@@ -4,11 +4,11 @@ import api.app.astrodao.com.core.dto.api.stats.StatsEntries;
 import api.app.astrodao.com.steps.StatsApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import io.qameta.allure.*;
-import io.restassured.response.Response;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import api.app.astrodao.com.core.enums.HttpStatus;
+
+import static java.net.HttpURLConnection.HTTP_OK;
 
 @Tags({@Tag("all"), @Tag("statsApiTests"), @Tag("statsDaoFundsApiTests")})
 @Epic("Stats")
@@ -27,10 +27,9 @@ public class StatsDaoFundsApiTests extends BaseTest {
 		//TODO: Add steps to retrieve data for DAO from CLI
 		String dao = "gaming.sputnikv2.testnet";
 
-		Response response = statsApiSteps.getFundsForDao(dao);
-		statsApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
-
-		StatsEntries statsEntries = statsApiSteps.getResponseDto(response, StatsEntries.class);
+		StatsEntries statsEntries = statsApiSteps.getBountiesForDao(dao).then()
+				.statusCode(HTTP_OK)
+				.extract().as(StatsEntries.class);
 
 		statsApiSteps.assertCollectionHasSizeGreaterThanOrEqualTo(statsEntries, 3);
 		statsApiSteps.assertCollectionElementsHasValue(statsEntries, r -> r.getValue().intValue() >= 0, "value");

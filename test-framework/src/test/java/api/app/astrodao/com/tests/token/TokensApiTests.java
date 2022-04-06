@@ -10,10 +10,12 @@ import io.restassured.response.Response;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import api.app.astrodao.com.core.enums.HttpStatus;
 
 import java.math.BigDecimal;
 import java.util.Map;
+
+import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
+import static java.net.HttpURLConnection.HTTP_OK;
 
 @Tags({@Tag("all"), @Tag("tokensApiTests"), @Tag("tokensApiTests")})
 @Epic("Token")
@@ -30,16 +32,16 @@ public class TokensApiTests extends BaseTest {
     @DisplayName("Get list of tokens with query param: [sort, limit, offset]")
     void getListOfTokensWithSortLimitOffsetParams() {
         Map<String, Object> query = Map.of(
-                "sort","createdAt,DESC",
+                "sort", "createdAt,DESC",
                 "limit", 10,
                 "offset", 0
         );
         int limit = 10;
         int page = 1;
-        Response response = tokenApiSteps.getTokens(query);
-        tokenApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
-        TokenResponse tokenResponse = tokenApiSteps.getResponseDto(response, TokenResponse.class);
+        TokenResponse tokenResponse = tokenApiSteps.getTokens(query).then()
+                .statusCode(HTTP_OK)
+                .extract().as(TokenResponse.class);
 
         tokenApiSteps.assertDtoValueGreaterThan(tokenResponse, r -> r.getTotal().intValue(), limit, "total");
         tokenApiSteps.assertDtoValueGreaterThan(tokenResponse, r -> r.getPageCount().intValue(), 1, "pageCount");
@@ -58,13 +60,13 @@ public class TokensApiTests extends BaseTest {
         //TODO: Need to clarify this case
         int page = 1;
         Map<String, Object> query = Map.of(
-                "sort","createdAt,DESC",
+                "sort", "createdAt,DESC",
                 "page", page
         );
-        Response response = tokenApiSteps.getTokens(query);
-        tokenApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
-        TokensList tokensList = tokenApiSteps.getResponseDto(response, TokensList.class);
+        TokensList tokensList = tokenApiSteps.getTokens(query).then()
+                .statusCode(HTTP_OK)
+                .extract().as(TokensList.class);
 
         tokenApiSteps.assertCollectionHasSizeGreaterThanOrEqualTo(tokensList, 20);
         tokenApiSteps.assertCollectionElementsHasValue(tokensList, r -> !r.getId().isBlank(), "id");
@@ -77,13 +79,13 @@ public class TokensApiTests extends BaseTest {
     @DisplayName("Get list of tokens with query param: [sort, fields]")
     void getListOfTokensWithSortFieldsParams() {
         Map<String, Object> query = Map.of(
-                "sort","id,DESC",
+                "sort", "id,DESC",
                 "fields", "id,symbol"
         );
-        Response response = tokenApiSteps.getTokens(query);
-        tokenApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
-        TokensList tokensList = tokenApiSteps.getResponseDto(response, TokensList.class);
+        TokensList tokensList = tokenApiSteps.getTokens(query).then()
+                .statusCode(HTTP_OK)
+                .extract().as(TokensList.class);
 
         tokenApiSteps.assertCollectionHasSizeGreaterThanOrEqualTo(tokensList, 20);
         tokenApiSteps.assertCollectionElementsHasValue(tokensList, r -> !r.getId().isBlank(), "id");
@@ -98,13 +100,13 @@ public class TokensApiTests extends BaseTest {
     void getListOfTokensWithSortAndSParams() {
         int decimals = 18;
         Map<String, Object> query = Map.of(
-                "sort","createdAt,DESC",
+                "sort", "createdAt,DESC",
                 "s", String.format("{\"decimals\": %s}", decimals)
         );
-        Response response = tokenApiSteps.getTokens(query);
-        tokenApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
-        TokensList tokensList = tokenApiSteps.getResponseDto(response, TokensList.class);
+        TokensList tokensList = tokenApiSteps.getTokens(query).then()
+                .statusCode(HTTP_OK)
+                .extract().as(TokensList.class);
 
         tokenApiSteps.assertCollectionHasSizeGreaterThanOrEqualTo(tokensList, 20);
         tokenApiSteps.assertCollectionElementsHasValue(tokensList, r -> !r.getId().isBlank(), "id");
@@ -114,16 +116,37 @@ public class TokensApiTests extends BaseTest {
 
     @Test
     @Severity(SeverityLevel.CRITICAL)
+    @Story("Get list of tokens with query param: [filter, or]")
+    @DisplayName("Get list of tokens with query param: [filter, or]")
+    void getListOfTokensWithFilterAndOrParameters() {
+        String symbol1 = "DAI";
+        String symbol2 = "PARAS";
+        Map<String, Object> query = Map.of(
+                "filter", "symbol||$eq||" + symbol1,
+                "or", "symbol||$eq||" + symbol2
+        );
+
+        TokensList tokensList = tokenApiSteps.getTokens(query).then()
+                .statusCode(HTTP_OK)
+                .extract().as(TokensList.class);
+
+        tokenApiSteps.assertCollectionHasSizeGreaterThanOrEqualTo(tokensList, 2);
+        tokenApiSteps.assertCollectionElementsHasValue(tokensList, r -> !r.getId().isBlank(), "id");
+        tokenApiSteps.assertCollectionContainsExactlyInAnyOrder(tokensList, Token::getSymbol, symbol1, symbol2);
+    }
+
+    @Test
+    @Severity(SeverityLevel.CRITICAL)
     @Story("User should not be able to get tokens for request with invalid params")
     @DisplayName("User should not be able to get tokens for request with invalid params")
     void userShouldNotBeAbleToGetTokensForRequestWithInvalidParams() {
         Map<String, Object> query = Map.of(
-                "limit","-1"
+                "limit", "-1"
         );
         String expectedResponse = "LIMIT must not be negative";
 
         Response response = tokenApiSteps.getTokens(query);
-        tokenApiSteps.assertResponseStatusCode(response, HttpStatus.BAD_REQUEST);
+        tokenApiSteps.assertResponseStatusCode(response, HTTP_BAD_REQUEST);
         tokenApiSteps.assertStringContainsValue(response.body().asString(), expectedResponse);
     }
 

@@ -8,10 +8,10 @@ import api.app.astrodao.com.openapi.models.Subscription;
 import io.qameta.allure.Step;
 import io.restassured.response.Response;
 import lombok.RequiredArgsConstructor;
-import api.app.astrodao.com.core.enums.HttpStatus;
 
 import java.util.Objects;
 
+import static java.net.HttpURLConnection.HTTP_OK;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 @Steps
@@ -21,11 +21,11 @@ public class SubscriptionsApiSteps extends BaseSteps {
 
     public void cleanUpSubscriptions(String accountId, String publicKey, String signature) {
         Response response = subscriptionsApi.accountSubscriptions(accountId);
-        assertResponseStatusCode(response, HttpStatus.OK);
+        assertResponseStatusCode(response, HTTP_OK);
         Subscriptions subscriptions = getResponseDto(response, Subscriptions.class);
         subscriptions.forEach(p -> {
             Response resp = subscriptionsApi.deleteSubscription(accountId, publicKey, signature, p.getId());
-            assertResponseStatusCode(resp, HttpStatus.OK);
+            assertResponseStatusCode(resp, HTTP_OK);
         });
     }
 

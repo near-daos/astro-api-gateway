@@ -12,7 +12,6 @@ import api.app.astrodao.com.core.utils.JsonUtils;
 import api.app.astrodao.com.core.utils.WaitUtils;
 import io.qameta.allure.Step;
 import io.restassured.response.Response;
-import api.app.astrodao.com.core.enums.HttpStatus;
 
 import java.time.Duration;
 import java.util.List;
@@ -23,6 +22,7 @@ import java.util.function.Supplier;
 
 import static api.app.astrodao.com.core.Constants.CLICommands.*;
 import static api.app.astrodao.com.core.utils.JsonUtils.writeValueAsString;
+import static java.net.HttpURLConnection.HTTP_OK;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.awaitility.Awaitility.await;
 
@@ -37,14 +37,14 @@ public class NearCLISteps {
     @Step("User waits '{aggregationTimeout}' seconds for data to be aggregated")
     public Response waitForAggregation(int aggregationTimeout,
                                                      Supplier<Response> supplier,
-                                                     HttpStatus httpStatus) {
+                                                     int httpStatus) {
         AtomicReference<Response> response = new AtomicReference<>();
         await().timeout(aggregationTimeout, TimeUnit.SECONDS)
                 .alias("Failed because aggregation timeout didn't work or there's a delay on the blockchain")
                 .pollInterval(Duration.ofSeconds(1))
                 .until(() -> {
                     response.set(supplier.get());
-                    return response.get().getStatusCode() == httpStatus.value();
+                    return response.get().getStatusCode() == httpStatus;
                 });
         return response.get();
     }
@@ -57,7 +57,7 @@ public class NearCLISteps {
                 .pollInterval(Duration.ofSeconds(1))
                 .until(() -> {
                     response.set(supplier.get());
-                    return response.get().getStatusCode() == HttpStatus.OK.value();
+                    return response.get().getStatusCode() == HTTP_OK;
                 });
         return response.get();
     }

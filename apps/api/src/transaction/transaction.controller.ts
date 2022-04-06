@@ -87,6 +87,10 @@ export class TransactionController {
     );
   }
 
+  @ApiParam({
+    name: 'accountId',
+    type: String,
+  })
   @Get('/wallet/callback/:accountId')
   async success(
     @Param() { accountId },
@@ -94,12 +98,12 @@ export class TransactionController {
     @Res() res: Response,
   ): Promise<any> {
     const { walletCallbackUrl } = this.configService.get('api');
-    const { transactionHashes, errorCode } = callbackParams;
+    const { transactionHashes, errorCode, noRedirect } = callbackParams;
     const queryString = querystring.stringify(
       callbackParams as any as ParsedUrlQueryInput,
     );
 
-    if (errorCode) {
+    if (!noRedirect && errorCode) {
       res.redirect(`${walletCallbackUrl}?${queryString}`);
 
       return;
@@ -119,7 +123,7 @@ export class TransactionController {
       }
     }
 
-    if (walletCallbackUrl) {
+    if (!noRedirect && walletCallbackUrl) {
       res.redirect(`${walletCallbackUrl}?${queryString}`);
 
       return;

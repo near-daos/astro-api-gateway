@@ -9,7 +9,6 @@ import api.app.astrodao.com.steps.CommentsApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import com.github.javafaker.Faker;
 import io.qameta.allure.*;
-import io.restassured.response.Response;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -17,9 +16,10 @@ import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import api.app.astrodao.com.core.enums.HttpStatus;
 
 import java.util.Map;
+
+import static java.net.HttpURLConnection.*;
 
 @Tags({@Tag("all"), @Tag("commentsReportApiTests")})
 @Epic("Comments")
@@ -33,7 +33,7 @@ public class CommentsReportApiTests extends BaseTest {
 	@Value("${test.dao1}")
 	private String testDao;
 
-	@Value("${test.proposal}")
+	@Value("${test.proposal1}")
 	private String testProposal;
 
 	@Value("${accounts.account1.accountId}")
@@ -68,20 +68,21 @@ public class CommentsReportApiTests extends BaseTest {
 				"s", String.format("{\"message\": \"%s\"}", commentMsg)
 		);
 
-		Response newCommentResponse = commentsApiSteps.createComment(
-				account1Id, account1PublicKey, account1Signature, testProposal, contextType, commentMsg
-		);
-		commentsApiSteps.assertResponseStatusCode(newCommentResponse, HttpStatus.CREATED);
+		CreatedComment createdComment = commentsApiSteps.createComment(
+						account1Id, account1PublicKey, account1Signature, testProposal, contextType, commentMsg)
+				.then()
+				.statusCode(HTTP_CREATED)
+				.extract().as(CreatedComment.class);
 
-		CreatedComment createdComment = commentsApiSteps.getResponseDto(newCommentResponse, CreatedComment.class);
+		commentsApiSteps.reportComment(
+				account2Id, account2PublicKey, account2Signature, createdComment.getId(), reason)
+				.then()
+				.statusCode(HTTP_CREATED);
 
-		Response newReportResponse = commentsApiSteps.reportComment(account2Id, account2PublicKey, account2Signature, createdComment.getId(), reason);
-		commentsApiSteps.assertResponseStatusCode(newReportResponse, HttpStatus.CREATED);
+		CommentResponse commentResponse = commentsApiSteps.getComments(queryToGetCreatedComment).then()
+				.statusCode(HTTP_OK)
+				.extract().as(CommentResponse.class);
 
-		Response commentsResponse = commentsApiSteps.getComments(queryToGetCreatedComment);
-		commentsApiSteps.assertResponseStatusCode(commentsResponse, HttpStatus.OK);
-
-		CommentResponse commentResponse = commentsApiSteps.getResponseDto(commentsResponse, CommentResponse.class);
 		commentsApiSteps.assertDtoValue(commentResponse, r -> r.getTotal().intValue(), 1, "total");
 		commentsApiSteps.assertDtoValue(commentResponse, r -> r.getPageCount().intValue(), 1, "pageCount");
 		commentsApiSteps.assertDtoValue(commentResponse, r -> r.getPage().intValue(), 1, "page");
@@ -110,15 +111,16 @@ public class CommentsReportApiTests extends BaseTest {
 		String errorMsg = String.format("Account %s identity is invalid - public key", account2Id);
 		String commentMsg = WaitUtils.getEpochMillis() + faker.lorem().characters(15, 20);
 
-		Response newCommentResponse = commentsApiSteps.createComment(
-				account1Id, account1PublicKey, account1Signature, testProposal, contextType, commentMsg
-		);
-		commentsApiSteps.assertResponseStatusCode(newCommentResponse, HttpStatus.CREATED);
+		CreatedComment createdComment = commentsApiSteps.createComment(
+						account1Id, account1PublicKey, account1Signature, testProposal, contextType, commentMsg)
+				.then()
+				.statusCode(HTTP_CREATED)
+				.extract().as(CreatedComment.class);
 
-		CreatedComment createdComment = commentsApiSteps.getResponseDto(newCommentResponse, CreatedComment.class);
-		Response reportResponse = commentsApiSteps.reportComment(account2Id, account1PublicKey, account2Signature, createdComment.getId(), reason);
-
-		commentsApiSteps.assertResponseStatusCode(reportResponse, HttpStatus.FORBIDDEN);
-		commentsApiSteps.assertStringContainsValue(reportResponse.body().asString(), errorMsg);
+		commentsApiSteps.reportComment(
+						account2Id, account1PublicKey, account2Signature, createdComment.getId(), reason)
+				.then()
+				.statusCode(HTTP_FORBIDDEN)
+				.extract().body().path("message", errorMsg);
 	}
 }

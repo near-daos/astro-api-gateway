@@ -4,14 +4,18 @@ import api.app.astrodao.com.openapi.models.Bounty;
 import api.app.astrodao.com.steps.BountiesApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import io.qameta.allure.*;
-import io.restassured.response.Response;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import api.app.astrodao.com.core.enums.HttpStatus;
+
+import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
+import static java.net.HttpURLConnection.HTTP_OK;
+import static org.hamcrest.Matchers.equalTo;
 
 @Tags({@Tag("all"), @Tag("bountiesIdApiTests")})
 @Epic("Bounty")
@@ -29,12 +33,23 @@ public class BountiesIdApiTests extends BaseTest {
 		String daoId = "autotest-dao-1.sputnikv2.testnet";
 		Integer bountyId = 1;
 		String fullBountyId = String.format("%s-%s", daoId, bountyId);
-		Response response = bountiesApiSteps.getBountyByID(fullBountyId);
-		bountiesApiSteps.assertResponseStatusCode(response, HttpStatus.OK);
 
-		Bounty bountyResponse = bountiesApiSteps.getResponseDto(response, Bounty.class);
+		Bounty response = bountiesApiSteps.getBountyByID(fullBountyId).then()
+				.statusCode(HTTP_OK)
+				.extract().as(Bounty.class);
 
-		bountiesApiSteps.assertDtoValue(bountyResponse, Bounty::getDaoId, daoId, "daoId");
-		bountiesApiSteps.assertDtoValue(bountyResponse, p -> p.getBountyId().intValue(), bountyId, "bountyId");
+		bountiesApiSteps.assertDtoValue(response, Bounty::getDaoId, daoId, "daoId");
+		bountiesApiSteps.assertDtoValue(response, p -> p.getBountyId().intValue(), bountyId, "bountyId");
+	}
+
+	@ParameterizedTest
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 400 for an for an invalid bounty")
+	@DisplayName("Get HTTP 400 for an for an invalid bounty")
+	@CsvSource({"proposal", "2212332141", "dao-1.sputnikv2.test"})
+	void getHttp400ForInvalidBounty(String invalidBountyId) {
+		bountiesApiSteps.getBountyByID(invalidBountyId).then()
+				.statusCode(HTTP_BAD_REQUEST)
+				.body("message", equalTo("Invalid Bounty ID"));
 	}
 }
