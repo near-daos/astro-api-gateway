@@ -1,5 +1,10 @@
 import { Controller, Get, Param } from '@nestjs/common';
-import { ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiNotFoundResponse,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import {
   DaoStatsEntryFields,
   DaoStatsService,
@@ -23,6 +28,9 @@ export class StatsController {
     status: 200,
     description: 'DAO Stats State',
     type: DaoStatsStateDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'DAO <id> not found',
   })
   @Get('/dao/:id/state')
   async getDaoStatsState(
@@ -48,6 +56,9 @@ export class StatsController {
     type: StatsEntryDto,
     isArray: true,
   })
+  @ApiNotFoundResponse({
+    description: 'DAO <id> not found',
+  })
   @Get('/dao/:id/funds')
   async getDaoStatsFunds(
     @Param() { id }: FindOneParams,
@@ -67,6 +78,9 @@ export class StatsController {
     description: 'List of DAO bounties count stats',
     type: StatsEntryDto,
     isArray: true,
+  })
+  @ApiNotFoundResponse({
+    description: 'DAO <id> not found',
   })
   @Get('/dao/:id/bounties')
   async getDaoStatsBounties(
@@ -88,6 +102,9 @@ export class StatsController {
     type: StatsEntryDto,
     isArray: true,
   })
+  @ApiNotFoundResponse({
+    description: 'DAO <id> not found',
+  })
   @Get('/dao/:id/nfts')
   async getDaoStatsNfts(
     @Param() { id }: FindOneParams,
@@ -107,6 +124,9 @@ export class StatsController {
     description: 'List of DAO proposals count stats',
     type: ProposalStatsEntryDto,
     isArray: true,
+  })
+  @ApiNotFoundResponse({
+    description: 'DAO <id> not found',
   })
   @Get('/dao/:id/proposals')
   async getDaoStatsProposals(
