@@ -8,6 +8,7 @@ data:
   NEST_APP_TYPE: api
   REDIS_HTTP_CACHE_TTL: "60"
   WALLET_CALLBACK_URL: "{{ .Values.environment.wallet_callback_url }}"
+  FRONTEND_URL: "{{ .Values.environment.frontend_url }}"
   API_RATE_TTL: "{{ .Values.environment.api_rate_ttl }}"
   API_RATE_LIMIT: "{{ .Values.environment.api_rate_limit }}"
   ADMIN_ACCOUNTS: "{{ .Values.environment.admin_accounts }}"

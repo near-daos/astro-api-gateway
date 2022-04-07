@@ -6,7 +6,11 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { NotifiClientService } from '@sputnik-v2/notifi-client';
+import {
+  NotifiClientService,
+  NotifiTemplate,
+  NotifiTemplateMessageDto,
+} from '@sputnik-v2/notifi-client';
 import { OtpService } from '@sputnik-v2/otp';
 
 import { AccountDto, AccountEmailDto, AccountPhoneDto } from './dto';
@@ -54,6 +58,7 @@ export class AccountService {
       ...accountEmailDto,
       isEmailVerified: false,
     });
+    await this.createNotifiAlert(accountEmailDto.accountId);
     return this.getAccount(accountEmailDto.accountId);
   }
 
@@ -64,15 +69,11 @@ export class AccountService {
       ...accountPhoneDto,
       isPhoneVerified: false,
     });
+    await this.createNotifiAlert(accountPhoneDto.accountId);
     return this.getAccount(accountPhoneDto.accountId);
   }
 
-  // TODO: This is temporary workaround due to Notifi service limitations. Refactor this after Notifi updates
-  async createNotifiAlert(
-    accountId: string,
-    isEmail: boolean,
-    isPhone: boolean,
-  ): Promise<Account> {
+  async createNotifiAlert(accountId: string): Promise<Account> {
     let account = await this.accountRepository.findOne(accountId);
 
     if (!account?.notifiUserId) {
@@ -93,8 +94,8 @@ export class AccountService {
 
     const notifiAlertId = await this.notifiClientService.createAlert(
       account.notifiUserId,
-      isEmail ? account.email : undefined,
-      isPhone ? account.phoneNumber : undefined,
+      account.email,
+      account.phoneNumber,
     );
 
     return this.accountRepository.save({
@@ -103,31 +104,9 @@ export class AccountService {
     });
   }
 
-  async sendEmail(accountId: string, message: string): Promise<void> {
-    const account = await this.createNotifiAlert(accountId, true, false);
-
-    if (!account.email) {
-      throw new BadRequestException(`No email found for account: ${accountId}`);
-    }
-
-    return this.notifiClientService.sendMessage(accountId, message);
-  }
-
-  async sendSms(accountId: string, message: string): Promise<void> {
-    const account = await this.createNotifiAlert(accountId, false, true);
-
-    if (!account.phoneNumber) {
-      throw new BadRequestException(
-        `No phone number found for account: ${accountId}`,
-      );
-    }
-
-    return this.notifiClientService.sendMessage(accountId, message);
-  }
-
   async sendNotification(
     accountNotification: AccountNotification,
-    message: string,
+    template: NotifiTemplateMessageDto,
   ) {
     const account = await this.accountRepository.findOne(
       accountNotification.accountId,
@@ -136,14 +115,13 @@ export class AccountService {
     const isPhone = accountNotification.isPhone && account?.isPhoneVerified;
 
     if (isEmail || isPhone) {
-      await this.createNotifiAlert(
+      await this.notifiClientService.sendTemplateMessage(
         accountNotification.accountId,
-        isEmail,
-        isPhone,
-      );
-      await this.notifiClientService.sendMessage(
-        accountNotification.accountId,
-        message,
+        {
+          emailTemplate: isEmail ? template.emailTemplate : undefined,
+          smsTemplate: isPhone ? template.smsTemplate : undefined,
+          variables: template.variables,
+        },
       );
     }
   }
@@ -169,7 +147,10 @@ export class AccountService {
 
     const code = await this.otpService.createOtp(account.email);
 
-    await this.sendEmail(accountId, `Email verification code: ${code}`);
+    await this.notifiClientService.sendTemplateMessage(accountId, {
+      emailTemplate: NotifiTemplate.Verification,
+      variables: { code },
+    });
 
     return this.getEmailVerificationStatus(accountId);
   }
@@ -239,7 +220,10 @@ export class AccountService {
 
     const code = await this.otpService.createOtp(account.phoneNumber);
 
-    await this.sendSms(accountId, `Phone verification code: ${code}`);
+    await this.notifiClientService.sendTemplateMessage(accountId, {
+      smsTemplate: NotifiTemplate.Verification,
+      variables: { code },
+    });
 
     return this.getPhoneVerificationStatus(accountId);
   }

@@ -983,28 +983,28 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
+"@notifi-network/notifi-axios-utils@^0.11.0":
+  version "0.11.0"
+  resolved "https://registry.yarnpkg.com/@notifi-network/notifi-axios-utils/-/notifi-axios-utils-0.11.0.tgz#8ebbe1e9a02fafb4772a7d4e3ff787aba48b1979"
+  integrity sha512-LFTtrnjNXs8jB7vfE8U4RldzwQSvDjraqpwexPoQCG8cvi3PCp/nzFo1JiBgwREXniNm7kxAZrDlhkcp5vcNwg==
+
 "@notifi-network/notifi-axios-utils@^0.8.0":
   version "0.8.0"
   resolved "https://registry.yarnpkg.com/@notifi-network/notifi-axios-utils/-/notifi-axios-utils-0.8.0.tgz#83ac4a649ee9facbd32a8d121748bb5c827f9c4f"
   integrity sha512-q+RDUZ2gRkLl0gfKy6pVQrZHe9fGwLa+zH1Fy+dm3U6SCyAZX8cjqiLpFLYVJE89nguMMc28tnp3T5K39+wBlQ==
 
-"@notifi-network/notifi-axios-utils@^0.9.0":
-  version "0.9.0"
-  resolved "https://registry.yarnpkg.com/@notifi-network/notifi-axios-utils/-/notifi-axios-utils-0.9.0.tgz#3c0400b2fce5488a229b592b36558cabb6f26fb4"
-  integrity sha512-XaGljic3Iscu5XBrPBQ+qLs5c/PYdk+89fwwJSizLflbuPb4C4nCp8dmiTE2mPxIsE/roDYtZXpUoH9DP51Jxg==
+"@notifi-network/notifi-core@^0.11.0":
+  version "0.11.0"
+  resolved "https://registry.yarnpkg.com/@notifi-network/notifi-core/-/notifi-core-0.11.0.tgz#b003f473b21d05d9eb9ea96b006c2f294b98a162"
+  integrity sha512-wOJhRwtBqrKpaLxoXbGjb+Qlko8KSX+GCl6LyrN4xSMbZQuXRKA4AG2gb7gWdiYDW7/u40myqrH+MLUAeBwgkg==
 
-"@notifi-network/notifi-core@^0.9.0":
-  version "0.9.0"
-  resolved "https://registry.yarnpkg.com/@notifi-network/notifi-core/-/notifi-core-0.9.0.tgz#4d89cae6a74969140ffdf17655ef5620052c5666"
-  integrity sha512-JLGLPGo0n0zMb//+C4abI3aFTH6zJ4W9+gjUurgToILR9mcMejWq8D5xR3G2xB9E8/lDFSHJcsqVbow3wiNQNQ==
-
-"@notifi-network/notifi-node@^0.9.0":
-  version "0.9.0"
-  resolved "https://registry.yarnpkg.com/@notifi-network/notifi-node/-/notifi-node-0.9.0.tgz#92a7043723827224e632ef22b8b07cbf72d9ba8d"
-  integrity sha512-9wkOKR+pJRTKGu+xL8O7Md6ylCPRqw345AwM4YUt5kluY6m9oYpcqN2H7V4wWR5yxqzTrqdzMT+A+O62qgyAIw==
+"@notifi-network/notifi-node@^0.11.1":
+  version "0.11.1"
+  resolved "https://registry.yarnpkg.com/@notifi-network/notifi-node/-/notifi-node-0.11.1.tgz#9cd2d3c289ad7f0364401e9b3eddf45b672c4cda"
+  integrity sha512-zklGq8OIasmE/0ZkdS0yGoddbcel2bu19FdsX+syX7IkKCrfQbfrNYfgbBOPcO7NA9FKNpRq6U4/PAH3/tjn3w==
   dependencies:
-    "@notifi-network/notifi-axios-utils" "^0.9.0"
-    "@notifi-network/notifi-core" "^0.9.0"
+    "@notifi-network/notifi-axios-utils" "^0.11.0"
+    "@notifi-network/notifi-core" "^0.11.0"
 
 "@nuxtjs/opencollective@0.3.2":
   version "0.3.2"
