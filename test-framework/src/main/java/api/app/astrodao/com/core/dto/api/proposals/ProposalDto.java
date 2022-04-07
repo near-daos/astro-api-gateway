@@ -7,6 +7,7 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.util.HashMap;
 import java.util.List;
 
 @Data
@@ -22,11 +23,11 @@ public class ProposalDto {
     private String daoId;
     private String proposer;
     private String description;
-    private String status;
+    private Proposal.StatusEnum status;
     private Proposal.VoteStatusEnum voteStatus;
     private Kind kind;
     private String type;
-    private Votes votes;
+    private HashMap<String, String> votes;
     private BigDecimal votePeriodEnd;
     private Dao dao;
     private List<ProposalAction> actions;
