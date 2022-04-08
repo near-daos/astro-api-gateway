@@ -6,9 +6,13 @@ import api.app.astrodao.com.tests.BaseTest;
 import io.qameta.allure.*;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
+import static org.hamcrest.Matchers.equalTo;
 
 @Tags({@Tag("all"), @Tag("statsApiTests"), @Tag("statsDaoBountiesApiTests")})
 @Epic("Stats")
@@ -24,7 +28,6 @@ public class StatsDaoBountiesApiTests extends BaseTest {
 	@Story("Getting bounties for a DAO")
 	@DisplayName("Getting bounties for a DAO")
 	void getBountiesForDAO() {
-		//TODO: Add steps to retrieve data for DAO from CLI
 		String dao = "gaming.sputnikv2.testnet";
 
 		StatsEntries statsEntries = statsApiSteps.getBountiesForDao(dao).then()
@@ -41,7 +44,6 @@ public class StatsDaoBountiesApiTests extends BaseTest {
 	@Story("Getting NFTs for a DAO")
 	@DisplayName("Getting NFTs for a DAO")
 	void gettingNFTsForDao() {
-		//TODO: Add steps to retrieve data for DAO from CLI
 		String dao = "gaming.sputnikv2.testnet";
 
 		StatsEntries statsEntries = statsApiSteps.getBountiesForDao(dao).then()
@@ -51,5 +53,18 @@ public class StatsDaoBountiesApiTests extends BaseTest {
 		statsApiSteps.assertCollectionHasSizeGreaterThanOrEqualTo(statsEntries, 3);
 		statsApiSteps.assertCollectionElementsHasValue(statsEntries, r -> r.getValue().intValue() >= 0, "value");
 		statsApiSteps.assertCollectionElementsHasValue(statsEntries, r -> !r.getTimestamp().toString().isBlank(), "timestamp");
+	}
+
+	@ParameterizedTest
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 404 for DAO Bounties with invalid daoId")
+	@DisplayName("Get HTTP 404 for DAO Bounties with invalid daoId")
+	@CsvSource({"invalidDaoId", "2212332141", "-1", "0",
+			"*", "null", "autotest-dao-1.sputnikv2.testnet-1", "another-magic.near"})
+	void getHttp404ForDaoBountiesWithInvalidDaoId(String invalidDaoId) {
+		statsApiSteps.getBountiesForDao(invalidDaoId).then()
+				.statusCode(HTTP_NOT_FOUND)
+				.body("statusCode", equalTo(404),
+				      "message", equalTo("Not Found"));
 	}
 }
