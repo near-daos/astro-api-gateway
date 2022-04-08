@@ -87,6 +87,6 @@ export class NotifiClientService {
   }
 
   private buildNotifiAccountId(accountId: string): string {
-    return `${this.configService.get('environment')}-${accountId}`;
+    return `${this.configService.get('notifi.prefix')}-${accountId}`;
   }
 }

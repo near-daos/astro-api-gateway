@@ -30,4 +30,8 @@ export class NotifierValidationSchema extends DatabaseValidationSchema {
   @IsEnum(NotifiEnvironment)
   @IsNotEmpty()
   NOTIFI_ENV: NotifiEnvironment;
+
+  @IsString()
+  @IsNotEmpty()
+  NOTIFI_PREFIX: string;
 }

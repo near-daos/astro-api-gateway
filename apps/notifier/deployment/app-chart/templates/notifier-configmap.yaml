@@ -10,3 +10,4 @@ data:
   NOTIFI_ENV: "{{ .Values.environment.notifi_env }}"
   NOTIFI_SID: "{{ .Values.environment.notifi_sid }}"
   NOTIFI_SECRET: "{{ .Values.environment.notifi_secret }}"
+  NOTIFI_PREFIX: "{{ .Values.environment.notifi_prefix }}"
