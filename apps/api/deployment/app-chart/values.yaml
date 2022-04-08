@@ -116,3 +116,4 @@ environment:
   notifi_env: "Development"
   notifi_sid: ""
   notifi_secret: ""
+  notifi_prefix: "dev"

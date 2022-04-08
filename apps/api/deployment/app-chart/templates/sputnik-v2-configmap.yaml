@@ -11,3 +11,4 @@ data:
   NEAR_CREDENTIALS_DIR: ".near-credentials"
   LOG_LEVELS: "log,warn,error"
   NOTIFI_ENV: "{{ .Values.environment.notifi_env }}"
+  NOTIFI_PREFIX: "{{ .Values.environment.notifi_prefix }}"
