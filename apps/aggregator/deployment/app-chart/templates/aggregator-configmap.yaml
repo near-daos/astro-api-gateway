@@ -5,6 +5,7 @@ metadata:
 data:
   NODE_OPTIONS: ' --max-old-space-size={{ include "node.maxOldSpaceSize" . }} '
   PORT: "3000"
+  FRONTEND_URL: "{{ .Values.environment.frontend_url }}"
   NEST_APP_TYPE: aggregator
   AGGREGATOR_POLLING_INTERVAL: "{{ .Values.environment.aggregator_polling_interval }}"
   AGGREGATOR_TOKEN_POLLING_INTERVAL: "{{ .Values.environment.aggregator_token_polling_interval }}"
