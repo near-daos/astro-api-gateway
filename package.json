@@ -55,7 +55,7 @@
     "@nestjsx/crud-request": "^5.0.0-alpha.3",
     "@nestjsx/crud-typeorm": "^5.0.0-alpha.3",
     "@notifi-network/notifi-axios-utils": "^0.8.0",
-    "@notifi-network/notifi-node": "^0.9.0",
+    "@notifi-network/notifi-node": "^0.11.1",
     "@supercharge/promise-pool": "^1.7.0",
     "@types/cache-manager": "^3.4.2",
     "amqp-connection-manager": "^3.2.2",

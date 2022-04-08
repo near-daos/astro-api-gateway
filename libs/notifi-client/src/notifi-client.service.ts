@@ -3,6 +3,8 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NotifiClient, createAxiosInstance } from '@notifi-network/notifi-node';
 
+import { NotifiTemplateMessageDto } from './dto';
+
 @Injectable()
 export class NotifiClientService {
   private client: NotifiClient;
@@ -50,6 +52,19 @@ export class NotifiClientService {
       walletPublicKey: accountId,
       walletBlockchain: 'NEAR',
       message: message,
+    });
+  }
+
+  async sendTemplateMessage(
+    accountId: string,
+    template: NotifiTemplateMessageDto,
+  ): Promise<void> {
+    const jwt = await this.getToken();
+    return this.client.sendDirectPush(jwt, {
+      key: `${accountId}:last-message`,
+      walletPublicKey: accountId,
+      walletBlockchain: 'NEAR',
+      template: template,
     });
   }
 
