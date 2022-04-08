@@ -7,13 +7,17 @@ import api.app.astrodao.com.tests.BaseTest;
 import io.qameta.allure.*;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
+import static org.hamcrest.Matchers.equalTo;
 
 @Tags({@Tag("all"), @Tag("statsApiTests"), @Tag("statsDaoNftApiTests")})
 @Epic("Stats")
@@ -42,5 +46,18 @@ public class StatsDaoNftApiTests extends BaseTest {
 
 		statsApiSteps.assertCollectionHasCorrectSize(values1, 2);
 		statsApiSteps.assertCollectionHasSizeGreaterThanOrEqualTo(values2, 71);
+	}
+
+	@ParameterizedTest
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 404 for DAO NFT stats with invalid daoId")
+	@DisplayName("Get HTTP 404 for DAO NFT stats with invalid daoId")
+	@CsvSource({"invalidDaoId", "2212332141", "-1", "0",
+			"*", "null", "autotest-dao-1.sputnikv2.testnet-1", "another-magic.near"})
+	void getHttp404ForDaoNftStatsWithInvalidDaoId(String invalidDaoId) {
+		statsApiSteps.getNFTsForDao(invalidDaoId).then()
+				.statusCode(HTTP_NOT_FOUND)
+				.body("statusCode", equalTo(404),
+				      "message", equalTo("Not Found"));
 	}
 }
