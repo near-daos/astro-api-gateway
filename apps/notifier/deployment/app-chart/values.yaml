@@ -98,7 +98,7 @@ environment:
   aggregator_token_polling_interval: "10000"
   aggregator_token_prices_polling_interval: "100000"
   wallet_callback_url: ""
-  frintend_url: ""
+  frontend_url: ""
   notifi_env: "Development"
   notifi_sid: ""
   notifi_secret: ""
