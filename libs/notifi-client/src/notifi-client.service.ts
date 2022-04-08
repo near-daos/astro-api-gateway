@@ -60,6 +60,12 @@ export class NotifiClientService {
     template: NotifiTemplateMessageDto,
   ): Promise<void> {
     const jwt = await this.getToken();
+    console.log('sendTemplateMessage', jwt, {
+      key: `${accountId}:last-message`,
+      walletPublicKey: this.buildNotifiAccountId(accountId),
+      walletBlockchain: 'NEAR',
+      template: template,
+    });
     return this.client.sendDirectPush(jwt, {
       key: `${accountId}:last-message`,
       walletPublicKey: this.buildNotifiAccountId(accountId),
