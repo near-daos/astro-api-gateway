@@ -21,7 +21,7 @@ export class NotifiClientService {
     const jwt = await this.getToken();
     return this.client.createTenantUser(jwt, {
       walletBlockchain: 'NEAR',
-      walletPublicKey: accountId,
+      walletPublicKey: this.buildNotifiAccountId(accountId),
     });
   }
 
@@ -49,7 +49,7 @@ export class NotifiClientService {
     const jwt = await this.getToken();
     return this.client.sendDirectPush(jwt, {
       key: `${accountId}:last-message`,
-      walletPublicKey: accountId,
+      walletPublicKey: this.buildNotifiAccountId(accountId),
       walletBlockchain: 'NEAR',
       message: message,
     });
@@ -62,7 +62,7 @@ export class NotifiClientService {
     const jwt = await this.getToken();
     return this.client.sendDirectPush(jwt, {
       key: `${accountId}:last-message`,
-      walletPublicKey: accountId,
+      walletPublicKey: this.buildNotifiAccountId(accountId),
       walletBlockchain: 'NEAR',
       template: template,
     });
@@ -84,5 +84,9 @@ export class NotifiClientService {
       sid: config.sid,
       secret: config.secret,
     });
+  }
+
+  private buildNotifiAccountId(accountId: string): string {
+    return `${this.configService.get('environment')}-${accountId}`;
   }
 }
