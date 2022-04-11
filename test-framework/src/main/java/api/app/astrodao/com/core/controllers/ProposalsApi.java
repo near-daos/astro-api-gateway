@@ -23,6 +23,13 @@ public class ProposalsApi {
                 .get(PROPOSALS_ID, proposalId);
     }
 
+    public Response getProposalByID(String proposalId, String accountId) {
+        return given().spec(requestSpec)
+                .accept(ContentType.JSON)
+                .queryParam("accountId", accountId)
+                .get(PROPOSALS_ID, proposalId);
+    }
+
     public Response getProposals(Map<String, Object> queryParams) {
         return given().spec(requestSpec)
                 .queryParams(queryParams)
