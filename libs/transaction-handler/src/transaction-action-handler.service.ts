@@ -72,20 +72,32 @@ export class TransactionActionHandlerService {
     ];
   }
 
-  async handleTransactionActions(actions: TransactionAction[]) {
-    // Actions are handled one by one to keep order of transactions
-    const { errors } = await PromisePool.withConcurrency(1)
-      .for(actions)
-      .process(async (action) => this.handleTransactionAction(action));
+  async handleTransactionActions(
+    actions: TransactionAction[],
+  ): Promise<string[]> {
+    const handledTxHashes = [];
 
-    errors.forEach((error) => {
-      this.logger.error(
-        `Failed to handle transaction ${error.item.transactionHash} with error: ${error}`,
-      );
-    });
+    // Actions are handled one by one to keep order of transactions
+    for (const action of actions) {
+      try {
+        await this.handleTransactionAction(action);
+        handledTxHashes.push(action.transactionHash);
+      } catch (error) {
+        this.logger.error(
+          `Failed to handle transaction ${action.transactionHash} with error: ${error}`,
+        );
+
+        // If some action failed stop handling
+        return handledTxHashes;
+      }
+    }
+
+    return handledTxHashes;
   }
 
   async handleTransactionAction(action: TransactionAction) {
+    this.logger.log(`Handling transaction: ${action.transactionHash}`);
+
     const tx = await this.transactionRepository.findOne({
       transactionHash: action.transactionHash,
     });
@@ -107,6 +119,10 @@ export class TransactionActionHandlerService {
         return handler(action);
       }
     });
+
+    this.logger.log(
+      `Transaction successfully handled: ${action.transactionHash}`,
+    );
   }
 
   async handleCreateDao(txAction: TransactionAction) {
@@ -143,9 +159,9 @@ export class TransactionActionHandlerService {
       (txStatus.status as FinalExecutionStatus)?.SuccessValue,
     );
 
-    if (!lastProposalId) {
+    if (isNaN(lastProposalId)) {
       this.logger.warn(
-        `Error getting Proposal ID: ${lastProposalId} from transaction: ${transactionHash}`,
+        `Error getting Proposal ID from transaction: ${transactionHash}`,
       );
       return;
     }
@@ -241,6 +257,7 @@ export class TransactionActionHandlerService {
         });
         break;
 
+      case VoteAction.Finalize:
       case VoteAction.VoteReject:
         await this.handleRejectProposal({
           dao,
@@ -365,7 +382,8 @@ export class TransactionActionHandlerService {
     const proposalKindType = proposal.kind?.kind.type;
 
     if (
-      proposal.status === ProposalStatus.Rejected &&
+      (proposal.status === ProposalStatus.Rejected ||
+        proposal.status === ProposalStatus.Expired) &&
       proposalKindType === ProposalType.BountyDone
     ) {
       await this.handleDoneBounty({

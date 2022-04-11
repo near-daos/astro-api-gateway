@@ -8,6 +8,25 @@ export class Account extends BaseEntity {
   @PrimaryColumn({ type: 'text', unique: true })
   accountId: string;
 
-  @Column()
-  token: string;
+  @ApiProperty()
+  @Column({ nullable: true })
+  email: string;
+
+  @ApiProperty()
+  @Column({ nullable: true })
+  isEmailVerified: boolean;
+
+  @ApiProperty()
+  @Column({ nullable: true })
+  phoneNumber: string;
+
+  @ApiProperty()
+  @Column({ nullable: true })
+  isPhoneVerified: boolean;
+
+  @Column({ nullable: true })
+  notifiUserId: string;
+
+  @Column({ nullable: true })
+  notifiAlertId: string;
 }

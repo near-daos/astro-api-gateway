@@ -2,28 +2,67 @@ import { Injectable } from '@nestjs/common';
 import { In } from 'typeorm';
 
 import {
-  Notification,
-  AccountNotificationService,
-  AccountNotificationSettingsService,
-  AccountNotificationSettings,
   AccountNotification,
+  AccountNotificationService,
+  AccountNotificationSettings,
+  AccountNotificationSettingsService,
+  Notification,
+  NotificationService,
+  NotificationStatus,
+  NotificationType,
 } from '@sputnik-v2/notification';
 import { SubscriptionService } from '@sputnik-v2/subscription';
 import { DaoService } from '@sputnik-v2/dao';
 import { getBlockTimestamp } from '@sputnik-v2/utils';
+import { EventService } from '@sputnik-v2/event';
+import { AccountService } from '@sputnik-v2/account';
 
 import { castAccountNotification } from './types/account-notification';
+import PromisePool from '@supercharge/promise-pool';
+import {
+  NotifiTemplate,
+  NotifiTemplateMessageDto,
+} from '@sputnik-v2/notifi-client';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AccountNotifierService {
   constructor(
     private readonly accountNotificationService: AccountNotificationService,
     private readonly accountNotificationSettingsService: AccountNotificationSettingsService,
+    private readonly notificationService: NotificationService,
     private readonly subscriptionService: SubscriptionService,
     private readonly daoService: DaoService,
+    private readonly eventService: EventService,
+    private readonly accountService: AccountService,
+    private readonly configService: ConfigService,
   ) {}
 
-  async notifyAccounts(
+  async notifyAccounts(notification: Notification) {
+    if (notification) {
+      const accountNotifications = await this.createAccountNotifications(
+        notification,
+      );
+      const template = this.getNotificationTemplate(notification);
+
+      await this.eventService.sendNewNotificationEvent(
+        notification,
+        accountNotifications,
+      );
+
+      // Notify accounts via email and sms
+      await PromisePool.withConcurrency(1)
+        .for(accountNotifications.filter(({ isMuted }) => !isMuted))
+        .process(async (accountNotification) => {
+          return this.accountService.sendNotification(
+            accountNotification,
+            template,
+          );
+        });
+    }
+  }
+
+  async createAccountNotifications(
     notification: Notification,
   ): Promise<AccountNotification[]> {
     const daoSubscribers = await this.getDaoSubscribers(notification.daoId);
@@ -42,7 +81,13 @@ export class AccountNotifierService {
         if (status.shouldNotify) {
           return [
             ...accountsNotifications,
-            castAccountNotification(accountId, notification, status.isDisabled),
+            castAccountNotification(
+              accountId,
+              notification,
+              status.isDisabled,
+              status.isPhone,
+              status.isEmail,
+            ),
           ];
         }
 
@@ -69,7 +114,12 @@ export class AccountNotifierService {
     accountId: string,
     notification: Notification,
     notificationSettings: AccountNotificationSettings[],
-  ): { isDisabled: boolean; shouldNotify: boolean } {
+  ): {
+    isDisabled: boolean;
+    shouldNotify: boolean;
+    isPhone: boolean;
+    isEmail: boolean;
+  } {
     const accountNotificationSettings = notificationSettings.filter(
       (ns) =>
         ns.accountId === accountId &&
@@ -78,7 +128,12 @@ export class AccountNotifierService {
 
     // If no settings, notify by default
     if (accountNotificationSettings.length === 0) {
-      return { isDisabled: false, shouldNotify: true };
+      return {
+        isDisabled: false,
+        shouldNotify: true,
+        isPhone: false,
+        isEmail: false,
+      };
     }
 
     const currentTimestamp = getBlockTimestamp();
@@ -91,10 +146,106 @@ export class AccountNotifierService {
     const shouldNotify = accountNotificationSettings.some((ans) =>
       ans.types.includes(notification.type),
     );
+    const isPhone = accountNotificationSettings.some((ans) => ans.enableSms);
+    const isEmail = accountNotificationSettings.some((ans) => ans.enableEmail);
 
     return {
       isDisabled,
       shouldNotify,
+      isPhone,
+      isEmail,
     };
+  }
+
+  getNotificationTemplate({
+    type,
+    status,
+    signerId,
+    daoId,
+    metadata,
+  }: Notification): NotifiTemplateMessageDto {
+    const isDaoNotification = [
+      NotificationType.CustomDao,
+      NotificationType.ClubDao,
+      NotificationType.FoundationDao,
+      NotificationType.CorporationDao,
+      NotificationType.CooperativeDao,
+    ].includes(type);
+    const frontendUrl = this.configService.get('frontendUrl');
+
+    if (isDaoNotification) {
+      return {
+        smsTemplate: NotifiTemplate.DaoCreated,
+        emailTemplate: NotifiTemplate.DaoCreated,
+        variables: {
+          daoUrl: `${frontendUrl}/dao/${daoId}`,
+          dao: daoId,
+          signerId,
+        },
+      };
+    }
+
+    const proposerId = signerId ?? metadata?.proposal?.proposer ?? '';
+
+    switch (status) {
+      case NotificationStatus.Created:
+        return {
+          smsTemplate: NotifiTemplate.ProposalSubmitted,
+          emailTemplate: NotifiTemplate.ProposalSubmitted,
+          variables: {
+            daoUrl: `${frontendUrl}/dao/${daoId}`,
+            proposalUrl: `${frontendUrl}/dao/${daoId}/proposals/${metadata.proposal.id}`,
+            dao: daoId,
+            signerId,
+            proposerId,
+            type,
+          },
+        };
+      case NotificationStatus.Rejected:
+      case NotificationStatus.Approved:
+      case NotificationStatus.Removed:
+        return {
+          smsTemplate: NotifiTemplate.ProposalAction,
+          emailTemplate: NotifiTemplate.ProposalAction,
+          variables: {
+            daoUrl: `${frontendUrl}/dao/${daoId}`,
+            proposalUrl: `${frontendUrl}/dao/${daoId}/proposals/${metadata.proposal.id}`,
+            dao: daoId,
+            signerId,
+            proposerId,
+            type,
+            action: status.toLowerCase(),
+          },
+        };
+      case NotificationStatus.VoteApprove:
+      case NotificationStatus.VoteReject:
+      case NotificationStatus.VoteRemove:
+        return {
+          smsTemplate: NotifiTemplate.Voted,
+          emailTemplate: NotifiTemplate.Voted,
+          variables: {
+            daoUrl: `${frontendUrl}/dao/${daoId}`,
+            proposalUrl: `${frontendUrl}/dao/${daoId}/proposals/${metadata.proposal.id}`,
+            dao: daoId,
+            signerId,
+            proposerId,
+            type,
+            action: {
+              [NotificationStatus.VoteApprove]: 'approve',
+              [NotificationStatus.VoteReject]: 'reject',
+              [NotificationStatus.VoteRemove]: 'remove',
+            }[status],
+          },
+        };
+      default:
+        return {
+          smsTemplate: NotifiTemplate.ProposalUpdated,
+          emailTemplate: NotifiTemplate.ProposalUpdated,
+          variables: {
+            daoUrl: `${frontendUrl}/dao/${daoId}`,
+            dao: daoId,
+          },
+        };
+    }
   }
 }

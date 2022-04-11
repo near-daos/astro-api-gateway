@@ -54,11 +54,14 @@
     "@nestjsx/crud": "^5.0.0-alpha.3",
     "@nestjsx/crud-request": "^5.0.0-alpha.3",
     "@nestjsx/crud-typeorm": "^5.0.0-alpha.3",
+    "@notifi-network/notifi-axios-utils": "^0.8.0",
+    "@notifi-network/notifi-node": "^0.11.1",
     "@supercharge/promise-pool": "^1.7.0",
     "@types/cache-manager": "^3.4.2",
     "amqp-connection-manager": "^3.2.2",
     "amqplib": "^0.8.0",
     "aws-sdk": "^2.937.0",
+    "bcrypt": "^5.0.1",
     "cache-manager": "^3.4.4",
     "cache-manager-redis-store": "^2.0.0",
     "camelcase-keys": "^7.0.0",
@@ -76,6 +79,7 @@
     "rxjs": "^7.3.0",
     "socket.io": "^4.2.0",
     "swagger-ui-express": "^4.1.6",
+    "twilio": "^3.75.0",
     "typeorm": "^0.2.34",
     "typeorm-naming-strategies": "^2.0.0"
   },
@@ -166,7 +170,11 @@
       "@sputnik-v2/comment/(.*)": "<rootDir>/libs/comment/src/$1",
       "@sputnik-v2/comment": "<rootDir>/libs/comment/src",
       "@sputnik-v2/stats/(.*)": "<rootDir>/libs/stats/src/$1",
-      "@sputnik-v2/stats": "<rootDir>/libs/stats/src"
+      "@sputnik-v2/stats": "<rootDir>/libs/stats/src",
+      "@sputnik-v2/notifi-client/(.*)": "<rootDir>/libs/notifi-client/src/$1",
+      "@sputnik-v2/notifi-client": "<rootDir>/libs/notifi-client/src",
+      "@sputnik-v2/otp/(.*)": "<rootDir>/libs/otp/src/$1",
+      "@sputnik-v2/otp": "<rootDir>/libs/otp/src"
     }
   }
 }

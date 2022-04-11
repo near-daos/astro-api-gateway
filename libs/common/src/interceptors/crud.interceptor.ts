@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { QueryFailedError } from 'typeorm';
 import {
   CrudRequest,
   CrudRequestInterceptor,
@@ -11,10 +12,32 @@ export class BaseCrudRequestInterceptor extends CrudRequestInterceptor {
   getCrudRequest(
     parser: RequestQueryParser,
     crudOptions: Partial<MergedCrudOptions>,
+    requiredFields?: string[],
   ): CrudRequest {
     const crudRequest = super.getCrudRequest(parser, crudOptions);
 
-    const { sort, offset, limit } = crudRequest?.parsed || {};
+    const { sort, offset, limit, page, fields } = crudRequest?.parsed || {};
+
+    if (page < 0) {
+      throw new QueryFailedError(
+        '',
+        undefined,
+        new Error('PAGE must not be negative'),
+      );
+    }
+
+    if (requiredFields && fields?.length) {
+      requiredFields.forEach((field) => {
+        if (!fields.includes(field)) {
+          throw new QueryFailedError(
+            '',
+            undefined,
+            new Error(`${field} field is required`),
+          );
+        }
+      });
+    }
+
     if (!sort || !sort.length) {
       crudRequest.parsed.sort = [{ field: 'createdAt', order: 'DESC' }];
     }

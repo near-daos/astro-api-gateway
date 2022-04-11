@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { NearApiService, NearTransactionStatus } from '@sputnik-v2/near-api';
-import { AccountChange } from '@sputnik-v2/near-indexer';
+import { AccountChange, Transaction } from '@sputnik-v2/near-indexer';
 import { sleep } from '@sputnik-v2/utils';
 
 import {
@@ -10,10 +10,11 @@ import {
   TransactionAction,
   TransactionActionsResponse,
 } from './types';
-import PromisePool from '@supercharge/promise-pool';
 
 @Injectable()
 export class TransactionActionMapperService {
+  private readonly logger = new Logger(TransactionActionMapperService.name);
+
   constructor(private readonly nearApiService: NearApiService) {}
 
   async getActionsByNearTransaction(
@@ -30,13 +31,20 @@ export class TransactionActionMapperService {
     let transactions = [];
     let actions = [];
 
-    await PromisePool.withConcurrency(1)
-      .for(accountChanges)
-      .process(async (accountChange) => {
+    for (const accountChange of accountChanges) {
+      try {
+        this.logger.log(
+          `Received transaction: ${accountChange.causedByTransactionHash}`,
+        );
         const res = await this.getActionsByAccountChange(accountChange);
         transactions = transactions.concat(res.transaction);
         actions = actions.concat(res.actions);
-      });
+      } catch (error) {
+        this.logger.error(
+          `Failed to get transaction action ${accountChange.causedByTransactionHash} with error: ${error}`,
+        );
+      }
+    }
 
     return {
       transactions,
@@ -50,7 +58,8 @@ export class TransactionActionMapperService {
 
     if (
       !originatedFromTransaction.transactionAction ||
-      !accountChange.causedByReceipt.receiptActions
+      !accountChange.causedByReceipt.receiptActions ||
+      this.isActFunctionCall(originatedFromTransaction)
     ) {
       const txStatus = await this.getTxStatus(
         originatedFromTransaction.transactionHash,
@@ -110,5 +119,12 @@ export class TransactionActionMapperService {
         ),
       )
       .flat();
+  }
+
+  private isActFunctionCall(transaction: Transaction): boolean {
+    return (
+      transaction.transactionAction?.args?.method_name === 'act_proposal' &&
+      transaction.transactionAction?.actionKind === 'FUNCTION_CALL'
+    );
   }
 }

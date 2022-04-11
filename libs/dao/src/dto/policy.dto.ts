@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsArray, IsNumber, IsObject, IsString } from 'class-validator';
 import { RolePermissionDto, VotePolicy } from '@sputnik-v2/sputnikdao/types';
+import { RoleDto } from '@sputnik-v2/dao/dto/role.dto';
 
 export class PolicyDto {
   daoId: string;
@@ -25,7 +26,7 @@ export class PolicyDto {
   @IsObject()
   defaultVotePolicy: VotePolicy;
 
-  @ApiProperty()
+  @ApiProperty({ type: RoleDto })
   @IsArray()
   roles: RolePermissionDto[];
 }

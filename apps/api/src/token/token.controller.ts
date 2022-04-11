@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiNotFoundResponse,
   ApiParam,
   ApiQuery,
   ApiResponse,
@@ -71,7 +72,7 @@ export class TokenController {
     description: 'List of Fungible Tokens by Account',
     type: Token,
   })
-  @ApiBadRequestResponse({ description: 'Invalid Dao ID' })
+  @ApiBadRequestResponse({ description: 'Invalid Account ID' })
   @Get('/account-tokens/:accountId')
   async tokensByDao(
     @Param() { accountId }: FindAccountParams,
@@ -106,6 +107,9 @@ export class TokenController {
     description: 'List of Non-Fungible Token Events',
     type: AssetsNftEvent,
     isArray: true,
+  })
+  @ApiNotFoundResponse({
+    description: 'No NFT found',
   })
   @UseInterceptors(HttpCacheInterceptor, NFTTokenCrudRequestInterceptor)
   @UseFilters(new QueryFailedErrorFilter())

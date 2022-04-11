@@ -27,6 +27,10 @@ export class BaseValidationSchema {
 
   @IsString()
   @IsNotEmpty()
+  FRONTEND_URL: string;
+
+  @IsString()
+  @IsNotEmpty()
   NEAR_CONTRACT_NAME: string;
 
   @IsString()

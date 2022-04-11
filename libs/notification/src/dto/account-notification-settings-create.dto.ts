@@ -19,5 +19,13 @@ export class CreateAccountNotificationSettingsDto extends AccountBearer {
 
   @ApiProperty()
   @IsBoolean()
+  enableSms: boolean;
+
+  @ApiProperty()
+  @IsBoolean()
+  enableEmail: boolean;
+
+  @ApiProperty()
+  @IsBoolean()
   isAllMuted: boolean;
 }

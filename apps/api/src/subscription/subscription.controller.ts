@@ -74,7 +74,6 @@ export class SubscriptionsController {
     description: 'List of Subscriptions by Account',
     type: Subscription,
   })
-  @ApiBadRequestResponse({ description: 'Invalid Account ID' })
   @Get('/account-subscriptions/:accountId')
   async getAccountSubscriptions(
     @Param() { accountId }: FindAccountParams,

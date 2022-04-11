@@ -16,4 +16,43 @@ public class Constants {
 		public static final String GET_BOUNTY_BY_ID = "near view %s get_bounty '%s'";
 		public static final String GET_TX_STATUS = "near tx-status %s --accountId %s";
 	}
+
+	@UtilityClass
+	public class Endpoints {
+		public static final String DAOS = "/api/v1/daos";
+		public static final String DAOS_ID = "/api/v1/daos/{id}";
+		public static final String ACCOUNT_DAOS = "/api/v1/daos/account-daos/{accountId}";
+
+		public static final String PROPOSALS = "/api/v1/proposals";
+		public static final String PROPOSALS_ID = "/api/v1/proposals/{id}";
+
+		public static final String COMMENTS = "/api/v1/comments";
+		public static final String COMMENTS_ID = "/api/v1/comments/{id}";
+		public static final String COMMENTS_REPORT = "/api/v1/comments/report";
+
+		public static final String BOUNTIES = "/api/v1/bounties";
+		public static final String BOUNTIES_ID = "/api/v1/bounties/{id}";
+		public static final String BOUNTY_CONTEXTS = "/api/v1/bounty-contexts";
+
+		public static final String TOKENS = "/api/v1/tokens";
+		public static final String ACCOUNT_TOKENS = "/api/v1/tokens/account-tokens/{accountId}";
+		public static final String TOKENS_NFTS = "/api/v1/tokens/nfts";
+		public static final String TOKENS_NFTS_EVENTS = "/api/v1/tokens/nfts/{id}/events";
+
+		public static final String NOTIFICATIONS = "/api/v1/notifications";
+
+		public static final String SEARCH = "/api/v1/search";
+
+		public static final String DAO_STATS_FUNDS = "/api/v1/stats/dao/{id}/funds";
+		public static final String DAO_STATS_NFTS = "/api/v1/stats/dao/{id}/nfts";
+		public static final String DAO_STATS_PROPOSALS = "/api/v1/stats/dao/{id}/proposals";
+		public static final String DAO_STATS_STATE = "/api/v1/stats/dao/{id}/state";
+		public static final String DAO_STATS_BOUNTIES = "/api/v1/stats/dao/{id}/bounties";
+
+		public static final String SUBSCRIPTIONS = "/api/v1/subscriptions";
+		public static final String SUBSCRIPTIONS_ID = "/api/v1/subscriptions/{id}";
+		public static final String ACCOUNT_SUBSCRIPTIONS = "/api/v1/subscriptions/account-subscriptions/{accountId}";
+
+		public static final String TRANSACTIONS_CALLBACK = "/api/v1/transactions/wallet/callback/{accountId}";
+	}
 }

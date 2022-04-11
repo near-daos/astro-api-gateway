@@ -1,65 +1,44 @@
 package api.app.astrodao.com.core.controllers;
 
-import api.app.astrodao.com.core.clients.HttpClient;
+import io.restassured.http.ContentType;
+import io.restassured.response.Response;
+import io.restassured.specification.RequestSpecification;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.Collections;
 import java.util.Map;
+
+import static api.app.astrodao.com.core.Constants.Endpoints.*;
+import static io.restassured.RestAssured.given;
 
 @Component
 @RequiredArgsConstructor
 public class TokenApi {
-    protected final HttpClient httpClient;
+    private final RequestSpecification requestSpec;
 
-    @Value("${framework.api.url}")
-    private String apiUrl;
-
-    public ResponseEntity<String> getTokens(Map<String, Object> queryParams) {
-        HttpHeaders httpHeaders = httpClient.getBasicHeaders();
-        httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-
-        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(apiUrl);
-        builder.pathSegment("tokens");
-        queryParams.forEach((key, value) -> builder.queryParam(key, value));
-
-        return httpClient.get(builder.toUriString(), new HttpEntity<>(httpHeaders), String.class);
+    public Response getTokens(Map<String, Object> queryParams) {
+        return given().spec(requestSpec)
+                .accept(ContentType.JSON)
+                .queryParams(queryParams)
+                .get(TOKENS);
     }
 
-    public ResponseEntity<String> getTokensForDao(String dao) {
-        HttpHeaders httpHeaders = httpClient.getBasicHeaders();
-        httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-
-        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(apiUrl);
-        builder.pathSegment("tokens", "account-tokens", dao);
-
-        return httpClient.get(builder.toUriString(), new HttpEntity<>(httpHeaders), String.class);
+    public Response getTokensForDao(String dao) {
+        return given().spec(requestSpec)
+                .accept(ContentType.JSON)
+                .get(ACCOUNT_TOKENS, dao);
     }
 
-    public ResponseEntity<String> getNFTs(Map<String, Object> queryParams) {
-        HttpHeaders httpHeaders = httpClient.getBasicHeaders();
-        httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-
-        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(apiUrl);
-        builder.pathSegment("tokens", "nfts");
-        queryParams.forEach((key, value) -> builder.queryParam(key, value));
-
-        return httpClient.get(builder.toUriString(), new HttpEntity<>(httpHeaders), String.class);
+    public Response getNFTs(Map<String, Object> queryParams) {
+        return given().spec(requestSpec)
+                .accept(ContentType.JSON)
+                .queryParams(queryParams)
+                .get(TOKENS_NFTS);
     }
 
-    public ResponseEntity<String> getEventsForNFT(String nftID) {
-        HttpHeaders httpHeaders = httpClient.getBasicHeaders();
-        httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-
-        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(apiUrl);
-        builder.pathSegment("tokens", "nfts", nftID, "events");
-
-        return httpClient.get(builder.toUriString(), new HttpEntity<>(httpHeaders), String.class);
+    public Response getEventsForNFT(String nftID) {
+        return given().spec(requestSpec)
+                .accept(ContentType.JSON)
+                .get(TOKENS_NFTS_EVENTS, nftID);
     }
 }

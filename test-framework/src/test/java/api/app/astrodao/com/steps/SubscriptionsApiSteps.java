@@ -6,12 +6,12 @@ import api.app.astrodao.com.core.dto.api.subscription.Subscriptions;
 import api.app.astrodao.com.core.exceptions.EntityNotFoundException;
 import api.app.astrodao.com.openapi.models.Subscription;
 import io.qameta.allure.Step;
+import io.restassured.response.Response;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 
 import java.util.Objects;
 
+import static java.net.HttpURLConnection.HTTP_OK;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 @Steps
@@ -20,27 +20,27 @@ public class SubscriptionsApiSteps extends BaseSteps {
     private final SubscriptionsApi subscriptionsApi;
 
     public void cleanUpSubscriptions(String accountId, String publicKey, String signature) {
-        ResponseEntity<String> response = subscriptionsApi.accountSubscriptions(accountId);
-        assertResponseStatusCode(response, HttpStatus.OK);
+        Response response = subscriptionsApi.accountSubscriptions(accountId);
+        assertResponseStatusCode(response, HTTP_OK);
         Subscriptions subscriptions = getResponseDto(response, Subscriptions.class);
         subscriptions.forEach(p -> {
-            ResponseEntity<String> resp = subscriptionsApi.deleteSubscription(accountId, publicKey, signature, p.getId());
-            assertResponseStatusCode(resp, HttpStatus.OK);
+            Response resp = subscriptionsApi.deleteSubscription(accountId, publicKey, signature, p.getId());
+            assertResponseStatusCode(resp, HTTP_OK);
         });
     }
 
     @Step("User subscribes to DAO")
-    public ResponseEntity<String> subscribeDao(String accountId, String publicKey, String signature, String daoId) {
+    public Response subscribeDao(String accountId, String publicKey, String signature, String daoId) {
         return subscriptionsApi.subscribeDao(accountId, publicKey, signature, daoId);
     }
 
     @Step("User get subscriptions")
-    public ResponseEntity<String> accountSubscriptions(String accountId) {
+    public Response accountSubscriptions(String accountId) {
         return subscriptionsApi.accountSubscriptions(accountId);
     }
 
     @Step("User deletes subscription")
-    public ResponseEntity<String> deleteSubscription(String accountId, String publicKey, String signature, String daoId) {
+    public Response deleteSubscription(String accountId, String publicKey, String signature, String daoId) {
         return subscriptionsApi.deleteSubscription(accountId, publicKey, signature, daoId);
     }
 
