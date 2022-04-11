@@ -477,7 +477,7 @@ export class AggregatorService {
           tx?.blockTimestamp)
     ) {
       this.logger.log(
-        `Skip aggregation for DAO: ${account.accountId}. No new transactions found`,
+        `Skip aggregation for DAO: ${account.accountId}. No new events found`,
       );
       return;
     }
