@@ -17,7 +17,9 @@ import org.springframework.beans.factory.annotation.Value;
 
 import java.util.List;
 
+import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_OK;
+import static org.hamcrest.Matchers.equalTo;
 
 @Tags({@Tag("all"), @Tag("notificationsIdApiTests")})
 @Epic("Notifications")
@@ -60,6 +62,20 @@ public class NotificationsIdApiTests extends BaseTest {
 		notificationsApiSteps.assertCollectionsAreEqual(notifications.getDao().getAccountIds(), List.of(testAccountId));
 		notificationsApiSteps.assertDtoValue(notifications.getDao().getPolicy(), Policy::getDaoId, daoId, "dao/policy/id");
 		notificationsApiSteps.assertDtoValue(notifications.getDao(), Dao::getCreatedBy, testAccountId, "dao/createdBy");
+	}
 
+	@ParameterizedTest
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 400 for Notification ID")
+	@DisplayName("Get HTTP 400 for Notification ID")
+	@CsvSource({"invalidId", "2212332141", "-1", "0",
+			"*", "null", "autotest-dao-1.sputnikv2.testnet-1", "another-magic.near",
+			"test-dao-1641395769436.sputnikv2.testnet-3184", "test-dao-1641395769436.sputnikv2.testnet", "testdao2.testnet"})
+	void getHttp400ForNotificationId(String notificationId) {
+		notificationsApiSteps.getNotificationById(notificationId).then()
+				.statusCode(HTTP_BAD_REQUEST)
+				.body("statusCode", equalTo(400),
+				      "message", equalTo("Invalid Notification ID"),
+				      "error", equalTo("Bad Request"));
 	}
 }
