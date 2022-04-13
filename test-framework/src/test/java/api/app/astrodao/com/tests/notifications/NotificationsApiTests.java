@@ -45,10 +45,10 @@ public class NotificationsApiTests extends BaseTest {
         );
         int limit = 10;
         int page = 1;
-        Response response = notificationsApiSteps.getNotifications(query);
-        notificationsApiSteps.assertResponseStatusCode(response, HTTP_OK);
 
-        NotificationsResponse notifications = notificationsApiSteps.getResponseDto(response, NotificationsResponse.class);
+        NotificationsResponse notifications = notificationsApiSteps.getNotifications(query).then()
+                .statusCode(HTTP_OK)
+                .extract().as(NotificationsResponse.class);
 
         notificationsApiSteps.assertDtoValueGreaterThan(notifications, r -> r.getTotal().intValue(), limit, "total");
         notificationsApiSteps.assertDtoValueGreaterThan(notifications, r -> r.getPageCount().intValue(), 1, "pageCount");

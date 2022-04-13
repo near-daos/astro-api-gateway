@@ -40,6 +40,7 @@ public class Constants {
 		public static final String TOKENS_NFTS_EVENTS = "/api/v1/tokens/nfts/{id}/events";
 
 		public static final String NOTIFICATIONS = "/api/v1/notifications";
+		public static final String NOTIFICATIONS_ID = "/api/v1/notifications/{id}";
 
 		public static final String SEARCH = "/api/v1/search";
 
