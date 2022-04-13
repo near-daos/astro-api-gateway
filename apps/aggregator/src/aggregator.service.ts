@@ -169,7 +169,7 @@ export class AggregatorService {
 
     if (newFtEvents.length === 0) {
       this.logger.log(
-        `Skip aggregation for tokens. No new tokens transactions found`,
+        `Skip aggregation for tokens. No new tokens events found`,
       );
       this.state.stopAggregation('token');
       return;
@@ -477,7 +477,7 @@ export class AggregatorService {
           tx?.blockTimestamp)
     ) {
       this.logger.log(
-        `Skip aggregation for DAO: ${account.accountId}. No new events found`,
+        `Skip aggregation for DAO: ${account.accountId}. No new transactions found`,
       );
       return;
     }
