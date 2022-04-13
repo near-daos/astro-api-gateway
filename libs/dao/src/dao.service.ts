@@ -347,7 +347,7 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     return this.daoVersionRepository.save(
       daoVersions.map(([hash, { version, commit_id, changelog_url }]) => ({
         hash,
-        version: version.join('.'),
+        version,
         commitId: commit_id,
         changelogUrl: changelog_url,
       })),

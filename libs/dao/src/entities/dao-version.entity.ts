@@ -9,8 +9,8 @@ export class DaoVersion extends BaseEntity {
   hash: string;
 
   @ApiProperty()
-  @Column()
-  version: string;
+  @Column('int', { array: true })
+  version: number[];
 
   @ApiProperty()
   @Column()
