@@ -1,9 +1,17 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToOne,
+  PrimaryColumn,
+} from 'typeorm';
 import { TransactionEntity } from '@sputnik-v2/common';
 
 import { DaoConfig, DaoStatus } from '../types';
 import { Policy } from './policy.entity';
+import { DaoVersion } from '@sputnik-v2/dao/entities/dao-version.entity';
 
 @Entity()
 export class Dao extends TransactionEntity {
@@ -90,6 +98,15 @@ export class Dao extends TransactionEntity {
   @ApiProperty()
   @Column({ nullable: true })
   createdBy: string;
+
+  @ApiProperty()
+  @Column({ nullable: true })
+  daoVersionHash: string;
+
+  @ApiProperty()
+  @ManyToOne(() => DaoVersion, { eager: true, nullable: true })
+  @JoinColumn({ name: 'dao_version_hash' })
+  daoVersion: DaoVersion;
 
   @ApiProperty()
   @Column({ type: 'text', nullable: true })
