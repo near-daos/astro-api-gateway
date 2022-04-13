@@ -38,6 +38,7 @@ export const nearApiProvider = {
             'get_number_daos',
             'get_daos',
             'tx_status',
+            'get_contracts_metadata',
           ],
           changeMethods: [],
         },

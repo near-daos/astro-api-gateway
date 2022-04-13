@@ -25,7 +25,7 @@ export class DaoMetadataMigration implements Migration {
     await this.daoRepository.save(
       daos.map((dao) => ({
         ...dao,
-        metadata: dao.config?.metadata ? decodeBase64(dao.config.metadata) : '',
+        metadata: dao.config?.metadata ? decodeBase64(dao.config.metadata) : {},
       })),
     );
   }

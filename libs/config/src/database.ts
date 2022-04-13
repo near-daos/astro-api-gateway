@@ -10,7 +10,7 @@ import {
 import { Subscription } from '@sputnik-v2/subscription/entities';
 import { Proposal, ProposalAction } from '@sputnik-v2/proposal/entities';
 import { Account } from '@sputnik-v2/account/entities';
-import { Dao, Policy, Role } from '@sputnik-v2/dao/entities';
+import { Dao, DaoVersion, Policy, Role } from '@sputnik-v2/dao/entities';
 import {
   Bounty,
   BountyClaim,
@@ -42,6 +42,7 @@ export default registerAs('db_default', () => ({
   entities: [
     Subscription,
     Dao,
+    DaoVersion,
     DaoSettings,
     Policy,
     Role,
