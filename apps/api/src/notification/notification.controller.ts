@@ -58,7 +58,7 @@ export class NotificationController {
   @ApiResponse({
     status: 200,
     description: 'List of Account Notifications',
-    type: Notification,
+    type: NotificationResponse,
   })
   @ApiQuery({ type: EntityQuery })
   @UseInterceptors(NotificationCrudRequestInterceptor)
@@ -98,7 +98,7 @@ export class NotificationController {
   @ApiResponse({
     status: 200,
     description: 'List of Account Notifications',
-    type: AccountNotification,
+    type: AccountNotificationResponse,
   })
   @ApiQuery({ type: EntityQuery })
   @UseInterceptors(AccountNotificationCrudRequestInterceptor)
@@ -172,7 +172,7 @@ export class NotificationController {
   @ApiResponse({
     status: 200,
     description: 'List of Account Notifications',
-    type: AccountNotificationSettings,
+    type: AccountNotificationSettingsResponse,
   })
   @ApiQuery({ type: EntityQuery })
   @UseInterceptors(BaseCrudRequestInterceptor)
