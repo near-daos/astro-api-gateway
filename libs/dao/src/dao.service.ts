@@ -76,10 +76,11 @@ export class DaoService extends TypeOrmCrudService<Dao> {
   }
 
   async create(daoDto: Partial<DaoDto>): Promise<Dao> {
-    const dao = await this.daoRepository.save(daoDto);
+    await this.daoRepository.save(daoDto);
+    const dao = await this.daoRepository.findOne(daoDto.id);
 
     if (!dao.daoVersionHash) {
-      return this.setDaoVersion(dao.id);
+      await this.setDaoVersion(dao.id);
     }
 
     return dao;
@@ -354,10 +355,10 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     );
   }
 
-  async setDaoVersion(id: string): Promise<Dao> {
+  async setDaoVersion(id: string): Promise<void> {
     const versions = await this.daoVersionRepository.find();
     const daoVersionHash = await this.nearApiService.getContractVersionHash(id);
-    return this.daoRepository.save({
+    await this.daoRepository.save({
       id,
       daoVersion: versions.find(({ hash }) => daoVersionHash === hash),
     });
