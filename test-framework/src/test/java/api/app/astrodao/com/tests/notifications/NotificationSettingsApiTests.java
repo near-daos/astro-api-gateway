@@ -1,0 +1,94 @@
+package api.app.astrodao.com.tests.notifications;
+
+import api.app.astrodao.com.openapi.models.AccountNotificationSettings;
+import api.app.astrodao.com.openapi.models.AccountNotificationSettingsResponse;
+import api.app.astrodao.com.steps.NotificationsApiSteps;
+import api.app.astrodao.com.tests.BaseTest;
+import io.qameta.allure.*;
+import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Tags;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.time.OffsetDateTime;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import static java.net.HttpURLConnection.HTTP_OK;
+
+@Tags({@Tag("all"), @Tag("notificationSettingsApiTests")})
+@Epic("Notifications")
+@Feature("/notification-settings API tests")
+@DisplayName("/notification-settings API tests")
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+public class NotificationSettingsApiTests extends BaseTest {
+	private final NotificationsApiSteps notificationsApiSteps;
+
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("User should be able to get list of notifications-settings with query param: [sort, limit, offset]")
+	@DisplayName("User should be able to get list of notifications-settings with query param: [sort, limit, offset]")
+	void getListOfNotificationsSettingsWithSortLimitOffsetParams() {
+		int limit = 10;
+		int page = 1;
+		Map<String, Object> query = Map.of(
+				"sort", "createdAt,DESC",
+				"limit", limit,
+				"offset", 0
+		);
+
+		AccountNotificationSettingsResponse notificationSettings = notificationsApiSteps.getNotificationsSettings(query).then()
+				.statusCode(HTTP_OK)
+				.extract().as(AccountNotificationSettingsResponse.class);
+
+		notificationsApiSteps.assertDtoValue(notificationSettings, r -> r.getCount().intValue(), limit, "count");
+		notificationsApiSteps.assertDtoValueGreaterThan(notificationSettings, r -> r.getTotal().intValue(), 334, "total");
+		notificationsApiSteps.assertDtoValue(notificationSettings, r -> r.getPage().intValue(), page, "page");
+		notificationsApiSteps.assertDtoValueGreaterThan(notificationSettings, r -> r.getPageCount().intValue(), 33, "pageCount");
+		notificationsApiSteps.assertCollectionElementsHasValue(notificationSettings.getData(), response -> response.getId() != null, "id");
+		notificationsApiSteps.assertCollectionElementsHasValue(notificationSettings.getData(), response -> response.getAccountId() != null, "id");
+		notificationsApiSteps.assertCollectionElementsHasValue(notificationSettings.getData(), response -> response.getMutedUntilTimestamp() != null, "mutedUntilTimestamp");
+		notificationsApiSteps.assertCollectionElementsHasValue(notificationSettings.getData(), response -> response.getIsAllMuted() != null, "isAllMuted");
+		notificationsApiSteps.assertCollectionElementsHasValue(notificationSettings.getData(), response -> response.getTypes() != null, "types");
+
+		List<OffsetDateTime> createdAtList = notificationSettings.getData().stream().map(AccountNotificationSettings::getCreatedAt).collect(Collectors.toList());
+		notificationsApiSteps.assertOffsetDateTimesAreSortedCorrectly(createdAtList, Comparator.reverseOrder(),
+		                                                              "Notifications-settings should be sorted by 'createdAt field in DESC order");
+	}
+
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("User should be able to get list of notification-settings with query param: [limit, offset, page]")
+	@DisplayName("User should be able to get list of notification-settings with query param: [limit, offset, page]")
+	void getListOfNotificationSettingsWithSortPageParams() {
+		int limit = 50;
+		int offset = 0;
+		int page = 2;
+
+		Map<String, Object> query = Map.of(
+				"limit", limit,
+				"offset", offset,
+				"page", page
+		);
+
+		AccountNotificationSettingsResponse notificationSettings = notificationsApiSteps.getNotificationsSettings(query).then()
+				.statusCode(HTTP_OK)
+				.extract().as(AccountNotificationSettingsResponse.class);
+
+		notificationsApiSteps.assertDtoValue(notificationSettings, r -> r.getCount().intValue(), limit, "count");
+		notificationsApiSteps.assertDtoValueGreaterThan(notificationSettings, r -> r.getTotal().intValue(), 334, "total");
+		notificationsApiSteps.assertDtoValue(notificationSettings, r -> r.getPage().intValue(), page, "page");
+		notificationsApiSteps.assertDtoValueGreaterThanOrEqualTo(notificationSettings, r -> r.getPageCount().intValue(), 7, "pageCount");
+		notificationsApiSteps.assertCollectionElementsHasValue(notificationSettings.getData(), response -> response.getId() != null, "id");
+		notificationsApiSteps.assertCollectionElementsHasValue(notificationSettings.getData(), response -> response.getAccountId() != null, "id");
+		notificationsApiSteps.assertCollectionElementsHasValue(notificationSettings.getData(), response -> response.getMutedUntilTimestamp() != null, "mutedUntilTimestamp");
+		notificationsApiSteps.assertCollectionElementsHasValue(notificationSettings.getData(), response -> response.getIsAllMuted() != null, "isAllMuted");
+		notificationsApiSteps.assertCollectionElementsHasValue(notificationSettings.getData(), response -> response.getTypes() != null, "types");
+	}
+
+
+}
