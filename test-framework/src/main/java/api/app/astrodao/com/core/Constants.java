@@ -41,6 +41,7 @@ public class Constants {
 
 		public static final String NOTIFICATIONS = "/api/v1/notifications";
 		public static final String NOTIFICATIONS_ID = "/api/v1/notifications/{id}";
+		public static final String NOTIFICATIONS_SETTINGS = "/api/v1/notification-settings";
 
 		public static final String SEARCH = "/api/v1/search";
 

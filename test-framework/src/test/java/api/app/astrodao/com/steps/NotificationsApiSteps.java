@@ -22,4 +22,9 @@ public class NotificationsApiSteps extends BaseSteps {
     public Response getNotificationById(String notificationId) {
         return notificationsApi.getNotificationById(notificationId);
     }
+
+    @Step("Getting notifications-settings with '{queryParams}' query params")
+    public Response getNotificationsSettings(Map<String, Object> queryParams) {
+        return notificationsApi.getNotificationsSettings(queryParams);
+    }
 }

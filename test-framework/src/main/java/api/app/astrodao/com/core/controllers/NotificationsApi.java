@@ -8,8 +8,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
-import static api.app.astrodao.com.core.Constants.Endpoints.NOTIFICATIONS;
-import static api.app.astrodao.com.core.Constants.Endpoints.NOTIFICATIONS_ID;
+import static api.app.astrodao.com.core.Constants.Endpoints.*;
 import static io.restassured.RestAssured.given;
 
 @Component
@@ -28,5 +27,12 @@ public class NotificationsApi {
 		return given().spec(requestSpec)
 				.accept(ContentType.JSON)
 				.get(NOTIFICATIONS_ID, notificationId);
+	}
+
+	public Response getNotificationsSettings(Map<String, Object> queryParams) {
+		return given().spec(requestSpec)
+				.queryParams(queryParams)
+				.accept(ContentType.JSON)
+				.get(NOTIFICATIONS_SETTINGS);
 	}
 }
