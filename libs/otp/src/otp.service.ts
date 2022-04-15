@@ -1,19 +1,33 @@
-import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
-import { Cache } from 'cache-manager';
+import { Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
+import { MoreThan, Repository, DeleteResult, LessThan } from 'typeorm';
+import { SchedulerRegistry } from '@nestjs/schedule';
+import { InjectRepository } from '@nestjs/typeorm';
 import { OTP_TTL } from '@sputnik-v2/common';
 
 import { OtpItem } from './types';
+import { OTP } from './entities';
 
 @Injectable()
 export class OtpService {
-  constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {}
+  constructor(
+    @InjectRepository(OTP)
+    private readonly otpRepository: Repository<OTP>,
+    private readonly schedulerRegistry: SchedulerRegistry,
+  ) {
+    schedulerRegistry.addInterval(
+      'clear_expired_otp',
+      setInterval(() => this.deleteExpired(), OTP_TTL),
+    );
+  }
 
   async createOtp(key: string, otpLength?: number): Promise<string> {
     const otp = OtpService.generateOtp(otpLength);
     const hash = await bcrypt.hash(otp, 10);
     const createdAt = Date.now();
-    await this.cacheManager.set<OtpItem>(OtpService.buildKey(key), {
+
+    await this.otpRepository.save({
+      key: OtpService.buildKey(key),
       hash,
       createdAt,
       ttl: OTP_TTL,
@@ -22,12 +36,21 @@ export class OtpService {
   }
 
   async getOtp(key: string): Promise<OtpItem> {
-    return this.cacheManager.get<OtpItem>(OtpService.buildKey(key));
+    return this.otpRepository.findOne({
+      key: OtpService.buildKey(key),
+      createdAt: MoreThan(Date.now() - OTP_TTL),
+    });
   }
 
   async verifyOtp(key: string, otpToVerify: string): Promise<boolean> {
     const otp = await this.getOtp(key);
     return !!otp && bcrypt.compare(otpToVerify, otp.hash);
+  }
+
+  async deleteExpired(): Promise<DeleteResult> {
+    return this.otpRepository.delete({
+      createdAt: LessThan(Date.now() - OTP_TTL),
+    });
   }
 
   private static generateOtp(otpLength = 6) {
