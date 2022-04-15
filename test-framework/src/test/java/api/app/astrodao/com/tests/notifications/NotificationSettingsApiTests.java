@@ -59,4 +59,36 @@ public class NotificationSettingsApiTests extends BaseTest {
 		notificationsApiSteps.assertOffsetDateTimesAreSortedCorrectly(createdAtList, Comparator.reverseOrder(),
 		                                                              "Notifications-settings should be sorted by 'createdAt field in DESC order");
 	}
+
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("User should be able to get list of notification-settings with query param: [limit, offset, page]")
+	@DisplayName("User should be able to get list of notification-settings with query param: [limit, offset, page]")
+	void getListOfNotificationSettingsWithSortPageParams() {
+		int limit = 50;
+		int offset = 0;
+		int page = 2;
+
+		Map<String, Object> query = Map.of(
+				"limit", limit,
+				"offset", offset,
+				"page", page
+		);
+
+		AccountNotificationSettingsResponse notificationSettings = notificationsApiSteps.getNotificationsSettings(query).then()
+				.statusCode(HTTP_OK)
+				.extract().as(AccountNotificationSettingsResponse.class);
+
+		notificationsApiSteps.assertDtoValue(notificationSettings, r -> r.getCount().intValue(), limit, "count");
+		notificationsApiSteps.assertDtoValueGreaterThan(notificationSettings, r -> r.getTotal().intValue(), 334, "total");
+		notificationsApiSteps.assertDtoValue(notificationSettings, r -> r.getPage().intValue(), page, "page");
+		notificationsApiSteps.assertDtoValueGreaterThanOrEqualTo(notificationSettings, r -> r.getPageCount().intValue(), 7, "pageCount");
+		notificationsApiSteps.assertCollectionElementsHasValue(notificationSettings.getData(), response -> response.getId() != null, "id");
+		notificationsApiSteps.assertCollectionElementsHasValue(notificationSettings.getData(), response -> response.getAccountId() != null, "id");
+		notificationsApiSteps.assertCollectionElementsHasValue(notificationSettings.getData(), response -> response.getMutedUntilTimestamp() != null, "mutedUntilTimestamp");
+		notificationsApiSteps.assertCollectionElementsHasValue(notificationSettings.getData(), response -> response.getIsAllMuted() != null, "isAllMuted");
+		notificationsApiSteps.assertCollectionElementsHasValue(notificationSettings.getData(), response -> response.getTypes() != null, "types");
+	}
+
+
 }
