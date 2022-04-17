@@ -31,6 +31,7 @@ import {
 import { Comment, CommentReport } from '@sputnik-v2/comment/entities';
 import { DaoStats } from '@sputnik-v2/stats/entities';
 import { DaoSettings } from '@sputnik-v2/dao-settings';
+import { OTP } from '@sputnik-v2/otp';
 
 export default registerAs('db_default', () => ({
   type: 'postgres',
@@ -68,6 +69,7 @@ export default registerAs('db_default', () => ({
     Comment,
     CommentReport,
     DaoStats,
+    OTP,
   ],
   synchronize: false,
   namingStrategy: new SnakeNamingStrategy(),

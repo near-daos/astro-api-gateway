@@ -1,10 +1,12 @@
-import { CacheModule, Module } from '@nestjs/common';
-import { OTP_TTL } from '@sputnik-v2/common';
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ScheduleModule } from '@nestjs/schedule';
 
 import { OtpService } from './otp.service';
+import { OTP } from './entities';
 
 @Module({
-  imports: [CacheModule.register({ ttl: OTP_TTL })],
+  imports: [TypeOrmModule.forFeature([OTP]), ScheduleModule.forRoot()],
   providers: [OtpService],
   exports: [OtpService],
 })
