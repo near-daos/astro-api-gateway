@@ -21,4 +21,15 @@ export class DaoSettingsService {
       settings,
     });
   }
+
+  async saveSettingsParam(daoId: string, key: string, value: any) {
+    const settings = (await this.getSettings(daoId))?.settings || {};
+    return this.daoSettingsRepository.save({
+      daoId,
+      settings: {
+        ...settings,
+        [key]: value,
+      },
+    });
+  }
 }
