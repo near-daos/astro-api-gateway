@@ -7,6 +7,7 @@ import com.github.viclovsky.swagger.coverage.SwaggerCoverageV3RestAssured;
 import io.qameta.allure.restassured.AllureRestAssured;
 import io.restassured.RestAssured;
 import io.restassured.builder.RequestSpecBuilder;
+import io.restassured.config.HttpClientConfig;
 import io.restassured.config.ObjectMapperConfig;
 import io.restassured.config.RestAssuredConfig;
 import io.restassured.filter.log.LogDetail;
@@ -32,13 +33,20 @@ public class FrameworkContextConfig {
 
     @Bean
     public RequestSpecification requestSpec(@Value("${framework.api.base.uri}") String baseUri) {
-        RestAssured.config = RestAssuredConfig.config().objectMapperConfig(
-                new ObjectMapperConfig().jackson2ObjectMapperFactory((cls, charset) -> JsonUtils.MAPPER)
-        );
+        HttpClientConfig httpClientConfig = HttpClientConfig.httpClientConfig()
+                .setParam("http.socket.timeout", 5000)
+                .setParam("http.connection.timeout", 5000);
+
+        RestAssuredConfig restAssuredConfig = RestAssuredConfig.config()
+                .objectMapperConfig(
+                        new ObjectMapperConfig().jackson2ObjectMapperFactory((cls, charset) -> JsonUtils.MAPPER)
+                )
+                .httpClient(httpClientConfig);
 
         return new RequestSpecBuilder()
                 .setBaseUri(baseUri)
                 .log(LogDetail.ALL)
+                .setConfig(restAssuredConfig)
                 .addFilter(new AllureRestAssured())
                 .addFilter(new SwaggerCoverageV3RestAssured(
                         new FileSystemOutputWriter(Paths.get("build/swagger-coverage-output")))
