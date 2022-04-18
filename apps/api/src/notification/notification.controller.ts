@@ -61,6 +61,9 @@ export class NotificationController {
     type: NotificationResponse,
   })
   @ApiQuery({ type: EntityQuery })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
   @UseInterceptors(NotificationCrudRequestInterceptor)
   @UseFilters(new QueryFailedErrorFilter())
   @Get('/notifications')
@@ -101,6 +104,9 @@ export class NotificationController {
     type: AccountNotificationResponse,
   })
   @ApiQuery({ type: EntityQuery })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
   @UseInterceptors(AccountNotificationCrudRequestInterceptor)
   @UseFilters(new QueryFailedErrorFilter())
   @Get('/account-notifications')
@@ -175,6 +181,9 @@ export class NotificationController {
     type: AccountNotificationSettingsResponse,
   })
   @ApiQuery({ type: EntityQuery })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
   @UseInterceptors(BaseCrudRequestInterceptor)
   @UseFilters(new QueryFailedErrorFilter())
   @Get('/notification-settings')
