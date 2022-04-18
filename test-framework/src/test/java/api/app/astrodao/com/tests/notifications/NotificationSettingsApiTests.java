@@ -90,5 +90,29 @@ public class NotificationSettingsApiTests extends BaseTest {
 		notificationsApiSteps.assertCollectionElementsHasValue(notificationSettings.getData(), response -> response.getTypes() != null, "types");
 	}
 
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("User should be able to get list of notification-settings with query param: [limit, sort, fields]")
+	@DisplayName("User should be able to get list of notification-settings with query param: [limit, sort, fields]")
+	void getListOfNotificationSettingsWithLimitSortFieldsParams() {
+		int limit = 10;
+		Map<String, Object> query = Map.of(
+				"limit", limit,
+				"sort", "updatedAt,ASC",
+				"fields", "data,updatedAt,accountId,types"
+		);
 
+		AccountNotificationSettingsResponse notificationSettings = notificationsApiSteps.getNotificationsSettings(query).then()
+				.statusCode(HTTP_OK)
+				.extract().as(AccountNotificationSettingsResponse.class);
+
+		notificationsApiSteps.assertDtoValue(notificationSettings, r -> r.getCount().intValue(), limit, "count");
+		notificationsApiSteps.assertCollectionElementsHasValue(notificationSettings.getData(), response -> !response.getTypes().isEmpty(), "types");
+		notificationsApiSteps.assertCollectionElementsHasValue(notificationSettings.getData(), response -> !response.getId().isEmpty(), "id");
+		notificationsApiSteps.assertCollectionElementsHasValue(notificationSettings.getData(), response -> !response.getAccountId().isEmpty(), "accountId");
+
+		List<OffsetDateTime> createdAtList = notificationSettings.getData().stream().map(AccountNotificationSettings::getUpdatedAt).collect(Collectors.toList());
+		notificationsApiSteps.assertOffsetDateTimesAreSortedCorrectly(createdAtList, Comparator.naturalOrder(),
+		                                                              "Notifications-settings should be sorted by 'updatedAt field in ASC order");
+	}
 }
