@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.time.OffsetDateTime;
 import java.util.Comparator;
@@ -27,6 +28,9 @@ import static java.net.HttpURLConnection.HTTP_OK;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class NotificationSettingsApiTests extends BaseTest {
 	private final NotificationsApiSteps notificationsApiSteps;
+
+	@Value("${test.accountId}")
+	private String accountId;
 
 	@Test
 	@Severity(SeverityLevel.CRITICAL)
@@ -64,7 +68,7 @@ public class NotificationSettingsApiTests extends BaseTest {
 	@Severity(SeverityLevel.CRITICAL)
 	@Story("User should be able to get list of notification-settings with query param: [limit, offset, page]")
 	@DisplayName("User should be able to get list of notification-settings with query param: [limit, offset, page]")
-	void getListOfNotificationSettingsWithSortPageParams() {
+	void getListOfNotificationSettingsWithLimitOffsetPageParams() {
 		int limit = 50;
 		int offset = 0;
 		int page = 2;
@@ -111,8 +115,32 @@ public class NotificationSettingsApiTests extends BaseTest {
 		notificationsApiSteps.assertCollectionElementsHasValue(notificationSettings.getData(), response -> !response.getId().isEmpty(), "id");
 		notificationsApiSteps.assertCollectionElementsHasValue(notificationSettings.getData(), response -> !response.getAccountId().isEmpty(), "accountId");
 
-		List<OffsetDateTime> createdAtList = notificationSettings.getData().stream().map(AccountNotificationSettings::getUpdatedAt).collect(Collectors.toList());
-		notificationsApiSteps.assertOffsetDateTimesAreSortedCorrectly(createdAtList, Comparator.naturalOrder(),
+		List<OffsetDateTime> updatedAt = notificationSettings.getData().stream().map(AccountNotificationSettings::getUpdatedAt).collect(Collectors.toList());
+		notificationsApiSteps.assertOffsetDateTimesAreSortedCorrectly(updatedAt, Comparator.naturalOrder(),
 		                                                              "Notifications-settings should be sorted by 'updatedAt field in ASC order");
+	}
+
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("User should be able to get list of notification-settings with query param: [sort, s]")
+	@DisplayName("User should be able to get list of notification-settings with query param: [sort, s]")
+	void getListOfNotificationSettingsWithSortSParams() {
+		Map<String, Object> query = Map.of(
+				"sort", "updatedAt,DESC",
+				"s", String.format("{\"accountId\": \"%s\"}", accountId)
+		);
+
+		AccountNotificationSettingsResponse notificationSettings = notificationsApiSteps.getNotificationsSettings(query).then()
+				.statusCode(HTTP_OK)
+				.extract().as(AccountNotificationSettingsResponse.class);
+
+		notificationsApiSteps.assertDtoValue(notificationSettings, r -> r.getCount().intValue(), 50, "count");
+		notificationsApiSteps.assertDtoValueGreaterThan(notificationSettings, r -> r.getTotal().intValue(), 271, "total");
+		notificationsApiSteps.assertDtoValue(notificationSettings, r -> r.getPage().intValue(), 1, "page");
+		notificationsApiSteps.assertDtoValueGreaterThanOrEqualTo(notificationSettings, r -> r.getPageCount().intValue(), 6, "pageCount");
+
+		List<OffsetDateTime> updatedAt = notificationSettings.getData().stream().map(AccountNotificationSettings::getUpdatedAt).collect(Collectors.toList());
+		notificationsApiSteps.assertOffsetDateTimesAreSortedCorrectly(updatedAt, Comparator.reverseOrder(),
+		                                                              "Notifications-settings should be sorted by 'updatedAt field in DESC order");
 	}
 }
