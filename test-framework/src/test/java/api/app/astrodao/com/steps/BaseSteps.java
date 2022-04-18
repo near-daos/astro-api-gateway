@@ -24,13 +24,6 @@ public abstract class BaseSteps {
                 .isEqualTo(status);
     }
 
-    @Step("Verify response collection is not empty")
-    public void assertCollectionResponseIsNotEmpty(Collection<?> actual) {
-        assertThat(actual)
-                .as("Response collection should not be empty.")
-                .asList().isNotEmpty();
-    }
-
     @Step("User sees collection has correct size")
     public void assertCollectionHasCorrectSize(Collection<?> actual, int expectedSize) {
         assertThat(actual.size())
@@ -123,15 +116,6 @@ public abstract class BaseSteps {
                                                                    String fieldName) {
         assertThat(actual)
                 .as("%s " + "'%s'", errorMessage, fieldName)
-                .filteredOn(predicate)
-                .hasSize(actual.size());
-    }
-
-    @Step("User sees '{fieldName}' fields value match criteria in a collection")
-    public <T> void assertCollectionElementsValue(Collection<T> actual,
-                                                     Predicate<? super T> predicate, String fieldName) {
-        assertThat(actual)
-                .as(String.format("'%s' field should match criteria in a collection.", fieldName))
                 .filteredOn(predicate)
                 .hasSize(actual.size());
     }
