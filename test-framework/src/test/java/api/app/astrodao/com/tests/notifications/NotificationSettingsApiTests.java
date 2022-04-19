@@ -139,7 +139,7 @@ public class NotificationSettingsApiTests extends BaseTest {
 		notificationsApiSteps.assertDtoValue(notificationSettings, r -> r.getPage().intValue(), 1, "page");
 		notificationsApiSteps.assertDtoValueGreaterThanOrEqualTo(notificationSettings, r -> r.getPageCount().intValue(), 6, "pageCount");
 		notificationsApiSteps.assertCollectionElementsHasValue(notificationSettings.getData(), response -> response.getId() != null, "id");
-		notificationsApiSteps.assertCollectionElementsHasValue(notificationSettings.getData(), response -> response.getAccountId() != null, "accountId");
+		notificationsApiSteps.assertCollectionContainsOnly(notificationSettings.getData(), AccountNotificationSettings::getAccountId, accountId, "accountId");
 		notificationsApiSteps.assertCollectionElementsHasValue(notificationSettings.getData(), response -> response.getMutedUntilTimestamp() != null, "mutedUntilTimestamp");
 		notificationsApiSteps.assertCollectionElementsHasValue(notificationSettings.getData(), response -> response.getIsAllMuted() != null, "isAllMuted");
 		notificationsApiSteps.assertCollectionElementsHasValue(notificationSettings.getData(), response -> response.getTypes() != null, "types");
