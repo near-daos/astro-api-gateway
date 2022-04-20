@@ -449,8 +449,16 @@ export class NearIndexerService {
       ? await this.receiptRepository
           .createQueryBuilder('receipt')
           .leftJoinAndSelect('receipt.receiptActions', 'action_receipt_actions')
+          .leftJoin(
+            'execution_outcomes',
+            'execution_outcomes',
+            'execution_outcomes.receipt_id = receipt.receipt_id',
+          )
           .where('receipt.receipt_id IN (:...ids)', {
             ids: actions.map(({ receipt_id }) => receipt_id),
+          })
+          .andWhere('execution_outcomes.status != :failStatus', {
+            failStatus: ExecutionOutcomeStatus.Failure,
           })
           .orderBy('included_in_block_timestamp', 'ASC')
           .getMany()

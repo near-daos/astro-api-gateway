@@ -3,6 +3,7 @@ import { default as configuration } from './configuration';
 import { default as database } from './database';
 import databaseNearIndexer from './database-near-indexer';
 import { default as nearConfig } from './near-config';
+import { default as notifi } from './notifi';
 
 import { parseRedisUrl } from 'parse-redis-url-simple';
 
@@ -31,4 +32,11 @@ const api = registerAs('api', () => {
   };
 });
 
-export default [api, configuration, database, nearConfig, databaseNearIndexer];
+export default [
+  api,
+  configuration,
+  database,
+  nearConfig,
+  databaseNearIndexer,
+  notifi,
+];

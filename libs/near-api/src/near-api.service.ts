@@ -10,6 +10,7 @@ import {
   castTransactionAction,
   castTransactionReceipt,
   castTransactionStatus,
+  ViewCodeResponse,
 } from './types';
 
 @Injectable()
@@ -69,5 +70,14 @@ export class NearApiService {
       viewMethods: contract.viewMethods,
       changeMethods: contract.changeMethods,
     });
+  }
+
+  public async getContractVersionHash(id: string): Promise<string> {
+    const response = await this.provider.query<ViewCodeResponse>({
+      request_type: 'view_code',
+      finality: 'final',
+      account_id: id,
+    });
+    return response.hash;
   }
 }

@@ -17,6 +17,7 @@ import api.app.astrodao.com.steps.DaoApiSteps;
 import api.app.astrodao.com.steps.NearCLISteps;
 import api.app.astrodao.com.steps.ProposalsApiSteps;
 import api.app.astrodao.com.steps.TransactionsSteps;
+import api.app.astrodao.com.openapi.models.Proposal.StatusEnum;
 import com.github.javafaker.Faker;
 import io.qameta.allure.*;
 import io.restassured.response.Response;
@@ -159,7 +160,7 @@ public class AggregationWithCallbackTests extends BaseTest {
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getId, proposalID, "id");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDescription, pollProposal.getDescription(), "description");
         proposalsApiSteps.assertDtoValue(proposalDto, p -> p.getKind().getType(), pollProposal.getKind(), "kind/vote");
-        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getStatus, "InProgress", "status");
+        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getStatus, StatusEnum.INPROGRESS, "status");
     }
 
     @Test
@@ -197,7 +198,7 @@ public class AggregationWithCallbackTests extends BaseTest {
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getId, proposalID, "id");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDescription, description, "description");
         proposalsApiSteps.assertDtoValue(proposalDto, p -> p.getKind().getType(), "Transfer", "kind/vote");
-        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getStatus, "InProgress", "status");
+        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getStatus, StatusEnum.INPROGRESS, "status");
     }
 
     @Test
@@ -241,6 +242,6 @@ public class AggregationWithCallbackTests extends BaseTest {
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getId, proposalID, "id");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDescription, description, "description");
         proposalsApiSteps.assertDtoValue(proposalDto, p -> p.getKind().getType(), "AddBounty", "kind/vote");
-        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getStatus, "InProgress", "status");
+        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getStatus, StatusEnum.INPROGRESS, "status");
     }
 }

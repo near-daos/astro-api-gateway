@@ -24,13 +24,6 @@ public abstract class BaseSteps {
                 .isEqualTo(status);
     }
 
-    @Step("Verify response collection is not empty")
-    public void assertCollectionResponseIsNotEmpty(Collection<?> actual) {
-        assertThat(actual)
-                .as("Response collection should not be empty.")
-                .asList().isNotEmpty();
-    }
-
     @Step("User sees collection has correct size")
     public void assertCollectionHasCorrectSize(Collection<?> actual, int expectedSize) {
         assertThat(actual.size())
@@ -127,15 +120,6 @@ public abstract class BaseSteps {
                 .hasSize(actual.size());
     }
 
-    @Step("User sees '{fieldName}' fields value match criteria in a collection")
-    public <T> void assertCollectionElementsValue(Collection<T> actual,
-                                                     Predicate<? super T> predicate, String fieldName) {
-        assertThat(actual)
-                .as(String.format("'%s' field should match criteria in a collection.", fieldName))
-                .filteredOn(predicate)
-                .hasSize(actual.size());
-    }
-
     @Step("User sees '{fieldName}' field has only desired value in collection")
     public <T, D> void assertCollectionContainsOnly(Collection<T> collection,
                                                     Function<T, D> predicate, D expectedValue, String fieldName) {
@@ -159,6 +143,17 @@ public abstract class BaseSteps {
         assertThat(distinctCollection)
                 .as("Collection should contain only following elements: '%s'", Arrays.asList(expectedElements))
                 .containsExactlyInAnyOrder(expectedElements);
+    }
+
+    @Step("User sees collection by field '{fieldName}' contains only desired values")
+    public <T, D> void assertCollectionHasSameElementsAs(Collection<T> collection, Function<T, D> predicate,
+                                                                 List expectedElements, String fieldName) {
+        List<D> actualCollection = collection.stream().map(predicate).collect(toList());
+        List<D> distinctCollection = actualCollection.stream().distinct().collect(toList());
+
+        assertThat(distinctCollection)
+                .as("Collection by field '%s' should contain only following elements: '%s'", fieldName, expectedElements)
+                .hasSameElementsAs(expectedElements);
     }
 
     @Step("User sees '{fieldName}' field has no value")

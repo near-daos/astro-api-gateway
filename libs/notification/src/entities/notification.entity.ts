@@ -28,17 +28,17 @@ export class Notification extends BaseEntity {
   @Column({ nullable: true })
   signerId: string;
 
-  @ApiProperty()
+  @ApiProperty({ enum: NotificationType })
   @Column({ type: 'text' })
   type: NotificationType;
 
-  @ApiProperty()
+  @ApiProperty({ enum: NotificationStatus })
   @Column({ type: 'text', nullable: true })
   status: NotificationStatus;
 
   @ApiProperty()
   @Column({ type: 'simple-json' })
-  metadata: Record<string, unknown>;
+  metadata: Record<string, any>;
 
   @ApiProperty()
   @Column({ type: 'bigint', nullable: true })

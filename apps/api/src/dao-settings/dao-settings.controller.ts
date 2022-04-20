@@ -9,6 +9,7 @@ import { AccountAccessGuard } from '@sputnik-v2/common';
 import { DaoSettingsDto, DaoSettingsService } from '@sputnik-v2/dao-settings';
 import { PatchSettingsBodyDto } from './dto/patch-settings-body.dto';
 import { CouncilMemberGuard } from '../guards/council-member.guard';
+import { PatchSettingsParamBodyDto } from './dto/patch-settings-param-body.dto';
 
 @ApiTags('DAO')
 @Controller('/daos')
@@ -30,11 +31,6 @@ export class DaoSettingsController {
     return entity?.settings || {};
   }
 
-  @ApiParam({
-    name: 'id',
-    description: 'DAO Id',
-    type: String,
-  })
   @ApiResponse({
     status: 200,
     description: 'Save DAO settings',
@@ -51,6 +47,30 @@ export class DaoSettingsController {
     @Body() { settings }: PatchSettingsBodyDto,
   ): Promise<DaoSettingsDto> {
     const entity = await this.daoSettingsService.saveSettings(daoId, settings);
+    return entity.settings;
+  }
+
+  @ApiResponse({
+    status: 200,
+    description: 'Save DAO settings param',
+    type: DaoSettingsDto,
+  })
+  @ApiForbiddenResponse({
+    description:
+      'Account <accountId> identity is invalid - public key / bad signature/public key size / Invalid signature',
+  })
+  @UseGuards(AccountAccessGuard, CouncilMemberGuard)
+  @Patch('/:daoId/settings/:key')
+  async patchSettingsParam(
+    @Param('daoId') daoId: string,
+    @Param('key') key: string,
+    @Body() { value }: PatchSettingsParamBodyDto,
+  ): Promise<DaoSettingsDto> {
+    const entity = await this.daoSettingsService.saveSettingsParam(
+      daoId,
+      key,
+      value,
+    );
     return entity.settings;
   }
 }

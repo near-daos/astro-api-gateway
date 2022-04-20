@@ -58,7 +58,7 @@ export class DaoController {
     isArray: true,
     type: Dao,
   })
-  @ApiBadRequestResponse({ description: 'Invalid accountId' })
+  @ApiBadRequestResponse({ description: 'Invalid Dao ID' })
   @UseInterceptors(HttpCacheInterceptor)
   @Get('/account-daos/:accountId')
   async daosByAccountId(

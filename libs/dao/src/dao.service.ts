@@ -21,19 +21,23 @@ import {
   SearchMemberDto,
   SearchMemberResponse,
 } from './dto';
-import { Dao, RoleKindType } from './entities';
+import { Dao, DaoVersion, RoleKindType } from './entities';
 import { WeightKind } from '@sputnik-v2/sputnikdao';
 import { SearchQuery } from '@sputnik-v2/common';
+import { NearApiService } from '@sputnik-v2/near-api';
 
 @Injectable()
 export class DaoService extends TypeOrmCrudService<Dao> {
   constructor(
     @InjectRepository(Dao)
     private readonly daoRepository: Repository<Dao>,
+    @InjectRepository(DaoVersion)
+    private readonly daoVersionRepository: Repository<DaoVersion>,
     @InjectConnection()
     private connection: Connection,
     private readonly proposalService: ProposalService,
     private readonly tokenService: TokenService,
+    private readonly nearApiService: NearApiService,
   ) {
     super(daoRepository);
   }
@@ -72,7 +76,15 @@ export class DaoService extends TypeOrmCrudService<Dao> {
   }
 
   async create(daoDto: Partial<DaoDto>): Promise<Dao> {
-    return this.daoRepository.save(daoDto);
+    await this.daoRepository.save(daoDto);
+    const dao = await this.daoRepository.findOne(daoDto.id);
+
+    if (!dao.daoVersionHash) {
+      // TODO: Disabled to next release
+      // await this.setDaoVersion(dao.id);
+    }
+
+    return dao;
   }
 
   async search(
@@ -325,5 +337,31 @@ export class DaoService extends TypeOrmCrudService<Dao> {
       voteCount: proposalVoters.filter(({ votes }) => !!votes[accountId])
         .length,
     }));
+  }
+
+  async loadDaoVersions(): Promise<DaoVersion[]> {
+    const sputnikDaoFactory = this.nearApiService.getContract(
+      'sputnikDaoFactory',
+      // TODO: Remove hardcode. Add support for multiple DAO Factory contracts
+      'sputnik-factory-v3.ctindogaru.testnet',
+    );
+    const daoVersions = await sputnikDaoFactory.get_contracts_metadata();
+    return this.daoVersionRepository.save(
+      daoVersions.map(([hash, { version, commit_id, changelog_url }]) => ({
+        hash,
+        version,
+        commitId: commit_id,
+        changelogUrl: changelog_url,
+      })),
+    );
+  }
+
+  async setDaoVersion(id: string): Promise<void> {
+    const versions = await this.daoVersionRepository.find();
+    const daoVersionHash = await this.nearApiService.getContractVersionHash(id);
+    await this.daoRepository.save({
+      id,
+      daoVersion: versions.find(({ hash }) => daoVersionHash === hash),
+    });
   }
 }

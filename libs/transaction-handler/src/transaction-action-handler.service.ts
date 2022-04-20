@@ -142,6 +142,8 @@ export class TransactionActionHandlerService {
 
     this.logger.log(`Storing new DAO: ${daoId} due to transaction`);
     await this.daoService.saveWithFunds(dao);
+    // TODO: Disabled to next release
+    // await this.daoService.setDaoVersion(daoId);
     this.logger.log(`Successfully stored new DAO: ${daoId}`);
 
     await this.eventService.sendDaoUpdateNotificationEvent(dao, txAction);

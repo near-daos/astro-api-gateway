@@ -15,6 +15,7 @@ import api.app.astrodao.com.openapi.models.Dao;
 import api.app.astrodao.com.steps.DaoApiSteps;
 import api.app.astrodao.com.steps.NearCLISteps;
 import api.app.astrodao.com.steps.ProposalsApiSteps;
+import api.app.astrodao.com.openapi.models.Proposal.StatusEnum;
 import com.github.javafaker.Faker;
 import io.qameta.allure.*;
 import io.restassured.response.Response;
@@ -161,7 +162,7 @@ public class AggregationWithoutCallbackTests extends BaseTest {
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getId, proposalID, "id");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDescription, pollProposal.getDescription(), "description");
         proposalsApiSteps.assertDtoValue(proposalDto, p -> p.getKind().getType(), pollProposal.getKind(), "kind/vote");
-        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getStatus, "InProgress", "status");
+        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getStatus, StatusEnum.INPROGRESS, "status");
     }
 
     @Test
@@ -190,7 +191,7 @@ public class AggregationWithoutCallbackTests extends BaseTest {
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getId, proposalID, "id");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDescription, description, "description");
         proposalsApiSteps.assertDtoValue(proposalDto, p -> p.getKind().getType(), "Transfer", "kind/vote");
-        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getStatus, "InProgress", "status");
+        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getStatus, StatusEnum.INPROGRESS, "status");
     }
 
     @Test
@@ -225,7 +226,7 @@ public class AggregationWithoutCallbackTests extends BaseTest {
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getId, proposalID, "id");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDescription, description, "description");
         proposalsApiSteps.assertDtoValue(proposalDto, p -> p.getKind().getType(), "AddBounty", "kind/vote");
-        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getStatus, "InProgress", "status");
+        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getStatus, StatusEnum.INPROGRESS, "status");
     }
 
     @Test
@@ -262,7 +263,7 @@ public class AggregationWithoutCallbackTests extends BaseTest {
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getId, proposalID, "id");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDescription, description, "description");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getType, "ChangeConfig", "type");
-        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getStatus, "InProgress", "status");
+        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getStatus, StatusEnum.INPROGRESS, "status");
         proposalsApiSteps.assertDtoValue(proposalDto, p -> p.getKind().getType(), "ChangeConfig", "kind/type");
         proposalsApiSteps.assertDtoValue(proposalDto, p -> p.getKind().getConfig().getName(), newConfig.getName(), "kind/config/name");
         proposalsApiSteps.assertDtoValue(proposalDto, p -> p.getKind().getConfig().getPurpose(), newConfig.getPurpose(), "kind/config/purpose");
@@ -298,7 +299,7 @@ public class AggregationWithoutCallbackTests extends BaseTest {
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getId, proposalID, "id");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDescription, description, "description");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getType, "ChangeConfig", "type");
-        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getStatus, "InProgress", "status");
+        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getStatus, StatusEnum.INPROGRESS, "status");
         proposalsApiSteps.assertDtoValue(proposalDto, p -> p.getKind().getType(), "ChangeConfig", "kind/type");
         proposalsApiSteps.assertDtoValue(proposalDto, p -> p.getKind().getConfig().getName(), newConfig.getName(), "kind/config/name");
         proposalsApiSteps.assertDtoValue(proposalDto, p -> p.getKind().getConfig().getPurpose(), newConfig.getPurpose(), "kind/config/purpose");
@@ -338,7 +339,7 @@ public class AggregationWithoutCallbackTests extends BaseTest {
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getId, proposalID, "id");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDescription, description, "description");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getType, "ChangeConfig", "type");
-        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getStatus, "InProgress", "status");
+        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getStatus, StatusEnum.INPROGRESS, "status");
         proposalsApiSteps.assertDtoValue(proposalDto, p -> p.getKind().getType(), "ChangeConfig", "kind/type");
         proposalsApiSteps.assertDtoValue(proposalDto, p -> p.getKind().getConfig().getName(), newConfig.getName(), "kind/config/name");
         proposalsApiSteps.assertDtoValue(proposalDto, p -> p.getKind().getConfig().getPurpose(), newConfig.getPurpose(), "kind/config/purpose");
@@ -375,7 +376,7 @@ public class AggregationWithoutCallbackTests extends BaseTest {
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getId, proposalID, "id");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDescription, description, "description");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getType, "ChangePolicy", "type");
-        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getStatus, "InProgress", "status");
+        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getStatus, StatusEnum.INPROGRESS, "status");
         proposalsApiSteps.assertDtoValue(proposalDto, p -> p.getKind().getType(), "ChangePolicy", "kind/type");
         proposalsApiSteps.assertDtoValue(proposalDto, p -> p.getKind().getPolicy().getProposalBond(), newPolicy.getProposalBond(), "kind/policy/proposal_bond");
         proposalsApiSteps.assertDtoValue(proposalDto, p -> p.getKind().getPolicy().getProposalPeriod(), newPolicy.getProposalPeriod(), "kind/policy/proposal_period");
@@ -413,7 +414,7 @@ public class AggregationWithoutCallbackTests extends BaseTest {
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getId, proposalID, "id");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDescription, description, "description");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getType, "ChangePolicy", "type");
-        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getStatus, "InProgress", "status");
+        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getStatus, StatusEnum.INPROGRESS, "status");
         proposalsApiSteps.assertDtoValue(proposalDto, p -> p.getKind().getType(), "ChangePolicy", "kind/type");
         proposalsApiSteps.assertDtoValue(proposalDto, p -> p.getKind().getPolicy().getProposalBond(), newPolicy.getProposalBond(), "kind/policy/proposal_bond");
         proposalsApiSteps.assertDtoValue(proposalDto, p -> p.getKind().getPolicy().getProposalPeriod(), newPolicy.getProposalPeriod(), "kind/policy/proposal_period");
@@ -451,7 +452,7 @@ public class AggregationWithoutCallbackTests extends BaseTest {
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getId, proposalID, "id");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDescription, description, "description");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getType, "ChangePolicy", "type");
-        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getStatus, "InProgress", "status");
+        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getStatus, StatusEnum.INPROGRESS, "status");
         proposalsApiSteps.assertDtoValue(proposalDto, p -> p.getKind().getType(), "ChangePolicy", "kind/type");
         proposalsApiSteps.assertDtoValue(proposalDto, p -> p.getKind().getPolicy().getProposalBond(), newPolicy.getProposalBond(), "kind/policy/proposal_bond");
         proposalsApiSteps.assertDtoValue(proposalDto, p -> p.getKind().getPolicy().getProposalPeriod(), newPolicy.getProposalPeriod(), "kind/policy/proposal_period");
@@ -489,7 +490,7 @@ public class AggregationWithoutCallbackTests extends BaseTest {
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getId, proposalID, "id");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getDescription, description, "description");
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getType, "ChangePolicy", "type");
-        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getStatus, "InProgress", "status");
+        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getStatus, StatusEnum.INPROGRESS, "status");
         proposalsApiSteps.assertDtoValue(proposalDto, p -> p.getKind().getType(), "ChangePolicy", "kind/type");
         proposalsApiSteps.assertDtoValue(proposalDto, p -> p.getKind().getPolicy().getProposalBond(), newPolicy.getProposalBond(), "kind/policy/proposal_bond");
         proposalsApiSteps.assertDtoValue(proposalDto, p -> p.getKind().getPolicy().getProposalPeriod(), newPolicy.getProposalPeriod(), "kind/policy/proposal_period");
@@ -504,7 +505,7 @@ public class AggregationWithoutCallbackTests extends BaseTest {
     @Description("Create proposals and vote 'VoteApprove', 'VoteReject'")
     @CsvSource({"approve proposal, VoteApprove, Approved",
                 "fail proposal, VoteReject, Rejected"})
-    void userShouldBeAbleToVoteForProposal(String purpose, String voteAction, String proposalStatus) {
+    void userShouldBeAbleToVoteForProposal(String purpose, String voteAction, String status) {
         long gasValue = 100000000000000L;
         float deposit = 0.1F;
         String description = String.format("Autotest - vote to %s. Poll created with NEAR CLI %s",
@@ -532,7 +533,7 @@ public class AggregationWithoutCallbackTests extends BaseTest {
                 .extract().as(ProposalDto.class);
 
         proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getId, proposalID, "id");
-        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getStatus, proposalStatus, "status");
+        proposalsApiSteps.assertDtoValue(proposalDto, ProposalDto::getStatus, StatusEnum.fromValue(status), "status");
     }
 
     @Test

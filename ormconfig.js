@@ -28,6 +28,7 @@ module.exports = {
     'libs/stats/src/entities/**/*.ts',
     'libs/subscription/src/entities/**/*.ts',
     'libs/token/src/entities/**/*.ts',
+    'libs/otp/src/entities/**/*.ts',
   ],
   migrations: ['libs/orm-migrations/src/**/*.ts'],
   cli: {

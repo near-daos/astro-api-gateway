@@ -109,7 +109,11 @@ environment:
   # Every day at 23:55
   aggregator_dao_stats_cron_time: "55 23 * * *"
   wallet_callback_url: ""
-  admin_accounts: ""
+  frontend_url: ""
   api_rate_ttl: "60"
   api_rate_limit: "5"
   admin_accounts: "vhorin-dev.near"
+  notifi_env: "Development"
+  notifi_sid: ""
+  notifi_secret: ""
+  notifi_prefix: "dev"

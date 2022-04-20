@@ -33,9 +33,6 @@ public class NotificationsApiTests extends BaseTest {
     @Value("${test.dao1}")
     private String testDao1;
 
-    @Value("${test.dao2}")
-    private String testDao2;
-
     @Test
     @Severity(SeverityLevel.CRITICAL)
     @Story("User should be able to get list of notifications with query param: [sort, limit, offset]")
@@ -48,10 +45,10 @@ public class NotificationsApiTests extends BaseTest {
         );
         int limit = 10;
         int page = 1;
-        Response response = notificationsApiSteps.getNotifications(query);
-        notificationsApiSteps.assertResponseStatusCode(response, HTTP_OK);
 
-        NotificationsResponse notifications = notificationsApiSteps.getResponseDto(response, NotificationsResponse.class);
+        NotificationsResponse notifications = notificationsApiSteps.getNotifications(query).then()
+                .statusCode(HTTP_OK)
+                .extract().as(NotificationsResponse.class);
 
         notificationsApiSteps.assertDtoValueGreaterThan(notifications, r -> r.getTotal().intValue(), limit, "total");
         notificationsApiSteps.assertDtoValueGreaterThan(notifications, r -> r.getPageCount().intValue(), 1, "pageCount");
@@ -182,15 +179,15 @@ public class NotificationsApiTests extends BaseTest {
 
     @Test
     @Severity(SeverityLevel.CRITICAL)
-    @Story("User should be able to get list of notifications with query param: [limit, filter, or]")
-    @DisplayName("User should be able to get list of notifications with query param: [limit, filter, or]")
+    @Story("User should be able to get list of notifications with query param: [filter, or]")
+    @DisplayName("User should be able to get list of notifications with query param: [filter, or]")
     void getListOfNotificationsWithFilterAndOrParameters() {
-        int count = 1000;
+        String dao1 = "test-dao-1648481547427.sputnikv2.testnet";
+        String dao2 = "test-dao-1648481408344.sputnikv2.testnet";
         int page = 1;
         Map<String, Object> queryParams = Map.of(
-                "limit", count,
-                "filter", "daoId||$eq||" + testDao1,
-                "or", "daoId||$eq||" + testDao2
+                "filter", "daoId||$eq||" + dao1,
+                "or", "daoId||$eq||" + dao2
         );
 
         Response response = notificationsApiSteps.getNotifications(queryParams);
@@ -198,11 +195,9 @@ public class NotificationsApiTests extends BaseTest {
 
         NotificationsResponse notifications = notificationsApiSteps.getResponseDto(response, NotificationsResponse.class);
 
-        notificationsApiSteps.assertDtoValueGreaterThan(notifications, r -> r.getTotal().intValue(), count, "total");
-        notificationsApiSteps.assertDtoValueGreaterThan(notifications, r -> r.getPageCount().intValue(), 1, "pageCount");
+        notificationsApiSteps.assertDtoValue(notifications, r -> r.getPageCount().intValue(), 1, "pageCount");
         notificationsApiSteps.assertDtoValue(notifications, r -> r.getPage().intValue(), page, "page");
-        notificationsApiSteps.assertDtoValue(notifications, r -> r.getCount().intValue(), count, "limit");
-        notificationsApiSteps.assertCollectionHasCorrectSize(notifications.getData(), count);
+        notificationsApiSteps.assertCollectionHasSizeGreaterThanOrEqualTo(notifications.getData(), 2);
         notificationsApiSteps.assertCollectionElementsHasValue(notifications.getData(), r -> r.getId() != null, "data/id");
         notificationsApiSteps.assertCollectionElementsHasValue(notifications.getData(), r -> r.getDao() != null, "data/dao");
         notificationsApiSteps.assertCollectionElementsHasValue(notifications.getData(), r -> r.getDaoId() != null, "data/daoId");
@@ -211,6 +206,6 @@ public class NotificationsApiTests extends BaseTest {
         notificationsApiSteps.assertCollectionElementsHasValue(notifications.getData(), r -> r.getType() != null, "data/type");
         notificationsApiSteps.assertCollectionElementsHasValue(notifications.getData(), r -> r.getStatus() != null, "data/status");
         notificationsApiSteps.assertCollectionElementsHasValue(notifications.getData(), r -> r.getMetadata() != null, "data/metadata");
-        notificationsApiSteps.assertCollectionContainsExactlyInAnyOrder(notifications.getData(), Notification::getDaoId, testDao1, testDao2);
+        notificationsApiSteps.assertCollectionContainsExactlyInAnyOrder(notifications.getData(), Notification::getDaoId, dao1, dao2);
     }
 }

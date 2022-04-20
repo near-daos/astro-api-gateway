@@ -29,4 +29,12 @@ export class AccountNotificationSettings extends BaseEntity {
   @ApiProperty()
   @Column()
   isAllMuted: boolean;
+
+  @ApiProperty()
+  @Column({ nullable: true })
+  enableSms: boolean;
+
+  @ApiProperty()
+  @Column({ nullable: true })
+  enableEmail: boolean;
 }

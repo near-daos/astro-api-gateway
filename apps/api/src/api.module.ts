@@ -27,6 +27,7 @@ import { AggregatorModule } from './aggregator/aggregator.module';
 import { MetricsModule } from './metrics/metrics.module';
 import { StatsModule } from './stats/stats.module';
 import { ApiDaoSettingsModule } from './dao-settings/dao-settings.module';
+import { AccountModule } from './account/account.module';
 
 @Module({
   imports: [
@@ -68,6 +69,7 @@ import { ApiDaoSettingsModule } from './dao-settings/dao-settings.module';
     AggregatorModule,
     MetricsModule,
     StatsModule,
+    AccountModule,
   ],
   controllers: [AppController],
   providers: [WebsocketGateway],
