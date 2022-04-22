@@ -33,12 +33,14 @@ import {
   AccountNotificationSettingsResponse,
   AccountNotificationSettingsService,
   CreateAccountNotificationSettingsDto,
+  NotificationStatusResponse,
 } from '@sputnik-v2/notification';
 import {
   AccountAccessGuard,
   AccountBearer,
   BaseCrudRequestInterceptor,
   EntityQuery,
+  FindAccountParams,
   FindOneParams,
   QueryFailedErrorFilter,
 } from '@sputnik-v2/common';
@@ -210,5 +212,23 @@ export class NotificationController {
     @Body() body: CreateAccountNotificationSettingsDto,
   ): Promise<AccountNotificationSettings> {
     return this.accountNotificationSettingsService.create(body);
+  }
+
+  @ApiParam({
+    name: 'accountId',
+    type: String,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Notification status by Account',
+    type: NotificationStatusResponse,
+  })
+  @Get('/account-notification-status/:accountId')
+  async getAccountNotificationStatus(
+    @Param() { accountId }: FindAccountParams,
+  ): Promise<NotificationStatusResponse> {
+    return this.accountNotificationService.getAccountNotificationStatus(
+      accountId,
+    );
   }
 }
