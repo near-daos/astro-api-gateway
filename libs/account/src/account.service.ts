@@ -21,7 +21,6 @@ import {
   VerificationStatus,
 } from './types';
 import { AccountNotification } from '@sputnik-v2/notification';
-import { NearApiService } from '@sputnik-v2/near-api';
 
 @Injectable()
 export class AccountService {
@@ -31,7 +30,6 @@ export class AccountService {
     private readonly accountRepository: Repository<Account>,
     private readonly notifiClientService: NotifiClientService,
     private readonly otpService: OtpService,
-    private readonly nearApi: NearApiService,
   ) {}
 
   async create(addAccountDto: AccountDto): Promise<Account> {
@@ -50,15 +48,6 @@ export class AccountService {
 
   async getAccount(accountId: string): Promise<AccountResponse> {
     const account = await this.accountRepository.findOne(accountId);
-    if (!account) {
-      try {
-        await this.nearApi.getAccountState(accountId);
-      } catch (e) {
-        throw new NotFoundException(
-          `Account with accountId ${accountId} not found`,
-        );
-      }
-    }
     return castAccountResponse(accountId, account);
   }
 

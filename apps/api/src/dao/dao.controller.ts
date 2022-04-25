@@ -4,10 +4,12 @@ import {
   Get,
   Param,
   UseFilters,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiNotFoundResponse,
   ApiParam,
   ApiQuery,
   ApiResponse,
@@ -20,6 +22,7 @@ import {
   FindOneParams,
   HttpCacheInterceptor,
   QueryFailedErrorFilter,
+  ValidAccountGuard,
 } from '@sputnik-v2/common';
 import { Dao, DaoMemberVote, DaoResponse, DaoService } from '@sputnik-v2/dao';
 
@@ -58,8 +61,14 @@ export class DaoController {
     isArray: true,
     type: Dao,
   })
-  @ApiBadRequestResponse({ description: 'Invalid Dao ID' })
+  @ApiNotFoundResponse({
+    description: 'Account does not exist',
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid Dao ID',
+  })
   @UseInterceptors(HttpCacheInterceptor)
+  @UseGuards(ValidAccountGuard)
   @Get('/account-daos/:accountId')
   async daosByAccountId(
     @Param() { accountId }: FindAccountParams,

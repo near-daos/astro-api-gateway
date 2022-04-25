@@ -4,10 +4,12 @@ import {
   Param,
   Query,
   UseFilters,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiNotFoundResponse,
   ApiParam,
   ApiQuery,
   ApiResponse,
@@ -18,6 +20,7 @@ import {
   FindOneParams,
   HttpCacheInterceptor,
   QueryFailedErrorFilter,
+  ValidAccountGuard,
 } from '@sputnik-v2/common';
 import {
   ProposalResponse,
@@ -75,14 +78,22 @@ export class ProposalController {
     return await this.proposalService.getById(id, accountId);
   }
 
+  @ApiParam({
+    name: 'accountId',
+    type: String,
+  })
   @ApiResponse({
     status: 200,
     description: 'List of Proposals by Account',
     type: ProposalResponse,
   })
+  @ApiNotFoundResponse({
+    description: 'Account does not exist',
+  })
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
+  @UseGuards(ValidAccountGuard)
   @UseInterceptors(HttpCacheInterceptor, ProposalCrudRequestInterceptor)
   @UseFilters(new QueryFailedErrorFilter())
   @Get('/proposals/account-proposals/:accountId')
