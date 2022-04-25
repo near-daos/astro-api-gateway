@@ -19,16 +19,6 @@ export class AccountResponse {
 }
 
 export function castAccountResponse(accountId: string, account?: Account) {
-  if (!account) {
-    return {
-      accountId,
-      email: null,
-      isEmailVerified: null,
-      phoneNumber: null,
-      isPhoneVerified: null,
-    };
-  }
-
   return {
     accountId: account.accountId,
     email: account.email,

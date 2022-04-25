@@ -12,6 +12,7 @@ import { EVENT_API_QUEUE_NAME } from '@sputnik-v2/common';
 
 import { AppModule } from './api.module';
 import { initAdapters } from './adapters.init';
+import { EntityNotFoundExceptionFilter } from './filters';
 
 export default class Api {
   private readonly logger = new Logger(Api.name);
@@ -61,6 +62,8 @@ export default class Api {
     app.useGlobalInterceptors(
       new ClassSerializerInterceptor(app.get(Reflector)),
     );
+
+    app.useGlobalFilters(new EntityNotFoundExceptionFilter());
 
     const configService = app.get(ConfigService);
 
