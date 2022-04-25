@@ -29,6 +29,7 @@ import {
   DeleteOneParams,
   DB_FOREIGN_KEY_VIOLATION,
   FindAccountParams,
+  ValidAccountGuard,
 } from '@sputnik-v2/common';
 
 @ApiTags('Subscriptions')
@@ -74,6 +75,10 @@ export class SubscriptionsController {
     description: 'List of Subscriptions by Account',
     type: Subscription,
   })
+  @ApiNotFoundResponse({
+    description: 'Account does not exist',
+  })
+  @UseGuards(ValidAccountGuard)
   @Get('/account-subscriptions/:accountId')
   async getAccountSubscriptions(
     @Param() { accountId }: FindAccountParams,
