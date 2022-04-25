@@ -65,7 +65,6 @@ public class AccountIdApiTests extends BaseTest {
 		accountApiSteps.assertDtoValue(accountResponse, AccountResponse::getIsPhoneVerified, false, "isPhoneVerified");
 	}
 
-	//
 	@Test
 	@Severity(SeverityLevel.CRITICAL)
 	@Story("User should be able to get account settings by query param [accountId] with verified email and phone number")
