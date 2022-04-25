@@ -70,6 +70,7 @@ export class AccountController {
     description: 'Email Verification Status',
     type: VerificationStatus,
   })
+  @UseGuards(AccountAccessGuard)
   @Post('/email/send-verification')
   async accountEmailSendVerification(
     @Body() body: AccountBearer,
@@ -134,6 +135,7 @@ export class AccountController {
     description: 'Phone Verification Status',
     type: VerificationStatus,
   })
+  @UseGuards(AccountAccessGuard)
   @Post('/phone/send-verification')
   async accountPhoneSendVerification(
     @Body() body: AccountBearer,
