@@ -355,12 +355,16 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     );
   }
 
-  async setDaoVersion(id: string): Promise<void> {
+  async getDaoVersionById(id: string): Promise<DaoVersion> {
     const versions = await this.daoVersionRepository.find();
     const daoVersionHash = await this.nearApiService.getContractVersionHash(id);
+    return versions.find(({ hash }) => daoVersionHash === hash);
+  }
+
+  async setDaoVersion(id: string): Promise<void> {
     await this.daoRepository.save({
       id,
-      daoVersion: versions.find(({ hash }) => daoVersionHash === hash),
+      daoVersion: await this.getDaoVersionById(id),
     });
   }
 }
