@@ -27,15 +27,13 @@ import static org.hamcrest.Matchers.equalTo;
 public class AccountTokensApiTests extends BaseTest {
 	private final TokenApiSteps tokenApiSteps;
 
-	@Value("${test.dao1}")
-	private String testDao;
-
-	@Test
+	@ParameterizedTest
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("Get list of token for valid DAO")
-	@DisplayName("Get list of token for valid DAO")
-	void getListOfTokensForValidDao() {
-		TokensList tokensList = tokenApiSteps.getTokensForDao(testDao).then()
+	@Story("Get token list for valid accountId query parameter '{id}'")
+	@DisplayName("Get token list for valid accountId query parameter '{id}'")
+	@CsvSource({"test-dao-1641395769436.sputnikv2.testnet", "testdao2.testnet"})
+	void getTokenListForValidAccountIdQueryParam(String id) {
+		TokensList tokensList = tokenApiSteps.getTokensForDao(id).then()
 				.statusCode(HTTP_OK)
 				.extract().as(TokensList.class);
 
