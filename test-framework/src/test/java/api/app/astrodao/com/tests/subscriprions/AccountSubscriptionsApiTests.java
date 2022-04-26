@@ -71,7 +71,7 @@ public class AccountSubscriptionsApiTests extends BaseTest {
 	@Story("Get HTTP 404 for account-subscriptions with invalid accountId")
 	@DisplayName("Get HTTP 404 for account-subscriptions with invalid accountId")
 	@CsvSource({"invalidAccountId", "2212332141", "-1", "0", "testdao3132498.testnet",
-			"*", "null", "autotest-dao-1.sputnikv2.testnet-1", "another-magic.near"})
+			"*", "autotest-dao-1.sputnikv2.testnet-1", "another-magic.near"})
 	void getHttp404ForAccountSubscriptionsWithInvalidAccountId(String accountIdParam) {
 		String errorMessage = String.format("Account does not exist: %s", accountIdParam);
 

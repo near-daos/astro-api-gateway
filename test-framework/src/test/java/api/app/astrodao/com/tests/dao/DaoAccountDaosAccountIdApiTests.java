@@ -61,7 +61,7 @@ public class DaoAccountDaosAccountIdApiTests extends BaseTest {
 	@Story("Get HTTP 404 for account-daos with invalid DAO accountId")
 	@DisplayName("Get HTTP 404 for account-daos with invalid DAO accountId")
 	@CsvSource({"invalidAccountId", "2212332141", "-1", "0",
-			"*", "null", "autotest-dao-1.sputnikv2.testnet-1", "another-magic.near"})
+			"*", "autotest-dao-1.sputnikv2.testnet-1", "another-magic.near"})
 	void getHttp404ForAccountDaosWithInvalidDaoId(String accountIdParam) {
 		String errorMessage = String.format("Account does not exist: %s", accountIdParam);
 
