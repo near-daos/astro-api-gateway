@@ -50,7 +50,7 @@ public class StatsDaoStateApiTests extends BaseTest {
     void getHttp404ForDaoStateWithInvalidDaoId(String invalidDaoId) {
         statsApiSteps.getStateForDao(invalidDaoId).then()
                 .statusCode(HTTP_NOT_FOUND)
-                .body("statusCode", equalTo(404),
+                .body("statusCode", equalTo(HTTP_NOT_FOUND),
                       "message", equalTo("Not Found"));
     }
 }

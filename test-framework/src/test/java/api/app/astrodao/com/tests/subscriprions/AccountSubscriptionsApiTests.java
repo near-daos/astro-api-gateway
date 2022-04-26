@@ -5,14 +5,15 @@ import api.app.astrodao.com.openapi.models.Subscription;
 import api.app.astrodao.com.steps.SubscriptionsApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import io.qameta.allure.*;
-import io.restassured.response.Response;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
-import static java.net.HttpURLConnection.HTTP_CREATED;
-import static java.net.HttpURLConnection.HTTP_OK;
+import static java.net.HttpURLConnection.*;
+import static org.hamcrest.Matchers.equalTo;
 
 @Tags({@Tag("all"), @Tag("accountSubscriptionsApiTests")})
 @Epic("Subscription")
@@ -65,15 +66,19 @@ public class AccountSubscriptionsApiTests extends BaseTest {
 		subscriptionsApiSteps.assertDtoValue(createdSubscription, p -> p.getDao().getId(), dao, "daoId");
 	}
 
-	@Test
+	@ParameterizedTest
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("User should be able to get empty subscriptions for invalid account")
-	@DisplayName("User should be able to get empty subscriptions for invalid account")
-	void userShouldBeAbleToGetSubscriptionsForInvalidAccount() {
-		String accountId = "testdao3132498.testnet";
+	@Story("Get HTTP 404 for account-subscriptions with invalid accountId")
+	@DisplayName("Get HTTP 404 for account-subscriptions with invalid accountId")
+	@CsvSource({"invalidAccountId", "2212332141", "-1", "0", "testdao3132498.testnet",
+			"*", "null", "autotest-dao-1.sputnikv2.testnet-1", "another-magic.near"})
+	void getHttp404ForAccountSubscriptionsWithInvalidAccountId(String accountIdParam) {
+		String errorMessage = String.format("Account does not exist: %s", accountIdParam);
 
-		Response response = subscriptionsApiSteps.accountSubscriptions(accountId);
-		subscriptionsApiSteps.assertResponseStatusCode(response, HTTP_OK);
-		subscriptionsApiSteps.assertStringContainsValue(response.body().asString(), "[]");
+		subscriptionsApiSteps.accountSubscriptions(accountIdParam).then()
+				.statusCode(HTTP_NOT_FOUND)
+				.body("statusCode", equalTo(HTTP_NOT_FOUND),
+				      "message", equalTo(errorMessage),
+				      "error", equalTo("Not Found"));
 	}
 }

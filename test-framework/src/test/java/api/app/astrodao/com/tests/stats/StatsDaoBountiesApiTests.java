@@ -64,7 +64,7 @@ public class StatsDaoBountiesApiTests extends BaseTest {
 	void getHttp404ForDaoBountiesWithInvalidDaoId(String invalidDaoId) {
 		statsApiSteps.getBountiesForDao(invalidDaoId).then()
 				.statusCode(HTTP_NOT_FOUND)
-				.body("statusCode", equalTo(404),
+				.body("statusCode", equalTo(HTTP_NOT_FOUND),
 				      "message", equalTo("Not Found"));
 	}
 }
