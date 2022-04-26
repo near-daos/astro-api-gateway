@@ -74,7 +74,7 @@ public class NotificationsIdApiTests extends BaseTest {
 	void getHttp400ForNotificationId(String notificationId) {
 		notificationsApiSteps.getNotificationById(notificationId).then()
 				.statusCode(HTTP_BAD_REQUEST)
-				.body("statusCode", equalTo(400),
+				.body("statusCode", equalTo(HTTP_BAD_REQUEST),
 				      "message", equalTo("Invalid Notification ID"),
 				      "error", equalTo("Bad Request"));
 	}

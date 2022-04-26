@@ -206,7 +206,7 @@ public class NotificationSettingsApiTests extends BaseTest {
 
 		notificationsApiSteps.getNotificationsSettings(query).then()
 				.statusCode(HTTP_BAD_REQUEST)
-				.body("statusCode", equalTo(400),
+				.body("statusCode", equalTo(HTTP_BAD_REQUEST),
 				      "message", equalTo(errorMsg));
 	}
 }

@@ -57,7 +57,7 @@ public class StatsDaoNftApiTests extends BaseTest {
 	void getHttp404ForDaoNftStatsWithInvalidDaoId(String invalidDaoId) {
 		statsApiSteps.getNFTsForDao(invalidDaoId).then()
 				.statusCode(HTTP_NOT_FOUND)
-				.body("statusCode", equalTo(404),
+				.body("statusCode", equalTo(HTTP_NOT_FOUND),
 				      "message", equalTo("Not Found"));
 	}
 }

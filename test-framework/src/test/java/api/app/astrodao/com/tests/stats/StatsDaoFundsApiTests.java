@@ -48,7 +48,7 @@ public class StatsDaoFundsApiTests extends BaseTest {
 	void getHttp404ForDaoFundsWithInvalidDaoId(String invalidDaoId) {
 		statsApiSteps.getFundsForDao(invalidDaoId).then()
 				.statusCode(HTTP_NOT_FOUND)
-				.body("statusCode", equalTo(404),
+				.body("statusCode", equalTo(HTTP_NOT_FOUND),
 				      "message", equalTo("Not Found"));
 	}
 }
