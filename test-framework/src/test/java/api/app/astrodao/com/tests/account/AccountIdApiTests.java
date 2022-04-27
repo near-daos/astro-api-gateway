@@ -9,10 +9,14 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
+import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
+import static org.hamcrest.Matchers.equalTo;
 
 @Tags({@Tag("all"), @Tag("accountIdApiTests")})
 @Epic("Account")
@@ -166,5 +170,21 @@ public class AccountIdApiTests extends BaseTest {
 		accountApiSteps.assertDtoValue(accountResponse, AccountResponse::getIsEmailVerified, true, "IsEmailVerified");
 		accountApiSteps.assertDtoValueIsNull(accountResponse, AccountResponse::getPhoneNumber, "phoneNumber");
 		accountApiSteps.assertDtoValueIsNull(accountResponse, AccountResponse::getIsPhoneVerified, "isPhoneVerified");
+	}
+
+	@ParameterizedTest
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 404 for account settings with invalid accountId")
+	@DisplayName("Get HTTP 404 for account settings with invalid accountId")
+	@CsvSource({"invalidAccountId", "2212332141", "-1", "0", "testdao3132498.testnet",
+			"*", "autotest-dao-1.sputnikv2.testnet-1", "another-magic.near"})
+	void getHttp404ForAccountSettingsWithInvalidAccountId(String accountIdParam) {
+		String errorMessage = String.format("Account does not exist: %s", accountIdParam);
+
+		accountApiSteps.getAccountSettingsById(accountIdParam).then()
+				.statusCode(HTTP_NOT_FOUND)
+				.body("statusCode", equalTo(HTTP_NOT_FOUND),
+				      "message", equalTo(errorMessage),
+				      "error", equalTo("Not Found"));
 	}
 }
