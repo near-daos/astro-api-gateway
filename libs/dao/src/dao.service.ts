@@ -339,11 +339,8 @@ export class DaoService extends TypeOrmCrudService<Dao> {
   }
 
   async loadDaoVersions(): Promise<DaoVersion[]> {
-    const sputnikDaoFactory = this.nearApiService.getContract(
-      'sputnikDaoFactory',
-      // TODO: Remove hardcode. Add support for multiple DAO Factory contracts
-      'sputnik-factory-v3.ctindogaru.testnet',
-    );
+    const sputnikDaoFactory =
+      this.nearApiService.getContract('sputnikDaoFactory');
     const daoVersions = await sputnikDaoFactory.get_contracts_metadata();
     return this.daoVersionRepository.save(
       daoVersions.map(([hash, { version, commit_id, changelog_url }]) => ({
