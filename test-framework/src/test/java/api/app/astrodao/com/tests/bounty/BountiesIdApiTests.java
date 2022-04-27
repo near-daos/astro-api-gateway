@@ -44,8 +44,8 @@ public class BountiesIdApiTests extends BaseTest {
 
 	@ParameterizedTest
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("Get HTTP 400 for an for an invalid bounty")
-	@DisplayName("Get HTTP 400 for an for an invalid bounty")
+	@Story("Get HTTP 400 for an invalid bounty")
+	@DisplayName("Get HTTP 400 for an invalid bounty")
 	@CsvSource({"proposal", "2212332141", "dao-1.sputnikv2.test"})
 	void getHttp400ForInvalidBounty(String invalidBountyId) {
 		bountiesApiSteps.getBountyByID(invalidBountyId).then()
