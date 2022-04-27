@@ -78,7 +78,6 @@ export class TokenController {
     description: 'Account does not exist',
   })
   @UseGuards(ValidAccountGuard)
-  @ApiBadRequestResponse({ description: 'Invalid Account ID' })
   @Get('/account-tokens/:accountId')
   async tokensByDao(
     @Param() { accountId }: FindAccountParams,
