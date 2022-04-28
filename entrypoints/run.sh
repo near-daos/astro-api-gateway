@@ -16,6 +16,10 @@ else
          -e "s/password:\ .*$/password: '$DATABASE_PASSWORD',/" \
          -e "s/database:\ .*$/database: '$DATABASE_NAME',/" \
          ormconfig.js
+  npm link ts-node
+  npm link typescript
+  npm link decimal.js
   yarn migration:run
+
   node dist/apps/api/main.js
 fi
