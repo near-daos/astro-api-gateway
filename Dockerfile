@@ -51,6 +51,7 @@ WORKDIR /usr/src/app
 # copy from build image
 COPY --from=development /usr/src/app/entrypoints/run.sh ./
 COPY --from=development /usr/src/app ./
+RUN npm i --save-dev @types/node
 
 EXPOSE 3000
 
