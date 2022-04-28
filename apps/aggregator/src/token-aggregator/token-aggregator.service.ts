@@ -115,18 +115,20 @@ export class TokenAggregatorService {
           return [];
         })
       : [];
-    const updatedTokens = tokenPrices.reduce((updatedTokens, tokenPrice) => {
-      const token = tokens.find(
-        ({ id }) => tokenPrice?.ftInfo.token_account_id === id,
-      );
+    const updatedTokens = Array.isArray(tokenPrices)
+      ? tokenPrices.reduce((updatedTokens, tokenPrice) => {
+          const token = tokens.find(
+            ({ id }) => tokenPrice?.ftInfo.token_account_id === id,
+          );
 
-      if (token) {
-        token.price = tokenPrice.price;
-        return updatedTokens.concat(token);
-      }
+          if (token) {
+            token.price = tokenPrice.price;
+            return updatedTokens.concat(token);
+          }
 
-      return updatedTokens;
-    }, []);
+          return updatedTokens;
+        }, [])
+      : [];
     const nearPrice = await lastValueFrom(
       this.httpService
         .get(
