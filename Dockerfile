@@ -49,6 +49,7 @@ ENV NODE_ENV=${NODE_ENV}
 WORKDIR /usr/src/app
 
 # copy from build image
+COPY --from=development /usr/src/app/entrypoints/run.sh ./
 COPY --from=development /usr/src/app ./
 
 EXPOSE 3000
