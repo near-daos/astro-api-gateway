@@ -10,5 +10,12 @@ elif [ $NEST_APP_TYPE == "notifier" ]
 then
   node dist/apps/notifier/main.js
 else
+  sed -i -e "s/host:\ .*$/host: '$DATABASE_HOST',/" \
+         -e "s/port:\ .*$/port: '$DATABASE_PORT',/" \
+         -e "s/username:\ .*$/username: '$DATABASE_USERNAME',/" \
+         -e "s/password:\ .*$/password: '$DATABASE_PASSWORD',/" \
+         -e "s/database:\ .*$/database: '$DATABASE_NAME',/" \
+         ormconfig.js
+  yarn migration:run
   node dist/apps/api/main.js
 fi

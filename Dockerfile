@@ -52,6 +52,7 @@ WORKDIR /usr/src/app
 COPY --from=development /usr/src/app/dist ./dist
 COPY --from=development /usr/src/app/node_modules ./node_modules
 COPY --from=development /usr/src/app/entrypoints ./
+COPY --from=development /usr/src/app/ormconfig.js ./
 
 EXPOSE 3000
 
