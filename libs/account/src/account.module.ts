@@ -5,9 +5,15 @@ import { OtpModule } from '@sputnik-v2/otp';
 
 import { Account } from './entities';
 import { AccountService } from './account.service';
+import { NearApiModule } from '@sputnik-v2/near-api';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Account]), NotifiClientModule, OtpModule],
+  imports: [
+    TypeOrmModule.forFeature([Account]),
+    NotifiClientModule,
+    OtpModule,
+    NearApiModule,
+  ],
   providers: [AccountService],
   exports: [AccountService],
 })

@@ -8,7 +8,9 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import {
+  ApiBadRequestResponse,
   ApiForbiddenResponse,
+  ApiNotFoundResponse,
   ApiParam,
   ApiResponse,
   ApiTags,
@@ -24,8 +26,9 @@ import {
 import {
   AccountAccessGuard,
   AccountBearer,
-  FindOneParams,
+  FindAccountParams,
   HttpCacheInterceptor,
+  ValidAccountGuard,
 } from '@sputnik-v2/common';
 
 @ApiTags('Account')
@@ -34,7 +37,7 @@ export class AccountController {
   constructor(private readonly accountService: AccountService) {}
 
   @ApiParam({
-    name: 'id',
+    name: 'accountId',
     type: String,
   })
   @ApiResponse({
@@ -42,10 +45,16 @@ export class AccountController {
     description: 'Account',
     type: AccountResponse,
   })
+  @ApiNotFoundResponse({
+    description: 'Account does not exist',
+  })
   @UseInterceptors(HttpCacheInterceptor)
-  @Get('/:id')
-  async accountById(@Param() { id }: FindOneParams): Promise<AccountResponse> {
-    return this.accountService.getAccount(id);
+  @UseGuards(ValidAccountGuard)
+  @Get('/:accountId')
+  async accountById(
+    @Param() { accountId }: FindAccountParams,
+  ): Promise<AccountResponse> {
+    return this.accountService.getAccount(accountId);
   }
 
   @ApiResponse({
@@ -70,6 +79,15 @@ export class AccountController {
     description: 'Email Verification Status',
     type: VerificationStatus,
   })
+  @ApiForbiddenResponse({
+    description:
+      'Account <accountId> identity is invalid - public key / bad signature/public key size / Invalid signature',
+  })
+  @ApiBadRequestResponse({
+    description:
+      'No email found for account / Email is already verified / Email verification already sent. Could be resend after 60 seconds',
+  })
+  @UseGuards(AccountAccessGuard)
   @Post('/email/send-verification')
   async accountEmailSendVerification(
     @Body() body: AccountBearer,
@@ -85,6 +103,9 @@ export class AccountController {
     description:
       'Account <accountId> identity is invalid - public key / bad signature/public key size / Invalid signature',
   })
+  @ApiBadRequestResponse({
+    description: 'No email found for account / Invalid verification code',
+  })
   @UseGuards(AccountAccessGuard)
   @Post('/email/verify')
   async verifyEmail(
@@ -97,7 +118,7 @@ export class AccountController {
   }
 
   @ApiParam({
-    name: 'id',
+    name: 'accountId',
     type: String,
   })
   @ApiResponse({
@@ -105,11 +126,18 @@ export class AccountController {
     description: 'Email Verification Status',
     type: VerificationStatus,
   })
-  @Get('/:id/email/verification-status')
+  @ApiNotFoundResponse({
+    description: 'Account does not exist',
+  })
+  @ApiBadRequestResponse({
+    description: 'No email found for account',
+  })
+  @UseGuards(ValidAccountGuard)
+  @Get('/:accountId/email/verification-status')
   async accountEmailStatus(
-    @Param() { id }: FindOneParams,
+    @Param() { accountId }: FindAccountParams,
   ): Promise<VerificationStatus> {
-    return this.accountService.getEmailVerificationStatus(id);
+    return this.accountService.getEmailVerificationStatus(accountId);
   }
 
   @ApiResponse({
@@ -134,6 +162,15 @@ export class AccountController {
     description: 'Phone Verification Status',
     type: VerificationStatus,
   })
+  @ApiForbiddenResponse({
+    description:
+      'Account <accountId> identity is invalid - public key / bad signature/public key size / Invalid signature',
+  })
+  @ApiBadRequestResponse({
+    description:
+      'No phone number found for account / Phone is already verified / Phone verification already sent. Could be resend after 60 seconds',
+  })
+  @UseGuards(AccountAccessGuard)
   @Post('/phone/send-verification')
   async accountPhoneSendVerification(
     @Body() body: AccountBearer,
@@ -149,6 +186,10 @@ export class AccountController {
     description:
       'Account <accountId> identity is invalid - public key / bad signature/public key size / Invalid signature',
   })
+  @ApiBadRequestResponse({
+    description:
+      'No phone number found for account / Invalid verification code',
+  })
   @UseGuards(AccountAccessGuard)
   @Post('/phone/verify')
   async verifyPhone(
@@ -161,7 +202,7 @@ export class AccountController {
   }
 
   @ApiParam({
-    name: 'id',
+    name: 'accountId',
     type: String,
   })
   @ApiResponse({
@@ -169,10 +210,17 @@ export class AccountController {
     description: 'Phone Verification Status',
     type: VerificationStatus,
   })
-  @Get('/:id/phone/verification-status')
+  @ApiNotFoundResponse({
+    description: 'Account does not exist',
+  })
+  @ApiBadRequestResponse({
+    description: 'No phone number found for account',
+  })
+  @UseGuards(ValidAccountGuard)
+  @Get('/:accountId/phone/verification-status')
   async accountPhoneStatus(
-    @Param() { id }: FindOneParams,
+    @Param() { accountId }: FindAccountParams,
   ): Promise<VerificationStatus> {
-    return this.accountService.getPhoneVerificationStatus(id);
+    return this.accountService.getPhoneVerificationStatus(accountId);
   }
 }

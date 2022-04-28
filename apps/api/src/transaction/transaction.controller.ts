@@ -6,10 +6,12 @@ import {
   Query,
   Res,
   UseFilters,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiNotFoundResponse,
   ApiParam,
   ApiResponse,
   ApiTags,
@@ -23,6 +25,7 @@ import {
   FindAccountParams,
   NearDBConnectionErrorFilter,
   AccountTokenParams,
+  ValidAccountGuard,
 } from '@sputnik-v2/common';
 import { TransactionService } from '@sputnik-v2/transaction';
 import { Receipt, NearIndexerService } from '@sputnik-v2/near-indexer';
@@ -50,6 +53,10 @@ export class TransactionController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
+  @ApiNotFoundResponse({
+    description: 'Account does not exist',
+  })
+  @UseGuards(ValidAccountGuard)
   @UseInterceptors(HttpCacheInterceptor)
   @UseFilters(new NearDBConnectionErrorFilter())
   @Get('/receipts/account-receipts/:accountId')
@@ -75,6 +82,10 @@ export class TransactionController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
+  @ApiNotFoundResponse({
+    description: 'Account does not exist',
+  })
+  @UseGuards(ValidAccountGuard)
   @UseInterceptors(HttpCacheInterceptor)
   @UseFilters(new NearDBConnectionErrorFilter())
   @Get('/receipts/account-receipts/:accountId/tokens/:tokenId')
@@ -91,6 +102,14 @@ export class TransactionController {
     name: 'accountId',
     type: String,
   })
+  @ApiResponse({
+    status: 200,
+    description: 'OK',
+  })
+  @ApiNotFoundResponse({
+    description: 'Account does not exist',
+  })
+  @UseGuards(ValidAccountGuard)
   @Get('/wallet/callback/:accountId')
   async success(
     @Param() { accountId },

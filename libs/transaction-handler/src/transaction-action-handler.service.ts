@@ -309,6 +309,7 @@ export class TransactionActionHandlerService {
     let config;
     let policy;
     let stakingContract;
+    let daoVersion;
     let lastBountyId;
 
     if (proposal.status === ProposalStatus.Approved) {
@@ -350,6 +351,10 @@ export class TransactionActionHandlerService {
           timestamp,
         });
       }
+
+      if (proposalKindType === ProposalType.UpgradeSelf) {
+        daoVersion = await this.daoService.getDaoVersionById(dao.id);
+      }
     }
 
     this.logger.log(`Updating Proposal: ${proposal.id} due to transaction`);
@@ -363,6 +368,7 @@ export class TransactionActionHandlerService {
         amount: state.amount,
         config,
         policy,
+        daoVersion,
         lastBountyId,
         stakingContract,
         transactionHash,

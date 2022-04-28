@@ -47,7 +47,7 @@ public class DaoIdApiTests extends BaseTest {
 	void getHttp400ForInvalidDaoName() {
 		daoApiSteps.getDAOByID("InvaliDaoName").then()
 				.statusCode(HTTP_BAD_REQUEST)
-				.body("statusCode", equalTo(400),
+				.body("statusCode", equalTo(HTTP_BAD_REQUEST),
 				      "message", equalTo("Invalid Dao ID"),
 				      "error", equalTo("Bad Request"));
 	}

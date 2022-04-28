@@ -183,7 +183,7 @@ public class ProposalsIdApiTests extends BaseTest {
 
         proposalsApiSteps.getProposalByID(proposal).then()
                 .statusCode(HTTP_BAD_REQUEST)
-                .body("statusCode", equalTo(400),
+                .body("statusCode", equalTo(HTTP_BAD_REQUEST),
                         "message", equalTo(errorMsg));
     }
 }

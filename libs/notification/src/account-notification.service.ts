@@ -3,7 +3,11 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 
-import { AccountNotificationDto, UpdateAccountNotificationDto } from './dto';
+import {
+  AccountNotificationDto,
+  NotificationStatusResponse,
+  UpdateAccountNotificationDto,
+} from './dto';
 import { AccountNotification } from './entities';
 import { UpdateResult } from 'typeorm/query-builder/result/UpdateResult';
 
@@ -63,5 +67,21 @@ export class AccountNotificationService extends TypeOrmCrudService<AccountNotifi
         isArchived: false,
       })
       .execute();
+  }
+
+  async getAccountNotificationStatus(
+    accountId: string,
+  ): Promise<NotificationStatusResponse> {
+    const unreadCount = await this.accountNotificationRepository
+      .createQueryBuilder()
+      .where({
+        accountId,
+        isRead: false,
+      })
+      .getCount();
+    return {
+      accountId,
+      unreadCount,
+    };
   }
 }

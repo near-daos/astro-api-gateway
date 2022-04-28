@@ -43,6 +43,8 @@ public class Constants {
 		public static final String NOTIFICATIONS_ID = "/api/v1/notifications/{id}";
 		public static final String NOTIFICATIONS_SETTINGS = "/api/v1/notification-settings";
 
+		public static final String ACCOUNT_ID = "/api/v1/account/{id}";
+
 		public static final String SEARCH = "/api/v1/search";
 
 		public static final String DAO_STATS_FUNDS = "/api/v1/stats/dao/{id}/funds";
