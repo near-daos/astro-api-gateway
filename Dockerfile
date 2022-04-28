@@ -35,11 +35,11 @@ RUN npm link webpack && \
 RUN /usr/local/bin/node-prune
 
 # remove unused dependencies
-RUN rm -rf node_modules/rxjs/src/
-RUN rm -rf node_modules/rxjs/bundles/
-RUN rm -rf node_modules/rxjs/_esm5/
-RUN rm -rf node_modules/rxjs/_esm2015/
-RUN rm -rf node_modules/swagger-ui-dist/*.map
+#RUN rm -rf node_modules/rxjs/src/
+#RUN rm -rf node_modules/rxjs/bundles/
+#RUN rm -rf node_modules/rxjs/_esm5/
+#RUN rm -rf node_modules/rxjs/_esm2015/
+#RUN rm -rf node_modules/swagger-ui-dist/*.map
 
 FROM node:14.16.0-alpine as production
 
