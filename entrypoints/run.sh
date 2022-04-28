@@ -19,6 +19,7 @@ else
   npm link ts-node
   npm link typescript
   npm link decimal.js
+  npm link tsconfig-paths
   yarn migration:run
 
   node dist/apps/api/main.js
