@@ -49,9 +49,9 @@ ENV NODE_ENV=${NODE_ENV}
 WORKDIR /usr/src/app
 
 # copy from build image
-COPY --from=development /usr/src/app/dist ./dist
-COPY --from=development /usr/src/app/node_modules ./node_modules
-COPY --from=development /usr/src/app/entrypoints ./
+COPY --from=development /usr/src/app/entrypoints/run.sh ./
+COPY --from=development /usr/src/app ./
+RUN yarn add  '@types/node'
 
 EXPOSE 3000
 

@@ -80,7 +80,8 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     const dao = await this.daoRepository.findOne(daoDto.id);
 
     if (!dao.daoVersionHash) {
-      await this.setDaoVersion(dao.id);
+      // TODO: Disabled to next release
+      // await this.setDaoVersion(dao.id);
     }
 
     return dao;
