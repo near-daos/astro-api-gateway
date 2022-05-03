@@ -66,6 +66,9 @@ export class AccountController {
     description:
       'Account <accountId> identity is invalid - public key / bad signature/public key size / Invalid signature',
   })
+  @ApiBadRequestResponse({
+    description: 'Invalid email provided',
+  })
   @UseGuards(AccountAccessGuard)
   @Post('/email')
   async setAccountEmail(
@@ -148,6 +151,9 @@ export class AccountController {
   @ApiForbiddenResponse({
     description:
       'Account <accountId> identity is invalid - public key / bad signature/public key size / Invalid signature',
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid phone provided',
   })
   @UseGuards(AccountAccessGuard)
   @Post('/phone')
