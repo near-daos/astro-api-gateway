@@ -116,4 +116,19 @@ public class AccountEmailApiTests extends BaseTest {
 				      "message", equalTo(errorMessage),
 				      "error", equalTo("Bad Request"));
 	}
+
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 400 for account email with invalid 'email' parameter")
+	@DisplayName("Get HTTP 400 for account email with invalid 'email' parameter")
+	void getHttp400ForAccountEmailWithInvalidEmailParam() {
+		List<String> errorMessage = List.of("email must be an email");
+
+		accountApiSteps.postAccountEmail(accountId, accountPublicKey, accountSignature, "invalidEmail")
+				.then()
+				.statusCode(HTTP_BAD_REQUEST)
+				.body("statusCode", equalTo(HTTP_BAD_REQUEST),
+				      "message", equalTo(errorMessage),
+				      "error", equalTo("Bad Request"));
+	}
 }
