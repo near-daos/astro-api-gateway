@@ -161,6 +161,7 @@ export class AccountNotifierService {
     type,
     status,
     signerId,
+    dao,
     daoId,
     metadata,
   }: Notification): NotifiTemplateMessageDto {
@@ -172,6 +173,7 @@ export class AccountNotifierService {
       NotificationType.CooperativeDao,
     ].includes(type);
     const frontendUrl = this.configService.get('frontendUrl');
+    const daoName = dao?.metadata?.displayName || dao?.config?.name || daoId;
 
     if (isDaoNotification) {
       return {
@@ -179,12 +181,13 @@ export class AccountNotifierService {
         emailTemplate: NotifiTemplate.DaoCreated,
         variables: {
           daoUrl: `${frontendUrl}/dao/${daoId}`,
-          dao: daoId,
+          dao: daoName,
           signerId,
         },
       };
     }
 
+    const description = metadata?.proposal?.description;
     const proposerId = signerId ?? metadata?.proposal?.proposer ?? '';
 
     switch (status) {
@@ -195,9 +198,10 @@ export class AccountNotifierService {
           variables: {
             daoUrl: `${frontendUrl}/dao/${daoId}`,
             proposalUrl: `${frontendUrl}/dao/${daoId}/proposals/${metadata.proposal.id}`,
-            dao: daoId,
+            dao: daoName,
             signerId,
             proposerId,
+            description,
             type,
           },
         };
@@ -210,9 +214,10 @@ export class AccountNotifierService {
           variables: {
             daoUrl: `${frontendUrl}/dao/${daoId}`,
             proposalUrl: `${frontendUrl}/dao/${daoId}/proposals/${metadata.proposal.id}`,
-            dao: daoId,
+            dao: daoName,
             signerId,
             proposerId,
+            description,
             type,
             action: status.toLowerCase(),
           },
@@ -226,9 +231,10 @@ export class AccountNotifierService {
           variables: {
             daoUrl: `${frontendUrl}/dao/${daoId}`,
             proposalUrl: `${frontendUrl}/dao/${daoId}/proposals/${metadata.proposal.id}`,
-            dao: daoId,
+            dao: daoName,
             signerId,
             proposerId,
+            description,
             type,
             action: {
               [NotificationStatus.VoteApprove]: 'approve',
@@ -243,7 +249,7 @@ export class AccountNotifierService {
           emailTemplate: NotifiTemplate.ProposalUpdated,
           variables: {
             daoUrl: `${frontendUrl}/dao/${daoId}`,
-            dao: daoId,
+            dao: daoName,
           },
         };
     }
