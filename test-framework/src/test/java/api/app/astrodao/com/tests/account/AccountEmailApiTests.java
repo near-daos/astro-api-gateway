@@ -61,16 +61,33 @@ public class AccountEmailApiTests extends BaseTest {
 		accountApiSteps.assertDtoValueIsNull(accountResponse, AccountResponse::getIsPhoneVerified, "isPhoneVerified");
 	}
 
-	@Test
+	@ParameterizedTest
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("Get HTTP 403 for account email with invalid 'accountId' parameter")
-	@DisplayName("Get HTTP 403 for account email with invalid 'accountId' parameter")
-	void getHttp403ForAccountEmailWithInvalidAccountIdParam() {
-		accountApiSteps.postAccountEmail(EMPTY_STRING, accountPublicKey, accountSignature, email)
+	@Story("Get HTTP 403 for account email with null and empty 'accountId' parameter")
+	@DisplayName("Get HTTP 403 for account email with null and empty 'accountId' parameter")
+	@NullAndEmptySource
+	void getHttp403ForAccountEmailWithNullAndEmptyAccountIdParam(String accountId) {
+		accountApiSteps.postAccountEmail(accountId, accountPublicKey, accountSignature, email)
 				.then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
 				      "message", equalTo("Authorization header is invalid"),
+				      "error", equalTo("Forbidden"));
+	}
+
+	@ParameterizedTest
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 403 for account email with invalid 'accountId' parameter")
+	@DisplayName("Get HTTP 403 for account email with invalid 'accountId' parameter")
+	@CsvSource({"astro-automation.testnet", "another-magic.near", "test-dao-1641395769436.sputnikv2.testnet"})
+	void getHttp403ForAccountEmailWithInvalidAccountIdParam(String accountId) {
+		String errorMessage = String.format("Account %s identity is invalid - public key", accountId);
+
+		accountApiSteps.postAccountEmail(accountId, accountPublicKey, accountSignature, email)
+				.then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo(errorMessage),
 				      "error", equalTo("Forbidden"));
 	}
 
