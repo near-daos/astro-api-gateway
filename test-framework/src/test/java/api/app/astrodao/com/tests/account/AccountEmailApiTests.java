@@ -13,7 +13,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
-import static java.net.HttpURLConnection.HTTP_CREATED;
+import static java.net.HttpURLConnection.*;
+import static org.hamcrest.Matchers.equalTo;
 
 @Tags({@Tag("all"), @Tag("accountEmailApiTests")})
 @Epic("Account")
@@ -23,6 +24,7 @@ import static java.net.HttpURLConnection.HTTP_CREATED;
 public class AccountEmailApiTests extends BaseTest {
 	private final AccountApiSteps accountApiSteps;
 	private final DisposableEmailApiSteps disposableEmailApiSteps;
+	public final static String EMPTY_STRING = "";
 
 	@Value("${accounts.account3.accountId}")
 	private String accountId;
@@ -32,6 +34,7 @@ public class AccountEmailApiTests extends BaseTest {
 
 	@Value("${accounts.account3.signature}")
 	private String accountSignature;
+
 
 	@Test
 	@Severity(SeverityLevel.CRITICAL)
@@ -52,4 +55,18 @@ public class AccountEmailApiTests extends BaseTest {
 		accountApiSteps.assertDtoValueIsNull(accountResponse, AccountResponse::getIsPhoneVerified, "isPhoneVerified");
 	}
 
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 403 for account email with invalid 'accountId' parameter")
+	@DisplayName("Get HTTP 403 for account email with invalid 'accountId' parameter")
+	void getHttp403ForAccountEmailWithInvalidAccountIdParam() {
+		String email = "test-web-mail@invalidwebmail.com";
+
+		accountApiSteps.postAccountEmail(EMPTY_STRING, accountPublicKey, accountSignature, email)
+				.then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo("Authorization header is invalid"),
+				      "error", equalTo("Forbidden"));
+	}
 }
