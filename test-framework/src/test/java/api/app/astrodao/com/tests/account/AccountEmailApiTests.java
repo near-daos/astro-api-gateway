@@ -10,6 +10,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -27,6 +30,7 @@ public class AccountEmailApiTests extends BaseTest {
 	private final AccountApiSteps accountApiSteps;
 	private final DisposableEmailApiSteps disposableEmailApiSteps;
 	public final static String EMPTY_STRING = "";
+	String email = "test-web-mail@invalidwebmail.com";
 
 	@Value("${accounts.account3.accountId}")
 	private String accountId;
@@ -62,8 +66,6 @@ public class AccountEmailApiTests extends BaseTest {
 	@Story("Get HTTP 403 for account email with invalid 'accountId' parameter")
 	@DisplayName("Get HTTP 403 for account email with invalid 'accountId' parameter")
 	void getHttp403ForAccountEmailWithInvalidAccountIdParam() {
-		String email = "test-web-mail@invalidwebmail.com";
-
 		accountApiSteps.postAccountEmail(EMPTY_STRING, accountPublicKey, accountSignature, email)
 				.then()
 				.statusCode(HTTP_FORBIDDEN)
@@ -72,14 +74,14 @@ public class AccountEmailApiTests extends BaseTest {
 				      "error", equalTo("Forbidden"));
 	}
 
-	@Test
+	@ParameterizedTest
 	@Severity(SeverityLevel.CRITICAL)
 	@Story("Get HTTP 403 for account email with invalid 'publicKey' parameter")
 	@DisplayName("Get HTTP 403 for account email with invalid 'publicKey' parameter")
-	void getHttp403ForAccountEmailWithInvalidPublicKeyParam() {
-		String email = "test-web-mail@invalidwebmail.com";
-
-		accountApiSteps.postAccountEmail(accountId, EMPTY_STRING, accountSignature, email)
+	@NullAndEmptySource
+	@CsvSource({"invalidPublicKey"})
+	void getHttp403ForAccountEmailWithInvalidPublicKeyParam(String publicKey) {
+		accountApiSteps.postAccountEmail(accountId, publicKey, accountSignature, email)
 				.then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
