@@ -13,7 +13,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
-import static java.net.HttpURLConnection.*;
+import static java.net.HttpURLConnection.HTTP_CREATED;
+import static java.net.HttpURLConnection.HTTP_FORBIDDEN;
 import static org.hamcrest.Matchers.equalTo;
 
 @Tags({@Tag("all"), @Tag("accountEmailApiTests")})
@@ -67,6 +68,21 @@ public class AccountEmailApiTests extends BaseTest {
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
 				      "message", equalTo("Authorization header is invalid"),
+				      "error", equalTo("Forbidden"));
+	}
+
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 403 for account email with invalid 'publicKey' parameter")
+	@DisplayName("Get HTTP 403 for account email with invalid 'publicKey' parameter")
+	void getHttp403ForAccountEmailWithInvalidPublicKeyParam() {
+		String email = "test-web-mail@invalidwebmail.com";
+
+		accountApiSteps.postAccountEmail(accountId, EMPTY_STRING, accountSignature, email)
+				.then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo("Account astro-automation-reserved6.testnet identity is invalid - public key"),
 				      "error", equalTo("Forbidden"));
 	}
 }
