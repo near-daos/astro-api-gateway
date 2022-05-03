@@ -13,8 +13,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
-import static java.net.HttpURLConnection.HTTP_CREATED;
-import static java.net.HttpURLConnection.HTTP_FORBIDDEN;
+import java.util.List;
+
+import static java.net.HttpURLConnection.*;
 import static org.hamcrest.Matchers.equalTo;
 
 @Tags({@Tag("all"), @Tag("accountEmailApiTests")})
@@ -99,5 +100,20 @@ public class AccountEmailApiTests extends BaseTest {
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
 				      "message", equalTo("Invalid signature"),
 				      "error", equalTo("Forbidden"));
+	}
+
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 400 for account email with empty 'email' parameter")
+	@DisplayName("Get HTTP 400 for account email with empty 'email' parameter")
+	void getHttp400ForAccountEmailWithEmptyEmailParam() {
+		List<String> errorMessage = List.of("email should not be empty", "email must be an email");
+
+		accountApiSteps.postAccountEmail(accountId, accountPublicKey, accountSignature, EMPTY_STRING)
+				.then()
+				.statusCode(HTTP_BAD_REQUEST)
+				.body("statusCode", equalTo(HTTP_BAD_REQUEST),
+				      "message", equalTo(errorMessage),
+				      "error", equalTo("Bad Request"));
 	}
 }
