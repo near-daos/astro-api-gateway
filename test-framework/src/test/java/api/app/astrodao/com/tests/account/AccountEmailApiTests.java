@@ -85,4 +85,19 @@ public class AccountEmailApiTests extends BaseTest {
 				      "message", equalTo("Account astro-automation-reserved6.testnet identity is invalid - public key"),
 				      "error", equalTo("Forbidden"));
 	}
+
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 403 for account email with invalid 'signature' parameter")
+	@DisplayName("Get HTTP 403 for account email with invalid 'signature' parameter")
+	void getHttp403ForAccountEmailWithInvalidSignatureParam() {
+		String email = "test-web-mail@invalidwebmail.com";
+
+		accountApiSteps.postAccountEmail(accountId, accountPublicKey, EMPTY_STRING, email)
+				.then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo("Invalid signature"),
+				      "error", equalTo("Forbidden"));
+	}
 }
