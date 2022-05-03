@@ -21,3 +21,8 @@ accounts:
     accountId: automation-01.testnet
     publicKey: ed25519:62vv9ViLDYnLtMZBUBgT8h5bB5yHLWYMbeeYKAVfChQF
     signature: FLRzkKGeSdDUimtvkk4E7qMyViESPHxkMvBR1fTLKxfOCJqDWMYXciutO9O9nOJrXzp1d0u/aoR6kG4qwvHXCA==
+
+  account3:
+    accountId: astro-automation-reserved6.testnet
+    publicKey: ed25519:GQTTiPkDm53Fqg8S8eHVdHLKJWXzWEuCzACsBSDedLyH
+    signature: 0GGz4qgFQrZlpDcJlW96g514/qz7HI6zPyRygpbghwP3u3S7LYigrE2HCAhX2DbW1gx0Ny+2nYAKMHPBu6p3Dw==

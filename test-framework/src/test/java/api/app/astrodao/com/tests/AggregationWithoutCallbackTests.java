@@ -13,7 +13,7 @@ import api.app.astrodao.com.core.dto.cli.proposals.transfer.TransferProposalDto;
 import api.app.astrodao.com.core.dto.cli.vote.VoteDto;
 import api.app.astrodao.com.openapi.models.Dao;
 import api.app.astrodao.com.steps.DaoApiSteps;
-import api.app.astrodao.com.steps.NearCLISteps;
+import api.app.astrodao.com.steps.cli.NearCLISteps;
 import api.app.astrodao.com.steps.ProposalsApiSteps;
 import api.app.astrodao.com.openapi.models.Proposal.StatusEnum;
 import com.github.javafaker.Faker;
