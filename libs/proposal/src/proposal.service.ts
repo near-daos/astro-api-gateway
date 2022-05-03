@@ -112,10 +112,7 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
       .from((subQuery) => {
         subQuery
           .select('r.policy_dao_id as dao_id, unnest(r.permissions) as perms')
-          .from('role', 'r')
-          .where('r.kind = :kindEveryone', {
-            kindEveryone: RoleKindType.Everyone,
-          });
+          .from('role', 'r');
 
         if (accountId) {
           subQuery.orWhere(
@@ -370,7 +367,6 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
     const council = roles.find((role) => role.name.toLowerCase() === 'council');
     const permissions = roles.reduce((roles, role) => {
       if (
-        role.kind === RoleKindType.Everyone ||
         (role.kind === RoleKindType.Group &&
           role.accountIds.includes(accountId)) ||
         (role.kind === RoleKindType.Member && accountBalance >= role.balance)
