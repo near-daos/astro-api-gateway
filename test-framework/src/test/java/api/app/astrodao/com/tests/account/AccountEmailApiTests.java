@@ -111,9 +111,22 @@ public class AccountEmailApiTests extends BaseTest {
 	@Story("Get HTTP 403 for account email with invalid 'signature' parameter")
 	@DisplayName("Get HTTP 403 for account email with invalid 'signature' parameter")
 	void getHttp403ForAccountEmailWithInvalidSignatureParam() {
-		String email = "test-web-mail@invalidwebmail.com";
+		String invalidSignature = accountSignature.substring(10);
+		accountApiSteps.postAccountEmail(accountId, accountPublicKey, invalidSignature, email)
+				.then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo("Invalid signature"),
+				      "error", equalTo("Forbidden"));
+	}
 
-		accountApiSteps.postAccountEmail(accountId, accountPublicKey, EMPTY_STRING, email)
+	@ParameterizedTest
+	@NullAndEmptySource
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 403 for account email with null and empty 'signature' parameter")
+	@DisplayName("Get HTTP 403 for account email with null and empty 'signature' parameter")
+	void getHttp403ForAccountEmailWithNullAndEmptySignatureParam(String signature) {
+		accountApiSteps.postAccountEmail(accountId, accountPublicKey, signature, email)
 				.then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
