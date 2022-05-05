@@ -103,6 +103,6 @@ environment:
   aggregator_dao_stats_cron_time: "55 23 * * *"
   wallet_callback_url: ""
   frontend_url: ""
-  near_token_api_url: "https://sodaki.com/api"
+  near_token_api_url: "https://api.stats.ref.finance/api"
   notifi_env: "Development"
   notifi_prefix: "dev"
