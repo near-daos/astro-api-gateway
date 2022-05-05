@@ -31,6 +31,17 @@ public abstract class BaseSteps {
                 .isEqualTo(expectedSize);
     }
 
+    @Step("User sees collection has correct size")
+    public <T, D> void assertCollectionHasExpectedSize(Collection<T> actual, Function<T, D> predicate,
+                                                       int expectedSize, String fieldName) {
+
+        List<D> mapped = actual.stream().map(predicate).collect(toList());
+
+        assertThat(mapped)
+                .as("Collection '%s' should have expected size", fieldName)
+                .hasSize(expectedSize);
+    }
+
     @Step("User sees collection are the same (regardless of order)")
     public void assertCollectionsAreEqual(List<String> actual, List<String> expected) {
         AssertionsForInterfaceTypes.assertThat(actual)
