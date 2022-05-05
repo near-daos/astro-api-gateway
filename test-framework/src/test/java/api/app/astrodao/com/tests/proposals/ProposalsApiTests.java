@@ -147,7 +147,7 @@ public class ProposalsApiTests extends BaseTest {
         proposalsApiSteps.assertCollectionHasCorrectSize(proposalResponse.getData(), count);
         proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getCreatedAt() != null, "data/createdAt");
         proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getUpdatedAt() != null, "data/updatedAt");
-        proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getTransactionHash() != null, "data/transactionHash");
+        proposalsApiSteps.assertCollectionHasExpectedSize(proposalResponse.getData(), ProposalDto::getTransactionHash, count, "data/transactionHash");
         proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getId().contains(".sputnikv2.testnet-"), "data/id");
         proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getProposalId() >= 0, "data/proposalId");
         proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getDaoId().endsWith(".sputnikv2.testnet"), "data/daoId");
@@ -202,7 +202,7 @@ public class ProposalsApiTests extends BaseTest {
         proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getPermissions() != null, "data/permissions");
 
         proposalsApiSteps.assertCollectionElementsHasNoValue(proposalResponse.getData(), r -> r.getUpdatedAt() == null, "data/updatedAt");
-        proposalsApiSteps.assertCollectionElementsHasNoValue(proposalResponse.getData(), r -> r.getTransactionHash() == null, "data/transactionHash");
+        proposalsApiSteps.assertCollectionHasExpectedSize(proposalResponse.getData(), ProposalDto::getTransactionHash, count, "data/transactionHash");
         proposalsApiSteps.assertCollectionElementsHasNoValue(proposalResponse.getData(), r -> r.getProposalId() == null, "data/proposalId");
         proposalsApiSteps.assertCollectionElementsHasNoValue(proposalResponse.getData(), r -> r.getDaoId() == null, "data/daoId");
         proposalsApiSteps.assertCollectionElementsHasNoValue(proposalResponse.getData(), r -> r.getProposer() == null, "data/proposer");
@@ -238,7 +238,7 @@ public class ProposalsApiTests extends BaseTest {
         proposalsApiSteps.assertCollectionHasCorrectSize(proposalResponse.getData(), count);
         proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getCreatedAt() != null, "data/createdAt");
         proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getUpdatedAt() != null, "data/updatedAt");
-        proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getTransactionHash() != null, "data/transactionHash");
+        proposalsApiSteps.assertCollectionHasExpectedSize(proposalResponse.getData(), ProposalDto::getTransactionHash, count, "data/transactionHash");
         proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getId().contains(".sputnikv2.testnet-"), "data/id");
         proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getProposalId() >= 0, "data/proposalId");
         proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getDaoId().endsWith(".sputnikv2.testnet"), "data/daoId");
@@ -321,7 +321,7 @@ public class ProposalsApiTests extends BaseTest {
 
         proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getCreatedAt() != null, "data/createdAt");
         proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getUpdatedAt() != null, "data/updatedAt");
-        proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getTransactionHash() != null, "data/transactionHash");
+        proposalsApiSteps.assertCollectionHasExpectedSize(proposalResponse.getData(), ProposalDto::getTransactionHash, count, "data/transactionHash");
         proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getId().contains(".sputnikv2.testnet-"), "data/id");
         proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getProposalId() >= 0, "data/proposalId");
         proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getDaoId().endsWith(".sputnikv2.testnet"), "data/daoId");
