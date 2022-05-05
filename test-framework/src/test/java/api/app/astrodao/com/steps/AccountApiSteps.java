@@ -15,4 +15,9 @@ public class AccountApiSteps extends BaseSteps {
 	public Response getAccountSettingsById(String accountId) {
 		return accountApi.getAccountSettingsById(accountId);
 	}
+
+	@Step("Set account email '{email}'")
+	public Response postAccountEmail(String accountId, String publicKey, String signature, String email) {
+		return accountApi.postAccountEmail(accountId, publicKey, signature, email);
+	}
 }

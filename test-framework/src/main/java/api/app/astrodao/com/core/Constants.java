@@ -18,6 +18,11 @@ public class Constants {
 	}
 
 	@UtilityClass
+	public class DisposableEmailParams {
+		public static final String GET_RANDOM_MAILBOX = "?action=genRandomMailbox";
+	}
+
+	@UtilityClass
 	public class Endpoints {
 		public static final String DAOS = "/api/v1/daos";
 		public static final String DAOS_ID = "/api/v1/daos/{id}";
@@ -44,6 +49,7 @@ public class Constants {
 		public static final String NOTIFICATIONS_SETTINGS = "/api/v1/notification-settings";
 
 		public static final String ACCOUNT_ID = "/api/v1/account/{id}";
+		public static final String ACCOUNT_EMAIL = "/api/v1/account/email";
 
 		public static final String SEARCH = "/api/v1/search";
 

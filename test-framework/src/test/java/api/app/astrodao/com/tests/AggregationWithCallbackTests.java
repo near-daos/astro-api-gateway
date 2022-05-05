@@ -14,7 +14,7 @@ import api.app.astrodao.com.core.dto.cli.proposals.view.ViewProposal;
 import api.app.astrodao.com.core.dto.cli.proposals.view.bounty.ViewAddBountyProposal;
 import api.app.astrodao.com.core.dto.cli.proposals.view.transfer.ViewTransferProposal;
 import api.app.astrodao.com.steps.DaoApiSteps;
-import api.app.astrodao.com.steps.NearCLISteps;
+import api.app.astrodao.com.steps.cli.NearCLISteps;
 import api.app.astrodao.com.steps.ProposalsApiSteps;
 import api.app.astrodao.com.steps.TransactionsSteps;
 import api.app.astrodao.com.openapi.models.Proposal.StatusEnum;

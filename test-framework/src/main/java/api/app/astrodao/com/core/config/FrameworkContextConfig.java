@@ -54,4 +54,18 @@ public class FrameworkContextConfig {
                 .addHeader("User-Agent", "API Test Framework")
                 .build();
     }
+
+    @Bean
+    public RequestSpecification requestSpecForDisposableWebMail(@Value("${framework.webmail.provider.uri}") String baseUri) {
+        return new RequestSpecBuilder()
+                .setBaseUri("https://www.1secmail.com/api/v1/")
+                .setBaseUri(baseUri)
+                .log(LogDetail.ALL)
+                .addFilter(new AllureRestAssured())
+                .addFilter(new SwaggerCoverageV3RestAssured(
+                        new FileSystemOutputWriter(Paths.get("build/swagger-coverage-output")))
+                )
+                .addHeader("User-Agent", "API Test Framework")
+                .build();
+    }
 }
