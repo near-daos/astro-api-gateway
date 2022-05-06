@@ -62,9 +62,6 @@ public class CommentsApiTests extends BaseTest {
     @Value("${accounts.account2.publicKey}")
     private String account2PublicKey;
 
-    @Value("${accounts.account2.signature}")
-    private String account2Signature;
-
     @Test
     @Severity(SeverityLevel.CRITICAL)
     @Story("User should be able to get list of comments with query param: [sort, limit, offset]")
@@ -181,10 +178,9 @@ public class CommentsApiTests extends BaseTest {
     void getListOfCommentsSortSParams() {
         int count = 50;
         int page = 1;
-        String accountId = "anima.testnet";
         Map<String, Object> query = Map.of(
                 "sort", "createdAt,DESC",
-                "s", String.format("{\"accountId\": \"%s\"}", accountId)
+                "s", String.format("{\"accountId\": \"%s\"}", account2Id)
         );
 
         CommentResponse commentResponse = commentsApiSteps.getComments(query).then()
@@ -202,7 +198,7 @@ public class CommentsApiTests extends BaseTest {
         commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> r.getDaoId().endsWith(".sputnikv2.testnet"), "data/daoId");
         commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> !r.getContextId().isBlank(), "data/contextId");
         commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> r.getContextType() != null, "data/contextType");
-        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> accountId.equals(r.getAccountId()), "data/accountId");
+        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> account2Id.equals(r.getAccountId()), "data/accountId");
         commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> !r.getMessage().isBlank(), "data/message");
         commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> r.getReports() != null, "data/message");
 
