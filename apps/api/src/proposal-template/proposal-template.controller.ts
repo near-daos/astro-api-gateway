@@ -9,6 +9,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import {
+  ApiBody,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiParam,
@@ -123,6 +124,7 @@ export class ProposalTemplateController {
     name: 'id',
     type: String,
   })
+  @ApiBody({ type: AccountBearer })
   @ApiResponse({
     status: 200,
     description: 'Proposal template deleted',
@@ -139,7 +141,6 @@ export class ProposalTemplateController {
   async deleteProposalTemplate(
     @Param('daoId') daoId: string,
     @Param('id') id: string,
-    @Body() body: AccountBearer,
   ): Promise<void> {
     await this.proposalTemplateService.delete(id);
   }
