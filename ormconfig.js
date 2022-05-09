@@ -25,6 +25,7 @@ module.exports = {
     'libs/near-indexer/src/entities/receipt-action.entity.ts',
     'libs/notification/src/entities/**/*.ts',
     'libs/proposal/src/entities/**/*.ts',
+    'libs/proposal-template/src/entities/**/*.ts',
     'libs/stats/src/entities/**/*.ts',
     'libs/subscription/src/entities/**/*.ts',
     'libs/token/src/entities/**/*.ts',

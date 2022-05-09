@@ -109,6 +109,10 @@ export const buildDaoStatsId = (daoId: string, timestamp: number): string => {
   return `${daoId}-${timestamp}`;
 };
 
+export const buildTemplateId = (daoId: string): string => {
+  return `${daoId}-${Date.now()}`;
+};
+
 export const decodeBase64 = (b: string) => {
   return Buffer.from(b, 'base64').toString('utf-8');
 };
