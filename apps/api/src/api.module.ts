@@ -28,6 +28,7 @@ import { MetricsModule } from './metrics/metrics.module';
 import { StatsModule } from './stats/stats.module';
 import { ApiDaoSettingsModule } from './dao-settings/dao-settings.module';
 import { AccountModule } from './account/account.module';
+import { ProposalTemplateModule } from './proposal-template/proposal-template.module';
 
 @Module({
   imports: [
@@ -70,6 +71,7 @@ import { AccountModule } from './account/account.module';
     MetricsModule,
     StatsModule,
     AccountModule,
+    ProposalTemplateModule,
   ],
   controllers: [AppController],
   providers: [WebsocketGateway],

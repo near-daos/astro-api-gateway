@@ -147,6 +147,12 @@
       ],
       "@sputnik-v2/otp/*": [
         "libs/otp/src/*"
+      ],
+      "@sputnik-v2/proposal-template": [
+        "libs/proposal-template/src"
+      ],
+      "@sputnik-v2/proposal-template/*": [
+        "libs/proposal-template/src/*"
       ]
     }
   }
