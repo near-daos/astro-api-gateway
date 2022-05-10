@@ -13,7 +13,7 @@ import {
 } from '@sputnik-v2/notification';
 import { SubscriptionService } from '@sputnik-v2/subscription';
 import { DaoService } from '@sputnik-v2/dao';
-import { getBlockTimestamp } from '@sputnik-v2/utils';
+import { filterProposalDesc, getBlockTimestamp } from '@sputnik-v2/utils';
 import { EventService } from '@sputnik-v2/event';
 import { AccountService } from '@sputnik-v2/account';
 
@@ -187,7 +187,7 @@ export class AccountNotifierService {
       };
     }
 
-    const description = metadata?.proposal?.description;
+    const description = filterProposalDesc(metadata?.proposal?.description);
     const proposerId = signerId ?? metadata?.proposal?.proposer ?? '';
 
     switch (status) {
