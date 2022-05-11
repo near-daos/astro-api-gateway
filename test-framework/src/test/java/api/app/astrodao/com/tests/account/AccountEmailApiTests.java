@@ -41,25 +41,6 @@ public class AccountEmailApiTests extends BaseTest {
 	private String accountSignature;
 
 
-//	@Test
-//	@Severity(SeverityLevel.CRITICAL)
-//	@Story("User should be able to set account email")
-//	@DisplayName("User should be able to set account email")
-//	void setAccountEmail() {
-//		String email = disposableEmailApiSteps.getEmail();
-//
-//		AccountResponse accountResponse = accountApiSteps.postAccountEmail(accountId, accountPublicKey, accountSignature, email)
-//				.then()
-//				.statusCode(HTTP_CREATED)
-//				.extract().as(AccountResponse.class);
-//
-//		accountApiSteps.assertDtoValue(accountResponse, AccountResponse::getAccountId, accountId, "accountId");
-//		accountApiSteps.assertDtoValue(accountResponse, AccountResponse::getEmail, email, "email");
-//		accountApiSteps.assertDtoValue(accountResponse, AccountResponse::getIsEmailVerified, false, "IsEmailVerified");
-//		accountApiSteps.assertDtoValueIsNull(accountResponse, AccountResponse::getPhoneNumber, "phoneNumber");
-//		accountApiSteps.assertDtoValueIsNull(accountResponse, AccountResponse::getIsPhoneVerified, "isPhoneVerified");
-//	}
-
 	@ParameterizedTest
 	@Severity(SeverityLevel.CRITICAL)
 	@Story("Get HTTP 403 for account email with null and empty 'accountId' parameter")
