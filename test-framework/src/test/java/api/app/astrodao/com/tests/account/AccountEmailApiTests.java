@@ -1,6 +1,5 @@
 package api.app.astrodao.com.tests.account;
 
-import api.app.astrodao.com.openapi.models.AccountResponse;
 import api.app.astrodao.com.steps.AccountApiSteps;
 import api.app.astrodao.com.steps.util.DisposableEmailApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
@@ -13,7 +12,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
-import org.junit.jupiter.params.provider.NullSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -43,24 +41,24 @@ public class AccountEmailApiTests extends BaseTest {
 	private String accountSignature;
 
 
-	@Test
-	@Severity(SeverityLevel.CRITICAL)
-	@Story("User should be able to set account email")
-	@DisplayName("User should be able to set account email")
-	void setAccountEmail() {
-		String email = disposableEmailApiSteps.getEmail();
-
-		AccountResponse accountResponse = accountApiSteps.postAccountEmail(accountId, accountPublicKey, accountSignature, email)
-				.then()
-				.statusCode(HTTP_CREATED)
-				.extract().as(AccountResponse.class);
-
-		accountApiSteps.assertDtoValue(accountResponse, AccountResponse::getAccountId, accountId, "accountId");
-		accountApiSteps.assertDtoValue(accountResponse, AccountResponse::getEmail, email, "email");
-		accountApiSteps.assertDtoValue(accountResponse, AccountResponse::getIsEmailVerified, false, "IsEmailVerified");
-		accountApiSteps.assertDtoValueIsNull(accountResponse, AccountResponse::getPhoneNumber, "phoneNumber");
-		accountApiSteps.assertDtoValueIsNull(accountResponse, AccountResponse::getIsPhoneVerified, "isPhoneVerified");
-	}
+//	@Test
+//	@Severity(SeverityLevel.CRITICAL)
+//	@Story("User should be able to set account email")
+//	@DisplayName("User should be able to set account email")
+//	void setAccountEmail() {
+//		String email = disposableEmailApiSteps.getEmail();
+//
+//		AccountResponse accountResponse = accountApiSteps.postAccountEmail(accountId, accountPublicKey, accountSignature, email)
+//				.then()
+//				.statusCode(HTTP_CREATED)
+//				.extract().as(AccountResponse.class);
+//
+//		accountApiSteps.assertDtoValue(accountResponse, AccountResponse::getAccountId, accountId, "accountId");
+//		accountApiSteps.assertDtoValue(accountResponse, AccountResponse::getEmail, email, "email");
+//		accountApiSteps.assertDtoValue(accountResponse, AccountResponse::getIsEmailVerified, false, "IsEmailVerified");
+//		accountApiSteps.assertDtoValueIsNull(accountResponse, AccountResponse::getPhoneNumber, "phoneNumber");
+//		accountApiSteps.assertDtoValueIsNull(accountResponse, AccountResponse::getIsPhoneVerified, "isPhoneVerified");
+//	}
 
 	@ParameterizedTest
 	@Severity(SeverityLevel.CRITICAL)
@@ -68,7 +66,7 @@ public class AccountEmailApiTests extends BaseTest {
 	@DisplayName("Get HTTP 403 for account email with null and empty 'accountId' parameter")
 	@NullAndEmptySource
 	void getHttp403ForAccountEmailWithNullAndEmptyAccountIdParam(String accountId) {
-		accountApiSteps.postAccountEmail(accountId, accountPublicKey, accountSignature, email)
+		accountApiSteps.setAccountEmail(accountId, accountPublicKey, accountSignature, email)
 				.then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
@@ -84,7 +82,7 @@ public class AccountEmailApiTests extends BaseTest {
 	void getHttp403ForAccountEmailWithInvalidAccountIdParam(String accountId) {
 		String errorMessage = String.format("Account %s identity is invalid - public key", accountId);
 
-		accountApiSteps.postAccountEmail(accountId, accountPublicKey, accountSignature, email)
+		accountApiSteps.setAccountEmail(accountId, accountPublicKey, accountSignature, email)
 				.then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
@@ -99,7 +97,7 @@ public class AccountEmailApiTests extends BaseTest {
 	@NullAndEmptySource
 	@CsvSource({"invalidPublicKey"})
 	void getHttp403ForAccountEmailWithInvalidPublicKeyParam(String publicKey) {
-		accountApiSteps.postAccountEmail(accountId, publicKey, accountSignature, email)
+		accountApiSteps.setAccountEmail(accountId, publicKey, accountSignature, email)
 				.then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
@@ -113,7 +111,7 @@ public class AccountEmailApiTests extends BaseTest {
 	@DisplayName("Get HTTP 403 for account email with invalid 'signature' parameter")
 	void getHttp403ForAccountEmailWithInvalidSignatureParam() {
 		String invalidSignature = accountSignature.substring(10);
-		accountApiSteps.postAccountEmail(accountId, accountPublicKey, invalidSignature, email)
+		accountApiSteps.setAccountEmail(accountId, accountPublicKey, invalidSignature, email)
 				.then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
@@ -127,7 +125,7 @@ public class AccountEmailApiTests extends BaseTest {
 	@Story("Get HTTP 403 for account email with null and empty 'signature' parameter")
 	@DisplayName("Get HTTP 403 for account email with null and empty 'signature' parameter")
 	void getHttp403ForAccountEmailWithNullAndEmptySignatureParam(String signature) {
-		accountApiSteps.postAccountEmail(accountId, accountPublicKey, signature, email)
+		accountApiSteps.setAccountEmail(accountId, accountPublicKey, signature, email)
 				.then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
@@ -142,7 +140,7 @@ public class AccountEmailApiTests extends BaseTest {
 	void getHttp400ForAccountEmailWithEmptyEmailParam() {
 		List<String> errorMessage = List.of("email should not be empty", "email must be an email");
 
-		accountApiSteps.postAccountEmail(accountId, accountPublicKey, accountSignature, EMPTY_STRING)
+		accountApiSteps.setAccountEmail(accountId, accountPublicKey, accountSignature, EMPTY_STRING)
 				.then()
 				.statusCode(HTTP_BAD_REQUEST)
 				.body("statusCode", equalTo(HTTP_BAD_REQUEST),
@@ -157,7 +155,7 @@ public class AccountEmailApiTests extends BaseTest {
 	void getHttp400ForAccountEmailWithNullEmailParam() {
 		List<String> errorMessage = List.of("email should not be empty", "email must be an email", "email must be a string");
 
-		accountApiSteps.postAccountEmail(accountId, accountPublicKey, accountSignature, null)
+		accountApiSteps.setAccountEmail(accountId, accountPublicKey, accountSignature, null)
 				.then()
 				.statusCode(HTTP_BAD_REQUEST)
 				.body("statusCode", equalTo(HTTP_BAD_REQUEST),
@@ -173,7 +171,7 @@ public class AccountEmailApiTests extends BaseTest {
 	void getHttp400ForAccountEmailWithInvalidEmailParam(String invalidEmail) {
 		List<String> errorMessage = List.of("email must be an email");
 
-		accountApiSteps.postAccountEmail(accountId, accountPublicKey, accountSignature, invalidEmail)
+		accountApiSteps.setAccountEmail(accountId, accountPublicKey, accountSignature, invalidEmail)
 				.then()
 				.statusCode(HTTP_BAD_REQUEST)
 				.body("statusCode", equalTo(HTTP_BAD_REQUEST),

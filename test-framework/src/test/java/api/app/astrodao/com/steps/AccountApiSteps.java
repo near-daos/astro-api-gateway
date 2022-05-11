@@ -17,7 +17,17 @@ public class AccountApiSteps extends BaseSteps {
 	}
 
 	@Step("Set account email '{email}'")
-	public Response postAccountEmail(String accountId, String publicKey, String signature, String email) {
+	public Response setAccountEmail(String accountId, String publicKey, String signature, String email) {
 		return accountApi.postAccountEmail(accountId, publicKey, signature, email);
+	}
+
+	@Step("Send account email verification code")
+	public Response sendEmailVerificationCode(String accountId, String publicKey, String signature) {
+		return accountApi.postSendEmailVerificationCode(accountId, publicKey, signature);
+	}
+
+	@Step("Verify email")
+	public Response verifyEmail(String accountId, String publicKey, String signature, String code) {
+		return accountApi.postVerifyEmail(accountId, publicKey, signature, code);
 	}
 }

@@ -19,7 +19,10 @@ public class Constants {
 
 	@UtilityClass
 	public class DisposableEmailParams {
-		public static final String GET_RANDOM_MAILBOX = "?action=genRandomMailbox";
+		public static final String ACTION_PARAM = "action";
+		public static final String GET_RANDOM_MAILBOX = "genRandomMailbox";
+		public static final String GET_MESSAGES = "getMessages";
+		public static final String READ_MESSAGE = "readMessage";
 	}
 
 	@UtilityClass
@@ -50,6 +53,8 @@ public class Constants {
 
 		public static final String ACCOUNT_ID = "/api/v1/account/{id}";
 		public static final String ACCOUNT_EMAIL = "/api/v1/account/email";
+		public static final String ACCOUNT_EMAIL_SEND_VERIFICATION = "/api/v1/account/email/send-verification";
+		public static final String ACCOUNT_EMAIL_VERIFY = "/api/v1/account/email/verify";
 
 		public static final String SEARCH = "/api/v1/search";
 
