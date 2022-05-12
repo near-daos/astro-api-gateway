@@ -360,13 +360,19 @@ export class TransactionActionHandlerService {
       }
 
       if (proposalKindType === ProposalType.UpgradeSelf) {
+        // TODO: Remove temporary workaround when transaction failure check will be implemented
         this.logger.log(
-          `Updating Version of DAO: ${receiverId} due to transaction`,
+          `Start timeout to load new Version of DAO:  ${receiverId}`,
         );
-        const daoVersionHash = await this.daoService.setDaoVersion(dao.id);
-        this.logger.log(
-          `DAO ${receiverId} Version successfully updated to ${daoVersionHash}`,
-        );
+        setTimeout(async () => {
+          this.logger.log(
+            `Updating Version of DAO: ${receiverId} due to transaction`,
+          );
+          const daoVersionHash = await this.daoService.setDaoVersion(dao.id);
+          this.logger.log(
+            `DAO ${receiverId} Version successfully updated to ${daoVersionHash}`,
+          );
+        }, 30000);
       }
     }
 
