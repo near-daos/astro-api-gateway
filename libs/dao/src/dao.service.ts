@@ -358,11 +358,12 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     return versions.find(({ hash }) => daoVersionHash === hash);
   }
 
-  async setDaoVersion(id: string): Promise<void> {
+  async setDaoVersion(id: string): Promise<string> {
     const version = await this.getDaoVersionById(id);
     await this.daoRepository.save({
       id,
       daoVersionHash: version?.hash,
     });
+    return version?.hash;
   }
 }

@@ -317,7 +317,6 @@ export class TransactionActionHandlerService {
     let config;
     let policy;
     let stakingContract;
-    let daoVersion;
     let lastBountyId;
 
     if (proposal.status === ProposalStatus.Approved) {
@@ -361,7 +360,13 @@ export class TransactionActionHandlerService {
       }
 
       if (proposalKindType === ProposalType.UpgradeSelf) {
-        daoVersion = await this.daoService.getDaoVersionById(dao.id);
+        this.logger.log(
+          `Updating Version of DAO: ${receiverId} due to transaction`,
+        );
+        const daoVersionHash = await this.daoService.setDaoVersion(dao.id);
+        this.logger.log(
+          `DAO ${receiverId} Version successfully updated to ${daoVersionHash}`,
+        );
       }
     }
 
@@ -376,7 +381,6 @@ export class TransactionActionHandlerService {
         amount: state.amount,
         config,
         policy,
-        daoVersion,
         lastBountyId,
         stakingContract,
         transactionHash,
