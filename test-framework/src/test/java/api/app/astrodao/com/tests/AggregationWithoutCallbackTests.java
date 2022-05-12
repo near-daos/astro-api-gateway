@@ -63,8 +63,8 @@ public class AggregationWithoutCallbackTests extends BaseTest {
     @Story("User should be able to get newly created DAO via Sputnik v2 API")
     @DisplayName("User should be able to get newly created DAO via Sputnik v2 API")
     void userShouldBeAbleToGetNewlyCreatedDaoViaSputnikV2Api() {
-        float deposit = 5F;
-        long gasValue = 100000000000000L;
+        float deposit = 6F;
+        long gasValue = 300000000000000L;
         String daoDisplayName = String.format("Test DAO %s", getEpochMillis());
         String daoName = daoDisplayName.toLowerCase().replaceAll("\\s", "-");
         String daoId = String.format("%s.sputnikv2.testnet", daoName);
