@@ -111,18 +111,27 @@ export class TransactionActionHandlerService {
 
     const contractHandlers = this.getContractHandlers(action.receiverId);
 
-    await PromisePool.for(contractHandlers).process(async (contractHandler) => {
-      const handler =
-        contractHandler.methodHandlers[action.methodName] ||
-        contractHandler.defaultHandler;
-      if (handler) {
-        return handler(action);
-      }
-    });
-
-    this.logger.log(
-      `Transaction successfully handled: ${action.transactionHash}`,
+    const { errors } = await PromisePool.for(contractHandlers).process(
+      async (contractHandler) => {
+        const handler =
+          contractHandler.methodHandlers[action.methodName] ||
+          contractHandler.defaultHandler;
+        if (handler) {
+          return handler(action);
+        }
+      },
     );
+
+    if (errors.length > 0) {
+      this.logger.error(`Handling transaction failed with errors:`);
+      errors.forEach((error) => {
+        this.logger.error(error);
+      });
+    } else {
+      this.logger.log(
+        `Transaction successfully handled: ${action.transactionHash}`,
+      );
+    }
   }
 
   async handleCreateDao(txAction: TransactionAction) {
