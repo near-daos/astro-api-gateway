@@ -15,6 +15,7 @@ import { TokenService } from '@sputnik-v2/token';
 import { DaoStatus, DaoVariant } from '@sputnik-v2/dao/types';
 
 import {
+  AccountDaoResponse,
   DaoDto,
   DaoMemberVote,
   DaoResponse,
@@ -45,17 +46,21 @@ export class DaoService extends TypeOrmCrudService<Dao> {
   async findAccountDaos(
     accountId: string,
     fields: string[],
-  ): Promise<Dao[] | DaoResponse> {
-    return await this.daoRepository
+  ): Promise<AccountDaoResponse[]> {
+    const daos = await this.daoRepository
       .createQueryBuilder('dao')
-      .select([...fields.map((field) => `dao.${field}`), 'policy'])
-      .leftJoin('dao.policy', 'policy')
+      .select([...fields.map((field) => `dao.${field}`), 'dao.council'])
       .andWhere(`:accountId = ANY(dao.accountIds)`, {
         accountId,
       })
       .andWhere('dao.status != :status', { status: DaoStatus.Disabled })
       .orderBy('dao.createTimestamp', 'DESC')
       .getMany();
+
+    return daos.map((dao) => ({
+      ...dao,
+      isCouncil: dao.council.includes(accountId),
+    }));
   }
 
   async findById(id: string): Promise<Dao> {
