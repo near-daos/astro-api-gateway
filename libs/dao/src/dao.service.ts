@@ -48,7 +48,8 @@ export class DaoService extends TypeOrmCrudService<Dao> {
   ): Promise<Dao[] | DaoResponse> {
     return await this.daoRepository
       .createQueryBuilder('dao')
-      .select(fields.map((field) => `dao.${field}`))
+      .select([...fields.map((field) => `dao.${field}`), 'policy'])
+      .leftJoin('dao.policy', 'policy')
       .andWhere(`:accountId = ANY(dao.accountIds)`, {
         accountId,
       })
