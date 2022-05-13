@@ -24,7 +24,13 @@ import {
   QueryFailedErrorFilter,
   ValidAccountGuard,
 } from '@sputnik-v2/common';
-import { Dao, DaoMemberVote, DaoResponse, DaoService } from '@sputnik-v2/dao';
+import {
+  AccountDaoResponse,
+  Dao,
+  DaoMemberVote,
+  DaoResponse,
+  DaoService,
+} from '@sputnik-v2/dao';
 
 import { DaoCrudRequestInterceptor } from './interceptors/dao-crud.interceptor';
 
@@ -59,7 +65,7 @@ export class DaoController {
     status: 200,
     description: 'List of Sputnik DAOs by Account',
     isArray: true,
-    type: Dao,
+    type: AccountDaoResponse,
   })
   @ApiNotFoundResponse({
     description: 'Account does not exist',
@@ -72,7 +78,7 @@ export class DaoController {
   @Get('/account-daos/:accountId')
   async daosByAccountId(
     @Param() { accountId }: FindAccountParams,
-  ): Promise<Dao[] | DaoResponse> {
+  ): Promise<AccountDaoResponse[]> {
     return await this.daoService.findAccountDaos(
       accountId,
       DaoCrudRequestInterceptor.defaultFields,
