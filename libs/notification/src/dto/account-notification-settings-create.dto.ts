@@ -1,9 +1,8 @@
-import { AccountBearer } from '@sputnik-v2/common';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';
 import { NotificationType } from '@sputnik-v2/notification';
 
-export class CreateAccountNotificationSettingsDto extends AccountBearer {
+export class CreateAccountNotificationSettingsDto {
   @ApiProperty()
   @IsString()
   @IsOptional()

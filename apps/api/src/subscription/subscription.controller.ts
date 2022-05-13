@@ -7,10 +7,11 @@ import {
   BadRequestException,
   UseGuards,
   Get,
+  Req,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
-  ApiBody,
+  ApiBearerAuth,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiParam,
@@ -22,7 +23,6 @@ import {
   SubscriptionService,
   SubscriptionDto,
   Subscription,
-  SubscriptionDeleteDto,
 } from '@sputnik-v2/subscription';
 import {
   AccountAccessGuard,
@@ -30,6 +30,7 @@ import {
   DB_FOREIGN_KEY_VIOLATION,
   FindAccountParams,
   ValidAccountGuard,
+  AuthorizedRequest,
 } from '@sputnik-v2/common';
 
 @ApiTags('Subscriptions')
@@ -48,17 +49,22 @@ export class SubscriptionsController {
     description:
       'Account <accountId> identity is invalid - public key / bad signature/public key size / Invalid signature',
   })
+  @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
   @Post('/')
   async create(
+    @Req() req: AuthorizedRequest,
     @Body() addSubscriptionDto: SubscriptionDto,
   ): Promise<Subscription> {
     try {
-      return await this.subscriptionService.create(addSubscriptionDto);
+      return await this.subscriptionService.create(
+        req.accountId,
+        addSubscriptionDto,
+      );
     } catch (error) {
       if (error.code === DB_FOREIGN_KEY_VIOLATION) {
         throw new BadRequestException(
-          `No DAO '${addSubscriptionDto.daoId}' and/or Account '${addSubscriptionDto.accountId}' found.`,
+          `No DAO '${addSubscriptionDto.daoId}' and/or Account '${req.accountId}' found.`,
         );
       }
 
@@ -90,7 +96,6 @@ export class SubscriptionsController {
     name: 'id',
     type: String,
   })
-  @ApiBody({ type: SubscriptionDeleteDto })
   @ApiResponse({
     status: 200,
     description: 'OK',
@@ -102,6 +107,7 @@ export class SubscriptionsController {
     description:
       'Account <accountId> identity is invalid - public key / bad signature/public key size / Invalid signature',
   })
+  @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
   @Delete('/:id')
   remove(@Param() { id }: DeleteOneParams): Promise<void> {

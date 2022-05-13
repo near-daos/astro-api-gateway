@@ -1,8 +1,7 @@
-import { AccountBearer } from '@sputnik-v2/common';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
 
-export class AccountEmailDto extends AccountBearer {
+export class AccountEmailDto {
   @ApiProperty()
   @IsString()
   @IsEmail()

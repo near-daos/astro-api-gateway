@@ -6,12 +6,14 @@ import {
   Param,
   Patch,
   Post,
+  Req,
   UseFilters,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiParam,
@@ -37,7 +39,7 @@ import {
 } from '@sputnik-v2/notification';
 import {
   AccountAccessGuard,
-  AccountBearer,
+  AuthorizedRequest,
   BaseCrudRequestInterceptor,
   EntityQuery,
   FindAccountParams,
@@ -126,11 +128,12 @@ export class NotificationController {
     description:
       'Account <accountId> identity is invalid - public key / bad signature/public key size / Invalid signature',
   })
+  @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
   @Patch('/account-notifications/read-all')
-  async readAccountNotifications(@Body() body: AccountBearer): Promise<void> {
+  async readAccountNotifications(@Req() req: AuthorizedRequest): Promise<void> {
     await this.accountNotificationService.readAccountNotifications(
-      body.accountId,
+      req.accountId,
     );
   }
 
@@ -142,13 +145,14 @@ export class NotificationController {
     description:
       'Account <accountId> identity is invalid - public key / bad signature/public key size / Invalid signature',
   })
+  @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
   @Patch('/account-notifications/archive-all')
   async archiveAccountNotifications(
-    @Body() body: AccountBearer,
+    @Req() req: AuthorizedRequest,
   ): Promise<void> {
     await this.accountNotificationService.archiveAccountNotifications(
-      body.accountId,
+      req.accountId,
     );
   }
 
@@ -168,6 +172,7 @@ export class NotificationController {
     description:
       'Account <accountId> identity is invalid - public key / bad signature/public key size / Invalid signature',
   })
+  @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
   @Patch('/account-notifications/:id')
   async updateAccountNotification(
@@ -206,12 +211,14 @@ export class NotificationController {
     description:
       'Account <accountId> identity is invalid - public key / bad signature/public key size / Invalid signature',
   })
+  @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
   @Post('/notification-settings')
   async setNotificationSettings(
+    @Req() req: AuthorizedRequest,
     @Body() body: CreateAccountNotificationSettingsDto,
   ): Promise<AccountNotificationSettings> {
-    return this.accountNotificationSettingsService.create(body);
+    return this.accountNotificationSettingsService.create(req.accountId, body);
   }
 
   @ApiParam({

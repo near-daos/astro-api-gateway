@@ -17,12 +17,13 @@ export class AccountNotificationSettingsService extends TypeOrmCrudService<Accou
   }
 
   async create(
+    accountId: string,
     dto: CreateAccountNotificationSettingsDto,
   ): Promise<AccountNotificationSettings> {
-    const id = buildAccountNotificationSettingsId(dto.accountId, dto.daoId);
+    const id = buildAccountNotificationSettingsId(accountId, dto.daoId);
     return this.accountNotificationSettingsRepository.save({
       id,
-      accountId: dto.accountId,
+      accountId,
       daoId: dto.daoId,
       types: dto.types,
       mutedUntilTimestamp: Number(dto.mutedUntilTimestamp),
