@@ -36,10 +36,11 @@ public class AccountEmailSendVerificationApiTests extends BaseTest {
 
 	@ParameterizedTest
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("Get HTTP 403 for email verification with invalid 'publicKey' parameter")
+	@Story("Get HTTP 403 for account email verification with invalid 'publicKey' parameter")
+	@DisplayName("Get HTTP 403 for account email verification with invalid 'publicKey' parameter")
 	@NullAndEmptySource
 	@CsvSource({"invalidPublicKey"})
-	void getHttp403ForValidationWithInvalidPublicKeyParam(String publicKey) {
+	void getHttp403ForAccountEmailVerificationWithInvalidPublicKeyParam(String publicKey) {
 		accountApiSteps.sendEmailVerificationCode(accountId, publicKey, accountSignature)
 				.then()
 				.statusCode(HTTP_FORBIDDEN)
@@ -47,4 +48,21 @@ public class AccountEmailSendVerificationApiTests extends BaseTest {
 				      "message", equalTo("Account astro-automation-reserved6.testnet identity is invalid - public key"),
 				      "error", equalTo("Forbidden"));
 	}
+
+	@ParameterizedTest
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 403 for account email verification with invalid 'accountId' parameter")
+	@DisplayName("Get HTTP 403 for account email verification with invalid 'accountId' parameter")
+	@CsvSource({"astro-automation.testnet", "another-magic.near", "test-dao-1641395769436.sputnikv2.testnet"})
+	void getHttp403ForAccountEmailVerificationWithInvalidAccountIdParam(String accountId) {
+		String errorMessage = String.format("Account %s identity is invalid - public key", accountId);
+
+		accountApiSteps.sendEmailVerificationCode(accountId, accountPublicKey, accountSignature)
+				.then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo(errorMessage),
+				      "error", equalTo("Forbidden"));
+	}
+
 }
