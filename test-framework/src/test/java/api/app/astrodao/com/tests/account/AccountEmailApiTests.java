@@ -27,7 +27,6 @@ import static org.hamcrest.Matchers.equalTo;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class AccountEmailApiTests extends BaseTest {
 	private final AccountApiSteps accountApiSteps;
-	private final DisposableEmailApiSteps disposableEmailApiSteps;
 	public final static String EMPTY_STRING = "";
 	String email = "test-web-mail@invalidwebmail.com";
 
