@@ -78,4 +78,18 @@ public class AccountEmailSendVerificationApiTests extends BaseTest {
 				      "message", equalTo("Invalid signature"),
 				      "error", equalTo("Forbidden"));
 	}
+
+	@ParameterizedTest
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 403 for account email verification with null and empty 'accountId' parameter")
+	@DisplayName("Get HTTP 403 for account email verification with null and empty 'accountId' parameter")
+	@NullAndEmptySource
+	void getHttp403ForAccountEmailVerificationWithNullAndEmptyAccountIdParam(String accountId) {
+		accountApiSteps.sendEmailVerificationCode(accountId, accountPublicKey, accountSignature)
+				.then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo("Authorization header is invalid"),
+				      "error", equalTo("Forbidden"));
+	}
 }
