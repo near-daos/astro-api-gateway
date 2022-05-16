@@ -83,8 +83,11 @@ export class CommentsController {
   @UseGuards(ThrottlerGuard)
   @UseGuards(AccountAccessGuard)
   @Post('/')
-  async create(@Body() commentDto: CommentDto): Promise<Comment> {
-    return this.commentService.create(commentDto);
+  async create(
+    @Req() req: AuthorizedRequest,
+    @Body() commentDto: CommentDto,
+  ): Promise<Comment> {
+    return this.commentService.create(req.accountId, commentDto);
   }
 
   @ApiResponse({

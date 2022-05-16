@@ -28,7 +28,7 @@ export class CommentService extends TypeOrmCrudService<Comment> {
     super(commentRepository);
   }
 
-  async create(commentDto: CommentDto): Promise<Comment> {
+  async create(accountId: string, commentDto: CommentDto): Promise<Comment> {
     if (commentDto.contextType === CommentContextType.Proposal) {
       const proposal = await this.proposalService.findOne(commentDto.contextId);
 
@@ -38,7 +38,7 @@ export class CommentService extends TypeOrmCrudService<Comment> {
         );
       }
 
-      return this.createDaoComment(proposal.daoId, commentDto);
+      return this.createDaoComment(accountId, proposal.daoId, commentDto);
     }
 
     if (commentDto.contextType === CommentContextType.BountyContext) {
@@ -52,16 +52,18 @@ export class CommentService extends TypeOrmCrudService<Comment> {
         );
       }
 
-      return this.createDaoComment(bountyContext.daoId, commentDto);
+      return this.createDaoComment(accountId, bountyContext.daoId, commentDto);
     }
   }
 
   private async createDaoComment(
+    accountId: string,
     daoId: string,
     commentDto: CommentDto,
   ): Promise<Comment> {
     const comment = await this.commentRepository.save({
       ...commentDto,
+      accountId,
       daoId,
     });
 
