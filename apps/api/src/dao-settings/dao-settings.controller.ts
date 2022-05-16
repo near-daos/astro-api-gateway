@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Param, Patch, UseGuards } from '@nestjs/common';
 import {
+  ApiBearerAuth,
   ApiForbiddenResponse,
   ApiParam,
   ApiResponse,
@@ -40,6 +41,7 @@ export class DaoSettingsController {
     description:
       'Account <accountId> identity is invalid - public key / bad signature/public key size / Invalid signature',
   })
+  @ApiBearerAuth()
   @UseGuards(AccountAccessGuard, CouncilMemberGuard)
   @Patch('/:daoId/settings')
   async patchSettings(
@@ -59,6 +61,7 @@ export class DaoSettingsController {
     description:
       'Account <accountId> identity is invalid - public key / bad signature/public key size / Invalid signature',
   })
+  @ApiBearerAuth()
   @UseGuards(AccountAccessGuard, CouncilMemberGuard)
   @Patch('/:daoId/settings/:key')
   async patchSettingsParam(

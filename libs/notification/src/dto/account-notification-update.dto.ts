@@ -1,8 +1,7 @@
-import { AccountBearer } from '@sputnik-v2/common';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsBoolean } from 'class-validator';
 
-export class UpdateAccountNotificationDto extends AccountBearer {
+export class UpdateAccountNotificationDto {
   @ApiProperty()
   @IsBoolean()
   isMuted: boolean;

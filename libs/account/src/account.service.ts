@@ -52,25 +52,29 @@ export class AccountService {
   }
 
   async createAccountEmail(
+    accountId: string,
     accountEmailDto: AccountEmailDto,
   ): Promise<AccountResponse> {
     await this.accountRepository.save({
       ...accountEmailDto,
+      accountId,
       isEmailVerified: false,
     });
-    await this.createNotifiAlert(accountEmailDto.accountId);
-    return this.getAccount(accountEmailDto.accountId);
+    await this.createNotifiAlert(accountId);
+    return this.getAccount(accountId);
   }
 
   async createAccountPhone(
+    accountId: string,
     accountPhoneDto: AccountPhoneDto,
   ): Promise<AccountResponse> {
     await this.accountRepository.save({
       ...accountPhoneDto,
+      accountId,
       isPhoneVerified: false,
     });
-    await this.createNotifiAlert(accountPhoneDto.accountId);
-    return this.getAccount(accountPhoneDto.accountId);
+    await this.createNotifiAlert(accountId);
+    return this.getAccount(accountId);
   }
 
   async createNotifiAlert(accountId: string): Promise<Account> {

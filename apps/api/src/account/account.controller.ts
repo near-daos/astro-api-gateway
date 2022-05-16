@@ -4,11 +4,13 @@ import {
   Get,
   Param,
   Post,
+  Req,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiParam,
@@ -25,7 +27,7 @@ import {
 } from '@sputnik-v2/account';
 import {
   AccountAccessGuard,
-  AccountBearer,
+  AuthorizedRequest,
   FindAccountParams,
   HttpCacheInterceptor,
   ValidAccountGuard,
@@ -69,12 +71,17 @@ export class AccountController {
   @ApiBadRequestResponse({
     description: 'Invalid email provided',
   })
+  @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
   @Post('/email')
   async setAccountEmail(
+    @Req() req: AuthorizedRequest,
     @Body() accountEmailDto: AccountEmailDto,
   ): Promise<AccountResponse> {
-    return this.accountService.createAccountEmail(accountEmailDto);
+    return this.accountService.createAccountEmail(
+      req.accountId,
+      accountEmailDto,
+    );
   }
 
   @ApiResponse({
@@ -90,12 +97,13 @@ export class AccountController {
     description:
       'No email found for account / Email is already verified / Email verification already sent. Could be resend after 60 seconds',
   })
+  @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
   @Post('/email/send-verification')
   async accountEmailSendVerification(
-    @Body() body: AccountBearer,
+    @Req() req: AuthorizedRequest,
   ): Promise<VerificationStatus> {
-    return this.accountService.sendEmailVerification(body.accountId);
+    return this.accountService.sendEmailVerification(req.accountId);
   }
 
   @ApiResponse({
@@ -109,13 +117,15 @@ export class AccountController {
   @ApiBadRequestResponse({
     description: 'No email found for account / Invalid verification code',
   })
+  @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
   @Post('/email/verify')
   async verifyEmail(
+    @Req() req: AuthorizedRequest,
     @Body() accountVerificationDto: AccountVerificationDto,
   ): Promise<void> {
     return this.accountService.verifyEmail(
-      accountVerificationDto.accountId,
+      req.accountId,
       accountVerificationDto.code,
     );
   }
@@ -155,12 +165,17 @@ export class AccountController {
   @ApiBadRequestResponse({
     description: 'Invalid phone provided',
   })
+  @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
   @Post('/phone')
   async setAccountPhone(
+    @Req() req: AuthorizedRequest,
     @Body() accountPhoneDto: AccountPhoneDto,
   ): Promise<AccountResponse> {
-    return this.accountService.createAccountPhone(accountPhoneDto);
+    return this.accountService.createAccountPhone(
+      req.accountId,
+      accountPhoneDto,
+    );
   }
 
   @ApiResponse({
@@ -176,12 +191,13 @@ export class AccountController {
     description:
       'No phone number found for account / Phone is already verified / Phone verification already sent. Could be resend after 60 seconds',
   })
+  @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
   @Post('/phone/send-verification')
   async accountPhoneSendVerification(
-    @Body() body: AccountBearer,
+    @Req() req: AuthorizedRequest,
   ): Promise<VerificationStatus> {
-    return this.accountService.sendPhoneVerification(body.accountId);
+    return this.accountService.sendPhoneVerification(req.accountId);
   }
 
   @ApiResponse({
@@ -196,13 +212,15 @@ export class AccountController {
     description:
       'No phone number found for account / Invalid verification code',
   })
+  @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
   @Post('/phone/verify')
   async verifyPhone(
+    @Req() req: AuthorizedRequest,
     @Body() accountVerificationDto: AccountVerificationDto,
   ): Promise<void> {
     return this.accountService.verifyPhone(
-      accountVerificationDto.accountId,
+      req.accountId,
       accountVerificationDto.code,
     );
   }

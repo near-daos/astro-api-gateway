@@ -1,7 +1,6 @@
-import { AccountBearer } from '@sputnik-v2/common';
 import { ApiProperty } from '@nestjs/swagger';
 
-export class UpdateBountyContextDto extends AccountBearer {
+export class UpdateBountyContextDto {
   @ApiProperty()
   daoId: string;
 
