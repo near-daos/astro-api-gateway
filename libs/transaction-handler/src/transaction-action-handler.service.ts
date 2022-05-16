@@ -232,7 +232,8 @@ export class TransactionActionHandlerService {
   }
 
   async handleActProposal(txAction: TransactionAction) {
-    const { receiverId, signerId, transactionHash, args, timestamp } = txAction;
+    const { receiverId, signerId, transactionHash, args, timestamp, status } =
+      txAction;
     const dao = await this.daoService.findOne(receiverId);
     const daoContract = this.nearApiService.getContract(
       'sputnikDao',
@@ -264,6 +265,7 @@ export class TransactionActionHandlerService {
           receiverId,
           transactionHash,
           timestamp,
+          status,
         });
         break;
 
@@ -311,6 +313,7 @@ export class TransactionActionHandlerService {
     receiverId,
     transactionHash,
     timestamp,
+    status,
   }) {
     const state = await this.nearApiService.getAccountState(receiverId);
     const proposalKindType = proposal.kind?.kind.type;
@@ -374,6 +377,8 @@ export class TransactionActionHandlerService {
           );
         }, 30000);
       }
+
+      proposal.failure = status?.Failure;
     }
 
     this.logger.log(`Updating Proposal: ${proposal.id} due to transaction`);

@@ -104,6 +104,10 @@ export class Proposal extends TransactionEntity {
   @Column({ type: 'jsonb' })
   votes: Record<string, Vote>;
 
+  @ApiProperty()
+  @Column({ type: 'simple-json', nullable: true })
+  failure: Record<string, any>;
+
   @ApiProperty({ type: [ProposalAction] })
   @OneToMany(() => ProposalAction, (action) => action.proposal, {
     cascade: true,
