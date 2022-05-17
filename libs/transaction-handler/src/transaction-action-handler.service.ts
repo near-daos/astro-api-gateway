@@ -17,7 +17,7 @@ import {
 import { Transaction } from '@sputnik-v2/near-indexer';
 import { BountyContextService, BountyService } from '@sputnik-v2/bounty';
 import { EventService } from '@sputnik-v2/event';
-import { btoaJSON, buildBountyId, buildProposalId } from '@sputnik-v2/utils';
+import { buildBountyId, buildProposalId } from '@sputnik-v2/utils';
 
 import {
   castActProposal,
