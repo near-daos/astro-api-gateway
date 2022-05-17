@@ -17,7 +17,7 @@ import {
 import { Transaction } from '@sputnik-v2/near-indexer';
 import { BountyContextService, BountyService } from '@sputnik-v2/bounty';
 import { EventService } from '@sputnik-v2/event';
-import { btoaJSON, buildBountyId, buildProposalId } from '@sputnik-v2/utils';
+import { buildBountyId, buildProposalId } from '@sputnik-v2/utils';
 
 import {
   castActProposal,
@@ -137,15 +137,13 @@ export class TransactionActionHandlerService {
   async handleCreateDao(txAction: TransactionAction) {
     const { signerId, transactionHash, args, timestamp } = txAction;
     const { contractName } = this.configService.get('near');
-    const daoArgs = btoaJSON(args.args);
     const daoId = `${args.name}.${contractName}`;
-    const state = await this.nearApiService.getAccountState(daoId);
+    const daoInfo = await this.sputnikService.getDaoInfo(daoId);
     const dao = castCreateDao({
       signerId,
       transactionHash,
       daoId,
-      amount: state.amount,
-      args: daoArgs,
+      daoInfo,
       timestamp,
     });
 

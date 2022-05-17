@@ -52,26 +52,25 @@ export function castCreateDao({
   signerId,
   transactionHash,
   daoId,
-  amount,
-  args,
+  daoInfo,
   timestamp = getBlockTimestamp(),
 }): SputnikDaoDto {
   let metadata;
   try {
-    metadata = JSON.parse(decodeBase64(args.config.metadata));
+    metadata = JSON.parse(decodeBase64(daoInfo.config.metadata));
   } catch (err) {}
 
   return {
     id: daoId,
-    config: args.config,
-    ...castDaoPolicy({ daoId, daoPolicy: args.policy }),
+    config: daoInfo.config,
+    ...castDaoPolicy({ daoId, daoPolicy: daoInfo.policy }),
     metadata,
-    amount: Number(amount),
+    amount: Number(daoInfo.amount),
     status: DaoStatus.Active,
-    totalSupply: '0',
-    lastBountyId: 0,
-    lastProposalId: 0,
-    stakingContract: '',
+    totalSupply: daoInfo.totalSupply,
+    lastBountyId: daoInfo.lastBountyId,
+    lastProposalId: daoInfo.lastProposalId,
+    stakingContract: daoInfo.stakingContract,
     numberOfAssociates: 0,
     link: '',
     description: '',
