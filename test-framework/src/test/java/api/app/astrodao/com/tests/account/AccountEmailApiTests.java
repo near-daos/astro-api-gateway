@@ -64,11 +64,11 @@ public class AccountEmailApiTests extends BaseTest {
 
 	@ParameterizedTest
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("Get HTTP 403 for account email with invalid 'publicKey' parameter")
-	@DisplayName("Get HTTP 403 for account email with invalid 'publicKey' parameter")
+	@Story("Get HTTP 403 for account email with null and invalid 'publicKey' parameter")
+	@DisplayName("Get HTTP 403 for account email with null and invalid 'publicKey' parameter")
 	@NullSource
 	@CsvSource({"invalidPublicKey"})
-	void getHttp403ForAccountEmailWithInvalidPublicKeyParam(String publicKey) {
+	void getHttp403ForAccountEmailWithNullAndInvalidPublicKeyParam(String publicKey) {
 		String authToken = Base64Utils.encodeAuthToken(accountId, publicKey, accountSignature);
 
 		accountApiSteps.setAccountEmail(authToken, email)
