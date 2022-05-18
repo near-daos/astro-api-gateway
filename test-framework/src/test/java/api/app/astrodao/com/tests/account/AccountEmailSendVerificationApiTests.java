@@ -116,4 +116,19 @@ public class AccountEmailSendVerificationApiTests extends BaseTest {
 				      "message", equalTo("Authorization header payload is invalid"),
 				      "error", equalTo("Forbidden"));
 	}
+
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 403 for account email verification with empty 'publicKey' parameter")
+	@DisplayName("Get HTTP 403 for account email verification with empty 'publicKey' parameter")
+	void getHttp403ForAccountEmailVerificationWithEmptyPublicKeyParam() {
+		String authToken = Base64Utils.encodeAuthToken(accountId, EMPTY_STRING, accountSignature);
+
+		accountApiSteps.sendEmailVerificationCode(authToken)
+				.then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo("Authorization header payload is invalid"),
+				      "error", equalTo("Forbidden"));
+	}
 }
