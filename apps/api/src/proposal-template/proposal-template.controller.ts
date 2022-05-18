@@ -9,7 +9,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import {
-  ApiBody,
+  ApiBearerAuth,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiParam,
@@ -20,7 +20,7 @@ import {
   ProposalTemplate,
   ProposalTemplateService,
 } from '@sputnik-v2/proposal-template';
-import { AccountAccessGuard, AccountBearer } from '@sputnik-v2/common';
+import { AccountAccessGuard } from '@sputnik-v2/common';
 import { CouncilMemberGuard } from '../guards/council-member.guard';
 import { ProposalTemplateBodyDto } from './dto/proposal-template-body.dto';
 
@@ -67,6 +67,7 @@ export class ProposalTemplateController {
   @ApiNotFoundResponse({
     description: 'DAO <daoId> does not exist',
   })
+  @ApiBearerAuth()
   @UseGuards(AccountAccessGuard, CouncilMemberGuard)
   @Post('/:daoId/proposal-templates')
   async createProposalTemplate(
@@ -101,6 +102,7 @@ export class ProposalTemplateController {
   @ApiNotFoundResponse({
     description: 'DAO <daoId> or proposal template <id> does not exist',
   })
+  @ApiBearerAuth()
   @UseGuards(AccountAccessGuard, CouncilMemberGuard)
   @Patch('/:daoId/proposal-templates/:id')
   async updateProposalTemplate(
@@ -124,7 +126,6 @@ export class ProposalTemplateController {
     name: 'id',
     type: String,
   })
-  @ApiBody({ type: AccountBearer })
   @ApiResponse({
     status: 200,
     description: 'Proposal template deleted',
@@ -136,6 +137,7 @@ export class ProposalTemplateController {
   @ApiNotFoundResponse({
     description: 'DAO <daoId> or proposal template <id> does not exist',
   })
+  @ApiBearerAuth()
   @UseGuards(AccountAccessGuard, CouncilMemberGuard)
   @Delete('/:daoId/proposal-templates/:id')
   async deleteProposalTemplate(

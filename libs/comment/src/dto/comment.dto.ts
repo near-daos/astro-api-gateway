@@ -1,9 +1,8 @@
-import { AccountBearer } from '@sputnik-v2/common';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsNotEmpty, IsString, MaxLength } from 'class-validator';
 import { CommentContextType } from '@sputnik-v2/comment';
 
-export class CommentDto extends AccountBearer {
+export class CommentDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()

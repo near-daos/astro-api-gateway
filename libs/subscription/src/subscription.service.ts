@@ -14,8 +14,11 @@ export class SubscriptionService {
     private readonly subscriptionRepository: Repository<Subscription>,
   ) {}
 
-  async create(addSubscriptionDto: SubscriptionDto): Promise<Subscription> {
-    const { accountId, daoId } = addSubscriptionDto;
+  async create(
+    accountId: string,
+    addSubscriptionDto: SubscriptionDto,
+  ): Promise<Subscription> {
+    const { daoId } = addSubscriptionDto;
 
     const subscription = new Subscription();
     subscription.id = buildSubscriptionId(daoId, accountId);
