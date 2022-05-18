@@ -79,6 +79,22 @@ public class AccountEmailSendVerificationApiTests extends BaseTest {
 	void getHttp403ForAccountEmailVerificationWithInvalidSignatureParam() {
 		String invalidSignature = accountSignature.substring(7);
 		String authToken = Base64Utils.encodeAuthToken(accountId, accountPublicKey, invalidSignature);
+
+		accountApiSteps.sendEmailVerificationCode(authToken)
+				.then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo("Invalid signature"),
+				      "error", equalTo("Forbidden"));
+	}
+
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 403 for account email verification with null 'signature' parameter")
+	@DisplayName("Get HTTP 403 for account email verification with null 'signature' parameter")
+	void getHttp403ForAccountEmailVerificationWithNullSignatureParam() {
+		String authToken = Base64Utils.encodeAuthToken(accountId, accountPublicKey, null);
+
 		accountApiSteps.sendEmailVerificationCode(authToken)
 				.then()
 				.statusCode(HTTP_FORBIDDEN)
@@ -93,6 +109,7 @@ public class AccountEmailSendVerificationApiTests extends BaseTest {
 	@DisplayName("Get HTTP 403 for account email verification with empty 'accountId' parameter")
 	void getHttp403ForAccountEmailVerificationWithEmptyAccountIdParam() {
 		String authToken = Base64Utils.encodeAuthToken(EMPTY_STRING, accountPublicKey, accountSignature);
+
 		accountApiSteps.sendEmailVerificationCode(authToken)
 				.then()
 				.statusCode(HTTP_FORBIDDEN)
@@ -101,13 +118,12 @@ public class AccountEmailSendVerificationApiTests extends BaseTest {
 				      "error", equalTo("Forbidden"));
 	}
 
-	@ParameterizedTest
-	@NullAndEmptySource
+	@Test
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("Get HTTP 403 for account email verification with null and empty 'signature' parameter")
-	@DisplayName("Get HTTP 403 for account email verification with null and empty 'signature' parameter")
-	void getHttp403ForAccountEmailVerificationWithNullAndEmptySignatureParam(String signature) {
-		String authToken = Base64Utils.encodeAuthToken(EMPTY_STRING, accountPublicKey, signature);
+	@Story("Get HTTP 403 for account email verification with empty 'signature' parameter")
+	@DisplayName("Get HTTP 403 for account email verification with empty 'signature' parameter")
+	void getHttp403ForAccountEmailVerificationWithEmptySignatureParam() {
+		String authToken = Base64Utils.encodeAuthToken(accountId, accountPublicKey, EMPTY_STRING);
 
 		accountApiSteps.sendEmailVerificationCode(authToken)
 				.then()
