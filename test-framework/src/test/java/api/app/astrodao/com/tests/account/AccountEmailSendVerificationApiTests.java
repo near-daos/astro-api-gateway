@@ -1,5 +1,6 @@
 package api.app.astrodao.com.tests.account;
 
+import api.app.astrodao.com.core.utils.Base64Utils;
 import api.app.astrodao.com.steps.AccountApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import io.qameta.allure.*;
@@ -11,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.NullSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -24,6 +26,7 @@ import static org.hamcrest.Matchers.equalTo;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class AccountEmailSendVerificationApiTests extends BaseTest {
 	private final AccountApiSteps accountApiSteps;
+	public final static String EMPTY_STRING = "";
 
 	@Value("${accounts.account3.accountId}")
 	private String accountId;
@@ -36,12 +39,14 @@ public class AccountEmailSendVerificationApiTests extends BaseTest {
 
 	@ParameterizedTest
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("Get HTTP 403 for account email verification with invalid 'publicKey' parameter")
-	@DisplayName("Get HTTP 403 for account email verification with invalid 'publicKey' parameter")
-	@NullAndEmptySource
+	@Story("Get HTTP 403 for account email verification with null and invalid 'publicKey' parameter")
+	@DisplayName("Get HTTP 403 for account email verification with null and invalid 'publicKey' parameter")
+	@NullSource
 	@CsvSource({"invalidPublicKey"})
-	void getHttp403ForAccountEmailVerificationWithInvalidPublicKeyParam(String publicKey) {
-		accountApiSteps.sendEmailVerificationCode(accountId, publicKey, accountSignature)
+	void getHttp403ForAccountEmailVerificationWithNullAndInvalidPublicKeyParam(String publicKey) {
+		String authToken = Base64Utils.encodeAuthToken(accountId, publicKey, accountSignature);
+
+		accountApiSteps.sendEmailVerificationCode(authToken)
 				.then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
@@ -50,14 +55,16 @@ public class AccountEmailSendVerificationApiTests extends BaseTest {
 	}
 
 	@ParameterizedTest
+	@NullSource
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("Get HTTP 403 for account email verification with invalid 'accountId' parameter")
-	@DisplayName("Get HTTP 403 for account email verification with invalid 'accountId' parameter")
+	@Story("Get HTTP 403 for account email verification with null and invalid 'accountId' parameter")
+	@DisplayName("Get HTTP 403 for account email verification with null and invalid 'accountId' parameter")
 	@CsvSource({"astro-automation.testnet", "another-magic.near", "test-dao-1641395769436.sputnikv2.testnet"})
-	void getHttp403ForAccountEmailVerificationWithInvalidAccountIdParam(String accountId) {
+	void getHttp403ForAccountEmailVerificationWithNullAndInvalidAccountIdParam(String accountId) {
+		String authToken = Base64Utils.encodeAuthToken(accountId, accountPublicKey, accountSignature);
 		String errorMessage = String.format("Account %s identity is invalid - public key", accountId);
 
-		accountApiSteps.sendEmailVerificationCode(accountId, accountPublicKey, accountSignature)
+		accountApiSteps.sendEmailVerificationCode(authToken)
 				.then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
@@ -71,7 +78,8 @@ public class AccountEmailSendVerificationApiTests extends BaseTest {
 	@DisplayName("Get HTTP 403 for account email verification with invalid 'signature' parameter")
 	void getHttp403ForAccountEmailVerificationWithInvalidSignatureParam() {
 		String invalidSignature = accountSignature.substring(7);
-		accountApiSteps.sendEmailVerificationCode(accountId, accountPublicKey, invalidSignature)
+		String authToken = Base64Utils.encodeAuthToken(accountId, accountPublicKey, invalidSignature);
+		accountApiSteps.sendEmailVerificationCode(authToken)
 				.then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
@@ -79,17 +87,17 @@ public class AccountEmailSendVerificationApiTests extends BaseTest {
 				      "error", equalTo("Forbidden"));
 	}
 
-	@ParameterizedTest
+	@Test
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("Get HTTP 403 for account email verification with null and empty 'accountId' parameter")
-	@DisplayName("Get HTTP 403 for account email verification with null and empty 'accountId' parameter")
-	@NullAndEmptySource
-	void getHttp403ForAccountEmailVerificationWithNullAndEmptyAccountIdParam(String accountId) {
-		accountApiSteps.sendEmailVerificationCode(accountId, accountPublicKey, accountSignature)
+	@Story("Get HTTP 403 for account email verification with empty 'accountId' parameter")
+	@DisplayName("Get HTTP 403 for account email verification with empty 'accountId' parameter")
+	void getHttp403ForAccountEmailVerificationWithEmptyAccountIdParam() {
+		String authToken = Base64Utils.encodeAuthToken(EMPTY_STRING, accountPublicKey, accountSignature);
+		accountApiSteps.sendEmailVerificationCode(authToken)
 				.then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
-				      "message", equalTo("Authorization header is invalid"),
+				      "message", equalTo("Authorization header payload is invalid"),
 				      "error", equalTo("Forbidden"));
 	}
 
@@ -99,11 +107,13 @@ public class AccountEmailSendVerificationApiTests extends BaseTest {
 	@Story("Get HTTP 403 for account email verification with null and empty 'signature' parameter")
 	@DisplayName("Get HTTP 403 for account email verification with null and empty 'signature' parameter")
 	void getHttp403ForAccountEmailVerificationWithNullAndEmptySignatureParam(String signature) {
-		accountApiSteps.sendEmailVerificationCode(accountId, accountPublicKey, signature)
+		String authToken = Base64Utils.encodeAuthToken(EMPTY_STRING, accountPublicKey, signature);
+
+		accountApiSteps.sendEmailVerificationCode(authToken)
 				.then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
-				      "message", equalTo("Invalid signature"),
+				      "message", equalTo("Authorization header payload is invalid"),
 				      "error", equalTo("Forbidden"));
 	}
 }
