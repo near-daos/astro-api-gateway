@@ -1,6 +1,5 @@
 package api.app.astrodao.com.tests.comments;
 
-import api.app.astrodao.com.core.dto.api.comments.CreatedComment;
 import api.app.astrodao.com.core.utils.Base64Utils;
 import api.app.astrodao.com.core.utils.WaitUtils;
 import api.app.astrodao.com.openapi.models.Comment;
@@ -434,10 +433,10 @@ public class CommentsApiTests extends BaseTest {
         String commentMsg = WaitUtils.getEpochMillis() + faker.lorem().characters(15, 20);
         String invalidAuthToken = Base64Utils.encodeAuthToken(account1Id, account2PublicKey, account1Signature);
 
-        CreatedComment createdComment = commentsApiSteps.createComment(testProposal, contextType, commentMsg, account1AuthToken)
+        Comment createdComment = commentsApiSteps.createComment(testProposal, contextType, commentMsg, account1AuthToken)
                 .then()
                 .statusCode(HTTP_CREATED)
-                .extract().as(CreatedComment.class);
+                .extract().as(Comment.class);
 
         commentsApiSteps.deleteComment(createdComment.getId(), reason, invalidAuthToken)
                 .then()
