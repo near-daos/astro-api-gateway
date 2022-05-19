@@ -1,9 +1,7 @@
 package api.app.astrodao.com.core.controllers;
 
-import api.app.astrodao.com.openapi.models.AccountBearer;
 import api.app.astrodao.com.openapi.models.AccountEmailDto;
 import api.app.astrodao.com.openapi.models.AccountVerificationDto;
-import api.app.astrodao.com.openapi.models.VerificationStatus;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import lombok.RequiredArgsConstructor;
@@ -24,42 +22,33 @@ public class AccountApi {
 				.get(ACCOUNT_ID, accountId);
 	}
 
-	public Response postAccountEmail(String accountId, String publicKey, String signature, String email) {
+	public Response postAccountEmail(String authToken, String email) {
 		AccountEmailDto accountEmailDto = new AccountEmailDto();
-		accountEmailDto.setAccountId(accountId);
-		accountEmailDto.setPublicKey(publicKey);
-		accountEmailDto.setSignature(signature);
 		accountEmailDto.setEmail(email);
 
 		return given().spec(requestSpec)
 				.accept(JSON)
+				.header("Authorization", "Bearer " + authToken)
 				.contentType(JSON)
 				.body(accountEmailDto)
 				.post(ACCOUNT_EMAIL);
 	}
 
-	public Response postSendEmailVerificationCode(String accountId, String publicKey, String signature) {
-		AccountBearer accountBearer = new AccountBearer();
-		accountBearer.setAccountId(accountId);
-		accountBearer.setPublicKey(publicKey);
-		accountBearer.setSignature(signature);
-
+	public Response postSendEmailVerificationCode(String authToken) {
 		return given().spec(requestSpec)
 				.accept(JSON)
+				.header("Authorization", "Bearer " + authToken)
 				.contentType(JSON)
-				.body(accountBearer)
 				.post(ACCOUNT_EMAIL_SEND_VERIFICATION);
 	}
 
-	public Response postVerifyEmail(String accountId, String publicKey, String signature, String code) {
+	public Response postVerifyEmail(String authToken, String code) {
 		AccountVerificationDto accountVerificationDto = new AccountVerificationDto();
-		accountVerificationDto.setAccountId(accountId);
-		accountVerificationDto.setPublicKey(publicKey);
-		accountVerificationDto.setSignature(signature);
 		accountVerificationDto.setCode(code);
 
 		return given().spec(requestSpec)
 				.accept(JSON)
+				.header("Authorization", "Bearer " + authToken)
 				.contentType(JSON)
 				.body(accountVerificationDto)
 				.post(ACCOUNT_EMAIL_VERIFY);

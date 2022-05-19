@@ -20,17 +20,17 @@ public class CommentsApiSteps extends BaseSteps {
     }
 
     @Step("Creating a new comment")
-    public Response createComment(String accountId, String publicKey, String signature, String contextId, String contextType, String message) {
-        return commentsApi.createComment(accountId, publicKey, signature, contextId, contextType, message);
+    public Response createComment(String contextId, String contextType, String message, String authToken) {
+        return commentsApi.createComment(contextId, contextType, message, authToken);
     }
 
     @Step("Creating a new report for a comment")
-    public Response reportComment(String accountId, String publicKey, String signature, BigDecimal commentId, String reason) {
-        return commentsApi.reportComment(accountId, publicKey, signature, commentId, reason);
+    public Response reportComment(BigDecimal commentId, String reason, String authToken) {
+        return commentsApi.reportComment(commentId, reason, authToken);
     }
 
     @Step("Delete an existing comment")
-    public Response deleteComment(String accountId, String publicKey, String signature, BigDecimal commentId, String reason) {
-        return commentsApi.deleteComment(accountId, publicKey, signature, commentId, reason);
+    public Response deleteComment(BigDecimal commentId, String reason, String authToken) {
+        return commentsApi.deleteComment(commentId, reason, authToken);
     }
 }

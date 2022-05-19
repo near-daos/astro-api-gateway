@@ -1,7 +1,7 @@
 package api.app.astrodao.com.tests.account;
 
+import api.app.astrodao.com.core.utils.Base64Utils;
 import api.app.astrodao.com.steps.AccountApiSteps;
-import api.app.astrodao.com.steps.util.DisposableEmailApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import io.qameta.allure.*;
 import lombok.RequiredArgsConstructor;
@@ -11,13 +11,14 @@ import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.NullSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.util.List;
 
-import static java.net.HttpURLConnection.*;
+import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
+import static java.net.HttpURLConnection.HTTP_FORBIDDEN;
 import static org.hamcrest.Matchers.equalTo;
 
 @Tags({@Tag("all"), @Tag("accountEmailApiTests")})
@@ -39,30 +40,21 @@ public class AccountEmailApiTests extends BaseTest {
 	@Value("${accounts.account3.signature}")
 	private String accountSignature;
 
+	@Value("${accounts.account3.token}")
+	private String accountToken;
+
 
 	@ParameterizedTest
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("Get HTTP 403 for account email with null and empty 'accountId' parameter")
-	@DisplayName("Get HTTP 403 for account email with null and empty 'accountId' parameter")
-	@NullAndEmptySource
-	void getHttp403ForAccountEmailWithNullAndEmptyAccountIdParam(String accountId) {
-		accountApiSteps.setAccountEmail(accountId, accountPublicKey, accountSignature, email)
-				.then()
-				.statusCode(HTTP_FORBIDDEN)
-				.body("statusCode", equalTo(HTTP_FORBIDDEN),
-				      "message", equalTo("Authorization header is invalid"),
-				      "error", equalTo("Forbidden"));
-	}
-
-	@ParameterizedTest
-	@Severity(SeverityLevel.CRITICAL)
-	@Story("Get HTTP 403 for account email with invalid 'accountId' parameter")
-	@DisplayName("Get HTTP 403 for account email with invalid 'accountId' parameter")
+	@Story("Get HTTP 403 for account email with null and invalid 'accountId' parameter")
+	@DisplayName("Get HTTP 403 for account email with null and invalid 'accountId' parameter")
+	@NullSource
 	@CsvSource({"astro-automation.testnet", "another-magic.near", "test-dao-1641395769436.sputnikv2.testnet"})
-	void getHttp403ForAccountEmailWithInvalidAccountIdParam(String accountId) {
+	void getHttp403ForAccountEmailWithNullAndInvalidAccountIdParam(String accountId) {
+		String authToken = Base64Utils.encodeAuthToken(accountId, accountPublicKey, accountSignature);
 		String errorMessage = String.format("Account %s identity is invalid - public key", accountId);
 
-		accountApiSteps.setAccountEmail(accountId, accountPublicKey, accountSignature, email)
+		accountApiSteps.setAccountEmail(authToken, email)
 				.then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
@@ -72,12 +64,14 @@ public class AccountEmailApiTests extends BaseTest {
 
 	@ParameterizedTest
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("Get HTTP 403 for account email with invalid 'publicKey' parameter")
-	@DisplayName("Get HTTP 403 for account email with invalid 'publicKey' parameter")
-	@NullAndEmptySource
+	@Story("Get HTTP 403 for account email with null and invalid 'publicKey' parameter")
+	@DisplayName("Get HTTP 403 for account email with null and invalid 'publicKey' parameter")
+	@NullSource
 	@CsvSource({"invalidPublicKey"})
-	void getHttp403ForAccountEmailWithInvalidPublicKeyParam(String publicKey) {
-		accountApiSteps.setAccountEmail(accountId, publicKey, accountSignature, email)
+	void getHttp403ForAccountEmailWithNullAndInvalidPublicKeyParam(String publicKey) {
+		String authToken = Base64Utils.encodeAuthToken(accountId, publicKey, accountSignature);
+
+		accountApiSteps.setAccountEmail(authToken, email)
 				.then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
@@ -91,7 +85,9 @@ public class AccountEmailApiTests extends BaseTest {
 	@DisplayName("Get HTTP 403 for account email with invalid 'signature' parameter")
 	void getHttp403ForAccountEmailWithInvalidSignatureParam() {
 		String invalidSignature = accountSignature.substring(10);
-		accountApiSteps.setAccountEmail(accountId, accountPublicKey, invalidSignature, email)
+		String authToken = Base64Utils.encodeAuthToken(accountId, accountPublicKey, invalidSignature);
+
+		accountApiSteps.setAccountEmail(authToken, email)
 				.then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
@@ -99,13 +95,14 @@ public class AccountEmailApiTests extends BaseTest {
 				      "error", equalTo("Forbidden"));
 	}
 
-	@ParameterizedTest
-	@NullAndEmptySource
+	@Test
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("Get HTTP 403 for account email with null and empty 'signature' parameter")
-	@DisplayName("Get HTTP 403 for account email with null and empty 'signature' parameter")
-	void getHttp403ForAccountEmailWithNullAndEmptySignatureParam(String signature) {
-		accountApiSteps.setAccountEmail(accountId, accountPublicKey, signature, email)
+	@Story("Get HTTP 403 for account email with null 'signature' parameter")
+	@DisplayName("Get HTTP 403 for account email with null 'signature' parameter")
+	void getHttp403ForAccountEmailWithNullSignatureParam() {
+		String authToken = Base64Utils.encodeAuthToken(accountId, accountPublicKey, null);
+
+		accountApiSteps.setAccountEmail(authToken, email)
 				.then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
@@ -120,7 +117,7 @@ public class AccountEmailApiTests extends BaseTest {
 	void getHttp400ForAccountEmailWithEmptyEmailParam() {
 		List<String> errorMessage = List.of("email should not be empty", "email must be an email");
 
-		accountApiSteps.setAccountEmail(accountId, accountPublicKey, accountSignature, EMPTY_STRING)
+		accountApiSteps.setAccountEmail(accountToken, EMPTY_STRING)
 				.then()
 				.statusCode(HTTP_BAD_REQUEST)
 				.body("statusCode", equalTo(HTTP_BAD_REQUEST),
@@ -135,7 +132,7 @@ public class AccountEmailApiTests extends BaseTest {
 	void getHttp400ForAccountEmailWithNullEmailParam() {
 		List<String> errorMessage = List.of("email should not be empty", "email must be an email", "email must be a string");
 
-		accountApiSteps.setAccountEmail(accountId, accountPublicKey, accountSignature, null)
+		accountApiSteps.setAccountEmail(accountToken, null)
 				.then()
 				.statusCode(HTTP_BAD_REQUEST)
 				.body("statusCode", equalTo(HTTP_BAD_REQUEST),
@@ -151,11 +148,56 @@ public class AccountEmailApiTests extends BaseTest {
 	void getHttp400ForAccountEmailWithInvalidEmailParam(String invalidEmail) {
 		List<String> errorMessage = List.of("email must be an email");
 
-		accountApiSteps.setAccountEmail(accountId, accountPublicKey, accountSignature, invalidEmail)
+		accountApiSteps.setAccountEmail(accountToken, invalidEmail)
 				.then()
 				.statusCode(HTTP_BAD_REQUEST)
 				.body("statusCode", equalTo(HTTP_BAD_REQUEST),
 				      "message", equalTo(errorMessage),
 				      "error", equalTo("Bad Request"));
+	}
+
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 403 for account email with empty 'accountId' parameter")
+	@DisplayName("Get HTTP 403 for account email with empty 'accountId' parameter")
+	void getHttp403ForAccountEmailWithEmptyAccountIdParam() {
+		String authToken = Base64Utils.encodeAuthToken(EMPTY_STRING, accountPublicKey, accountSignature);
+
+		accountApiSteps.setAccountEmail(authToken, email)
+				.then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo("Authorization header payload is invalid"),
+				      "error", equalTo("Forbidden"));
+	}
+
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 403 for account email with empty 'publicKey' parameter")
+	@DisplayName("Get HTTP 403 for account email with empty 'publicKey' parameter")
+	void getHttp403ForAccountEmailWithEmptyPublicKeyParam() {
+		String authToken = Base64Utils.encodeAuthToken(accountId, EMPTY_STRING, accountSignature);
+
+		accountApiSteps.setAccountEmail(authToken, email)
+				.then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo("Authorization header payload is invalid"),
+				      "error", equalTo("Forbidden"));
+	}
+
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 403 for account email with empty 'signature' parameter")
+	@DisplayName("Get HTTP 403 for account email with empty 'signature' parameter")
+	void getHttp403ForAccountEmailWithEmptySignatureParam() {
+		String authToken = Base64Utils.encodeAuthToken(accountId, accountPublicKey, EMPTY_STRING);
+
+		accountApiSteps.setAccountEmail(authToken, email)
+				.then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo("Authorization header payload is invalid"),
+				      "error", equalTo("Forbidden"));
 	}
 }

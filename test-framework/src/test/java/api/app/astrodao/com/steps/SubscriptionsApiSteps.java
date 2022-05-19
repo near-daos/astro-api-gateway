@@ -19,19 +19,19 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 public class SubscriptionsApiSteps extends BaseSteps {
     private final SubscriptionsApi subscriptionsApi;
 
-    public void cleanUpSubscriptions(String accountId, String publicKey, String signature) {
+    public void cleanUpSubscriptions(String accountId, String authToken) {
         Response response = subscriptionsApi.accountSubscriptions(accountId);
         assertResponseStatusCode(response, HTTP_OK);
         Subscriptions subscriptions = getResponseDto(response, Subscriptions.class);
         subscriptions.forEach(p -> {
-            Response resp = subscriptionsApi.deleteSubscription(accountId, publicKey, signature, p.getId());
+            Response resp = subscriptionsApi.deleteSubscription(authToken, p.getId());
             assertResponseStatusCode(resp, HTTP_OK);
         });
     }
 
     @Step("User subscribes to DAO")
-    public Response subscribeDao(String accountId, String publicKey, String signature, String daoId) {
-        return subscriptionsApi.subscribeDao(accountId, publicKey, signature, daoId);
+    public Response subscribeDao(String authToken, String daoId) {
+        return subscriptionsApi.subscribeDao(authToken, daoId);
     }
 
     @Step("User get subscriptions")
@@ -40,8 +40,8 @@ public class SubscriptionsApiSteps extends BaseSteps {
     }
 
     @Step("User deletes subscription")
-    public Response deleteSubscription(String accountId, String publicKey, String signature, String daoId) {
-        return subscriptionsApi.deleteSubscription(accountId, publicKey, signature, daoId);
+    public Response deleteSubscription(String authToken, String daoId) {
+        return subscriptionsApi.deleteSubscription(authToken, daoId);
     }
 
     public Subscription getCreatedSubscription(Subscriptions subscriptions, String subscriptionId) {
