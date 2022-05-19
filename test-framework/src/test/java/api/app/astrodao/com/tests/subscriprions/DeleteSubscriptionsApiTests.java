@@ -1,6 +1,7 @@
 package api.app.astrodao.com.tests.subscriprions;
 
 import api.app.astrodao.com.core.dto.api.subscription.Subscriptions;
+import api.app.astrodao.com.core.utils.Base64Utils;
 import api.app.astrodao.com.openapi.models.Subscription;
 import api.app.astrodao.com.steps.SubscriptionsApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
@@ -30,12 +31,13 @@ public class DeleteSubscriptionsApiTests extends BaseTest {
 	@Value("${accounts.account1.publicKey}")
 	private String accountPublicKey;
 
-	@Value("${accounts.account1.signature}")
-	private String accountSignature;
+	@Value("${accounts.account1.token}")
+	private String account1AuthToken;
+
 
 	@BeforeAll
 	public void cleanUpSubscriptions() {
-		subscriptionsApiSteps.cleanUpSubscriptions(accountId, accountPublicKey, accountSignature);
+		subscriptionsApiSteps.cleanUpSubscriptions(accountId, account1AuthToken);
 	}
 
 	@Test
@@ -46,13 +48,13 @@ public class DeleteSubscriptionsApiTests extends BaseTest {
 		String dao = "autotest-dao-1.sputnikv2.testnet";
 		String subscriptionId = String.format("%s-%s", dao, accountId);
 
-		Subscription subscription = subscriptionsApiSteps.subscribeDao(accountId, accountPublicKey, accountSignature, dao).then()
+		Subscription subscription = subscriptionsApiSteps.subscribeDao(account1AuthToken, dao).then()
 				.statusCode(HTTP_CREATED)
 				.extract().as(Subscription.class);
 
 		subscriptionsApiSteps.assertDtoValue(subscription, Subscription::getId, subscriptionId, "id");
 
-		subscriptionsApiSteps.deleteSubscription(accountId, accountPublicKey, accountSignature, subscriptionId).then()
+		subscriptionsApiSteps.deleteSubscription(account1AuthToken, subscriptionId).then()
 						.statusCode(HTTP_OK);
 
 		Subscriptions subscriptions = subscriptionsApiSteps.accountSubscriptions(accountId).then()
@@ -71,7 +73,7 @@ public class DeleteSubscriptionsApiTests extends BaseTest {
 		String subscriptionId = String.format("%s-%s", dao, accountId);
 		String expectedResponse = String.format("Subscription with id %s not found", subscriptionId);
 
-		Response response = subscriptionsApiSteps.deleteSubscription(accountId, accountPublicKey, accountSignature, subscriptionId);
+		Response response = subscriptionsApiSteps.deleteSubscription(account1AuthToken, subscriptionId);
 		subscriptionsApiSteps.assertResponseStatusCode(response, HTTP_NOT_FOUND);
 		subscriptionsApiSteps.assertStringContainsValue(response.body().asString(), expectedResponse);
 	}
@@ -85,8 +87,9 @@ public class DeleteSubscriptionsApiTests extends BaseTest {
 		String subscriptionId = String.format("%s-%s", dao, accountId);
 		String expectedResponse = "Invalid signature";
 		String invalidSignature = faker.lorem().characters(12, 24);
+		String authToken = Base64Utils.encodeAuthToken(accountId, accountPublicKey, invalidSignature);
 
-		Response response = subscriptionsApiSteps.deleteSubscription(accountId, accountPublicKey, invalidSignature, subscriptionId);
+		Response response = subscriptionsApiSteps.deleteSubscription(authToken, subscriptionId);
 		subscriptionsApiSteps.assertResponseStatusCode(response, HTTP_FORBIDDEN);
 		subscriptionsApiSteps.assertStringContainsValue(response.body().asString(), expectedResponse);
 	}
