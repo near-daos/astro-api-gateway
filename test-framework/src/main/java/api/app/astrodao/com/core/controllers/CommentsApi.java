@@ -28,46 +28,40 @@ public class CommentsApi {
                 .get(COMMENTS);
     }
 
-    public Response createComment(String accountId, String publicKey, String signature, String contextId, String contextType, String message) {
+    public Response createComment(String contextId, String contextType, String message, String authToken) {
         CommentDto commentDto = new CommentDto();
-        commentDto.setAccountId(accountId);
-        commentDto.setPublicKey(publicKey);
-        commentDto.setSignature(signature);
         commentDto.setContextId(contextId);
         commentDto.setContextType(contextType);
         commentDto.setMessage(message);
 
         return given().spec(requestSpec)
                 .accept(JSON)
+                .header("Authorization", "Bearer " + authToken)
                 .contentType(JSON)
                 .body(JsonUtils.writeValueAsString(commentDto))
                 .post(COMMENTS);
     }
 
-    public Response reportComment(String accountId, String publicKey, String signature, BigDecimal commentId, String reason) {
+    public Response reportComment(BigDecimal commentId, String reason, String authToken) {
         CommentReportDto commentDto = new CommentReportDto();
-        commentDto.setAccountId(accountId);
-        commentDto.setPublicKey(publicKey);
-        commentDto.setSignature(signature);
         commentDto.setCommentId(commentId);
         commentDto.setReason(reason);
 
         return given().spec(requestSpec)
                 .accept(JSON)
+                .header("Authorization", "Bearer " + authToken)
                 .contentType(JSON)
                 .body(JsonUtils.writeValueAsString(commentDto))
                 .post(COMMENTS_REPORT);
     }
 
-    public Response deleteComment(String accountId, String publicKey, String signature, BigDecimal commentId, String reason) {
+    public Response deleteComment(BigDecimal commentId, String reason, String authToken) {
         CommentDeleteDto commentDto = new CommentDeleteDto();
-        commentDto.setAccountId(accountId);
-        commentDto.setPublicKey(publicKey);
-        commentDto.setSignature(signature);
         commentDto.setReason(reason);
 
         return given().spec(requestSpec)
                 .accept(JSON)
+                .header("Authorization", "Bearer " + authToken)
                 .contentType(JSON)
                 .body(JsonUtils.writeValueAsString(commentDto))
                 .delete(COMMENTS_ID, commentId.toString());
