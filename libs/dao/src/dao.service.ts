@@ -213,7 +213,9 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     const hasTokensVotingPower = dao.policy.roles.some(
       (role) => role.votePolicy?.['*.*']?.weightKind === WeightKind.TokenWeight,
     );
-    const hasCouncil = dao.policy.roles.some((role) => role.name === 'Council');
+    const hasCouncil = dao.policy.roles.some(
+      (role) => role.name.toLowerCase() === 'council',
+    );
 
     if (!canEveryoneAddProposal && !hasTokensVotingPower && !hasCouncil) {
       return DaoVariant.Club;
