@@ -30,11 +30,8 @@ public class AccountEmailVerificationTests extends BaseTest {
 	@Value("${accounts.account3.accountId}")
 	private String accountId;
 
-	@Value("${accounts.account3.publicKey}")
-	private String accountPublicKey;
-
-	@Value("${accounts.account3.signature}")
-	private String accountSignature;
+	@Value("${accounts.account3.token}")
+	private String authToken;
 
 
 	@Test
@@ -47,7 +44,7 @@ public class AccountEmailVerificationTests extends BaseTest {
 		List<String> loginDomain = List.of(email.split("@"));
 
 		//set email
-		AccountResponse accountResponse = accountApiSteps.setAccountEmail(accountId, accountPublicKey, accountSignature, email)
+		AccountResponse accountResponse = accountApiSteps.setAccountEmail(authToken, email)
 				.then()
 				.statusCode(HTTP_CREATED)
 				.extract().as(AccountResponse.class);
@@ -59,7 +56,7 @@ public class AccountEmailVerificationTests extends BaseTest {
 		accountApiSteps.assertDtoValueIsNull(accountResponse, AccountResponse::getIsPhoneVerified, "isPhoneVerified");
 
 		//send-verification code
-		VerificationStatus verificationStatus = accountApiSteps.sendEmailVerificationCode(accountId, accountPublicKey, accountSignature).then()
+		VerificationStatus verificationStatus = accountApiSteps.sendEmailVerificationCode(authToken).then()
 				.statusCode(HTTP_CREATED)
 				.extract().as(VerificationStatus.class);
 
@@ -75,7 +72,7 @@ public class AccountEmailVerificationTests extends BaseTest {
 		String verificationCode = disposableEmailApiSteps.getEmailVerificationCode(loginDomain.get(0), loginDomain.get(1), emailId);
 
 		//verify email
-		accountApiSteps.verifyEmail(accountId, accountPublicKey, accountSignature, verificationCode).then()
+		accountApiSteps.verifyEmail(authToken, verificationCode).then()
 				.statusCode(HTTP_CREATED);
 	}
 }

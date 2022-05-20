@@ -1,6 +1,7 @@
 package api.app.astrodao.com.tests.comments;
 
 import api.app.astrodao.com.core.dto.api.comments.CreatedComment;
+import api.app.astrodao.com.core.utils.Base64Utils;
 import api.app.astrodao.com.core.utils.WaitUtils;
 import api.app.astrodao.com.openapi.models.Comment;
 import api.app.astrodao.com.openapi.models.CommentReport;
@@ -20,6 +21,7 @@ import org.springframework.beans.factory.annotation.Value;
 import java.util.Map;
 
 import static java.net.HttpURLConnection.*;
+import static org.hamcrest.Matchers.equalTo;
 
 @Tags({@Tag("all"), @Tag("commentsReportApiTests")})
 @Epic("Comments")
@@ -42,22 +44,22 @@ public class CommentsReportApiTests extends BaseTest {
 	@Value("${accounts.account1.publicKey}")
 	private String account1PublicKey;
 
-	@Value("${accounts.account1.signature}")
-	private String account1Signature;
+	@Value("${accounts.account1.token}")
+	private String account1AuthToken;
 
 	@Value("${accounts.account2.accountId}")
 	private String account2Id;
 
-	@Value("${accounts.account2.publicKey}")
-	private String account2PublicKey;
-
 	@Value("${accounts.account2.signature}")
 	private String account2Signature;
 
+	@Value("${accounts.account2.token}")
+	private String account2AuthToken;
+
 	@Test
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("User should be to submit new report for a comment")
-	@DisplayName("User should be to submit new report for a comment")
+	@Story("User should be able to submit new report for a comment")
+	@DisplayName("User should be able to submit new report for a comment")
 	void createNewReportForComment() {
 		String contextType = "Proposal";
 		String reason = "Spam";
@@ -68,14 +70,12 @@ public class CommentsReportApiTests extends BaseTest {
 				"s", String.format("{\"message\": \"%s\"}", commentMsg)
 		);
 
-		CreatedComment createdComment = commentsApiSteps.createComment(
-						account1Id, account1PublicKey, account1Signature, testProposal, contextType, commentMsg)
+		Comment createdComment = commentsApiSteps.createComment(testProposal, contextType, commentMsg, account1AuthToken)
 				.then()
 				.statusCode(HTTP_CREATED)
-				.extract().as(CreatedComment.class);
+				.extract().as(Comment.class);
 
-		commentsApiSteps.reportComment(
-				account2Id, account2PublicKey, account2Signature, createdComment.getId(), reason)
+		commentsApiSteps.reportComment(createdComment.getId(), reason, account2AuthToken)
 				.then()
 				.statusCode(HTTP_CREATED);
 
@@ -103,24 +103,25 @@ public class CommentsReportApiTests extends BaseTest {
 
 	@Test
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("User should not be to submit new report for a comment (by using invalid public key)")
-	@DisplayName("User should not be to submit new report for a comment (by using invalid public key)")
-	void createNewReportForCommentWithInvalidPublicKey() {
+	@Story("User should not be able to submit new report for a comment (by using invalid public key in authToken)")
+	@DisplayName("User should not be able to submit new report for a comment (by using invalid public key in authToken)")
+	void createNewReportForCommentWithInvalidPublicKeyInAuthToken() {
 		String contextType = "Proposal";
 		String reason = "Spam";
 		String errorMsg = String.format("Account %s identity is invalid - public key", account2Id);
 		String commentMsg = WaitUtils.getEpochMillis() + faker.lorem().characters(15, 20);
+		String invalidAuthToken = Base64Utils.encodeAuthToken(account2Id, account1PublicKey, account2Signature);
 
-		CreatedComment createdComment = commentsApiSteps.createComment(
-						account1Id, account1PublicKey, account1Signature, testProposal, contextType, commentMsg)
+		Comment createdComment = commentsApiSteps.createComment(testProposal, contextType, commentMsg, account1AuthToken)
 				.then()
 				.statusCode(HTTP_CREATED)
-				.extract().as(CreatedComment.class);
+				.extract().as(Comment.class);
 
-		commentsApiSteps.reportComment(
-						account2Id, account1PublicKey, account2Signature, createdComment.getId(), reason)
+		commentsApiSteps.reportComment(createdComment.getId(), reason, invalidAuthToken)
 				.then()
 				.statusCode(HTTP_FORBIDDEN)
-				.extract().body().path("message", errorMsg);
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo(errorMsg),
+				      "error", equalTo("Forbidden"));
 	}
 }
