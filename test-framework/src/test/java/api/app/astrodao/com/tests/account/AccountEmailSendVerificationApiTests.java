@@ -173,5 +173,16 @@ public class AccountEmailSendVerificationApiTests extends BaseTest {
 				      "error", equalTo("Bad Request"));
 	}
 
-
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 400 for account email verification for non-existing account email")
+	@DisplayName("Get HTTP 400 for account email verification for non-existing account email")
+	void getHttp400ForAccountEmailVerificationForNonExistingAccountEmail() {
+		accountApiSteps.sendEmailVerificationCode(account4token)
+				.then()
+				.statusCode(HTTP_BAD_REQUEST)
+				.body("statusCode", equalTo(HTTP_BAD_REQUEST),
+				      "message", equalTo("Email is already verified"),
+				      "error", equalTo("Bad Request"));
+	}
 }
