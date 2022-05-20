@@ -20,7 +20,8 @@ export function castDaoPolicy({ daoId, daoPolicy }) {
   }));
   const council = roles
     .filter(
-      ({ name, kind }) => 'council' === name && RoleKindType.Group === kind,
+      ({ name, kind }) =>
+        'council' === name.toLowerCase() && RoleKindType.Group === kind,
     )
     .map(({ accountIds }) => accountIds)
     .reduce((acc, val) => acc.concat(val), []);
