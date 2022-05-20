@@ -3,8 +3,10 @@ package api.app.astrodao.com.tests.account;
 import api.app.astrodao.com.core.utils.Base64Utils;
 import api.app.astrodao.com.steps.AccountApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
+import com.github.javafaker.Faker;
 import io.qameta.allure.*;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Tags;
@@ -16,6 +18,7 @@ import org.junit.jupiter.params.provider.NullSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
+import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_FORBIDDEN;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -27,6 +30,8 @@ import static org.hamcrest.Matchers.equalTo;
 public class AccountEmailSendVerificationApiTests extends BaseTest {
 	private final AccountApiSteps accountApiSteps;
 	public final static String EMPTY_STRING = "";
+	private final Faker faker;
+
 
 	@Value("${accounts.account3.accountId}")
 	private String accountId;
@@ -36,6 +41,13 @@ public class AccountEmailSendVerificationApiTests extends BaseTest {
 
 	@Value("${accounts.account3.signature}")
 	private String accountSignature;
+
+	@Value("${accounts.account1.token}")
+	private String account1token;
+
+	@Value("${accounts.account4.token}")
+	private String account4token;
+
 
 	@ParameterizedTest
 	@Severity(SeverityLevel.CRITICAL)
@@ -147,4 +159,19 @@ public class AccountEmailSendVerificationApiTests extends BaseTest {
 				      "message", equalTo("Authorization header payload is invalid"),
 				      "error", equalTo("Forbidden"));
 	}
+
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 400 for account email verification with no account email")
+	@DisplayName("Get HTTP 400 for account email verification with no account email")
+	void getHttp400ForAccountEmailVerificationForNoAccountEmail() {
+		accountApiSteps.sendEmailVerificationCode(account1token)
+				.then()
+				.statusCode(HTTP_BAD_REQUEST)
+				.body("statusCode", equalTo(HTTP_BAD_REQUEST),
+				      "message", equalTo("No email found for account: testdao2.testnet"),
+				      "error", equalTo("Bad Request"));
+	}
+
+
 }
