@@ -1,25 +1,23 @@
 package api.app.astrodao.com.tests.account;
 
 import api.app.astrodao.com.core.utils.Base64Utils;
+import api.app.astrodao.com.openapi.models.VerificationStatus;
 import api.app.astrodao.com.steps.AccountApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import com.github.javafaker.Faker;
 import io.qameta.allure.*;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
-import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
-import static java.net.HttpURLConnection.HTTP_FORBIDDEN;
+import static java.net.HttpURLConnection.*;
 import static org.hamcrest.Matchers.equalTo;
 
 @Tags({@Tag("all"), @Tag("accountEmailSendVerificationApiTests")})
@@ -45,6 +43,9 @@ public class AccountEmailSendVerificationApiTests extends BaseTest {
 	@Value("${accounts.account1.token}")
 	private String account1token;
 
+	@Value("${accounts.account2.token}")
+	private String account2token;
+
 	@Value("${accounts.account4.token}")
 	private String account4token;
 
@@ -58,8 +59,7 @@ public class AccountEmailSendVerificationApiTests extends BaseTest {
 	void getHttp403ForAccountEmailVerificationWithNullAndInvalidPublicKeyParam(String publicKey) {
 		String authToken = Base64Utils.encodeAuthToken(accountId, publicKey, accountSignature);
 
-		accountApiSteps.sendEmailVerificationCode(authToken)
-				.then()
+		accountApiSteps.sendEmailVerificationCode(authToken).then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
 				      "message", equalTo("Account astro-automation-reserved6.testnet identity is invalid - public key"),
@@ -76,8 +76,7 @@ public class AccountEmailSendVerificationApiTests extends BaseTest {
 		String authToken = Base64Utils.encodeAuthToken(accountId, accountPublicKey, accountSignature);
 		String errorMessage = String.format("Account %s identity is invalid - public key", accountId);
 
-		accountApiSteps.sendEmailVerificationCode(authToken)
-				.then()
+		accountApiSteps.sendEmailVerificationCode(authToken).then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
 				      "message", equalTo(errorMessage),
@@ -92,8 +91,7 @@ public class AccountEmailSendVerificationApiTests extends BaseTest {
 		String invalidSignature = accountSignature.substring(7);
 		String authToken = Base64Utils.encodeAuthToken(accountId, accountPublicKey, invalidSignature);
 
-		accountApiSteps.sendEmailVerificationCode(authToken)
-				.then()
+		accountApiSteps.sendEmailVerificationCode(authToken).then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
 				      "message", equalTo("Invalid signature"),
@@ -107,8 +105,7 @@ public class AccountEmailSendVerificationApiTests extends BaseTest {
 	void getHttp403ForAccountEmailVerificationWithNullSignatureParam() {
 		String authToken = Base64Utils.encodeAuthToken(accountId, accountPublicKey, null);
 
-		accountApiSteps.sendEmailVerificationCode(authToken)
-				.then()
+		accountApiSteps.sendEmailVerificationCode(authToken).then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
 				      "message", equalTo("Invalid signature"),
@@ -122,8 +119,7 @@ public class AccountEmailSendVerificationApiTests extends BaseTest {
 	void getHttp403ForAccountEmailVerificationWithEmptyAccountIdParam() {
 		String authToken = Base64Utils.encodeAuthToken(EMPTY_STRING, accountPublicKey, accountSignature);
 
-		accountApiSteps.sendEmailVerificationCode(authToken)
-				.then()
+		accountApiSteps.sendEmailVerificationCode(authToken).then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
 				      "message", equalTo("Authorization header payload is invalid"),
@@ -137,8 +133,7 @@ public class AccountEmailSendVerificationApiTests extends BaseTest {
 	void getHttp403ForAccountEmailVerificationWithEmptySignatureParam() {
 		String authToken = Base64Utils.encodeAuthToken(accountId, accountPublicKey, EMPTY_STRING);
 
-		accountApiSteps.sendEmailVerificationCode(authToken)
-				.then()
+		accountApiSteps.sendEmailVerificationCode(authToken).then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
 				      "message", equalTo("Authorization header payload is invalid"),
@@ -152,8 +147,7 @@ public class AccountEmailSendVerificationApiTests extends BaseTest {
 	void getHttp403ForAccountEmailVerificationWithEmptyPublicKeyParam() {
 		String authToken = Base64Utils.encodeAuthToken(accountId, EMPTY_STRING, accountSignature);
 
-		accountApiSteps.sendEmailVerificationCode(authToken)
-				.then()
+		accountApiSteps.sendEmailVerificationCode(authToken).then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
 				      "message", equalTo("Authorization header payload is invalid"),
@@ -165,8 +159,7 @@ public class AccountEmailSendVerificationApiTests extends BaseTest {
 	@Story("Get HTTP 400 for account email verification with no account email")
 	@DisplayName("Get HTTP 400 for account email verification with no account email")
 	void getHttp400ForAccountEmailVerificationForNoAccountEmail() {
-		accountApiSteps.sendEmailVerificationCode(account1token)
-				.then()
+		accountApiSteps.sendEmailVerificationCode(account1token).then()
 				.statusCode(HTTP_BAD_REQUEST)
 				.body("statusCode", equalTo(HTTP_BAD_REQUEST),
 				      "message", equalTo("No email found for account: testdao2.testnet"),
@@ -178,11 +171,31 @@ public class AccountEmailSendVerificationApiTests extends BaseTest {
 	@Story("Get HTTP 400 for account email verification for non-existing account email")
 	@DisplayName("Get HTTP 400 for account email verification for non-existing account email")
 	void getHttp400ForAccountEmailVerificationForNonExistingAccountEmail() {
-		accountApiSteps.sendEmailVerificationCode(account4token)
-				.then()
+		accountApiSteps.sendEmailVerificationCode(account4token).then()
 				.statusCode(HTTP_BAD_REQUEST)
 				.body("statusCode", equalTo(HTTP_BAD_REQUEST),
 				      "message", equalTo("Email is already verified"),
+				      "error", equalTo("Bad Request"));
+	}
+
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 400 for account email verification when sending the code again")
+	@DisplayName("Get HTTP 400 for account email verification when sending the code again")
+	void getHttp400ForAccountEmailVerificationWhenSendingTheCodeAgain() {
+		VerificationStatus verificationStatus = accountApiSteps.sendEmailVerificationCode(account2token).then()
+				.statusCode(HTTP_CREATED)
+				.extract().as(VerificationStatus.class);
+
+		accountApiSteps.assertDtoValue(verificationStatus, VerificationStatus::getIsVerified, false, "isVerified");
+		accountApiSteps.assertDtoValue(verificationStatus, VerificationStatus::getIsSend, true, "isSend");
+		accountApiSteps.assertDtoHasValue(verificationStatus, VerificationStatus::getCreatedAt, "createdAt");
+		accountApiSteps.assertDtoHasValue(verificationStatus, VerificationStatus::getTtl, "ttl");
+
+		accountApiSteps.sendEmailVerificationCode(account2token).then()
+				.statusCode(HTTP_BAD_REQUEST)
+				.body("statusCode", equalTo(HTTP_BAD_REQUEST),
+				      "message", equalTo("Email verification already sent. Could be resend after 60 seconds"),
 				      "error", equalTo("Bad Request"));
 	}
 }
