@@ -28,8 +28,6 @@ import static org.hamcrest.Matchers.equalTo;
 public class AccountEmailSendVerificationApiTests extends BaseTest {
 	private final AccountApiSteps accountApiSteps;
 	public final static String EMPTY_STRING = "";
-	private final Faker faker;
-
 
 	@Value("${accounts.account3.accountId}")
 	private String accountId;
@@ -52,11 +50,11 @@ public class AccountEmailSendVerificationApiTests extends BaseTest {
 
 	@ParameterizedTest
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("Get HTTP 403 for account email verification with null and invalid 'publicKey' parameter")
-	@DisplayName("Get HTTP 403 for account email verification with null and invalid 'publicKey' parameter")
+	@Story("Get HTTP 403 for account email send verification with null and invalid 'publicKey' parameter")
+	@DisplayName("Get HTTP 403 for account email send verification with null and invalid 'publicKey' parameter")
 	@NullSource
 	@CsvSource({"invalidPublicKey"})
-	void getHttp403ForAccountEmailVerificationWithNullAndInvalidPublicKeyParam(String publicKey) {
+	void getHttp403ForAccountEmailSendVerificationWithNullAndInvalidPublicKeyParam(String publicKey) {
 		String authToken = Base64Utils.encodeAuthToken(accountId, publicKey, accountSignature);
 
 		accountApiSteps.sendEmailVerificationCode(authToken).then()
@@ -69,10 +67,10 @@ public class AccountEmailSendVerificationApiTests extends BaseTest {
 	@ParameterizedTest
 	@NullSource
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("Get HTTP 403 for account email verification with null and invalid 'accountId' parameter")
-	@DisplayName("Get HTTP 403 for account email verification with null and invalid 'accountId' parameter")
+	@Story("Get HTTP 403 for account email send verification with null and invalid 'accountId' parameter")
+	@DisplayName("Get HTTP 403 for account email send verification with null and invalid 'accountId' parameter")
 	@CsvSource({"astro-automation.testnet", "another-magic.near", "test-dao-1641395769436.sputnikv2.testnet"})
-	void getHttp403ForAccountEmailVerificationWithNullAndInvalidAccountIdParam(String accountId) {
+	void getHttp403ForAccountEmailSendVerificationWithNullAndInvalidAccountIdParam(String accountId) {
 		String authToken = Base64Utils.encodeAuthToken(accountId, accountPublicKey, accountSignature);
 		String errorMessage = String.format("Account %s identity is invalid - public key", accountId);
 
@@ -85,9 +83,9 @@ public class AccountEmailSendVerificationApiTests extends BaseTest {
 
 	@Test
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("Get HTTP 403 for account email verification with invalid 'signature' parameter")
-	@DisplayName("Get HTTP 403 for account email verification with invalid 'signature' parameter")
-	void getHttp403ForAccountEmailVerificationWithInvalidSignatureParam() {
+	@Story("Get HTTP 403 for account email send verification with invalid 'signature' parameter")
+	@DisplayName("Get HTTP 403 for account email send verification with invalid 'signature' parameter")
+	void getHttp403ForAccountEmailSendVerificationWithInvalidSignatureParam() {
 		String invalidSignature = accountSignature.substring(7);
 		String authToken = Base64Utils.encodeAuthToken(accountId, accountPublicKey, invalidSignature);
 
@@ -100,9 +98,9 @@ public class AccountEmailSendVerificationApiTests extends BaseTest {
 
 	@Test
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("Get HTTP 403 for account email verification with null 'signature' parameter")
-	@DisplayName("Get HTTP 403 for account email verification with null 'signature' parameter")
-	void getHttp403ForAccountEmailVerificationWithNullSignatureParam() {
+	@Story("Get HTTP 403 for account email send verification with null 'signature' parameter")
+	@DisplayName("Get HTTP 403 for account email send verification with null 'signature' parameter")
+	void getHttp403ForAccountEmailSendVerificationWithNullSignatureParam() {
 		String authToken = Base64Utils.encodeAuthToken(accountId, accountPublicKey, null);
 
 		accountApiSteps.sendEmailVerificationCode(authToken).then()
@@ -114,9 +112,9 @@ public class AccountEmailSendVerificationApiTests extends BaseTest {
 
 	@Test
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("Get HTTP 403 for account email verification with empty 'accountId' parameter")
-	@DisplayName("Get HTTP 403 for account email verification with empty 'accountId' parameter")
-	void getHttp403ForAccountEmailVerificationWithEmptyAccountIdParam() {
+	@Story("Get HTTP 403 for account email send verification with empty 'accountId' parameter")
+	@DisplayName("Get HTTP 403 for account email send verification with empty 'accountId' parameter")
+	void getHttp403ForAccountEmailSendVerificationWithEmptyAccountIdParam() {
 		String authToken = Base64Utils.encodeAuthToken(EMPTY_STRING, accountPublicKey, accountSignature);
 
 		accountApiSteps.sendEmailVerificationCode(authToken).then()
@@ -128,9 +126,9 @@ public class AccountEmailSendVerificationApiTests extends BaseTest {
 
 	@Test
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("Get HTTP 403 for account email verification with empty 'signature' parameter")
-	@DisplayName("Get HTTP 403 for account email verification with empty 'signature' parameter")
-	void getHttp403ForAccountEmailVerificationWithEmptySignatureParam() {
+	@Story("Get HTTP 403 for account email send verification with empty 'signature' parameter")
+	@DisplayName("Get HTTP 403 for account email send verification with empty 'signature' parameter")
+	void getHttp403ForAccountEmailSendVerificationWithEmptySignatureParam() {
 		String authToken = Base64Utils.encodeAuthToken(accountId, accountPublicKey, EMPTY_STRING);
 
 		accountApiSteps.sendEmailVerificationCode(authToken).then()
@@ -142,9 +140,9 @@ public class AccountEmailSendVerificationApiTests extends BaseTest {
 
 	@Test
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("Get HTTP 403 for account email verification with empty 'publicKey' parameter")
-	@DisplayName("Get HTTP 403 for account email verification with empty 'publicKey' parameter")
-	void getHttp403ForAccountEmailVerificationWithEmptyPublicKeyParam() {
+	@Story("Get HTTP 403 for account email send verification with empty 'publicKey' parameter")
+	@DisplayName("Get HTTP 403 for account email send verification with empty 'publicKey' parameter")
+	void getHttp403ForAccountEmailSendVerificationWithEmptyPublicKeyParam() {
 		String authToken = Base64Utils.encodeAuthToken(accountId, EMPTY_STRING, accountSignature);
 
 		accountApiSteps.sendEmailVerificationCode(authToken).then()
@@ -156,9 +154,9 @@ public class AccountEmailSendVerificationApiTests extends BaseTest {
 
 	@Test
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("Get HTTP 400 for account email verification with no account email")
-	@DisplayName("Get HTTP 400 for account email verification with no account email")
-	void getHttp400ForAccountEmailVerificationForNoAccountEmail() {
+	@Story("Get HTTP 400 for account email send verification with no account email")
+	@DisplayName("Get HTTP 400 for account email send verification with no account email")
+	void getHttp400ForAccountEmailSendVerificationForNoAccountEmail() {
 		accountApiSteps.sendEmailVerificationCode(account1token).then()
 				.statusCode(HTTP_BAD_REQUEST)
 				.body("statusCode", equalTo(HTTP_BAD_REQUEST),
@@ -168,9 +166,9 @@ public class AccountEmailSendVerificationApiTests extends BaseTest {
 
 	@Test
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("Get HTTP 400 for account email verification for non-existing account email")
-	@DisplayName("Get HTTP 400 for account email verification for non-existing account email")
-	void getHttp400ForAccountEmailVerificationForNonExistingAccountEmail() {
+	@Story("Get HTTP 400 for account email send verification for non-existing account email")
+	@DisplayName("Get HTTP 400 for account email send verification for non-existing account email")
+	void getHttp400ForAccountEmailSendVerificationForNonExistingAccountEmail() {
 		accountApiSteps.sendEmailVerificationCode(account4token).then()
 				.statusCode(HTTP_BAD_REQUEST)
 				.body("statusCode", equalTo(HTTP_BAD_REQUEST),
@@ -180,9 +178,9 @@ public class AccountEmailSendVerificationApiTests extends BaseTest {
 
 	@Test
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("Get HTTP 400 for account email verification when sending the code again")
-	@DisplayName("Get HTTP 400 for account email verification when sending the code again")
-	void getHttp400ForAccountEmailVerificationWhenSendingTheCodeAgain() {
+	@Story("Get HTTP 400 for account email send verification when sending the code again")
+	@DisplayName("Get HTTP 400 for account email send verification when sending the code again")
+	void getHttp400ForAccountEmailSendVerificationWhenSendingTheCodeAgain() {
 		VerificationStatus verificationStatus = accountApiSteps.sendEmailVerificationCode(account2token).then()
 				.statusCode(HTTP_CREATED)
 				.extract().as(VerificationStatus.class);
