@@ -62,7 +62,7 @@ export class ProposalTemplateController {
   })
   @ApiForbiddenResponse({
     description:
-      'Account <accountId> identity is invalid - public key / bad signature/public key size / Invalid signature',
+      'Account <accountId> identity is invalid - public key / Invalid signature',
   })
   @ApiNotFoundResponse({
     description: 'DAO <daoId> does not exist',
@@ -97,7 +97,7 @@ export class ProposalTemplateController {
   })
   @ApiForbiddenResponse({
     description:
-      'Account <accountId> identity is invalid - public key / bad signature/public key size / Invalid signature',
+      'Account <accountId> identity is invalid - public key / Invalid signature',
   })
   @ApiNotFoundResponse({
     description: 'DAO <daoId> or proposal template <id> does not exist',
@@ -132,7 +132,7 @@ export class ProposalTemplateController {
   })
   @ApiForbiddenResponse({
     description:
-      'Account <accountId> identity is invalid - public key / bad signature/public key size / Invalid signature',
+      'Account <accountId> identity is invalid - public key / Invalid signature',
   })
   @ApiNotFoundResponse({
     description: 'DAO <daoId> or proposal template <id> does not exist',

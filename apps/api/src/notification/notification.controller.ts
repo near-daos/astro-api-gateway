@@ -126,7 +126,7 @@ export class NotificationController {
   })
   @ApiForbiddenResponse({
     description:
-      'Account <accountId> identity is invalid - public key / bad signature/public key size / Invalid signature',
+      'Account <accountId> identity is invalid - public key / Invalid signature',
   })
   @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
@@ -143,7 +143,7 @@ export class NotificationController {
   })
   @ApiForbiddenResponse({
     description:
-      'Account <accountId> identity is invalid - public key / bad signature/public key size / Invalid signature',
+      'Account <accountId> identity is invalid - public key / Invalid signature',
   })
   @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
@@ -170,7 +170,7 @@ export class NotificationController {
   })
   @ApiForbiddenResponse({
     description:
-      'Account <accountId> identity is invalid - public key / bad signature/public key size / Invalid signature',
+      'Account <accountId> identity is invalid - public key / Invalid signature',
   })
   @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
@@ -209,7 +209,7 @@ export class NotificationController {
   })
   @ApiForbiddenResponse({
     description:
-      'Account <accountId> identity is invalid - public key / bad signature/public key size / Invalid signature',
+      'Account <accountId> identity is invalid - public key / Invalid signature',
   })
   @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
