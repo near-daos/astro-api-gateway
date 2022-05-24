@@ -1,5 +1,6 @@
 package api.app.astrodao.com.tests.account;
 
+import api.app.astrodao.com.core.utils.Base64Utils;
 import api.app.astrodao.com.steps.AccountApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import com.github.javafaker.Faker;
@@ -9,10 +10,14 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.NullSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
+import static java.net.HttpURLConnection.HTTP_FORBIDDEN;
 import static org.hamcrest.Matchers.equalTo;
 
 @Tags({@Tag("all"), @Tag("accountEmailVerifyApiTests")})
@@ -26,6 +31,15 @@ public class AccountEmailVerifyApiTests extends BaseTest {
 
 	@Value("${accounts.account1.token}")
 	private String account1token;
+
+	@Value("${accounts.account3.accountId}")
+	private String account3Id;
+
+	@Value("${accounts.account3.publicKey}")
+	private String account3PublicKey;
+
+	@Value("${accounts.account3.signature}")
+	private String account3Signature;
 
 	@Value("${accounts.account4.token}")
 	private String account4token;
@@ -88,5 +102,22 @@ public class AccountEmailVerifyApiTests extends BaseTest {
 				.body("statusCode", equalTo(HTTP_BAD_REQUEST),
 				      "message", equalTo(errorMessage),
 				      "error", equalTo("Bad Request"));
+	}
+
+	@ParameterizedTest
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 403 for account email verify with null and invalid 'publicKey' parameter")
+	@DisplayName("Get HTTP 403 for account email verify with null and invalid 'publicKey' parameter")
+	@NullSource
+	@CsvSource({"invalidPublicKey"})
+	void getHttp403ForAccountEmailVerifyWithNullAndInvalidPublicKeyParam(String publicKey) {
+		String code = String.valueOf(faker.number().randomNumber(6, false));
+		String authToken = Base64Utils.encodeAuthToken(account3Id, publicKey, account3Signature);
+
+		accountApiSteps.verifyEmail(authToken, code).then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo("Account astro-automation-reserved6.testnet identity is invalid - public key"),
+				      "error", equalTo("Forbidden"));
 	}
 }
