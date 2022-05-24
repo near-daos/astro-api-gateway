@@ -75,4 +75,18 @@ public class AccountEmailVerifyApiTests extends BaseTest {
 				      "error", equalTo("Bad Request"));
 	}
 
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 400 for account email verify with invalid alphanumeric verification code")
+	@DisplayName("Get HTTP 400 for account email verify with invalid alphanumeric verification code")
+	void getHttp400ForAccountEmailVerifyWithInvalidAlphanumericVerificationCode() {
+		String code = String.valueOf(faker.lorem().characters(7));
+		String errorMessage = String.format("Invalid verification code: %s", code);
+
+		accountApiSteps.verifyEmail(account4token, code).then()
+				.statusCode(HTTP_BAD_REQUEST)
+				.body("statusCode", equalTo(HTTP_BAD_REQUEST),
+				      "message", equalTo(errorMessage),
+				      "error", equalTo("Bad Request"));
+	}
 }
