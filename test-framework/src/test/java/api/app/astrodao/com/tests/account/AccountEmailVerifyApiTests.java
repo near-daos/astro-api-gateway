@@ -137,4 +137,18 @@ public class AccountEmailVerifyApiTests extends BaseTest {
 				      "error", equalTo("Forbidden"));
 	}
 
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 403 for account email send verification with null 'signature' parameter")
+	@DisplayName("Get HTTP 403 for account email send verification with null 'signature' parameter")
+	void getHttp403ForAccountEmailSendVerificationWithNullSignatureParam() {
+		String code = String.valueOf(faker.number().randomNumber(6, false));
+		String authToken = Base64Utils.encodeAuthToken(account3Id, account3PublicKey, null);
+
+		accountApiSteps.verifyEmail(authToken, code).then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo("Invalid signature"),
+				      "error", equalTo("Forbidden"));
+	}
 }
