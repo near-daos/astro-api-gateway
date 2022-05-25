@@ -168,5 +168,21 @@ public class AccountEmailVerifyApiTests extends BaseTest {
 				      "error", equalTo("Forbidden"));
 	}
 
+	@ParameterizedTest
+	@NullSource
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 403 for account email verify with null and invalid 'accountId' parameter")
+	@DisplayName("Get HTTP 403 for account email verify with null and invalid 'accountId' parameter")
+	@CsvSource({"astro-automation.testnet", "another-magic.near", "test-dao-1641395769436.sputnikv2.testnet"})
+	void getHttp403ForAccountEmailVerifyWithNullAndInvalidAccountIdParam(String accountId) {
+		String code = String.valueOf(faker.number().randomNumber(6, false));
+		String authToken = Base64Utils.encodeAuthToken(accountId, account3PublicKey, account3Signature);
+		String errorMessage = String.format("Account %s identity is invalid - public key", accountId);
 
+		accountApiSteps.verifyEmail(authToken, code).then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo(errorMessage),
+				      "error", equalTo("Forbidden"));
+	}
 }
