@@ -124,6 +124,21 @@ public class AccountEmailVerifyApiTests extends BaseTest {
 
 	@Test
 	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 403 for account email verify with empty 'publicKey' parameter")
+	@DisplayName("Get HTTP 403 for account email verify with empty 'publicKey' parameter")
+	void getHttp403ForAccountEmailVerifyWithEmptyPublicKeyParam() {
+		String code = String.valueOf(faker.number().randomNumber(6, false));
+		String authToken = Base64Utils.encodeAuthToken(account3Id, EMPTY_STRING, account3Signature);
+
+		accountApiSteps.verifyEmail(authToken, code).then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo("Authorization header payload is invalid"),
+				      "error", equalTo("Forbidden"));
+	}
+
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
 	@Story("Get HTTP 403 for account email verify with invalid 'signature' parameter")
 	@DisplayName("Get HTTP 403 for account email verify with invalid 'signature' parameter")
 	void getHttp403ForAccountEmailVerifyWithInvalidSignatureParam() {
