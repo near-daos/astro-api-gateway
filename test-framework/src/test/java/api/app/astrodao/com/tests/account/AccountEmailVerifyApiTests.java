@@ -28,6 +28,7 @@ import static org.hamcrest.Matchers.equalTo;
 public class AccountEmailVerifyApiTests extends BaseTest {
 	private final AccountApiSteps accountApiSteps;
 	private final Faker faker;
+	public final static String EMPTY_STRING = "";
 
 	@Value("${accounts.account1.token}")
 	private String account1token;
@@ -139,9 +140,9 @@ public class AccountEmailVerifyApiTests extends BaseTest {
 
 	@Test
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("Get HTTP 403 for account email send verification with null 'signature' parameter")
-	@DisplayName("Get HTTP 403 for account email send verification with null 'signature' parameter")
-	void getHttp403ForAccountEmailSendVerificationWithNullSignatureParam() {
+	@Story("Get HTTP 403 for account email verify with null 'signature' parameter")
+	@DisplayName("Get HTTP 403 for account email verify with null 'signature' parameter")
+	void getHttp403ForAccountEmailVerifyWithNullSignatureParam() {
 		String code = String.valueOf(faker.number().randomNumber(6, false));
 		String authToken = Base64Utils.encodeAuthToken(account3Id, account3PublicKey, null);
 
@@ -151,4 +152,21 @@ public class AccountEmailVerifyApiTests extends BaseTest {
 				      "message", equalTo("Invalid signature"),
 				      "error", equalTo("Forbidden"));
 	}
+
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 403 for account email verify with empty 'accountId' parameter")
+	@DisplayName("Get HTTP 403 for account email verify with empty 'accountId' parameter")
+	void getHttp403ForAccountEmailVerifyWithEmptyAccountIdParam() {
+		String code = String.valueOf(faker.number().randomNumber(6, false));
+		String authToken = Base64Utils.encodeAuthToken(EMPTY_STRING, account3PublicKey, account3Signature);
+
+		accountApiSteps.verifyEmail(authToken, code).then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo("Authorization header payload is invalid"),
+				      "error", equalTo("Forbidden"));
+	}
+
+
 }
