@@ -27,4 +27,9 @@ public class NotificationsApiSteps extends BaseSteps {
     public Response getNotificationsSettings(Map<String, Object> queryParams) {
         return notificationsApi.getNotificationsSettings(queryParams);
     }
+
+    @Step("Getting account notification status by '{accountId}' query param")
+	public Response getAccountNotificationStatus(String accountId) {
+        return notificationsApi.getAccountNotificationStatus(accountId);
+	}
 }
