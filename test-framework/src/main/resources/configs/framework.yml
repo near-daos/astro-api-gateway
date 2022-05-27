@@ -1,11 +1,8 @@
 test:
   env: ${TEST_ENV:dev}
-  accountId: testdao2.testnet
-#  accountId: automation-01.testnet
   dao1: test-dao-1641395769436.sputnikv2.testnet
   dao2: test-dao-1647325144337.sputnikv2.testnet
   proposal1: test-dao-1641395769436.sputnikv2.testnet-911
-#  bounty1: test-dao-1641395769436.sputnikv2.testnet-1578
   approved.bounty.proposal1: test-dao-1641395769436.sputnikv2.testnet-2306
   approved.bounty.proposal2: test-dao-1641395769436.sputnikv2.testnet-2308
   bounty1: test-dao-1641395769436.sputnikv2.testnet-2

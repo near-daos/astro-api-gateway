@@ -30,7 +30,7 @@ import static java.net.HttpURLConnection.HTTP_OK;
 public class BountyContextsTests extends BaseTest {
 	private final BountiesApiSteps bountiesApiSteps;
 
-	@Value("${test.accountId}")
+	@Value("${accounts.account1.accountId}")
 	private String testAccountId;
 
 	@Test

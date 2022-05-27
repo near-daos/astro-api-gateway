@@ -49,7 +49,7 @@ public class AggregationWithoutCallbackTests extends BaseTest {
     private final ProposalsApiSteps proposalsApiSteps;
     private final DaoApiSteps daoApiSteps;
 
-    @Value("${test.accountId}")
+    @Value("${accounts.account1.accountId}")
     private String testAccountId;
 
     @Value("${test.dao1}")

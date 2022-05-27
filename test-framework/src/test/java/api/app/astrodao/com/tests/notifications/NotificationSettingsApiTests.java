@@ -33,7 +33,7 @@ import static org.hamcrest.Matchers.equalTo;
 public class NotificationSettingsApiTests extends BaseTest {
 	private final NotificationsApiSteps notificationsApiSteps;
 
-	@Value("${test.accountId}")
+	@Value("${accounts.account1.accountId}")
 	private String accountId;
 
 	@Test
