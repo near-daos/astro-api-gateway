@@ -35,4 +35,10 @@ public class NotificationsApi {
 				.accept(ContentType.JSON)
 				.get(NOTIFICATIONS_SETTINGS);
 	}
+
+	public Response getAccountNotificationStatus(String accountId) {
+		return given().spec(requestSpec)
+				.accept(ContentType.JSON)
+				.get(ACCOUNT_NOTIFICATION_STATUS_ACCOUNT_ID, accountId);
+	}
 }

@@ -50,6 +50,7 @@ public class Constants {
 		public static final String NOTIFICATIONS = "/api/v1/notifications";
 		public static final String NOTIFICATIONS_ID = "/api/v1/notifications/{id}";
 		public static final String NOTIFICATIONS_SETTINGS = "/api/v1/notification-settings";
+		public static final String ACCOUNT_NOTIFICATION_STATUS_ACCOUNT_ID = "/api/v1/account-notification-status/{accountId}";
 
 		public static final String ACCOUNT_ID = "/api/v1/account/{id}";
 		public static final String ACCOUNT_EMAIL = "/api/v1/account/email";
