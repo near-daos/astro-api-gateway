@@ -46,7 +46,7 @@ public class AggregationWithCallbackTests extends BaseTest {
     private final TransactionsSteps transactionsSteps;
     private final DaoApiSteps daoApiSteps;
 
-    @Value("${test.accountId}")
+    @Value("${accounts.account1.accountId}")
     private String testAccountId;
 
     @Test
