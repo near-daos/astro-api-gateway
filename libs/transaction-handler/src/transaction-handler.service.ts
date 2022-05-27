@@ -18,9 +18,16 @@ export class TransactionHandlerService {
         transactionHash,
         accountId,
       );
-    await this.transactionActionHandlerService.handleTransactionActions(
-      actions,
-    );
+    const successActions =
+      await this.transactionActionHandlerService.handleTransactionActions(
+        actions,
+      );
+
+    if (successActions.length !== actions.length) {
+      throw new Error(
+        `Failed to handle actions of transaction ${transactionHash}`,
+      );
+    }
   }
 
   async handleNearIndexerAccountChanges(
