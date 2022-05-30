@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static api.app.astrodao.com.core.Constants.Variables.EMPTY_STRING;
 import static java.net.HttpURLConnection.*;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -264,10 +265,26 @@ public class NotificationSettingsApiTests extends BaseTest {
 		List<String> types = List.of("ClubDao", "RemoveMemberFromRole", "FunctionCall", "Transfer", "ChangePolicy", "ChangeConfig");
 
 		notificationsApiSteps.setNotificationSettings(
-				authToken, "test-dao-1653656794681.sputnikv2.testnet", types, "0", false, false, false).then()
+						authToken, "test-dao-1653656794681.sputnikv2.testnet", types, "0", false, false, false).then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
 				      "message", equalTo("Account testdao2.testnet identity is invalid - public key"),
+				      "error", equalTo("Forbidden"));
+	}
+
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 403 for account notification settings with empty 'publicKey' parameter")
+	@DisplayName("Get HTTP 403 for account notification settings with empty 'publicKey' parameter")
+	void getHttp403ForAccountNotificationSettingsWithEmptyPublicKeyParam() {
+		String authToken = Base64Utils.encodeAuthToken(accountId, EMPTY_STRING, accountSignature);
+		List<String> types = List.of("ClubDao", "RemoveMemberFromRole", "FunctionCall", "Transfer", "ChangePolicy", "ChangeConfig");
+
+		notificationsApiSteps.setNotificationSettings(
+						authToken, "test-dao-1653656794681.sputnikv2.testnet", types, "0", false, false, false).then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo("Authorization header payload is invalid"),
 				      "error", equalTo("Forbidden"));
 	}
 }
