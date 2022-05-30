@@ -1,6 +1,7 @@
 package api.app.astrodao.com.tests.notifications;
 
 import api.app.astrodao.com.core.dto.api.dao.AccountDAOs;
+import api.app.astrodao.com.core.utils.Base64Utils;
 import api.app.astrodao.com.openapi.models.AccountNotificationSettings;
 import api.app.astrodao.com.openapi.models.AccountNotificationSettingsResponse;
 import api.app.astrodao.com.steps.DaoApiSteps;
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.NullSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -40,6 +42,9 @@ public class NotificationSettingsApiTests extends BaseTest {
 
 	@Value("${accounts.account1.accountId}")
 	private String accountId;
+
+	@Value("${accounts.account1.signature}")
+	private String accountSignature;
 
 	@Value("${accounts.account1.token}")
 	private String accountToken;
@@ -248,5 +253,21 @@ public class NotificationSettingsApiTests extends BaseTest {
 		notificationsApiSteps.assertDtoHasValue(accountNotificationSettings, AccountNotificationSettings::getUpdatedAt, "updatedAt");
 	}
 
+	@ParameterizedTest
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 403 for account notification settings with null and invalid 'publicKey' parameter")
+	@DisplayName("Get HTTP 403 for account notification settings with null and invalid 'publicKey' parameter")
+	@NullSource
+	@CsvSource({"invalidPublicKey"})
+	void getHttp403ForAccountNotificationSettingsWithNullAndInvalidPublicKeyParam(String publicKey) {
+		String authToken = Base64Utils.encodeAuthToken(accountId, publicKey, accountSignature);
+		List<String> types = List.of("ClubDao", "RemoveMemberFromRole", "FunctionCall", "Transfer", "ChangePolicy", "ChangeConfig");
 
+		notificationsApiSteps.setNotificationSettings(
+				authToken, "test-dao-1653656794681.sputnikv2.testnet", types, "0", false, false, false).then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo("Account testdao2.testnet identity is invalid - public key"),
+				      "error", equalTo("Forbidden"));
+	}
 }
