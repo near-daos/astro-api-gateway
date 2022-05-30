@@ -6,6 +6,7 @@ import io.qameta.allure.Step;
 import io.restassured.response.Response;
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
 import java.util.Map;
 
 @Steps
@@ -32,4 +33,10 @@ public class NotificationsApiSteps extends BaseSteps {
 	public Response getAccountNotificationStatus(String accountId) {
         return notificationsApi.getAccountNotificationStatus(accountId);
 	}
+
+    @Step("Set notification settings for DAO '{daoId}'")
+    public Response setNotificationSettings(String authToken, String daoId, List<String> types, String mutedUntilTimestamp,
+                                            boolean isEnableSms, boolean isEnableEmail, boolean isAllMuted) {
+        return notificationsApi.setNotificationSettings(authToken, daoId, types, mutedUntilTimestamp, isEnableSms, isEnableEmail, isAllMuted);
+    }
 }

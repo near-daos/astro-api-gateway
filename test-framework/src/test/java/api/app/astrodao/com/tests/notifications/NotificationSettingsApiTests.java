@@ -1,9 +1,12 @@
 package api.app.astrodao.com.tests.notifications;
 
+import api.app.astrodao.com.core.dto.api.dao.AccountDAOs;
 import api.app.astrodao.com.openapi.models.AccountNotificationSettings;
 import api.app.astrodao.com.openapi.models.AccountNotificationSettingsResponse;
+import api.app.astrodao.com.steps.DaoApiSteps;
 import api.app.astrodao.com.steps.NotificationsApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
+import com.github.javafaker.Faker;
 import io.qameta.allure.*;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.DisplayName;
@@ -15,14 +18,14 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
-import static java.net.HttpURLConnection.HTTP_OK;
+import static java.net.HttpURLConnection.*;
 import static org.hamcrest.Matchers.equalTo;
 
 @Tags({@Tag("all"), @Tag("notificationSettingsApiTests")})
@@ -32,9 +35,14 @@ import static org.hamcrest.Matchers.equalTo;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class NotificationSettingsApiTests extends BaseTest {
 	private final NotificationsApiSteps notificationsApiSteps;
+	private final DaoApiSteps daoApiSteps;
+	private final Faker faker;
 
 	@Value("${accounts.account1.accountId}")
 	private String accountId;
+
+	@Value("${accounts.account1.token}")
+	private String accountToken;
 
 	@Test
 	@Severity(SeverityLevel.CRITICAL)
@@ -209,4 +217,36 @@ public class NotificationSettingsApiTests extends BaseTest {
 				.body("statusCode", equalTo(HTTP_BAD_REQUEST),
 				      "message", equalTo(errorMsg));
 	}
+
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("User should be able to create account notification settings")
+	@DisplayName("User should be able to create account notification settings")
+	void createAccountNotificationSettings() {
+		AccountDAOs accountDaos = daoApiSteps.getAccountDaos(accountId).then()
+				.statusCode(HTTP_OK)
+				.extract().as(AccountDAOs.class);
+
+		int accountRandomDao = faker.random().nextInt(0, accountDaos.size());
+		String daoId = accountDaos.get(accountRandomDao).getId();
+		List<String> types = List.of("CustomDao", "AddMemberToRole", "FunctionCall", "Transfer", "AddBounty", "Vote");
+
+		AccountNotificationSettings accountNotificationSettings =
+				notificationsApiSteps.setNotificationSettings(accountToken, daoId, types, "0", false, false, false).then()
+						.statusCode(HTTP_CREATED)
+						.extract().as(AccountNotificationSettings.class);
+
+		String id = accountId + "-" + daoId;
+		notificationsApiSteps.assertDtoValue(accountNotificationSettings, AccountNotificationSettings::getId, id, "id");
+		notificationsApiSteps.assertDtoValue(accountNotificationSettings, AccountNotificationSettings::getAccountId, accountId, "accountId");
+		notificationsApiSteps.assertDtoValue(accountNotificationSettings, AccountNotificationSettings::getDaoId, daoId, "daoId");
+		notificationsApiSteps.assertCollectionsAreEqual(accountNotificationSettings.getTypes(), types);
+		notificationsApiSteps.assertDtoValue(accountNotificationSettings, AccountNotificationSettings::getMutedUntilTimestamp, BigDecimal.valueOf(0), "mutedUntilTimestamp");
+		notificationsApiSteps.assertDtoValue(accountNotificationSettings, AccountNotificationSettings::getIsAllMuted, false, "isAllMuted");
+		notificationsApiSteps.assertDtoValue(accountNotificationSettings, AccountNotificationSettings::getEnableSms, false, "enableSms");
+		notificationsApiSteps.assertDtoValue(accountNotificationSettings, AccountNotificationSettings::getEnableEmail, false, "enableEmail");
+		notificationsApiSteps.assertDtoHasValue(accountNotificationSettings, AccountNotificationSettings::getUpdatedAt, "updatedAt");
+	}
+
+
 }
