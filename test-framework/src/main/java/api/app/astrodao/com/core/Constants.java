@@ -18,6 +18,11 @@ public class Constants {
 	}
 
 	@UtilityClass
+	public class Variables {
+		public static final String EMPTY_STRING = "";
+	}
+
+	@UtilityClass
 	public class DisposableEmailParams {
 		public static final String ACTION_PARAM = "action";
 		public static final String GET_RANDOM_MAILBOX = "genRandomMailbox";
