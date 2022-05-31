@@ -53,10 +53,11 @@ public class NotificationSettingsApiTests extends BaseTest {
 	@Value("${accounts.account1.token}")
 	private String accountToken;
 
+
 	@Test
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("User should be able to get list of notifications-settings with query param: [sort, limit, offset]")
-	@DisplayName("User should be able to get list of notifications-settings with query param: [sort, limit, offset]")
+	@Story("User should be able to get list of notifications settings with query param: [sort, limit, offset]")
+	@DisplayName("User should be able to get list of notifications settings with query param: [sort, limit, offset]")
 	void getListOfNotificationsSettingsWithSortLimitOffsetParams() {
 		int limit = 10;
 		int page = 1;
@@ -87,8 +88,8 @@ public class NotificationSettingsApiTests extends BaseTest {
 
 	@Test
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("User should be able to get list of notification-settings with query param: [limit, offset, page]")
-	@DisplayName("User should be able to get list of notification-settings with query param: [limit, offset, page]")
+	@Story("User should be able to get list of notification settings with query param: [limit, offset, page]")
+	@DisplayName("User should be able to get list of notification settings with query param: [limit, offset, page]")
 	void getListOfNotificationSettingsWithLimitOffsetPageParams() {
 		int limit = 50;
 		int offset = 0;
@@ -117,8 +118,8 @@ public class NotificationSettingsApiTests extends BaseTest {
 
 	@Test
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("User should be able to get list of notification-settings with query param: [limit, sort, fields]")
-	@DisplayName("User should be able to get list of notification-settings with query param: [limit, sort, fields]")
+	@Story("User should be able to get list of notification settings with query param: [limit, sort, fields]")
+	@DisplayName("User should be able to get list of notification settings with query param: [limit, sort, fields]")
 	void getListOfNotificationSettingsWithLimitSortFieldsParams() {
 		int limit = 10;
 		Map<String, Object> query = Map.of(
@@ -143,8 +144,8 @@ public class NotificationSettingsApiTests extends BaseTest {
 
 	@Test
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("User should be able to get list of notification-settings with query param: [sort, s]")
-	@DisplayName("User should be able to get list of notification-settings with query param: [sort, s]")
+	@Story("User should be able to get list of notification settings with query param: [sort, s]")
+	@DisplayName("User should be able to get list of notification settings with query param: [sort, s]")
 	void getListOfNotificationSettingsWithSortSParams() {
 		Map<String, Object> query = Map.of(
 				"sort", "updatedAt,DESC",
@@ -172,8 +173,8 @@ public class NotificationSettingsApiTests extends BaseTest {
 
 	@Test
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("User should be able to get list of notification-settings with query param: [filter, or]")
-	@DisplayName("User should be able to get list of notification-settings with query param: [filter, or]")
+	@Story("User should be able to get list of notification settings with query param: [filter, or]")
+	@DisplayName("User should be able to get list of notification settings with query param: [filter, or]")
 	void getListOfNotificationSettingsFilterOrParams() {
 		String daoId1 = "testdao1.sputnikv2.testnet";
 		String daoId2 = "testdao2.sputnikv2.testnet";
@@ -216,8 +217,8 @@ public class NotificationSettingsApiTests extends BaseTest {
 			"s; query; Invalid search param. JSON expected"
 	}, delimiter = 59)
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("Get HTTP 400 status code for notification-settings")
-	@DisplayName("Get HTTP 400 status code for notification-settings")
+	@Story("Get HTTP 400 status code for notification settings")
+	@DisplayName("Get HTTP 400 status code for notification settings")
 	void getHttp400StatusCodeForNotificationSettings(String key, String value, String errorMsg) {
 		Map<String, Object> query = Map.of(key, value);
 
@@ -316,7 +317,8 @@ public class NotificationSettingsApiTests extends BaseTest {
 	@DisplayName("Get HTTP 403 for account notification settings with empty 'accountId' parameter")
 	void getHttp403ForAccountNotificationSettingsWithEmptyAccountIdParam() {
 		String authToken = Base64Utils.encodeAuthToken(EMPTY_STRING, accountPublicKey, accountSignature);
-		List<String> types = List.of("ClubDao", "RemoveMemberFromRole", "FunctionCall", "Transfer", "ChangePolicy", "ChangeConfig");
+		List<String> types = List.of(
+				"ClubDao", "RemoveMemberFromRole", "FunctionCall", "Transfer", "ChangePolicy", "ChangeConfig");
 
 		notificationsApiSteps.setNotificationSettings(
 						authToken, "test-dao-1653656794681.sputnikv2.testnet", types, "0", false, false, false).then()
@@ -356,6 +358,22 @@ public class NotificationSettingsApiTests extends BaseTest {
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
 				      "message", equalTo("Invalid signature"),
+				      "error", equalTo("Forbidden"));
+	}
+
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 403 for account notification settings with empty 'signature' parameter")
+	@DisplayName("Get HTTP 403 for account notification settings with empty 'signature' parameter")
+	void getHttp403ForAccountNotificationSettingsWithEmptySignatureParam() {
+		String authToken = Base64Utils.encodeAuthToken(accountId, accountPublicKey, EMPTY_STRING);
+		List<String> types = List.of("ClubDao", "RemoveMemberFromRole", "FunctionCall", "Transfer", "ChangePolicy", "ChangeConfig");
+
+		notificationsApiSteps.setNotificationSettings(
+						authToken, "test-dao-1653656794681.sputnikv2.testnet", types, "0", false, false, false).then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo("Authorization header payload is invalid"),
 				      "error", equalTo("Forbidden"));
 	}
 }
