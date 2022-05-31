@@ -309,4 +309,20 @@ public class NotificationSettingsApiTests extends BaseTest {
 				      "message", equalTo(errorMessage),
 				      "error", equalTo("Forbidden"));
 	}
+
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 403 for account notification settings with empty 'accountId' parameter")
+	@DisplayName("Get HTTP 403 for account notification settings with empty 'accountId' parameter")
+	void getHttp403ForAccountNotificationSettingsWithEmptyAccountIdParam() {
+		String authToken = Base64Utils.encodeAuthToken(EMPTY_STRING, accountPublicKey, accountSignature);
+		List<String> types = List.of("ClubDao", "RemoveMemberFromRole", "FunctionCall", "Transfer", "ChangePolicy", "ChangeConfig");
+
+		notificationsApiSteps.setNotificationSettings(
+						authToken, "test-dao-1653656794681.sputnikv2.testnet", types, "0", false, false, false).then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo("Authorization header payload is invalid"),
+				      "error", equalTo("Forbidden"));
+	}
 }
