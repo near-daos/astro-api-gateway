@@ -343,4 +343,19 @@ public class NotificationSettingsApiTests extends BaseTest {
 				      "error", equalTo("Forbidden"));
 	}
 
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 403 for account notification settings with null 'signature' parameter")
+	@DisplayName("Get HTTP 403 for account notification settings with null 'signature' parameter")
+	void getHttp403ForAccountNotificationSettingsWithNullSignatureParam() {
+		String authToken = Base64Utils.encodeAuthToken(accountId, accountPublicKey, null);
+		List<String> types = List.of("ClubDao", "RemoveMemberFromRole", "FunctionCall", "Transfer", "ChangePolicy", "ChangeConfig");
+
+		notificationsApiSteps.setNotificationSettings(
+						authToken, "test-dao-1653656794681.sputnikv2.testnet", types, "0", false, false, false).then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo("Invalid signature"),
+				      "error", equalTo("Forbidden"));
+	}
 }
