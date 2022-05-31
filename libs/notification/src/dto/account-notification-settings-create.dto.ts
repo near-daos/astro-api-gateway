@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';
+import {
+  IsBoolean,
+  IsEnum,
+  IsOptional,
+  IsString,
+  Matches,
+} from 'class-validator';
 import { NotificationType } from '@sputnik-v2/notification';
 
 export class CreateAccountNotificationSettingsDto {
@@ -13,6 +19,9 @@ export class CreateAccountNotificationSettingsDto {
   types: NotificationType[];
 
   @ApiProperty()
+  @Matches(/^(\s*|\d+)$/, {
+    message: 'mutedUntilTimestamp must be a timestamp or empty',
+  })
   @IsString()
   mutedUntilTimestamp: string;
 
