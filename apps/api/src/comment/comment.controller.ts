@@ -77,7 +77,7 @@ export class CommentsController {
   })
   @ApiForbiddenResponse({
     description:
-      'Account <accountId> identity is invalid - public key / Invalid signature',
+      'Account <accountId> identity is invalid - public key / invalid signature / invalid accountId',
   })
   @ApiBearerAuth()
   @UseGuards(ThrottlerGuard)
@@ -123,7 +123,7 @@ export class CommentsController {
   })
   @ApiForbiddenResponse({
     description:
-      'Account <accountId> identity is invalid - public key / Invalid signature',
+      'Account <accountId> identity is invalid - public key / invalid signature / invalid accountId',
   })
   @ApiNotFoundResponse({
     description: `No Comment '<id>' found.`,
