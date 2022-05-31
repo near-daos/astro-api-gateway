@@ -44,6 +44,9 @@ public class NotificationSettingsApiTests extends BaseTest {
 	@Value("${accounts.account1.accountId}")
 	private String accountId;
 
+	@Value("${accounts.account1.publicKey}")
+	private String accountPublicKey;
+
 	@Value("${accounts.account1.signature}")
 	private String accountSignature;
 
@@ -285,6 +288,25 @@ public class NotificationSettingsApiTests extends BaseTest {
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
 				      "message", equalTo("Authorization header payload is invalid"),
+				      "error", equalTo("Forbidden"));
+	}
+
+	@ParameterizedTest
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 403 for account notification settings with null and invalid 'accountId' parameter")
+	@DisplayName("Get HTTP 403 for account notification settings with null and invalid 'accountId' parameter")
+	@NullSource
+	@CsvSource({"astro-automation.testnet", "another-magic.near", "test-dao-1641395769436.sputnikv2.testnet"})
+	void getHttp403ForAccountNotificationSettingsWithNullAndInvalidAccountIdParam(String accountId) {
+		String authToken = Base64Utils.encodeAuthToken(accountId, accountPublicKey, accountSignature);
+		List<String> types = List.of("ClubDao", "RemoveMemberFromRole", "FunctionCall", "Transfer", "ChangePolicy", "ChangeConfig");
+		String errorMessage = String.format("Account %s identity is invalid - public key", accountId);
+
+		notificationsApiSteps.setNotificationSettings(
+						authToken, "test-dao-1653656794681.sputnikv2.testnet", types, "0", false, false, false).then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo(errorMessage),
 				      "error", equalTo("Forbidden"));
 	}
 }
