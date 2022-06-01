@@ -8,6 +8,7 @@ import {
   AccountNotificationSettings,
   AccountNotificationSettingsService,
 } from '@sputnik-v2/notification';
+import { DaoModule } from '@sputnik-v2/dao';
 
 import { NotificationController } from './notification.controller';
 import { NearModule } from '../near/near.module';
@@ -20,6 +21,7 @@ import { NearModule } from '../near/near.module';
       AccountNotificationSettings,
     ]),
     NearModule,
+    DaoModule,
   ],
   controllers: [NotificationController],
   providers: [
