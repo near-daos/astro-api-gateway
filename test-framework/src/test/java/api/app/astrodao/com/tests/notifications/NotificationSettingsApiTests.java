@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.EmptySource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -435,6 +436,23 @@ public class NotificationSettingsApiTests extends BaseTest {
 				.statusCode(HTTP_BAD_REQUEST)
 				.body("statusCode", equalTo(HTTP_BAD_REQUEST),
 				      "message", equalTo(List.of("mutedUntilTimestamp must be a timestamp or empty")),
+				      "error", equalTo("Bad Request"));
+	}
+
+	@ParameterizedTest
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 400 for account notification settings with null, empty and invalid 'types' param")
+	@DisplayName("Get HTTP 400 for account notification settings with null, empty and invalid 'types' param")
+	@EmptySource
+	@CsvSource({"null", "test-dao-1641395769436.sputnikv2.testnet", "true", "false"})
+	void getHttp400ForAccountNotificationSettingsWithNullEmptyAndInvalidTypesParam(String type) {
+		String daoId = "test-dao-1653994172816.sputnikv2.testnet";
+
+		notificationsApiSteps.setNotificationSettings(
+						accountToken, daoId, List.of(type), EMPTY_STRING, false, false, false).then()
+				.statusCode(HTTP_BAD_REQUEST)
+				.body("statusCode", equalTo(HTTP_BAD_REQUEST),
+				      "message", equalTo(List.of("each value in types must be a valid enum value")),
 				      "error", equalTo("Bad Request"));
 	}
 }
