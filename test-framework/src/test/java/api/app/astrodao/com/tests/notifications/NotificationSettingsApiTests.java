@@ -481,4 +481,29 @@ public class NotificationSettingsApiTests extends BaseTest {
 								"isAllMuted must be a boolean value")),
 				      "error", equalTo("Bad Request"));
 	}
+
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 400 for account notification settings with alphabetic 'enableSms', 'enableEmail', 'isAllMuted' boolean params")
+	@DisplayName("Get HTTP 400 for account notification settings with alphabetic 'enableSms', 'enableEmail', 'isAllMuted' boolean params")
+	void getHttp400ForAccountNotificationSettingsWithAlphabeticBooleanParams() {
+		String body =
+				"{\n" +
+						"  \"daoId\": \"test-dao-1653994172816.sputnikv2.testnet\",\n" +
+						"  \"types\": [],\n" +
+						"  \"mutedUntilTimestamp\": \"\",\n" +
+						"  \"enableSms\": " + "\"" + faker.rickAndMorty().location() + "\"" + ",\n" +
+						"  \"enableEmail\": " + "\"" + faker.harryPotter().spell() + "\"" + ",\n" +
+						"  \"isAllMuted\": " + "\"" + faker.chuckNorris().fact() + "\"" +
+						"}";
+
+		notificationsApiSteps.setNotificationSettings(accountToken, body).then()
+				.statusCode(HTTP_BAD_REQUEST)
+				.body("statusCode", equalTo(HTTP_BAD_REQUEST),
+				      "message", equalTo(List.of(
+								"enableSms must be a boolean value",
+								"enableEmail must be a boolean value",
+								"isAllMuted must be a boolean value")),
+				      "error", equalTo("Bad Request"));
+	}
 }
