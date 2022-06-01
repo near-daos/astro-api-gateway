@@ -406,4 +406,19 @@ public class NotificationSettingsApiTests extends BaseTest {
 		notificationsApiSteps.assertDtoValue(accountNotificationSettings, AccountNotificationSettings::getEnableEmail, false, "enableEmail");
 		notificationsApiSteps.assertDtoHasValue(accountNotificationSettings, AccountNotificationSettings::getUpdatedAt, "updatedAt");
 	}
+
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 400 for account notification settings with null 'mutedUntilTimestamp' param")
+	@DisplayName("Get HTTP 400 for account notification settings with null 'mutedUntilTimestamp' param")
+	void getHttp400ForAccountNotificationSettingsWithNullMutedUntilTimestampParam() {
+		String daoId = "test-dao-1653994172816.sputnikv2.testnet";
+		List<String> errorMessage = List.of("mutedUntilTimestamp must be a string", "mutedUntilTimestamp must be a timestamp or empty");
+
+		notificationsApiSteps.setNotificationSettings(accountToken, daoId, Collections.emptyList(), null, false, false, false).then()
+				.statusCode(HTTP_BAD_REQUEST)
+				.body("statusCode", equalTo(HTTP_BAD_REQUEST),
+				      "message", equalTo(errorMessage),
+				      "error", equalTo("Bad Request"));
+	}
 }
