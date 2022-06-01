@@ -61,4 +61,13 @@ public class NotificationsApi {
 				.body(createAccountNotificationSettings)
 				.post(NOTIFICATIONS_SETTINGS);
 	}
+
+	public Response setNotificationSettings(String authToken, String body) {
+		return given().spec(requestSpec)
+				.accept(ContentType.JSON)
+				.header("Authorization", "Bearer " + authToken)
+				.contentType(ContentType.JSON)
+				.body(body)
+				.post(NOTIFICATIONS_SETTINGS);
+	}
 }

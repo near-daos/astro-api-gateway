@@ -455,4 +455,30 @@ public class NotificationSettingsApiTests extends BaseTest {
 				      "message", equalTo(List.of("each value in types must be a valid enum value")),
 				      "error", equalTo("Bad Request"));
 	}
+
+	@ParameterizedTest
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 400 for account notification settings with null and invalid 'enableSms', 'enableEmail', 'isAllMuted' params")
+	@DisplayName("Get HTTP 400 for account notification settings with null and invalid 'enableSms', 'enableEmail', 'isAllMuted' params")
+	@CsvSource({"null, null, null", "0, 0, 0", "1, 1, 1"})
+	void getHttp400ForAccountNotificationSettingsWithNullAndInvalidBooleanParams(String enableSms, String enableEmail, String isAllMuted) {
+		String body =
+				"{\n" +
+				"  \"daoId\": \"test-dao-1653994172816.sputnikv2.testnet\",\n" +
+				"  \"types\": [],\n" +
+				"  \"mutedUntilTimestamp\": \"\",\n" +
+				"  \"enableSms\": " + enableSms + ",\n" +
+				"  \"enableEmail\": " + enableEmail + ",\n" +
+				"  \"isAllMuted\": " + isAllMuted + "\n" +
+				"}";
+
+		notificationsApiSteps.setNotificationSettings(accountToken, body).then()
+				.statusCode(HTTP_BAD_REQUEST)
+				.body("statusCode", equalTo(HTTP_BAD_REQUEST),
+				      "message", equalTo(List.of(
+								"enableSms must be a boolean value",
+								"enableEmail must be a boolean value",
+								"isAllMuted must be a boolean value")),
+				      "error", equalTo("Bad Request"));
+	}
 }

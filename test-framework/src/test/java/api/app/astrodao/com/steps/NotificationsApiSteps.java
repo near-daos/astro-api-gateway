@@ -39,4 +39,9 @@ public class NotificationsApiSteps extends BaseSteps {
                                             boolean isEnableSms, boolean isEnableEmail, boolean isAllMuted) {
         return notificationsApi.setNotificationSettings(authToken, daoId, types, mutedUntilTimestamp, isEnableSms, isEnableEmail, isAllMuted);
     }
+
+    @Step("Set notification settings for DAO")
+    public Response setNotificationSettings(String authToken, String body) {
+        return notificationsApi.setNotificationSettings(authToken, body);
+    }
 }
