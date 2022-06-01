@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Value;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -375,5 +376,34 @@ public class NotificationSettingsApiTests extends BaseTest {
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
 				      "message", equalTo("Authorization header payload is invalid"),
 				      "error", equalTo("Forbidden"));
+	}
+
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("User should be able to disable all account notification settings")
+	@DisplayName("User should be able to disable all account notification settings")
+	void disableAllAccountNotificationSettings() {
+		AccountDAOs accountDaos = daoApiSteps.getAccountDaos(accountId).then()
+				.statusCode(HTTP_OK)
+				.extract().as(AccountDAOs.class);
+
+		int accountRandomDao = faker.random().nextInt(0, accountDaos.size());
+		String daoId = accountDaos.get(accountRandomDao).getId();
+
+		AccountNotificationSettings accountNotificationSettings = notificationsApiSteps.setNotificationSettings(
+				accountToken, daoId, Collections.emptyList(), "0", false, false, false).then()
+				.statusCode(HTTP_CREATED)
+				.extract().as(AccountNotificationSettings.class);
+
+		String id = accountId + "-" + daoId;
+		notificationsApiSteps.assertDtoValue(accountNotificationSettings, AccountNotificationSettings::getId, id, "id");
+		notificationsApiSteps.assertDtoValue(accountNotificationSettings, AccountNotificationSettings::getAccountId, accountId, "accountId");
+		notificationsApiSteps.assertDtoValue(accountNotificationSettings, AccountNotificationSettings::getDaoId, daoId, "daoId");
+		notificationsApiSteps.assertCollectionHasCorrectSize(accountNotificationSettings.getTypes(), 0);
+		notificationsApiSteps.assertDtoValue(accountNotificationSettings, AccountNotificationSettings::getMutedUntilTimestamp, BigDecimal.valueOf(0), "mutedUntilTimestamp");
+		notificationsApiSteps.assertDtoValue(accountNotificationSettings, AccountNotificationSettings::getIsAllMuted, false, "isAllMuted");
+		notificationsApiSteps.assertDtoValue(accountNotificationSettings, AccountNotificationSettings::getEnableSms, false, "enableSms");
+		notificationsApiSteps.assertDtoValue(accountNotificationSettings, AccountNotificationSettings::getEnableEmail, false, "enableEmail");
+		notificationsApiSteps.assertDtoHasValue(accountNotificationSettings, AccountNotificationSettings::getUpdatedAt, "updatedAt");
 	}
 }
