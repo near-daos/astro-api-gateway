@@ -16,6 +16,7 @@ import org.junit.jupiter.params.provider.NullSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
+import static api.app.astrodao.com.core.Constants.Variables.EMPTY_STRING;
 import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_FORBIDDEN;
 import static org.hamcrest.Matchers.equalTo;
@@ -28,7 +29,6 @@ import static org.hamcrest.Matchers.equalTo;
 public class AccountEmailVerifyApiTests extends BaseTest {
 	private final AccountApiSteps accountApiSteps;
 	private final Faker faker;
-	public final static String EMPTY_STRING = "";
 
 	@Value("${accounts.account1.token}")
 	private String account1token;

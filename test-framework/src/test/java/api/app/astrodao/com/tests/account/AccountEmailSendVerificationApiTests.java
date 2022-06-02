@@ -16,6 +16,7 @@ import org.junit.jupiter.params.provider.NullSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
+import static api.app.astrodao.com.core.Constants.Variables.EMPTY_STRING;
 import static java.net.HttpURLConnection.*;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -26,7 +27,6 @@ import static org.hamcrest.Matchers.equalTo;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class AccountEmailSendVerificationApiTests extends BaseTest {
 	private final AccountApiSteps accountApiSteps;
-	public final static String EMPTY_STRING = "";
 
 	@Value("${accounts.account3.accountId}")
 	private String accountId;
