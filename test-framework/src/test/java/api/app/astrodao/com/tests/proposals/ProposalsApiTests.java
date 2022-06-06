@@ -120,7 +120,7 @@ public class ProposalsApiTests extends BaseTest {
 
         List<OffsetDateTime> createdAtList = proposalResponse.getData().stream().map(ProposalDto::getCreatedAt).collect(Collectors.toList());
         proposalsApiSteps.assertOffsetDateTimesAreSortedCorrectly(createdAtList, Comparator.reverseOrder(),
-                "Bounties should be sorted by createdAt in DESC order");
+                "Proposals should be sorted by createdAt in DESC order");
     }
 
     @Test
@@ -166,7 +166,7 @@ public class ProposalsApiTests extends BaseTest {
 
         List<OffsetDateTime> createdAtList = proposalResponse.getData().stream().map(ProposalDto::getCreatedAt).collect(Collectors.toList());
         proposalsApiSteps.assertOffsetDateTimesAreSortedCorrectly(createdAtList, Comparator.reverseOrder(),
-                "Bounties should be sorted by createdAt in DESC order");
+                "Proposals should be sorted by createdAt in DESC order");
     }
 
 
