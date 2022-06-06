@@ -42,4 +42,11 @@ public class ProposalsApi {
                 .accept(ContentType.JSON)
                 .get(PROPOSALS_ACCOUNT_PROPOSALS_ACCOUNT_ID, accountId);
     }
+
+    public Response getAccountProposals(Map<String, Object> queryParams, String account1Id) {
+        return given().spec(requestSpec)
+                .queryParams(queryParams)
+                .accept(ContentType.JSON)
+                .get(PROPOSALS_ACCOUNT_PROPOSALS_ACCOUNT_ID, account1Id);
+    }
 }
