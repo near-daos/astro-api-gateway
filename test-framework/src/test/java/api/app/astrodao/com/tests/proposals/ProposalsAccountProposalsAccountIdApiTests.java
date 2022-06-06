@@ -163,4 +163,54 @@ public class ProposalsAccountProposalsAccountIdApiTests extends BaseTest {
 		proposalsApiSteps.assertOffsetDateTimesAreSortedCorrectly(createdAtList, Comparator.reverseOrder(),
 		                                                          "Account proposals should be sorted by createdAt in DESC order");
 	}
+
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("User should be able to get account proposals by 'accountId' with query params: [sort, fields, offset, s]")
+	@DisplayName("User should be able to get account proposals by 'accountId' with query params: [sort, fields, offset, s]")
+	void getListOfAccountProposalsWithOffsetSortFieldsSParams() {
+		int count = 50;
+		String type = "ChangePolicy";
+		Map<String, Object> query = Map.of(
+				"sort","createdAt,DESC",
+				"offset", 50,
+				"s", String.format("{\"type\": \"%s\"}", type),
+				"fields", "createdAt,id,kind,description,type"
+		);
+
+		ProposalResponse proposalResponse = proposalsApiSteps.getAccountProposals(query, account1Id).then()
+				.statusCode(HTTP_OK)
+				.extract().as(ProposalResponse.class);
+
+		proposalsApiSteps.assertDtoValue(proposalResponse, r -> r.getCount().intValue(), count, "count");
+		proposalsApiSteps.assertDtoValueGreaterThanOrEqualTo(proposalResponse, r -> r.getTotal().intValue(), 1499, "total");
+		proposalsApiSteps.assertDtoValue(proposalResponse, r -> r.getPage().intValue(), 2, "page");
+		proposalsApiSteps.assertDtoValueGreaterThanOrEqualTo(proposalResponse, r -> r.getPageCount().intValue(), 30, "pageCount");
+		proposalsApiSteps.assertCollectionHasCorrectSize(proposalResponse.getData(), count);
+
+		proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getCreatedAt() != null, "data/createdAt");
+		proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getId().contains(".sputnikv2.testnet-"), "data/id");
+		proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> !r.getDescription().isEmpty(), "data/description");
+		proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getKind() != null, "data/kind");
+		proposalsApiSteps.assertCollectionContainsOnly(proposalResponse.getData(), proposalDto -> proposalDto.getKind().getType(), type, "data/kind/type");
+		proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getType().equals(type), "data/type");
+		proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getDao() != null, "data/dao");
+		proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getActions() != null, "data/actions");
+		proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getCommentsCount() >= 0, "data/commentsCount");
+		proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getPermissions() != null, "data/permissions");
+
+		proposalsApiSteps.assertCollectionElementsHasNoValue(proposalResponse.getData(), r -> r.getUpdatedAt() == null, "data/updatedAt");
+		proposalsApiSteps.assertCollectionHasExpectedSize(proposalResponse.getData(), ProposalDto::getTransactionHash, count, "data/transactionHash");
+		proposalsApiSteps.assertCollectionElementsHasNoValue(proposalResponse.getData(), r -> r.getProposalId() == null, "data/proposalId");
+		proposalsApiSteps.assertCollectionElementsHasNoValue(proposalResponse.getData(), r -> r.getDaoId() == null, "data/daoId");
+		proposalsApiSteps.assertCollectionElementsHasNoValue(proposalResponse.getData(), r -> r.getProposer() == null, "data/proposer");
+		proposalsApiSteps.assertCollectionElementsHasNoValue(proposalResponse.getData(), r -> r.getStatus() == null, "data/status");
+		proposalsApiSteps.assertCollectionElementsHasNoValue(proposalResponse.getData(), r -> r.getVoteStatus() == null, "data/voteStatus");
+		proposalsApiSteps.assertCollectionElementsHasNoValue(proposalResponse.getData(), r -> r.getVotes() == null, "data/votes");
+		proposalsApiSteps.assertCollectionElementsHasNoValue(proposalResponse.getData(), r -> r.getVotePeriodEnd() == null, "data/votePeriodEnd");
+
+		List<OffsetDateTime> createdAtList = proposalResponse.getData().stream().map(ProposalDto::getCreatedAt).collect(Collectors.toList());
+		proposalsApiSteps.assertOffsetDateTimesAreSortedCorrectly(createdAtList, Comparator.reverseOrder(),
+		                                                          "Account proposals should be sorted by createdAt in DESC order");
+	}
 }
