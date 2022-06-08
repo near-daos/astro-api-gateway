@@ -38,6 +38,7 @@ public class Constants {
 
 		public static final String PROPOSALS = "/api/v1/proposals";
 		public static final String PROPOSALS_ID = "/api/v1/proposals/{id}";
+		public static final String PROPOSALS_ACCOUNT_PROPOSALS_ACCOUNT_ID = "/api/v1/proposals/account-proposals/{accountId}";
 
 		public static final String COMMENTS = "/api/v1/comments";
 		public static final String COMMENTS_ID = "/api/v1/comments/{id}";

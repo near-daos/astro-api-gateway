@@ -56,7 +56,7 @@ public class ProposalsApiTests extends BaseTest {
         proposalsApiSteps.assertDtoValueGreaterThan(proposalResponse, r -> r.getTotal().intValue(), limit, "total");
         proposalsApiSteps.assertDtoValueGreaterThan(proposalResponse, r -> r.getPageCount().intValue(), 1, "pageCount");
         proposalsApiSteps.assertDtoValue(proposalResponse, r -> r.getPage().intValue(), page, "page");
-        proposalsApiSteps.assertDtoValue(proposalResponse, r -> r.getCount().intValue(), limit, "limit");
+        proposalsApiSteps.assertDtoValue(proposalResponse, r -> r.getCount().intValue(), limit, "count");
         proposalsApiSteps.assertCollectionHasCorrectSize(proposalResponse.getData(), limit);
         proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getCreatedAt() != null, "data/createdAt");
         proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getUpdatedAt() != null, "data/updatedAt");
@@ -97,7 +97,7 @@ public class ProposalsApiTests extends BaseTest {
         proposalsApiSteps.assertDtoValueGreaterThan(proposalResponse, r -> r.getTotal().intValue(), count, "total");
         proposalsApiSteps.assertDtoValueGreaterThan(proposalResponse, r -> r.getPageCount().intValue(), 1, "pageCount");
         proposalsApiSteps.assertDtoValue(proposalResponse, r -> r.getPage().intValue(), page, "page");
-        proposalsApiSteps.assertDtoValue(proposalResponse, r -> r.getCount().intValue(), count, "limit");
+        proposalsApiSteps.assertDtoValue(proposalResponse, r -> r.getCount().intValue(), count, "count");
         proposalsApiSteps.assertCollectionHasCorrectSize(proposalResponse.getData(), count);
         proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getCreatedAt() != null, "data/createdAt");
         proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getUpdatedAt() != null, "data/updatedAt");
@@ -120,7 +120,7 @@ public class ProposalsApiTests extends BaseTest {
 
         List<OffsetDateTime> createdAtList = proposalResponse.getData().stream().map(ProposalDto::getCreatedAt).collect(Collectors.toList());
         proposalsApiSteps.assertOffsetDateTimesAreSortedCorrectly(createdAtList, Comparator.reverseOrder(),
-                "Bounties should be sorted by createdAt in DESC order");
+                "Proposals should be sorted by createdAt in DESC order");
     }
 
     @Test
@@ -143,7 +143,7 @@ public class ProposalsApiTests extends BaseTest {
         proposalsApiSteps.assertDtoValueGreaterThan(proposalResponse, r -> r.getTotal().intValue(), count, "total");
         proposalsApiSteps.assertDtoValueGreaterThan(proposalResponse, r -> r.getPageCount().intValue(), 1, "pageCount");
         proposalsApiSteps.assertDtoValue(proposalResponse, r -> r.getPage().intValue(), page, "page");
-        proposalsApiSteps.assertDtoValue(proposalResponse, r -> r.getCount().intValue(), count, "limit");
+        proposalsApiSteps.assertDtoValue(proposalResponse, r -> r.getCount().intValue(), count, "count");
         proposalsApiSteps.assertCollectionHasCorrectSize(proposalResponse.getData(), count);
         proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getCreatedAt() != null, "data/createdAt");
         proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getUpdatedAt() != null, "data/updatedAt");
@@ -166,7 +166,7 @@ public class ProposalsApiTests extends BaseTest {
 
         List<OffsetDateTime> createdAtList = proposalResponse.getData().stream().map(ProposalDto::getCreatedAt).collect(Collectors.toList());
         proposalsApiSteps.assertOffsetDateTimesAreSortedCorrectly(createdAtList, Comparator.reverseOrder(),
-                "Bounties should be sorted by createdAt in DESC order");
+                "Proposals should be sorted by createdAt in DESC order");
     }
 
 
@@ -189,7 +189,7 @@ public class ProposalsApiTests extends BaseTest {
         proposalsApiSteps.assertDtoValueGreaterThan(proposalResponse, r -> r.getTotal().intValue(), count, "total");
         proposalsApiSteps.assertDtoValueGreaterThan(proposalResponse, r -> r.getPageCount().intValue(), 1, "pageCount");
         proposalsApiSteps.assertDtoValue(proposalResponse, r -> r.getPage().intValue(), page, "page");
-        proposalsApiSteps.assertDtoValue(proposalResponse, r -> r.getCount().intValue(), count, "limit");
+        proposalsApiSteps.assertDtoValue(proposalResponse, r -> r.getCount().intValue(), count, "count");
         proposalsApiSteps.assertCollectionHasCorrectSize(proposalResponse.getData(), count);
 
         proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getCreatedAt() != null, "data/createdAt");
@@ -234,7 +234,7 @@ public class ProposalsApiTests extends BaseTest {
         proposalsApiSteps.assertDtoValueGreaterThan(proposalResponse, r -> r.getTotal().intValue(), count, "total");
         proposalsApiSteps.assertDtoValueGreaterThan(proposalResponse, r -> r.getPageCount().intValue(), 1, "pageCount");
         proposalsApiSteps.assertDtoValue(proposalResponse, r -> r.getPage().intValue(), page, "page");
-        proposalsApiSteps.assertDtoValue(proposalResponse, r -> r.getCount().intValue(), count, "limit");
+        proposalsApiSteps.assertDtoValue(proposalResponse, r -> r.getCount().intValue(), count, "count");
         proposalsApiSteps.assertCollectionHasCorrectSize(proposalResponse.getData(), count);
         proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getCreatedAt() != null, "data/createdAt");
         proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getUpdatedAt() != null, "data/updatedAt");
@@ -275,7 +275,7 @@ public class ProposalsApiTests extends BaseTest {
         proposalsApiSteps.assertDtoValueGreaterThan(proposalResponse, r -> r.getTotal().intValue(), count, "total");
         proposalsApiSteps.assertDtoValueGreaterThan(proposalResponse, r -> r.getPageCount().intValue(), 1, "pageCount");
         proposalsApiSteps.assertDtoValue(proposalResponse, r -> r.getPage().intValue(), page, "page");
-        proposalsApiSteps.assertDtoValue(proposalResponse, r -> r.getCount().intValue(), count, "limit");
+        proposalsApiSteps.assertDtoValue(proposalResponse, r -> r.getCount().intValue(), count, "count");
         proposalsApiSteps.assertCollectionHasCorrectSize(proposalResponse.getData(), count);
 
         proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getCreatedAt() != null, "data/createdAt");
@@ -316,7 +316,7 @@ public class ProposalsApiTests extends BaseTest {
         proposalsApiSteps.assertDtoValueGreaterThan(proposalResponse, r -> r.getTotal().intValue(), count, "total");
         proposalsApiSteps.assertDtoValueGreaterThan(proposalResponse, r -> r.getPageCount().intValue(), 1, "pageCount");
         proposalsApiSteps.assertDtoValue(proposalResponse, r -> r.getPage().intValue(), page, "page");
-        proposalsApiSteps.assertDtoValue(proposalResponse, r -> r.getCount().intValue(), count, "limit");
+        proposalsApiSteps.assertDtoValue(proposalResponse, r -> r.getCount().intValue(), count, "count");
         proposalsApiSteps.assertCollectionHasCorrectSize(proposalResponse.getData(), count);
 
         proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getCreatedAt() != null, "data/createdAt");
