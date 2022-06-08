@@ -21,8 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
-import static java.net.HttpURLConnection.HTTP_OK;
+import static java.net.HttpURLConnection.*;
 import static org.hamcrest.Matchers.equalTo;
 
 @Tags({@Tag("all"), @Tag("proposalsAccountProposalsAccountIdApiTests")})
@@ -362,5 +361,21 @@ public class ProposalsAccountProposalsAccountIdApiTests extends BaseTest {
 				.statusCode(HTTP_BAD_REQUEST)
 				.body("statusCode", equalTo(HTTP_BAD_REQUEST),
 				      "message", equalTo(errorMsg));
+	}
+
+	@ParameterizedTest
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 404 for account proposals with invalid 'accountId' param")
+	@DisplayName("Get HTTP 404 for account proposals with invalid 'accountId' param")
+	@CsvSource({"invalidAccountId", "2212332141", "-1", "0", "testdao3132498.testnet",
+			"*", "autotest-dao-1.sputnikv2.testnet-1", "another-magic.near"})
+	void getHttp404ForAccountProposalsWithInvalidAccountId(String accountIdParam) {
+		String errorMessage = String.format("Account does not exist: %s", accountIdParam);
+
+		proposalsApiSteps.getAccountProposalsByAccountId(accountIdParam).then()
+				.statusCode(HTTP_NOT_FOUND)
+				.body("statusCode", equalTo(HTTP_NOT_FOUND),
+				      "message", equalTo(errorMessage),
+				      "error", equalTo("Not Found"));
 	}
 }
