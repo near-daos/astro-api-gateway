@@ -10,6 +10,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -19,7 +21,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_OK;
+import static org.hamcrest.Matchers.equalTo;
 
 @Tags({@Tag("all"), @Tag("proposalsAccountProposalsAccountIdApiTests")})
 @Epic("Proposals")
@@ -333,5 +337,30 @@ public class ProposalsAccountProposalsAccountIdApiTests extends BaseTest {
 		proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getActions() != null, "data/actions");
 		proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getCommentsCount() >= 0, "data/commentsCount");
 		proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getPermissions() != null, "data/permissions");
+	}
+
+	@ParameterizedTest
+	@CsvSource(value = {
+			"sort; createdAt,DES; Invalid sort order. ASC,DESC expected",
+			"limit; -50; LIMIT must not be negative",
+			"offset; -5; OFFSET must not be negative",
+			"page; -2; PAGE must not be negative",
+			"s; query; Invalid search param. JSON expected",
+			"fields; ids; id field is required",
+			"fields; id; kind field is required",
+			"fields; id,kind; createdAt field is required",
+			"filter; string; Invalid filter value",
+			"or; null; Invalid or value",
+	}, delimiter = 59)
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 400 status code for account proposals with 'accountId' param")
+	@DisplayName("Get HTTP 400 status code for account proposals with 'accountId' param")
+	void getHttp400StatusCodeForAccountProposalsWithAccountIdParam(String key, String value, String errorMsg) {
+		Map<String, Object> query = Map.of(key, value);
+
+		proposalsApiSteps.getAccountProposals(query, account1Id).then()
+				.statusCode(HTTP_BAD_REQUEST)
+				.body("statusCode", equalTo(HTTP_BAD_REQUEST),
+				      "message", equalTo(errorMsg));
 	}
 }
