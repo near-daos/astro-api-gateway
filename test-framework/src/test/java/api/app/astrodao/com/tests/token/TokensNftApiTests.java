@@ -26,8 +26,8 @@ public class TokensNftApiTests extends BaseTest {
 
 	@Test
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("Get list of tokens with query param: [sort, limit, offset]")
-	@DisplayName("Get list of tokens with query param: [sort, limit, offset]")
+	@Story("Get list of NFTs with query param: [sort, limit, offset]")
+	@DisplayName("Get list of NFTs with query param: [sort, limit, offset]")
 	void getNFTsWithSortLimitOffsetParams() {
 		Map<String, Object> query = Map.of(
 				"sort","createdAt,DESC",
@@ -51,7 +51,6 @@ public class TokensNftApiTests extends BaseTest {
 		tokenApiSteps.assertCollectionElementsHasValue(tokenResponse.getData(), r -> !r.getContractId().isBlank(), "contractId");
 		tokenApiSteps.assertCollectionElementsHasValue(tokenResponse.getData(), r -> !r.getContract().getId().isBlank(), "contract/id");
 		tokenApiSteps.assertCollectionElementsHasValue(tokenResponse.getData(), r -> !r.getContract().getSpec().isBlank(), "contract/spec");
-		tokenApiSteps.assertCollectionElementsHasValue(tokenResponse.getData(), r -> !r.getContract().getIcon().isBlank(), "contract/icon");
 	}
 
 	@Test
@@ -83,6 +82,7 @@ public class TokensNftApiTests extends BaseTest {
 	@Test
 	@Severity(SeverityLevel.CRITICAL)
 	@Story("Get list of NFTs with query param: [sort, fields]")
+	@DisplayName("Get list of NFTs with query param: [sort, fields]")
 	void getListOfNFTsWithSortFieldsParams() {
 		int page = 1;
 		Map<String, Object> query = Map.of(
