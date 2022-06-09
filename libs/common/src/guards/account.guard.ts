@@ -19,12 +19,14 @@ export class AccountAccessGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest();
+    const authHeader =
+      req.headers['authorization'] || req.headers['x-authorization'];
 
-    if (!req.headers['authorization']) {
+    if (!authHeader) {
       throw new ForbiddenException(`Authorization header is missing`);
     }
 
-    const [type, token] = req.headers['authorization'].split(' ');
+    const [type, token] = authHeader.split(' ');
 
     if (type !== 'Bearer' || !token) {
       throw new ForbiddenException(`Authorization header format is invalid`);
