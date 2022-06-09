@@ -119,7 +119,7 @@ export class BountyController {
   })
   @ApiForbiddenResponse({
     description:
-      'Account <accountId> identity is invalid - public key / bad signature/public key size / Invalid signature',
+      'Account <accountId> identity is invalid - public key / invalid signature / invalid accountId',
   })
   @ApiBearerAuth()
   @UseGuards(AccountAccessGuard, CouncilMemberGuard)

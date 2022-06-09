@@ -29,7 +29,7 @@ import static org.hamcrest.Matchers.equalTo;
 public class NotificationsIdApiTests extends BaseTest {
 	private final NotificationsApiSteps notificationsApiSteps;
 
-	@Value("${test.accountId}")
+	@Value("${accounts.account1.accountId}")
 	private String testAccountId;
 
 	@Value("${test.dao1}")

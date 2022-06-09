@@ -27,15 +27,12 @@ public class AccountSubscriptionsApiTests extends BaseTest {
 	@Value("${accounts.account1.accountId}")
 	private String accountId;
 
-	@Value("${accounts.account1.publicKey}")
-	private String accountPublicKey;
-
-	@Value("${accounts.account1.signature}")
-	private String accountSignature;
+	@Value("${accounts.account1.token}")
+	private String account1AuthToken;
 
 	@BeforeAll
 	public void cleanUpSubscriptions() {
-		subscriptionsApiSteps.cleanUpSubscriptions(accountId, accountPublicKey, accountSignature);
+		subscriptionsApiSteps.cleanUpSubscriptions(accountId, account1AuthToken);
 	}
 
 	@Test
@@ -50,7 +47,7 @@ public class AccountSubscriptionsApiTests extends BaseTest {
 				.statusCode(HTTP_OK)
 				.extract().as(Subscriptions.class);
 
-		subscriptionsApiSteps.subscribeDao(accountId, accountPublicKey, accountSignature, dao).then()
+		subscriptionsApiSteps.subscribeDao(account1AuthToken, dao).then()
 				.statusCode(HTTP_CREATED);
 
 		Subscriptions subscriptionsAfter = subscriptionsApiSteps.accountSubscriptions(accountId).then()

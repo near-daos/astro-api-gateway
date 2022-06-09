@@ -123,10 +123,12 @@ export class TransactionActionHandlerService {
     );
 
     if (errors.length > 0) {
-      this.logger.error(`Handling transaction failed with errors:`);
       errors.forEach((error) => {
-        this.logger.error(error);
+        this.logger.error(
+          `Handling transaction ${action.transactionHash} failed with error: ${error}`,
+        );
       });
+      throw new Error(`Handling transaction ${action.transactionHash} failed`);
     } else {
       this.logger.log(
         `Transaction successfully handled: ${action.transactionHash}`,

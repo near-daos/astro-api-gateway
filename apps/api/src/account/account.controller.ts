@@ -66,7 +66,7 @@ export class AccountController {
   })
   @ApiForbiddenResponse({
     description:
-      'Account <accountId> identity is invalid - public key / bad signature/public key size / Invalid signature',
+      'Account <accountId> identity is invalid - public key / invalid signature / invalid accountId',
   })
   @ApiBadRequestResponse({
     description: 'Invalid email provided',
@@ -91,7 +91,7 @@ export class AccountController {
   })
   @ApiForbiddenResponse({
     description:
-      'Account <accountId> identity is invalid - public key / bad signature/public key size / Invalid signature',
+      'Account <accountId> identity is invalid - public key / invalid signature / invalid accountId',
   })
   @ApiBadRequestResponse({
     description:
@@ -112,7 +112,7 @@ export class AccountController {
   })
   @ApiForbiddenResponse({
     description:
-      'Account <accountId> identity is invalid - public key / bad signature/public key size / Invalid signature',
+      'Account <accountId> identity is invalid - public key / invalid signature / invalid accountId',
   })
   @ApiBadRequestResponse({
     description: 'No email found for account / Invalid verification code',
@@ -160,7 +160,7 @@ export class AccountController {
   })
   @ApiForbiddenResponse({
     description:
-      'Account <accountId> identity is invalid - public key / bad signature/public key size / Invalid signature',
+      'Account <accountId> identity is invalid - public key / invalid signature / invalid accountId',
   })
   @ApiBadRequestResponse({
     description: 'Invalid phone provided',
@@ -185,7 +185,7 @@ export class AccountController {
   })
   @ApiForbiddenResponse({
     description:
-      'Account <accountId> identity is invalid - public key / bad signature/public key size / Invalid signature',
+      'Account <accountId> identity is invalid - public key / invalid signature / invalid accountId',
   })
   @ApiBadRequestResponse({
     description:
@@ -206,7 +206,7 @@ export class AccountController {
   })
   @ApiForbiddenResponse({
     description:
-      'Account <accountId> identity is invalid - public key / bad signature/public key size / Invalid signature',
+      'Account <accountId> identity is invalid - public key / invalid signature / invalid accountId',
   })
   @ApiBadRequestResponse({
     description:

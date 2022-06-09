@@ -49,9 +49,10 @@ public class DaoAccountDaosAccountIdApiTests extends BaseTest {
 				"test-dao-1640171866823.sputnikv2.testnet",
 				"autotest-dao-1.sputnikv2.testnet",
 				"test-dao-1640080131167.sputnikv2.testnet",
-				"test-dao-1640080006438.sputnikv2.testnet");
+				"test-dao-1640080006438.sputnikv2.testnet",
+				"test-dao-for-ui-uno.sputnikv2.testnet");
 
-		daoApiSteps.assertCollectionHasCorrectSize(accountDaos, 8);
+		daoApiSteps.assertCollectionHasCorrectSize(accountDaos, 9);
 		daoApiSteps.assertCollectionHasSameElementsAs(accountDaos, Dao::getId, expectedDaoIds, "id");
 		daoApiSteps.assertCollectionContainsExactlyInAnyOrder(accountDaos, Dao::getStatus, "Inactive");
 	}

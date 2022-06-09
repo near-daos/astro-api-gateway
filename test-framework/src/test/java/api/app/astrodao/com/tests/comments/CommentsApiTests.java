@@ -1,6 +1,6 @@
 package api.app.astrodao.com.tests.comments;
 
-import api.app.astrodao.com.core.dto.api.comments.CreatedComment;
+import api.app.astrodao.com.core.utils.Base64Utils;
 import api.app.astrodao.com.core.utils.WaitUtils;
 import api.app.astrodao.com.openapi.models.Comment;
 import api.app.astrodao.com.openapi.models.CommentResponse;
@@ -8,7 +8,6 @@ import api.app.astrodao.com.steps.CommentsApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import com.github.javafaker.Faker;
 import io.qameta.allure.*;
-import io.restassured.response.Response;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -25,6 +24,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static java.net.HttpURLConnection.*;
+import static org.hamcrest.Matchers.equalTo;
 
 @Tags({@Tag("all"), @Tag("commentsApiTests")})
 @Epic("Comments")
@@ -38,7 +38,7 @@ public class CommentsApiTests extends BaseTest {
     @Value("${test.dao1}")
     private String testDao;
 
-    @Value("${test.accountId}")
+    @Value("${accounts.account1.accountId}")
     private String testAccountId;
 
     @Value("${test.proposal1}")
@@ -56,11 +56,15 @@ public class CommentsApiTests extends BaseTest {
     @Value("${accounts.account1.signature}")
     private String account1Signature;
 
+    @Value("${accounts.account1.token}")
+    private String account1AuthToken;
+
     @Value("${accounts.account2.accountId}")
     private String account2Id;
 
     @Value("${accounts.account2.publicKey}")
     private String account2PublicKey;
+
 
     @Test
     @Severity(SeverityLevel.CRITICAL)
@@ -255,19 +259,19 @@ public class CommentsApiTests extends BaseTest {
                 "s", String.format("{\"message\": \"%s\"}", commentMsg)
         );
 
-        CreatedComment createdComment = commentsApiSteps.createComment(
-                account1Id, account1PublicKey, account1Signature,
-                testProposal, contextType, commentMsg)
+        Comment createdComment = commentsApiSteps.createComment(testProposal, contextType, commentMsg, account1AuthToken)
                 .then()
                 .statusCode(HTTP_CREATED)
-                .extract().as(CreatedComment.class);
+                .extract().as(Comment.class);
 
-        commentsApiSteps.assertDtoValue(createdComment, CreatedComment::getContextId, testProposal, "contextId");
-        commentsApiSteps.assertDtoValue(createdComment, CreatedComment::getContextType, contextType, "contextType");
-        commentsApiSteps.assertDtoValue(createdComment, CreatedComment::getMessage, commentMsg, "message");
-        commentsApiSteps.assertDtoValue(createdComment, CreatedComment::getAccountId, account1Id, "accountId");
-        commentsApiSteps.assertDtoValue(createdComment, CreatedComment::getPublicKey, account1PublicKey, "publicKey");
-        commentsApiSteps.assertDtoHasValue(createdComment, CreatedComment::getId, "id");
+        commentsApiSteps.assertDtoHasValue(createdComment, Comment::getCreatedAt, "createdAt");
+        commentsApiSteps.assertDtoHasValue(createdComment, Comment::getUpdatedAt, "updatedAt");
+        commentsApiSteps.assertDtoHasValue(createdComment, Comment::getId, "id");
+        commentsApiSteps.assertDtoValue(createdComment, Comment::getDaoId, testDao, "daoId");
+        commentsApiSteps.assertDtoValue(createdComment, Comment::getContextId, testProposal, "contextId");
+        commentsApiSteps.assertDtoValue(createdComment, Comment::getContextType, contextType, "contextType");
+        commentsApiSteps.assertDtoValue(createdComment, Comment::getAccountId, account1Id, "accountId");
+        commentsApiSteps.assertDtoValue(createdComment, Comment::getMessage, commentMsg, "message");
 
         CommentResponse commentResponse = commentsApiSteps.getComments(queryToGetCreatedComment).then()
                 .statusCode(HTTP_OK)
@@ -300,18 +304,19 @@ public class CommentsApiTests extends BaseTest {
                 "s", String.format("{\"message\": \"%s\"}", commentMsg)
         );
 
-        CreatedComment createdComment = commentsApiSteps.createComment(
-                        account1Id, account1PublicKey, account1Signature, testBounty,contextType, commentMsg)
+        Comment createdComment = commentsApiSteps.createComment(testBounty, contextType, commentMsg, account1AuthToken)
                 .then()
                 .statusCode(HTTP_CREATED)
-                .extract().as(CreatedComment.class);
+                .extract().as(Comment.class);
 
-        commentsApiSteps.assertDtoValue(createdComment, CreatedComment::getContextId, testBounty, "contextId");
-        commentsApiSteps.assertDtoValue(createdComment, CreatedComment::getContextType, contextType, "contextType");
-        commentsApiSteps.assertDtoValue(createdComment, CreatedComment::getMessage, commentMsg, "message");
-        commentsApiSteps.assertDtoValue(createdComment, CreatedComment::getAccountId, account1Id, "accountId");
-        commentsApiSteps.assertDtoValue(createdComment, CreatedComment::getPublicKey, account1PublicKey, "publicKey");
-        commentsApiSteps.assertDtoHasValue(createdComment, CreatedComment::getId, "id");
+        commentsApiSteps.assertDtoHasValue(createdComment, Comment::getCreatedAt, "createdAt");
+        commentsApiSteps.assertDtoHasValue(createdComment, Comment::getUpdatedAt, "updatedAt");
+        commentsApiSteps.assertDtoHasValue(createdComment, Comment::getId, "id");
+        commentsApiSteps.assertDtoValue(createdComment, Comment::getDaoId, testDao, "daoId");
+        commentsApiSteps.assertDtoValue(createdComment, Comment::getContextId, testBounty, "contextId");
+        commentsApiSteps.assertDtoValue(createdComment, Comment::getContextType, contextType, "contextType");
+        commentsApiSteps.assertDtoValue(createdComment, Comment::getAccountId, account1Id, "accountId");
+        commentsApiSteps.assertDtoValue(createdComment, Comment::getMessage, commentMsg, "message");
 
         CommentResponse commentResponse = commentsApiSteps.getComments(queryToGetCreatedComment).then()
                 .statusCode(HTTP_OK)
@@ -339,13 +344,13 @@ public class CommentsApiTests extends BaseTest {
         String contextType = "Proposal";
         String errorMsg = String.format("Account %s identity is invalid - public key", account1Id);
         String commentMsg = WaitUtils.getEpochMillis() + faker.lorem().characters(15, 20);
+        String authToken = Base64Utils.encodeAuthToken(account1Id, account2PublicKey, account1Signature);
 
-        Response newCommentResponse = commentsApiSteps.createComment(
-                account1Id, account2PublicKey, account1Signature, testProposal, contextType, commentMsg
-        );
-
-        commentsApiSteps.assertResponseStatusCode(newCommentResponse, HTTP_FORBIDDEN);
-        commentsApiSteps.assertStringContainsValue(newCommentResponse.body().asString(), errorMsg);
+        commentsApiSteps.createComment(testProposal, contextType, commentMsg, authToken).then()
+                .statusCode(HTTP_FORBIDDEN)
+                .body("statusCode", equalTo(HTTP_FORBIDDEN),
+                      "message", equalTo(errorMsg),
+                      "error", equalTo("Forbidden"));
     }
 
     @Test
@@ -358,11 +363,12 @@ public class CommentsApiTests extends BaseTest {
         String errorMsg = String.format("Proposal with id %s not found", invalidContextId);
         String commentMsg = WaitUtils.getEpochMillis() + faker.lorem().characters(15, 20);
 
-        commentsApiSteps.createComment(
-                account1Id, account1PublicKey, account1Signature, invalidContextId, contextType, commentMsg)
+        commentsApiSteps.createComment(invalidContextId, contextType, commentMsg, account1AuthToken)
                 .then()
                 .statusCode(HTTP_NOT_FOUND)
-                .extract().body().path("message", errorMsg);
+                .body("statusCode", equalTo(HTTP_NOT_FOUND),
+                      "message", equalTo(errorMsg),
+                      "error", equalTo("Not Found"));
     }
 
     @Test
@@ -379,14 +385,12 @@ public class CommentsApiTests extends BaseTest {
                 "s", String.format("{\"message\": \"%s\"}", commentMsg)
         );
 
-        CreatedComment createdComment = commentsApiSteps.createComment(
-                        account1Id, account1PublicKey, account1Signature, testProposal, contextType, commentMsg)
+        Comment createdComment = commentsApiSteps.createComment(testProposal, contextType, commentMsg, account1AuthToken)
                 .then()
                 .statusCode(HTTP_CREATED)
-                .extract().as(CreatedComment.class);
+                .extract().as(Comment.class);
 
-        commentsApiSteps.deleteComment(
-                account1Id, account1PublicKey, account1Signature, createdComment.getId(), reason)
+        commentsApiSteps.deleteComment(createdComment.getId(), reason, account1AuthToken)
                 .then()
                 .statusCode(HTTP_OK);
 
@@ -410,33 +414,35 @@ public class CommentsApiTests extends BaseTest {
         BigDecimal invalidId = BigDecimal.valueOf(31313);
         String errorMsg = String.format("Comment with commentId %s not found", invalidId);
 
-        commentsApiSteps.deleteComment(
-                        account1Id, account1PublicKey, account1Signature, invalidId, reason)
+        commentsApiSteps.deleteComment(invalidId, reason, account1AuthToken)
                 .then()
                 .statusCode(HTTP_NOT_FOUND)
-                .extract().body().path("message", errorMsg);
+                .body("statusCode", equalTo(HTTP_NOT_FOUND),
+                        "message", equalTo(errorMsg),
+                      "error", equalTo("Not Found"));
     }
 
     @Test
     @Severity(SeverityLevel.CRITICAL)
-    @Story("User should not be able to delete existing comment for a proposal (by using invalid public key)")
-    @DisplayName("User should not be able to delete existing comment for a proposal (by using invalid public key)")
-    void deleteExistingCommentForProposalWithInvalidPublicKey() {
+    @Story("User should not be able to delete existing comment for a proposal (by using invalid public key in authToken)")
+    @DisplayName("User should not be able to delete existing comment for a proposal (by using invalid public key in authToken)")
+    void deleteExistingCommentForProposalWithInvalidPublicKeyInAuthToken() {
         String contextType = "Proposal";
         String reason = "Language";
         String errorMsg = String.format("Account %s identity is invalid - public key", account1Id);
         String commentMsg = WaitUtils.getEpochMillis() + faker.lorem().characters(15, 20);
+        String invalidAuthToken = Base64Utils.encodeAuthToken(account1Id, account2PublicKey, account1Signature);
 
-        CreatedComment createdComment = commentsApiSteps.createComment(
-                        account1Id, account1PublicKey, account1Signature, testProposal, contextType, commentMsg)
+        Comment createdComment = commentsApiSteps.createComment(testProposal, contextType, commentMsg, account1AuthToken)
                 .then()
                 .statusCode(HTTP_CREATED)
-                .extract().as(CreatedComment.class);
+                .extract().as(Comment.class);
 
-        commentsApiSteps.deleteComment(
-                        account1Id, account2PublicKey, account1Signature, createdComment.getId(), reason)
+        commentsApiSteps.deleteComment(createdComment.getId(), reason, invalidAuthToken)
                 .then()
                 .statusCode(HTTP_FORBIDDEN)
-                .extract().body().path("message", errorMsg);
+                .body("statusCode", equalTo(HTTP_FORBIDDEN),
+                      "message", equalTo(errorMsg),
+                      "error", equalTo("Forbidden"));
     }
 }
