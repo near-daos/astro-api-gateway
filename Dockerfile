@@ -15,6 +15,9 @@ ENV APP_NAME ${APP_NAME}
 # requirements
 RUN apk update && apk add curl bash && rm -rf /var/cache/apk/*
 
+# install node-prune (https://github.com/tj/node-prune)
+RUN curl -sfL https://gobinaries.com/tj/node-prune | bash -s -- -b /usr/local/bin
+
 WORKDIR /usr/src/app
 
 COPY --from=dependencies /usr/src/app/node_modules ./node_modules
@@ -23,8 +26,10 @@ COPY . .
 
 # build application
 RUN npm link webpack && \
-  npm run build $APP_NAME && \
-  npm prune --production
+  npm run build $APP_NAME
+
+# run node prune
+RUN /usr/local/bin/node-prune
 
 # remove unused dependencies
 RUN rm -rf node_modules/rxjs/src/
