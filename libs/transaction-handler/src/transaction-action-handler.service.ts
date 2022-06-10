@@ -17,6 +17,7 @@ import {
 import { Transaction } from '@sputnik-v2/near-indexer';
 import { BountyContextService, BountyService } from '@sputnik-v2/bounty';
 import { EventService } from '@sputnik-v2/event';
+import { TokenService } from '@sputnik-v2/token';
 import { buildBountyId, buildProposalId } from '@sputnik-v2/utils';
 
 import {
@@ -50,6 +51,7 @@ export class TransactionActionHandlerService {
     private readonly bountyService: BountyService,
     private readonly bountyContextService: BountyContextService,
     private readonly eventService: EventService,
+    private readonly tokenService: TokenService,
   ) {
     const { contractName } = this.configService.get('near');
     this.contractHandlers = [
@@ -323,6 +325,24 @@ export class TransactionActionHandlerService {
     let lastBountyId;
 
     if (proposal.status === ProposalStatus.Approved) {
+      if (
+        proposalKindType === ProposalType.Transfer &&
+        proposal.kind.kind.tokenId
+      ) {
+        const { contractName } = this.configService.get('near');
+        await this.tokenService.loadTokenById(proposal.kind.kind.tokenId);
+        await this.tokenService.loadBalanceById(
+          proposal.kind.kind.tokenId,
+          dao.id,
+        );
+        if (proposal.kind.kind.receiverId.includes(contractName)) {
+          await this.tokenService.loadBalanceById(
+            proposal.kind.kind.tokenId,
+            proposal.kind.kind.receiverId,
+          );
+        }
+      }
+
       if (proposalKindType === ProposalType.ChangeConfig) {
         config = await daoContract.get_config();
       }

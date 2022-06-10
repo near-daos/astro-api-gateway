@@ -4,10 +4,12 @@ import { lastValueFrom, map } from 'rxjs';
 import { ConfigService } from '@nestjs/config';
 
 import { NearApiService } from '@sputnik-v2/near-api';
-import { Token, TokenService, TokenUpdateDto } from '@sputnik-v2/token';
-
-import { castNearToken, castToken } from './types/token';
-import { castTokenBalance } from './types/token-balance';
+import {
+  Token,
+  TokenService,
+  TokenUpdateDto,
+  castNearToken,
+} from '@sputnik-v2/token';
 
 @Injectable()
 export class TokenAggregatorService {
@@ -83,23 +85,14 @@ export class TokenAggregatorService {
     tokenId: string,
     timestamp?: number,
   ): Promise<void> {
-    const contract = this.nearApiService.getContract('fToken', tokenId);
-    const metadata = await contract.ft_metadata();
-    const totalSupply = await contract.ft_total_supply();
-    await this.tokenService.create(
-      castToken(tokenId, metadata, totalSupply, timestamp),
-    );
+    await this.tokenService.loadTokenById(tokenId, timestamp);
   }
 
   public async aggregateTokenBalance(
     tokenId: string,
     accountId: string,
   ): Promise<void> {
-    const contract = this.nearApiService.getContract('fToken', tokenId);
-    const balance = await contract.ft_balance_of({ account_id: accountId });
-    await this.tokenService.createBalance(
-      castTokenBalance(tokenId, accountId, balance),
-    );
+    await this.tokenService.loadBalanceById(tokenId, accountId);
   }
 
   public async aggregateTokenPrices(): Promise<Token[]> {
