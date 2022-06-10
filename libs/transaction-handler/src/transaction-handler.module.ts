@@ -8,6 +8,7 @@ import { BountyModule } from '@sputnik-v2/bounty';
 import { ProposalModule } from '@sputnik-v2/proposal';
 import { Transaction } from '@sputnik-v2/near-indexer';
 import { EventModule } from '@sputnik-v2/event';
+import { TokenModule } from '@sputnik-v2/token';
 
 import { TransactionHandlerService } from './transaction-handler.service';
 import { TransactionActionHandlerService } from './transaction-action-handler.service';
@@ -22,6 +23,7 @@ import { TransactionActionMapperService } from './transaction-action-mapper.serv
     BountyModule,
     ProposalModule,
     EventModule,
+    TokenModule,
   ],
   providers: [
     TransactionHandlerService,
