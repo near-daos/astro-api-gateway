@@ -7,6 +7,7 @@ import api.app.astrodao.com.tests.BaseTest;
 import io.qameta.allure.*;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 
 import static java.net.HttpURLConnection.*;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.parallel.ExecutionMode.SAME_THREAD;
 
 @Tags({@Tag("all"), @Tag("accountSubscriptionsApiTests")})
 @Epic("Subscription")
@@ -21,6 +23,7 @@ import static org.hamcrest.Matchers.equalTo;
 @DisplayName("/subscriptions/account-subscriptions/{accountId} API tests")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@Execution(SAME_THREAD)
 public class AccountSubscriptionsApiTests extends BaseTest {
 	private final SubscriptionsApiSteps subscriptionsApiSteps;
 
