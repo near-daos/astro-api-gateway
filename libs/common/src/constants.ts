@@ -1,4 +1,5 @@
 export const NEAR_INDEXER_DB_CONNECTION = 'near_indexer';
+export const DRAFT_DB_CONNECTION = 'draft';
 export const NEST_APP_AGGREGATOR = 'aggregator';
 export const NEST_APP_NOTIFIER = 'notifier';
 export const NEST_APP_API = 'api';
