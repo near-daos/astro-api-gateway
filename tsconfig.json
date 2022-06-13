@@ -153,6 +153,24 @@
       ],
       "@sputnik-v2/proposal-template/*": [
         "libs/proposal-template/src/*"
+      ],
+      "@sputnik-v2/draft-proposal": [
+        "libs/draft-proposal/src"
+      ],
+      "@sputnik-v2/draft-proposal/*": [
+        "libs/draft-proposal/src/*"
+      ],
+      "@sputnik-v2/draft-comment": [
+        "libs/draft-comment/src"
+      ],
+      "@sputnik-v2/draft-comment/*": [
+        "libs/draft-comment/src/*"
+      ],
+      "@sputnik-v2/draft-hashtag": [
+        "libs/draft-hashtag/src"
+      ],
+      "@sputnik-v2/draft-hashtag/*": [
+        "libs/draft-hashtag/src/*"
       ]
     }
   }

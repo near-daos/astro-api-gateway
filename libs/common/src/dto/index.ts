@@ -10,3 +10,6 @@ export * from './SearchQuery';
 export * from './TransactionInfo';
 export * from './TransactionQuery';
 export * from './WalletCallbackParams';
+export * from './pagination.dto';
+export * from './search.dto';
+export * from './base-response.dto';
