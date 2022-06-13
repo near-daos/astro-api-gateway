@@ -19,4 +19,10 @@ public class Base64Utils {
         byte[] decodedValue = Base64.getDecoder().decode(value);
         return new String(decodedValue, StandardCharsets.UTF_8.toString());
     }
+
+    @SneakyThrows
+    public static String encodeAuthToken(String accountId, String publicKey, String signature) {
+        String input = String.format("%s|%s|%s", accountId, publicKey, signature);
+        return Base64.getEncoder().encodeToString(input.getBytes(StandardCharsets.UTF_8.toString()));
+    }
 }

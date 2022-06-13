@@ -17,7 +17,8 @@ import {
 import { Transaction } from '@sputnik-v2/near-indexer';
 import { BountyContextService, BountyService } from '@sputnik-v2/bounty';
 import { EventService } from '@sputnik-v2/event';
-import { btoaJSON, buildBountyId, buildProposalId } from '@sputnik-v2/utils';
+import { TokenService } from '@sputnik-v2/token';
+import { buildBountyId, buildProposalId } from '@sputnik-v2/utils';
 
 import {
   castActProposal,
@@ -50,6 +51,7 @@ export class TransactionActionHandlerService {
     private readonly bountyService: BountyService,
     private readonly bountyContextService: BountyContextService,
     private readonly eventService: EventService,
+    private readonly tokenService: TokenService,
   ) {
     const { contractName } = this.configService.get('near');
     this.contractHandlers = [
@@ -111,32 +113,41 @@ export class TransactionActionHandlerService {
 
     const contractHandlers = this.getContractHandlers(action.receiverId);
 
-    await PromisePool.for(contractHandlers).process(async (contractHandler) => {
-      const handler =
-        contractHandler.methodHandlers[action.methodName] ||
-        contractHandler.defaultHandler;
-      if (handler) {
-        return handler(action);
-      }
-    });
-
-    this.logger.log(
-      `Transaction successfully handled: ${action.transactionHash}`,
+    const { errors } = await PromisePool.for(contractHandlers).process(
+      async (contractHandler) => {
+        const handler =
+          contractHandler.methodHandlers[action.methodName] ||
+          contractHandler.defaultHandler;
+        if (handler) {
+          return handler(action);
+        }
+      },
     );
+
+    if (errors.length > 0) {
+      errors.forEach((error) => {
+        this.logger.error(
+          `Handling transaction ${action.transactionHash} failed with error: ${error}`,
+        );
+      });
+      throw new Error(`Handling transaction ${action.transactionHash} failed`);
+    } else {
+      this.logger.log(
+        `Transaction successfully handled: ${action.transactionHash}`,
+      );
+    }
   }
 
   async handleCreateDao(txAction: TransactionAction) {
     const { signerId, transactionHash, args, timestamp } = txAction;
     const { contractName } = this.configService.get('near');
-    const daoArgs = btoaJSON(args.args);
     const daoId = `${args.name}.${contractName}`;
-    const state = await this.nearApiService.getAccountState(daoId);
+    const daoInfo = await this.sputnikService.getDaoInfo(daoId);
     const dao = castCreateDao({
       signerId,
       transactionHash,
       daoId,
-      amount: state.amount,
-      args: daoArgs,
+      daoInfo,
       timestamp,
     });
 
@@ -224,7 +235,8 @@ export class TransactionActionHandlerService {
   }
 
   async handleActProposal(txAction: TransactionAction) {
-    const { receiverId, signerId, transactionHash, args, timestamp } = txAction;
+    const { receiverId, signerId, transactionHash, args, timestamp, status } =
+      txAction;
     const dao = await this.daoService.findOne(receiverId);
     const daoContract = this.nearApiService.getContract(
       'sputnikDao',
@@ -256,6 +268,7 @@ export class TransactionActionHandlerService {
           receiverId,
           transactionHash,
           timestamp,
+          status,
         });
         break;
 
@@ -303,6 +316,7 @@ export class TransactionActionHandlerService {
     receiverId,
     transactionHash,
     timestamp,
+    status,
   }) {
     const state = await this.nearApiService.getAccountState(receiverId);
     const proposalKindType = proposal.kind?.kind.type;
@@ -312,6 +326,24 @@ export class TransactionActionHandlerService {
     let lastBountyId;
 
     if (proposal.status === ProposalStatus.Approved) {
+      if (
+        proposalKindType === ProposalType.Transfer &&
+        proposal.kind.kind.tokenId
+      ) {
+        const { contractName } = this.configService.get('near');
+        await this.tokenService.loadTokenById(proposal.kind.kind.tokenId);
+        await this.tokenService.loadBalanceById(
+          proposal.kind.kind.tokenId,
+          dao.id,
+        );
+        if (proposal.kind.kind.receiverId.includes(contractName)) {
+          await this.tokenService.loadBalanceById(
+            proposal.kind.kind.tokenId,
+            proposal.kind.kind.receiverId,
+          );
+        }
+      }
+
       if (proposalKindType === ProposalType.ChangeConfig) {
         config = await daoContract.get_config();
       }
@@ -350,6 +382,24 @@ export class TransactionActionHandlerService {
           timestamp,
         });
       }
+
+      if (proposalKindType === ProposalType.UpgradeSelf) {
+        // TODO: Remove temporary workaround when transaction failure check will be implemented
+        this.logger.log(
+          `Start timeout to load new Version of DAO:  ${receiverId}`,
+        );
+        setTimeout(async () => {
+          this.logger.log(
+            `Updating Version of DAO: ${receiverId} due to transaction`,
+          );
+          const daoVersionHash = await this.daoService.setDaoVersion(dao.id);
+          this.logger.log(
+            `DAO ${receiverId} Version successfully updated to ${daoVersionHash}`,
+          );
+        }, 30000);
+      }
+
+      proposal.failure = status?.Failure;
     }
 
     this.logger.log(`Updating Proposal: ${proposal.id} due to transaction`);

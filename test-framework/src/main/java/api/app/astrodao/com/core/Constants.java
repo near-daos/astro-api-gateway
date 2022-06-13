@@ -18,6 +18,19 @@ public class Constants {
 	}
 
 	@UtilityClass
+	public class Variables {
+		public static final String EMPTY_STRING = "";
+	}
+
+	@UtilityClass
+	public class DisposableEmailParams {
+		public static final String ACTION_PARAM = "action";
+		public static final String GET_RANDOM_MAILBOX = "genRandomMailbox";
+		public static final String GET_MESSAGES = "getMessages";
+		public static final String READ_MESSAGE = "readMessage";
+	}
+
+	@UtilityClass
 	public class Endpoints {
 		public static final String DAOS = "/api/v1/daos";
 		public static final String DAOS_ID = "/api/v1/daos/{id}";
@@ -25,6 +38,7 @@ public class Constants {
 
 		public static final String PROPOSALS = "/api/v1/proposals";
 		public static final String PROPOSALS_ID = "/api/v1/proposals/{id}";
+		public static final String PROPOSALS_ACCOUNT_PROPOSALS_ACCOUNT_ID = "/api/v1/proposals/account-proposals/{accountId}";
 
 		public static final String COMMENTS = "/api/v1/comments";
 		public static final String COMMENTS_ID = "/api/v1/comments/{id}";
@@ -42,6 +56,12 @@ public class Constants {
 		public static final String NOTIFICATIONS = "/api/v1/notifications";
 		public static final String NOTIFICATIONS_ID = "/api/v1/notifications/{id}";
 		public static final String NOTIFICATIONS_SETTINGS = "/api/v1/notification-settings";
+		public static final String ACCOUNT_NOTIFICATION_STATUS_ACCOUNT_ID = "/api/v1/account-notification-status/{accountId}";
+
+		public static final String ACCOUNT_ID = "/api/v1/account/{id}";
+		public static final String ACCOUNT_EMAIL = "/api/v1/account/email";
+		public static final String ACCOUNT_EMAIL_SEND_VERIFICATION = "/api/v1/account/email/send-verification";
+		public static final String ACCOUNT_EMAIL_VERIFY = "/api/v1/account/email/verify";
 
 		public static final String SEARCH = "/api/v1/search";
 

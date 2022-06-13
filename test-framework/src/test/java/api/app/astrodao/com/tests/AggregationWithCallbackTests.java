@@ -14,7 +14,7 @@ import api.app.astrodao.com.core.dto.cli.proposals.view.ViewProposal;
 import api.app.astrodao.com.core.dto.cli.proposals.view.bounty.ViewAddBountyProposal;
 import api.app.astrodao.com.core.dto.cli.proposals.view.transfer.ViewTransferProposal;
 import api.app.astrodao.com.steps.DaoApiSteps;
-import api.app.astrodao.com.steps.NearCLISteps;
+import api.app.astrodao.com.steps.cli.NearCLISteps;
 import api.app.astrodao.com.steps.ProposalsApiSteps;
 import api.app.astrodao.com.steps.TransactionsSteps;
 import api.app.astrodao.com.openapi.models.Proposal.StatusEnum;
@@ -46,7 +46,7 @@ public class AggregationWithCallbackTests extends BaseTest {
     private final TransactionsSteps transactionsSteps;
     private final DaoApiSteps daoApiSteps;
 
-    @Value("${test.accountId}")
+    @Value("${accounts.account1.accountId}")
     private String testAccountId;
 
     @Test
@@ -54,8 +54,8 @@ public class AggregationWithCallbackTests extends BaseTest {
     @Story("User should be able to get newly created DAO via Sputnik v2 API")
     @DisplayName("User should be able to get newly created DAO via Sputnik v2 API")
     void userShouldBeAbleToGetNewlyCreatedDaoViaSputnikV2Api() {
-        float deposit = 5F;
-        long gasValue = 100000000000000L;
+        float deposit = 5.4F;
+        long gasValue = 300000000000000L;
         String daoDisplayName = String.format("Test DAO %s", getEpochMillis());
         String daoName = daoDisplayName.toLowerCase().replaceAll("\\s", "-");
         String daoId = String.format("%s.sputnikv2.testnet", daoName);

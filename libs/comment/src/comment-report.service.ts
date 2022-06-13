@@ -19,8 +19,11 @@ export class CommentReportService extends TypeOrmCrudService<CommentReport> {
     super(commentReportRepository);
   }
 
-  async create(commentReportDto: CommentReportDto): Promise<CommentReport> {
-    const { commentId, accountId, reason } = commentReportDto;
+  async create(
+    accountId: string,
+    commentReportDto: CommentReportDto,
+  ): Promise<CommentReport> {
+    const { commentId, reason } = commentReportDto;
     const commentReport = await this.commentReportRepository.save({
       id: buildCommentReportId(commentId, accountId),
       accountId,

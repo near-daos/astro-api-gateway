@@ -5,7 +5,6 @@ import api.app.astrodao.com.openapi.models.Dao;
 import api.app.astrodao.com.steps.DaoApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import io.qameta.allure.*;
-import io.restassured.response.Response;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -19,8 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import java.util.Arrays;
 import java.util.List;
 
-import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
-import static java.net.HttpURLConnection.HTTP_OK;
+import static java.net.HttpURLConnection.*;
 import static org.hamcrest.Matchers.equalTo;
 
 @Tags({@Tag("all"), @Tag("daoAccountDaosAccountIdApiTests")})
@@ -51,23 +49,28 @@ public class DaoAccountDaosAccountIdApiTests extends BaseTest {
 				"test-dao-1640171866823.sputnikv2.testnet",
 				"autotest-dao-1.sputnikv2.testnet",
 				"test-dao-1640080131167.sputnikv2.testnet",
-				"test-dao-1640080006438.sputnikv2.testnet");
+				"test-dao-1640080006438.sputnikv2.testnet",
+				"test-dao-for-ui-uno.sputnikv2.testnet");
 
-		daoApiSteps.assertCollectionHasCorrectSize(accountDaos, 8);
+		daoApiSteps.assertCollectionHasCorrectSize(accountDaos, 9);
 		daoApiSteps.assertCollectionHasSameElementsAs(accountDaos, Dao::getId, expectedDaoIds, "id");
-		daoApiSteps.assertCollectionContainsExactlyInAnyOrder(accountDaos, Dao::getStatus, "Inactive", "Active");
+		daoApiSteps.assertCollectionContainsExactlyInAnyOrder(accountDaos, Dao::getStatus, "Inactive");
 	}
 
 	@ParameterizedTest
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("Get empty response for invalid DAO accountId")
-	@DisplayName("Get empty response for invalid DAO accountId")
+	@Story("Get HTTP 404 for account-daos with invalid DAO accountId")
+	@DisplayName("Get HTTP 404 for account-daos with invalid DAO accountId")
 	@CsvSource({"invalidAccountId", "2212332141", "-1", "0",
-			"*", "null", "autotest-dao-1.sputnikv2.testnet-1", "another-magic.near"})
-	void getEmptyResponseWithInvalidDaoIdForAccountDaos(String accountIdParam) {
-		Response response =  daoApiSteps.getAccountDaos(accountIdParam);
-		daoApiSteps.assertResponseStatusCode(response, HTTP_OK);
-		daoApiSteps.assertStringContainsValue(response.body().asString(), "[]");
+			"*", "autotest-dao-1.sputnikv2.testnet-1", "another-magic.near"})
+	void getHttp404ForAccountDaosWithInvalidDaoId(String accountIdParam) {
+		String errorMessage = String.format("Account does not exist: %s", accountIdParam);
+
+		daoApiSteps.getAccountDaos(accountIdParam).then()
+				.statusCode(HTTP_NOT_FOUND)
+				.body("statusCode", equalTo(HTTP_NOT_FOUND),
+				      "message", equalTo(errorMessage),
+				      "error", equalTo("Not Found"));
 	}
 
 	@Test
@@ -77,7 +80,7 @@ public class DaoAccountDaosAccountIdApiTests extends BaseTest {
 	void getHttp400ForAccountDaos() {
 		daoApiSteps.getAccountDaos("").then()
 				.statusCode(HTTP_BAD_REQUEST)
-				.body("statusCode", equalTo(400),
+				.body("statusCode", equalTo(HTTP_BAD_REQUEST),
 				      "message", equalTo("Invalid Dao ID"),
 				      "error", equalTo("Bad Request"));
 	}

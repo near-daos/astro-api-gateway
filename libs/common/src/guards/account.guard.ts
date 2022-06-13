@@ -8,7 +8,6 @@ import {
 import { PublicKey } from 'near-api-js/lib/utils';
 import { Near } from 'near-api-js';
 
-import { AccountBearer } from '../dto';
 import { NEAR_PROVIDER } from '../constants';
 
 @Injectable()
@@ -20,7 +19,26 @@ export class AccountAccessGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest();
-    const { accountId, publicKey, signature } = req.body as AccountBearer;
+    const authHeader =
+      req.headers['authorization'] || req.headers['x-authorization'];
+
+    if (!authHeader) {
+      throw new ForbiddenException(`Authorization header is missing`);
+    }
+
+    const [type, token] = authHeader.split(' ');
+
+    if (type !== 'Bearer' || !token) {
+      throw new ForbiddenException(`Authorization header format is invalid`);
+    }
+
+    const data = Buffer.from(token, 'base64').toString();
+    const [accountId, publicKey, signature] = data.split('|');
+
+    if (!accountId || !publicKey || !signature) {
+      throw new ForbiddenException(`Authorization header payload is invalid`);
+    }
+
     req.accountId = accountId;
     req.isAuthenticated = await this.verifyAccount(
       accountId,

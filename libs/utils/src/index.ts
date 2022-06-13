@@ -2,7 +2,7 @@ import Decimal from 'decimal.js';
 
 import { DaoDto, Dao } from '@sputnik-v2/dao';
 import { ProposalDto, Proposal } from '@sputnik-v2/proposal';
-import { BaseResponse } from '@sputnik-v2/common';
+import { BaseResponse, PROPOSAL_DESC_SEPARATOR } from '@sputnik-v2/common';
 
 export const formatTimestamp = (timestamp: number): string => {
   const seconds = Number(timestamp / 1e9);
@@ -109,6 +109,10 @@ export const buildDaoStatsId = (daoId: string, timestamp: number): string => {
   return `${daoId}-${timestamp}`;
 };
 
+export const buildTemplateId = (daoId: string): string => {
+  return `${daoId}-${Date.now()}`;
+};
+
 export const decodeBase64 = (b: string) => {
   return Buffer.from(b, 'base64').toString('utf-8');
 };
@@ -176,4 +180,11 @@ export const getGrowth = (current: number, prev?: number) => {
 
 export const buildLikeContractName = (contractName: string) => {
   return `%.${contractName}`;
+};
+
+export const filterProposalDesc = (description = '') => {
+  const separationIndex = description.indexOf(PROPOSAL_DESC_SEPARATOR);
+  return separationIndex !== -1
+    ? description.slice(0, separationIndex)
+    : description;
 };

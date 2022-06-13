@@ -19,16 +19,19 @@ export type TransactionAction = {
   args: any;
   deposit: string;
   timestamp: number;
+  status?: any;
 };
 
 export function castNearTransactionAction(
   transactionHash: string,
+  status,
   receipt: NearTransactionReceipt,
   action: NearTransactionAction,
   timestamp = getBlockTimestamp(),
 ): TransactionAction {
   return {
     transactionHash,
+    status,
     receiverId: receipt.receiver_id,
     signerId: receipt.predecessor_id,
     methodName: action.FunctionCall?.methodName,

@@ -7,10 +7,11 @@ import {
   BadRequestException,
   UseGuards,
   Get,
+  Req,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
-  ApiBody,
+  ApiBearerAuth,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiParam,
@@ -22,13 +23,14 @@ import {
   SubscriptionService,
   SubscriptionDto,
   Subscription,
-  SubscriptionDeleteDto,
 } from '@sputnik-v2/subscription';
 import {
   AccountAccessGuard,
   DeleteOneParams,
   DB_FOREIGN_KEY_VIOLATION,
   FindAccountParams,
+  ValidAccountGuard,
+  AuthorizedRequest,
 } from '@sputnik-v2/common';
 
 @ApiTags('Subscriptions')
@@ -45,19 +47,24 @@ export class SubscriptionsController {
   })
   @ApiForbiddenResponse({
     description:
-      'Account <accountId> identity is invalid - public key / bad signature/public key size / Invalid signature',
+      'Account <accountId> identity is invalid - public key / invalid signature / invalid accountId',
   })
+  @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
   @Post('/')
   async create(
+    @Req() req: AuthorizedRequest,
     @Body() addSubscriptionDto: SubscriptionDto,
   ): Promise<Subscription> {
     try {
-      return await this.subscriptionService.create(addSubscriptionDto);
+      return await this.subscriptionService.create(
+        req.accountId,
+        addSubscriptionDto,
+      );
     } catch (error) {
       if (error.code === DB_FOREIGN_KEY_VIOLATION) {
         throw new BadRequestException(
-          `No DAO '${addSubscriptionDto.daoId}' and/or Account '${addSubscriptionDto.accountId}' found.`,
+          `No DAO '${addSubscriptionDto.daoId}' and/or Account '${req.accountId}' found.`,
         );
       }
 
@@ -74,6 +81,10 @@ export class SubscriptionsController {
     description: 'List of Subscriptions by Account',
     type: Subscription,
   })
+  @ApiNotFoundResponse({
+    description: 'Account does not exist',
+  })
+  @UseGuards(ValidAccountGuard)
   @Get('/account-subscriptions/:accountId')
   async getAccountSubscriptions(
     @Param() { accountId }: FindAccountParams,
@@ -85,7 +96,6 @@ export class SubscriptionsController {
     name: 'id',
     type: String,
   })
-  @ApiBody({ type: SubscriptionDeleteDto })
   @ApiResponse({
     status: 200,
     description: 'OK',
@@ -95,8 +105,9 @@ export class SubscriptionsController {
   })
   @ApiForbiddenResponse({
     description:
-      'Account <accountId> identity is invalid - public key / bad signature/public key size / Invalid signature',
+      'Account <accountId> identity is invalid - public key / invalid signature / invalid accountId',
   })
+  @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
   @Delete('/:id')
   remove(@Param() { id }: DeleteOneParams): Promise<void> {

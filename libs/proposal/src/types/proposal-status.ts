@@ -11,4 +11,5 @@ export enum ProposalStatus {
   Expired = 'Expired',
   /// If proposal was moved to Hub or somewhere else.
   Moved = 'Moved',
+  Failed = 'Failed',
 }

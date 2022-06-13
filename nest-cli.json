@@ -239,6 +239,15 @@
       "compilerOptions": {
         "tsConfigPath": "libs/otp/tsconfig.lib.json"
       }
+    },
+    "proposal-template": {
+      "type": "library",
+      "root": "libs/proposal-template",
+      "entryFile": "index",
+      "sourceRoot": "libs/proposal-template/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/proposal-template/tsconfig.lib.json"
+      }
     }
   }
 }

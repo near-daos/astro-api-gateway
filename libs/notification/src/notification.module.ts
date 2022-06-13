@@ -9,6 +9,7 @@ import {
 } from './entities';
 import { AccountNotificationService } from './account-notification.service';
 import { AccountNotificationSettingsService } from './account-notification-settings.service';
+import { DaoModule } from '@sputnik-v2/dao';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { AccountNotificationSettingsService } from './account-notification-setti
       AccountNotification,
       AccountNotificationSettings,
     ]),
+    DaoModule,
   ],
   providers: [
     NotificationService,

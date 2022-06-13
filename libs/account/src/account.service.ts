@@ -52,25 +52,29 @@ export class AccountService {
   }
 
   async createAccountEmail(
+    accountId: string,
     accountEmailDto: AccountEmailDto,
   ): Promise<AccountResponse> {
     await this.accountRepository.save({
       ...accountEmailDto,
+      accountId,
       isEmailVerified: false,
     });
-    await this.createNotifiAlert(accountEmailDto.accountId);
-    return this.getAccount(accountEmailDto.accountId);
+    await this.createNotifiAlert(accountId);
+    return this.getAccount(accountId);
   }
 
   async createAccountPhone(
+    accountId: string,
     accountPhoneDto: AccountPhoneDto,
   ): Promise<AccountResponse> {
     await this.accountRepository.save({
       ...accountPhoneDto,
+      accountId,
       isPhoneVerified: false,
     });
-    await this.createNotifiAlert(accountPhoneDto.accountId);
-    return this.getAccount(accountPhoneDto.accountId);
+    await this.createNotifiAlert(accountId);
+    return this.getAccount(accountId);
   }
 
   async createNotifiAlert(accountId: string): Promise<Account> {
@@ -127,9 +131,9 @@ export class AccountService {
   }
 
   async sendEmailVerification(accountId: string): Promise<VerificationStatus> {
-    const account = await this.getAccount(accountId);
+    const account = await this.accountRepository.findOne(accountId);
 
-    if (!account.email) {
+    if (!account?.email) {
       throw new BadRequestException(`No email found for account: ${accountId}`);
     }
 
@@ -181,7 +185,7 @@ export class AccountService {
   async verifyEmail(accountId: string, code: string): Promise<void> {
     const account = await this.accountRepository.findOne(accountId);
 
-    if (!account.email) {
+    if (!account?.email) {
       throw new BadRequestException(`No email found for account: ${accountId}`);
     }
 
@@ -198,9 +202,9 @@ export class AccountService {
   }
 
   async sendPhoneVerification(accountId: string): Promise<VerificationStatus> {
-    const account = await this.getAccount(accountId);
+    const account = await this.accountRepository.findOne(accountId);
 
-    if (!account.phoneNumber) {
+    if (!account?.phoneNumber) {
       throw new BadRequestException(
         `No phone number found for account: ${accountId}`,
       );
@@ -256,7 +260,7 @@ export class AccountService {
   async verifyPhone(accountId: string, code: string): Promise<void> {
     const account = await this.accountRepository.findOne(accountId);
 
-    if (!account.phoneNumber) {
+    if (!account?.phoneNumber) {
       throw new BadRequestException(
         `No phone number found for account: ${accountId}`,
       );

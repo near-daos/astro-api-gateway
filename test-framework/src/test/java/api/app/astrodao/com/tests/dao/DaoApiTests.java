@@ -168,7 +168,7 @@ public class DaoApiTests extends BaseTest {
 
         daoApiSteps.getDaos(query).then()
                 .statusCode(HTTP_BAD_REQUEST)
-                .body("statusCode", equalTo(400),
+                .body("statusCode", equalTo(HTTP_BAD_REQUEST),
                       "message", equalTo("Invalid search param. JSON expected"),
                       "error", equalTo("Bad Request"));
     }

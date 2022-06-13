@@ -15,6 +15,7 @@ import { TokenService } from '@sputnik-v2/token';
 import { DaoStatus, DaoVariant } from '@sputnik-v2/dao/types';
 
 import {
+  AccountDaoResponse,
   DaoDto,
   DaoMemberVote,
   DaoResponse,
@@ -45,16 +46,21 @@ export class DaoService extends TypeOrmCrudService<Dao> {
   async findAccountDaos(
     accountId: string,
     fields: string[],
-  ): Promise<Dao[] | DaoResponse> {
-    return await this.daoRepository
+  ): Promise<AccountDaoResponse[]> {
+    const daos = await this.daoRepository
       .createQueryBuilder('dao')
-      .select(fields.map((field) => `dao.${field}`))
+      .select([...fields.map((field) => `dao.${field}`), 'dao.council'])
       .andWhere(`:accountId = ANY(dao.accountIds)`, {
         accountId,
       })
       .andWhere('dao.status != :status', { status: DaoStatus.Disabled })
       .orderBy('dao.createTimestamp', 'DESC')
       .getMany();
+
+    return daos.map((dao) => ({
+      ...dao,
+      isCouncil: dao.council.includes(accountId),
+    }));
   }
 
   async findById(id: string): Promise<Dao> {
@@ -208,7 +214,9 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     const hasTokensVotingPower = dao.policy.roles.some(
       (role) => role.votePolicy?.['*.*']?.weightKind === WeightKind.TokenWeight,
     );
-    const hasCouncil = dao.policy.roles.some((role) => role.name === 'Council');
+    const hasCouncil = dao.policy.roles.some(
+      (role) => role.name.toLowerCase() === 'council',
+    );
 
     if (!canEveryoneAddProposal && !hasTokensVotingPower && !hasCouncil) {
       return DaoVariant.Club;
@@ -340,11 +348,8 @@ export class DaoService extends TypeOrmCrudService<Dao> {
   }
 
   async loadDaoVersions(): Promise<DaoVersion[]> {
-    const sputnikDaoFactory = this.nearApiService.getContract(
-      'sputnikDaoFactory',
-      // TODO: Remove hardcode. Add support for multiple DAO Factory contracts
-      'sputnik-factory-v3.ctindogaru.testnet',
-    );
+    const sputnikDaoFactory =
+      this.nearApiService.getContract('sputnikDaoFactory');
     const daoVersions = await sputnikDaoFactory.get_contracts_metadata();
     return this.daoVersionRepository.save(
       daoVersions.map(([hash, { version, commit_id, changelog_url }]) => ({
@@ -356,12 +361,18 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     );
   }
 
-  async setDaoVersion(id: string): Promise<void> {
+  async getDaoVersionById(id: string): Promise<DaoVersion> {
     const versions = await this.daoVersionRepository.find();
     const daoVersionHash = await this.nearApiService.getContractVersionHash(id);
+    return versions.find(({ hash }) => daoVersionHash === hash);
+  }
+
+  async setDaoVersion(id: string): Promise<string> {
+    const version = await this.getDaoVersionById(id);
     await this.daoRepository.save({
       id,
-      daoVersion: versions.find(({ hash }) => daoVersionHash === hash),
+      daoVersionHash: version?.hash,
     });
+    return version?.hash;
   }
 }

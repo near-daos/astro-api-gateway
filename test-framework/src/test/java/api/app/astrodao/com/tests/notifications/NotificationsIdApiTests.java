@@ -29,7 +29,7 @@ import static org.hamcrest.Matchers.equalTo;
 public class NotificationsIdApiTests extends BaseTest {
 	private final NotificationsApiSteps notificationsApiSteps;
 
-	@Value("${test.accountId}")
+	@Value("${accounts.account1.accountId}")
 	private String testAccountId;
 
 	@Value("${test.dao1}")
@@ -39,7 +39,7 @@ public class NotificationsIdApiTests extends BaseTest {
 	@Severity(SeverityLevel.CRITICAL)
 	@Story("Getting notification details by notification ID param")
 	@DisplayName("Getting notification details by notification ID param")
-	@CsvSource({"6z5pv7eukzhunpwzfrghz4skiugdnnbe92uzt4hvtf35-vote, test-dao-1641395769436.sputnikv2.testnet-3184, Vote, VoteRemove",
+	@CsvSource({"2ryss6nt1jksasawt3dgojwh7esm9ngnlnlydm47hvam-vote, test-dao-1641395769436.sputnikv2.testnet-3677, Vote, VoteRemove",
 			"2mqh9t9xkz2j5g1frpeudlwvchn94wjxylrscutuaqaj-changeconfig, test-dao-1641395769436.sputnikv2.testnet-3182, ChangeConfig, Created",
 			"ftugpyqo44q7m2zyepchzmvbp4x1rsm6ghqpeuyabcua-changepolicy, test-dao-1641395769436.sputnikv2.testnet-3183, ChangePolicy, Created",
 			"cpt7ra6a3qeqypjr3bawk3vmho4pwoqqzfksca6rdye7-transfer, test-dao-1641395769436.sputnikv2.testnet-3180, Transfer, Created",
@@ -74,7 +74,7 @@ public class NotificationsIdApiTests extends BaseTest {
 	void getHttp400ForNotificationId(String notificationId) {
 		notificationsApiSteps.getNotificationById(notificationId).then()
 				.statusCode(HTTP_BAD_REQUEST)
-				.body("statusCode", equalTo(400),
+				.body("statusCode", equalTo(HTTP_BAD_REQUEST),
 				      "message", equalTo("Invalid Notification ID"),
 				      "error", equalTo("Bad Request"));
 	}

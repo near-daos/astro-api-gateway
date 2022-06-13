@@ -16,7 +16,7 @@ ENV APP_NAME ${APP_NAME}
 RUN apk update && apk add curl bash && rm -rf /var/cache/apk/*
 
 # install node-prune (https://github.com/tj/node-prune)
-RUN curl -sfL https://install.goreleaser.com/github.com/tj/node-prune.sh | bash -s -- -b /usr/local/bin
+RUN curl -sfL https://gobinaries.com/tj/node-prune | bash -s -- -b /usr/local/bin
 
 WORKDIR /usr/src/app
 
@@ -27,9 +27,6 @@ COPY . .
 # build application
 RUN npm link webpack && \
   npm run build $APP_NAME
-
-# remove development dependencies
-# RUN npm prune --production
 
 # run node prune
 RUN /usr/local/bin/node-prune

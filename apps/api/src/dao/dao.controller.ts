@@ -4,10 +4,12 @@ import {
   Get,
   Param,
   UseFilters,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiNotFoundResponse,
   ApiParam,
   ApiQuery,
   ApiResponse,
@@ -20,8 +22,15 @@ import {
   FindOneParams,
   HttpCacheInterceptor,
   QueryFailedErrorFilter,
+  ValidAccountGuard,
 } from '@sputnik-v2/common';
-import { Dao, DaoMemberVote, DaoResponse, DaoService } from '@sputnik-v2/dao';
+import {
+  AccountDaoResponse,
+  Dao,
+  DaoMemberVote,
+  DaoResponse,
+  DaoService,
+} from '@sputnik-v2/dao';
 
 import { DaoCrudRequestInterceptor } from './interceptors/dao-crud.interceptor';
 
@@ -56,14 +65,20 @@ export class DaoController {
     status: 200,
     description: 'List of Sputnik DAOs by Account',
     isArray: true,
-    type: Dao,
+    type: AccountDaoResponse,
   })
-  @ApiBadRequestResponse({ description: 'Invalid Dao ID' })
+  @ApiNotFoundResponse({
+    description: 'Account does not exist',
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid Dao ID',
+  })
   @UseInterceptors(HttpCacheInterceptor)
+  @UseGuards(ValidAccountGuard)
   @Get('/account-daos/:accountId')
   async daosByAccountId(
     @Param() { accountId }: FindAccountParams,
-  ): Promise<Dao[] | DaoResponse> {
+  ): Promise<AccountDaoResponse[]> {
     return await this.daoService.findAccountDaos(
       accountId,
       DaoCrudRequestInterceptor.defaultFields,

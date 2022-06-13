@@ -1,10 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 
 import { NearApiService } from '@sputnik-v2/near-api';
-import { NFTTokenService, NFTTokenUpdateDto } from '@sputnik-v2/token';
+import { castNFT, NFTTokenService, NFTTokenUpdateDto } from '@sputnik-v2/token';
 import PromisePool from '@supercharge/promise-pool';
-
-import { castNFT } from './types/nft';
 
 @Injectable()
 export class NFTAggregatorService {

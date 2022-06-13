@@ -7,6 +7,7 @@ import { NearApiService } from '@sputnik-v2/near-api';
 
 import { Token, TokenBalance } from './entities';
 import { TokenDto, TokenBalanceDto, TokenResponse } from './dto';
+import { castToken, castTokenBalance } from '@sputnik-v2/token/types';
 
 @Injectable()
 export class TokenService extends TypeOrmCrudService<Token> {
@@ -30,6 +31,19 @@ export class TokenService extends TypeOrmCrudService<Token> {
 
   async createBalance(tokenBalanceDto: TokenBalanceDto): Promise<TokenBalance> {
     return this.tokenBalanceRepository.save(tokenBalanceDto);
+  }
+
+  async loadTokenById(tokenId: string, timestamp?: number) {
+    const contract = this.nearApiService.getContract('fToken', tokenId);
+    const metadata = await contract.ft_metadata();
+    const totalSupply = await contract.ft_total_supply();
+    await this.create(castToken(tokenId, metadata, totalSupply, timestamp));
+  }
+
+  async loadBalanceById(tokenId: string, accountId: string) {
+    const contract = this.nearApiService.getContract('fToken', tokenId);
+    const balance = await contract.ft_balance_of({ account_id: accountId });
+    await this.createBalance(castTokenBalance(tokenId, accountId, balance));
   }
 
   async lastToken(): Promise<Token> {

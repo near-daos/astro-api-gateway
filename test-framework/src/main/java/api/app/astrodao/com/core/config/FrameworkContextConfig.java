@@ -5,7 +5,6 @@ import com.github.javafaker.Faker;
 import com.github.viclovsky.swagger.coverage.FileSystemOutputWriter;
 import com.github.viclovsky.swagger.coverage.SwaggerCoverageV3RestAssured;
 import io.qameta.allure.restassured.AllureRestAssured;
-import io.restassured.RestAssured;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.config.HttpClientConfig;
 import io.restassured.config.ObjectMapperConfig;
@@ -47,6 +46,19 @@ public class FrameworkContextConfig {
                 .setBaseUri(baseUri)
                 .log(LogDetail.ALL)
                 .setConfig(restAssuredConfig)
+                .addFilter(new AllureRestAssured())
+                .addFilter(new SwaggerCoverageV3RestAssured(
+                        new FileSystemOutputWriter(Paths.get("build/swagger-coverage-output")))
+                )
+                .addHeader("User-Agent", "API Test Framework")
+                .build();
+    }
+
+    @Bean
+    public RequestSpecification requestSpecForDisposableWebMail(@Value("${framework.webmail.provider.uri}") String baseUri) {
+        return new RequestSpecBuilder()
+                .setBaseUri(baseUri)
+                .log(LogDetail.ALL)
                 .addFilter(new AllureRestAssured())
                 .addFilter(new SwaggerCoverageV3RestAssured(
                         new FileSystemOutputWriter(Paths.get("build/swagger-coverage-output")))

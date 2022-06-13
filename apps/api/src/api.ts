@@ -45,6 +45,7 @@ export default class Api {
       .setTitle('Sputnik v2 API')
       .setDescription('Sputnik v2 API Backend Server')
       .setVersion('1.0')
+      .addBearerAuth()
       .build();
 
     const document = SwaggerModule.createDocument(app, config);

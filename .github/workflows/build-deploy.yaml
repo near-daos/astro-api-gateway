@@ -142,6 +142,8 @@ jobs:
             --set environment.admin_accounts=$ADMIN_ACCOUNTS \
             --set environment.notifi_sid=$NOTIFI_SID \
             --set environment.notifi_secret=$NOTIFI_SECRET \
+            --set environment.notifi_env=$NOTIFI_ENV \
+            --set environment.notifi_prefix=$NOTIFI_PREFIX \
             --set ingress.host=$K8S_INGRESS_HOST
 
   # experimental sleep to nail down issue with tests failing after deploy

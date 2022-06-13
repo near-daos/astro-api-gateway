@@ -174,7 +174,9 @@
       "@sputnik-v2/notifi-client/(.*)": "<rootDir>/libs/notifi-client/src/$1",
       "@sputnik-v2/notifi-client": "<rootDir>/libs/notifi-client/src",
       "@sputnik-v2/otp/(.*)": "<rootDir>/libs/otp/src/$1",
-      "@sputnik-v2/otp": "<rootDir>/libs/otp/src"
+      "@sputnik-v2/otp": "<rootDir>/libs/otp/src",
+      "@sputnik-v2/proposal-template/(.*)": "<rootDir>/libs/proposal-template/src/$1",
+      "@sputnik-v2/proposal-template": "<rootDir>/libs/proposal-template/src"
     }
   }
 }

@@ -1,19 +1,17 @@
+import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
+
 buildscript {
     ext {
         aspectjVersion = '1.9.4'
         springVersion = '5.3.5'
         lombokVersion = '1.18.8'
         allureVersion = '2.17.3'
-        selenideVersion = '5.20.0'
         junitVersion = '5.8.1'
-        commonsVersion = '3.12.0'
-        snakeyamlVersion = '1.28'
-        slf4jVersion = '1.7.30'
         assertjVersion = '3.19.0'
-        okhttpVersion = '4.9.1'
+        snakeyamlVersion = '1.28'
         jacksonVersion = '2.12.3'
         restAssuredVersion = '4.5.1'
-        swaggerCoverageVersion = '1.4.5'
+        swaggerCoverageVersion = '1.5.0'
     }
 }
 
@@ -42,18 +40,9 @@ dependencies {
     implementation "org.aspectj:aspectjweaver:${aspectjVersion}"
     implementation "org.springframework:spring-context:${springVersion}"
     implementation "org.springframework:spring-test:${springVersion}"
-    implementation "org.springframework:spring-aop:${springVersion}"
     implementation "org.yaml:snakeyaml:${snakeyamlVersion}"
-    implementation "org.slf4j:slf4j-api:${slf4jVersion}"
-    implementation "org.slf4j:slf4j-log4j12:${slf4jVersion}"
-    implementation "org.apache.commons:commons-lang3:${commonsVersion}"
     implementation "org.assertj:assertj-core:${assertjVersion}"
-    implementation "com.squareup.okhttp3:okhttp:${okhttpVersion}"
-    implementation "com.squareup.okhttp3:okhttp-urlconnection:${okhttpVersion}"
     implementation "com.fasterxml.jackson.module:jackson-module-parameter-names:${jacksonVersion}"
-    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:${jacksonVersion}"
-    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${jacksonVersion}"
-    implementation "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
     implementation "com.google.code.gson:gson:2.8.9"
     implementation "org.awaitility:awaitility:4.1.1"
 
@@ -109,11 +98,23 @@ tasks.named('test') {
         }
     }
 
+    systemProperties['junit.jupiter.execution.parallel.enabled'] = true
+    systemProperties['junit.jupiter.execution.parallel.mode.default'] = 'concurrent'
+    systemProperties['junit.jupiter.execution.parallel.config.strategy'] = 'dynamic'
+    systemProperties['allure.results.directory'] = 'build/allure-results'
+
     environment "TEST_ENV", System.getProperty("test.env", "testnet")
     environment "TEST_AGG_TIMEOUT", System.getProperty("test.agg.timeout", "20")
+
+    doFirst {
+        new File(projectDir, "build/allure-results/environment.properties").text =
+                """Environment: ${System.getProperty("test.env")}
+               Tags: ${System.getProperty("includeTags")}
+            """
+    }
 }
 
-task generateOpenApiModels(type: org.openapitools.generator.gradle.plugin.tasks.GenerateTask) {
+task generateOpenApiModels(type: GenerateTask) {
     generatorName = "java"
     validateSpec = false
     inputSpec = "${buildDir}/spec.json"
@@ -155,7 +156,7 @@ task downloadSwaggerSpec(type: Download) {
 }
 
 task downloadCliForCoverage(type: Download) {
-    src "https://github.com/viclovsky/swagger-coverage/releases/download/1.4.4/swagger-coverage-1.4.4.zip"
+    src "https://github.com/viclovsky/swagger-coverage/releases/download/${swaggerCoverageVersion}/swagger-coverage-${swaggerCoverageVersion}.zip"
     dest new File("${buildDir}/swagger-coverage-commandline.zip")
 }
 
@@ -172,7 +173,7 @@ task unzipCoverageCli(type: Copy) {
 }
 
 task generateCoverage(type: Exec) {
-    workingDir "${buildDir}/swagger-coverage-commandline-1.4.4/bin"
+    workingDir "${buildDir}/swagger-coverage-commandline-${swaggerCoverageVersion}/bin"
 
     commandLine "./swagger-coverage-commandline", "-s", "../../spec.json", "-i", "../../swagger-coverage-output"
 }

@@ -3,6 +3,7 @@ import {
   Get,
   Param,
   UseFilters,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import {
@@ -24,6 +25,7 @@ import {
   QueryFailedErrorFilter,
   FindAccountParams,
   FindOneParams,
+  ValidAccountGuard,
 } from '@sputnik-v2/common';
 import {
   TokenService,
@@ -72,7 +74,10 @@ export class TokenController {
     description: 'List of Fungible Tokens by Account',
     type: Token,
   })
-  @ApiBadRequestResponse({ description: 'Invalid Account ID' })
+  @ApiNotFoundResponse({
+    description: 'Account does not exist',
+  })
+  @UseGuards(ValidAccountGuard)
   @Get('/account-tokens/:accountId')
   async tokensByDao(
     @Param() { accountId }: FindAccountParams,

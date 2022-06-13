@@ -8,8 +8,10 @@ import {
   Get,
   Delete,
   Param,
+  Req,
 } from '@nestjs/common';
 import {
+  ApiBearerAuth,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiParam,
@@ -22,6 +24,7 @@ import { ThrottlerGuard } from '@nestjs/throttler';
 
 import {
   AccountAccessGuard,
+  AuthorizedRequest,
   DeleteOneParams,
   EntityQuery,
   QueryFailedErrorFilter,
@@ -74,13 +77,17 @@ export class CommentsController {
   })
   @ApiForbiddenResponse({
     description:
-      'Account <accountId> identity is invalid - public key / bad signature/public key size / Invalid signature',
+      'Account <accountId> identity is invalid - public key / invalid signature / invalid accountId',
   })
+  @ApiBearerAuth()
   @UseGuards(ThrottlerGuard)
   @UseGuards(AccountAccessGuard)
   @Post('/')
-  async create(@Body() commentDto: CommentDto): Promise<Comment> {
-    return this.commentService.create(commentDto);
+  async create(
+    @Req() req: AuthorizedRequest,
+    @Body() commentDto: CommentDto,
+  ): Promise<Comment> {
+    return this.commentService.create(req.accountId, commentDto);
   }
 
   @ApiResponse({
@@ -90,14 +97,19 @@ export class CommentsController {
   })
   @ApiForbiddenResponse({
     description:
-      'Account <accountId> identity is invalid - public key / bad signature/public key size / Invalid signature',
+      'Account <accountId> identity is invalid - public key  / Invalid signature',
   })
+  @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
   @Post('/report')
   async createCommentReport(
+    @Req() req: AuthorizedRequest,
     @Body() commentDeleteVoteDto: CommentReportDto,
   ): Promise<CommentReport> {
-    return this.commentReportService.create(commentDeleteVoteDto);
+    return this.commentReportService.create(
+      req.accountId,
+      commentDeleteVoteDto,
+    );
   }
 
   @ApiParam({
@@ -111,22 +123,21 @@ export class CommentsController {
   })
   @ApiForbiddenResponse({
     description:
-      'Account <accountId> identity is invalid - public key / bad signature/public key size / Invalid signature',
+      'Account <accountId> identity is invalid - public key / invalid signature / invalid accountId',
   })
   @ApiNotFoundResponse({
     description: `No Comment '<id>' found.`,
   })
+  @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
   @Delete('/:id')
   async deleteComment(
+    @Req() req: AuthorizedRequest,
     @Param() { id }: DeleteOneParams,
     @Body() deleteDto: CommentDeleteDto,
   ): Promise<Comment> {
-    const comment = await this.commentService.deleteAsOwner(
-      id,
-      deleteDto.accountId,
-    );
-    await this.commentReportService.create({
+    const comment = await this.commentService.deleteAsOwner(id, req.accountId);
+    await this.commentReportService.create(req.accountId, {
       ...deleteDto,
       commentId: Number(id),
     });

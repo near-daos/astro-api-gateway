@@ -11,6 +11,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -20,7 +22,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_OK;
+import static org.hamcrest.Matchers.equalTo;
 
 @Tags({@Tag("all"), @Tag("notificationsApiTests")})
 @Epic("Notifications")
@@ -207,5 +211,25 @@ public class NotificationsApiTests extends BaseTest {
         notificationsApiSteps.assertCollectionElementsHasValue(notifications.getData(), r -> r.getStatus() != null, "data/status");
         notificationsApiSteps.assertCollectionElementsHasValue(notifications.getData(), r -> r.getMetadata() != null, "data/metadata");
         notificationsApiSteps.assertCollectionContainsExactlyInAnyOrder(notifications.getData(), Notification::getDaoId, dao1, dao2);
+    }
+
+    @ParameterizedTest
+    @CsvSource(value = {
+            "sort; createdAt,DES; Invalid sort order. ASC,DESC expected",
+            "limit; -50; LIMIT must not be negative",
+            "offset; -5; OFFSET must not be negative",
+            "page; -2; PAGE must not be negative",
+            "s; query; Invalid search param. JSON expected"
+    }, delimiter = 59)
+    @Severity(SeverityLevel.CRITICAL)
+    @Story("Get HTTP 400 for notifications")
+    @DisplayName("Get HTTP 400 for notifications")
+    void getHttp400StatusCodeForNotifications(String key, String value, String errorMsg) {
+        Map<String, Object> query = Map.of(key, value);
+
+        notificationsApiSteps.getNotifications(query).then()
+                .statusCode(HTTP_BAD_REQUEST)
+                .body("statusCode", equalTo(HTTP_BAD_REQUEST),
+                      "message", equalTo(errorMsg));
     }
 }
