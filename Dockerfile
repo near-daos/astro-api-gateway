@@ -26,7 +26,8 @@ COPY . .
 
 # build application
 RUN npm link webpack && \
-  npm run build $APP_NAME
+  npm run build $APP_NAME && \
+  npm prune --production
 
 # run node prune
 RUN /usr/local/bin/node-prune
