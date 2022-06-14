@@ -31,6 +31,7 @@ import {
 } from '@sputnik-v2/proposal';
 
 import { ProposalCrudRequestInterceptor } from './interceptors/proposal-crud.interceptor';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 
 @ApiTags('Proposals')
 @Controller()
@@ -70,6 +71,8 @@ export class ProposalController {
     type: Proposal,
   })
   @ApiBadRequestResponse({ description: 'Invalid Proposal ID' })
+  @Throttle(5, 1)
+  @UseGuards(ThrottlerGuard)
   @Get('/proposals/:id')
   async proposalById(
     @Param() { id }: FindOneParams,
