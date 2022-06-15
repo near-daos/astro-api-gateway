@@ -5,6 +5,7 @@ import { ProposalTemplateModule as ProposalTemplateModuleLib } from '@sputnik-v2
 import { NearModule } from '../near/near.module';
 
 import { ProposalTemplateController } from './proposal-template.controller';
+import { SharedProposalTemplateController } from './shared-proposal-template.controller';
 
 @Module({
   imports: [
@@ -15,6 +16,6 @@ import { ProposalTemplateController } from './proposal-template.controller';
     ProposalTemplateModuleLib,
     NearModule,
   ],
-  controllers: [ProposalTemplateController],
+  controllers: [ProposalTemplateController, SharedProposalTemplateController],
 })
 export class ProposalTemplateModule {}

@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsBoolean, IsNotEmpty, IsString } from 'class-validator';
 import { ProposalTemplateConfigDto } from '@sputnik-v2/proposal-template';
 
@@ -7,6 +7,9 @@ export class ProposalTemplateBodyDto {
   @IsString()
   @IsNotEmpty()
   name: string;
+
+  @ApiPropertyOptional()
+  description?: string;
 
   @ApiProperty()
   @IsBoolean()
