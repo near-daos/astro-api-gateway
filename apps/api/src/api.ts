@@ -25,7 +25,10 @@ export default class Api {
     });
     app.enableCors();
     app.setGlobalPrefix('/api/v1');
-    app.use(morgan('tiny'));
+
+    if (logger.includes('debug')) {
+      app.use(morgan('tiny'));
+    }
 
     initAdapters(app);
 
