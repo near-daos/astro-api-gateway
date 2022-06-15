@@ -35,14 +35,10 @@ export class AppController {
       event: 'notification',
       data: data.notification,
     });
-    this.logger.log(
-      `Notification ${data.notification.type} sent to all websocket clients.`,
-    );
     this.socketService.emitToAuthenticatedEvent({
       event: 'account-notification',
       accountEvents: data.accountNotifications,
     });
-    this.logger.log(`Account Notification ${data.notification.type} sent.`);
   }
 
   @EventPattern(EVENT_NEW_COMMENT, Transport.REDIS)
@@ -54,9 +50,6 @@ export class AppController {
       event: 'comment',
       data: data.comment,
     });
-    this.logger.log(
-      `Notification for a new comment ${data.comment.id} sent to all websocket clients.`,
-    );
   }
 
   @EventPattern(EVENT_DELETE_COMMENT, Transport.REDIS)
@@ -68,8 +61,5 @@ export class AppController {
       event: 'comment-removed',
       data: data.comment,
     });
-    this.logger.log(
-      `Notification for removed comment ${data.comment.id} sent to all websocket clients.`,
-    );
   }
 }
