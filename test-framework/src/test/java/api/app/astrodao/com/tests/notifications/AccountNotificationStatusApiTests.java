@@ -27,8 +27,8 @@ public class AccountNotificationStatusApiTests extends BaseTest {
 
 	@Test
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("USer should be able to get notification status by [accountId] param")
-	@DisplayName("USer should be able to get notification status by [accountId] param")
+	@Story("User should be able to get notification status by [accountId] param")
+	@DisplayName("User should be able to get notification status by [accountId] param")
 	void getNotificationStatusByAccountIdParam() {
 		NotificationStatusResponse notificationStatus =
 				notificationsApiSteps.getAccountNotificationStatus(account1Id).then()
@@ -36,6 +36,6 @@ public class AccountNotificationStatusApiTests extends BaseTest {
 						.extract().as(NotificationStatusResponse.class);
 
 		notificationsApiSteps.assertDtoHasValue(notificationStatus, NotificationStatusResponse::getAccountId, account1Id);
-		notificationsApiSteps.assertDtoValueGreaterThan(notificationStatus, notificationStatusResponse -> notificationStatusResponse.getUnreadCount().intValue(), 5331, "unreadCount");
+		notificationsApiSteps.assertDtoValueGreaterThan(notificationStatus, notificationStatusResponse -> notificationStatusResponse.getUnreadCount().intValue(), 5074, "unreadCount");
 	}
 }

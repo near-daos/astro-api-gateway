@@ -33,6 +33,15 @@
         "tsConfigPath": "apps/notifier/tsconfig.app.json"
       }
     },
+    "draft": {
+      "type": "application",
+      "root": "apps/draft",
+      "entryFile": "main",
+      "sourceRoot": "apps/draft/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/draft/tsconfig.app.json"
+      }
+    },
     "config": {
       "type": "library",
       "root": "libs/config",
@@ -247,6 +256,33 @@
       "sourceRoot": "libs/proposal-template/src",
       "compilerOptions": {
         "tsConfigPath": "libs/proposal-template/tsconfig.lib.json"
+      }
+    },
+    "draft-proposal": {
+      "type": "library",
+      "root": "libs/draft-proposal",
+      "entryFile": "index",
+      "sourceRoot": "libs/draft-proposal/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/draft-proposal/tsconfig.lib.json"
+      }
+    },
+    "draft-comment": {
+      "type": "library",
+      "root": "libs/draft-comment",
+      "entryFile": "index",
+      "sourceRoot": "libs/draft-comment/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/draft-comment/tsconfig.lib.json"
+      }
+    },
+    "draft-hashtag": {
+      "type": "library",
+      "root": "libs/draft-hashtag",
+      "entryFile": "index",
+      "sourceRoot": "libs/draft-hashtag/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/draft-hashtag/tsconfig.lib.json"
       }
     }
   }

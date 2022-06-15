@@ -9,11 +9,13 @@ import io.qameta.allure.*;
 import io.restassured.response.Response;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.parallel.Execution;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import static java.net.HttpURLConnection.*;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.parallel.ExecutionMode.SAME_THREAD;
 
 @Tags({@Tag("all"), @Tag("subscriptionsApiTests")})
 @Epic("Subscription")
@@ -21,6 +23,7 @@ import static org.hamcrest.Matchers.equalTo;
 @DisplayName("/subscriptions API tests")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@Execution(SAME_THREAD)
 public class SubscriptionsApiTests extends BaseTest {
     private final SubscriptionsApiSteps subscriptionsApiSteps;
     private final Faker faker;

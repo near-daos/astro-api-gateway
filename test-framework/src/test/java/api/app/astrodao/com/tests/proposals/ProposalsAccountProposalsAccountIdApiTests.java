@@ -48,7 +48,7 @@ public class ProposalsAccountProposalsAccountIdApiTests extends BaseTest {
 				.extract().as(ProposalResponse.class);
 
 		proposalsApiSteps.assertDtoValue(proposalResponse, r -> r.getCount().intValue(), count, "count");
-		proposalsApiSteps.assertDtoValueGreaterThan(proposalResponse, r -> r.getTotal().intValue(), 6727, "total");
+		proposalsApiSteps.assertDtoValueGreaterThanOrEqualTo(proposalResponse, r -> r.getTotal().intValue(), 6726, "total");
 		proposalsApiSteps.assertDtoValue(proposalResponse, r -> r.getPage().intValue(), 1, "page");
 		proposalsApiSteps.assertDtoValueGreaterThan(proposalResponse, r -> r.getPageCount().intValue(), 134, "pageCount");
 		proposalsApiSteps.assertCollectionHasCorrectSize(proposalResponse.getData(), 50);
@@ -91,7 +91,7 @@ public class ProposalsAccountProposalsAccountIdApiTests extends BaseTest {
 				.extract().as(ProposalResponse.class);
 
 		proposalsApiSteps.assertDtoValue(proposalResponse, r -> r.getCount().intValue(), limit, "count");
-		proposalsApiSteps.assertDtoValueGreaterThan(proposalResponse, r -> r.getTotal().intValue(), 6727, "total");
+		proposalsApiSteps.assertDtoValueGreaterThanOrEqualTo(proposalResponse, r -> r.getTotal().intValue(), 6726, "total");
 		proposalsApiSteps.assertDtoValue(proposalResponse, r -> r.getPage().intValue(), page, "page");
 		proposalsApiSteps.assertDtoValueGreaterThan(proposalResponse, r -> r.getPageCount().intValue(), 672, "pageCount");
 		proposalsApiSteps.assertCollectionHasCorrectSize(proposalResponse.getData(), limit);
@@ -186,7 +186,7 @@ public class ProposalsAccountProposalsAccountIdApiTests extends BaseTest {
 				.extract().as(ProposalResponse.class);
 
 		proposalsApiSteps.assertDtoValue(proposalResponse, r -> r.getCount().intValue(), count, "count");
-		proposalsApiSteps.assertDtoValueGreaterThanOrEqualTo(proposalResponse, r -> r.getTotal().intValue(), 1499, "total");
+		proposalsApiSteps.assertDtoValueGreaterThanOrEqualTo(proposalResponse, r -> r.getTotal().intValue(), 1491, "total");
 		proposalsApiSteps.assertDtoValue(proposalResponse, r -> r.getPage().intValue(), 2, "page");
 		proposalsApiSteps.assertDtoValueGreaterThanOrEqualTo(proposalResponse, r -> r.getPageCount().intValue(), 30, "pageCount");
 		proposalsApiSteps.assertCollectionHasCorrectSize(proposalResponse.getData(), count);
