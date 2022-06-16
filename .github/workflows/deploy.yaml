@@ -47,6 +47,8 @@ jobs:
   helm-deploy:
     name: Helm Deploy
     runs-on: ubuntu-latest
+    needs:
+    - get-updated-apps
     strategy:
       matrix:
         app: ${{ fromJSON(needs.get-updated-apps.outputs.updated-apps) }}
