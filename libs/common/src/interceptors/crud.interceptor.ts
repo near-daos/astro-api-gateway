@@ -3,6 +3,7 @@ import { QueryFailedError } from 'typeorm';
 import {
   CrudRequest,
   CrudRequestInterceptor,
+  JoinOptions,
   MergedCrudOptions,
 } from '@nestjsx/crud';
 import { RequestQueryParser } from '@nestjsx/crud-request';
@@ -45,6 +46,17 @@ export class BaseCrudRequestInterceptor extends CrudRequestInterceptor {
     crudRequest.parsed.offset = offset || 0;
     crudRequest.parsed.limit = limit || 50;
 
+    crudRequest.options.query.join = {
+      ...this.parsedJoinToOptions(crudRequest),
+    };
+
     return crudRequest;
+  }
+
+  parsedJoinToOptions(crudRequest: CrudRequest): JoinOptions {
+    return crudRequest.parsed.join.reduce(function (acc, { field, select }) {
+      acc[field] = { eager: true, select };
+      return acc;
+    }, {});
   }
 }
