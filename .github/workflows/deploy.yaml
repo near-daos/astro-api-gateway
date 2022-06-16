@@ -9,6 +9,10 @@ on:
         required: true
         description: Docker tag to deploy. Valid values are "latest", "<branch>-latest", "<commit_sha>", "<environment>-<commit_sha>". Exact values can be found in "Docker Build Publish" step of "Build Deploy" job.
         default: latest
+      apps:
+        required: false
+        default: aggregator api draft notifier
+        description: List of application to deploy (space separated).
 
 env:
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -20,12 +24,32 @@ env:
   NOTIFI_SECRET:  ${{ secrets.NOTIFI_SECRET }}
 
 jobs:
+  get-updated-apps:
+    name: Get Updated Apps
+    runs-on: ubuntu-latest
+    outputs:
+      updated-apps: ${{ steps.updated-apps.outputs.apps }}
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 2
+
+    - id: updated-apps
+      shell: bash
+      run: |
+        array_to_json () {
+          echo "[$(echo $1 | xargs | sed -e 's| |", "|g;s|.*|"&"|')]"
+        }
+        echo "List of apps was provided manually: ${{ github.event.inputs.apps }}"
+        export UPDATED_APPS=$(array_to_json "${{ github.event.inputs.apps }}")
+        echo "::set-output name=apps::$UPDATED_APPS"
+
   helm-deploy:
     name: Helm Deploy
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        app: ["api", "aggregator", "notifier"]
+        app: ${{ fromJSON(needs.get-updated-apps.outputs.updated-apps) }}
     environment:
       name: ${{ github.event.inputs.environment }}
     steps:
