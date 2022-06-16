@@ -16,6 +16,10 @@ import { AccountNotificationSettings } from '@sputnik-v2/notification';
 import { CommentModule } from '@sputnik-v2/comment';
 
 import migrationScripts from './scripts';
+import {
+  ProposalTemplate,
+  ProposalTemplateModule,
+} from '@sputnik-v2/proposal-template';
 
 @Module({
   imports: [
@@ -27,6 +31,7 @@ import migrationScripts from './scripts';
       Token,
       BountyClaim,
       AccountNotificationSettings,
+      ProposalTemplate,
     ]),
     ConfigModule.forRoot({
       isGlobal: true,
@@ -40,6 +45,7 @@ import migrationScripts from './scripts';
     NearApiModule,
     SputnikModule,
     CommentModule,
+    ProposalTemplateModule,
   ],
   providers: [...migrationScripts],
 })
