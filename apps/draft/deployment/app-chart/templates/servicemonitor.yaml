@@ -5,7 +5,7 @@ metadata:
   labels:
     {{- include "sputnik-v2-draft.labels" . | nindent 4 }}
     release: kube-prometheus-stack
-  name: api
+  name: draft
 spec:
   endpoints:
     {{ .Values.monitoring.metrics.endpoints | toYaml | nindent 4 }}
