@@ -67,7 +67,7 @@ jobs:
         command: |
           export CHART_FOLDER=apps/${{ matrix.app }}/deployment/app-chart
           helm lint $CHART_FOLDER
-          helm -n $DEPLOYMENT_NAMESPACE upgrade --install --create-namespace --wait --timeout 10m sputnik-v2-${{ matrix.app }} $CHART_FOLDER \
+          helm -n $DEPLOYMENT_NAMESPACE upgrade --install --wait --timeout 10m sputnik-v2-${{ matrix.app }} $CHART_FOLDER \
             --set image.tag=$DOCKER_ENV_TAG \
             --set environment.near_env=$NEAR_ENV \
             --set environment.near_contract_name=$NEAR_CONTRACT_NAME \
