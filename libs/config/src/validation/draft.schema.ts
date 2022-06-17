@@ -19,5 +19,17 @@ export class DraftValidationSchema extends BaseValidationSchema {
 
   @IsString()
   @IsNotEmpty()
-  DRAFT_DATABASE_CONNECTION_URL: string;
+  DRAFT_DATABASE_HOST: string;
+
+  @IsNumber()
+  @IsNotEmpty()
+  DRAFT_DATABASE_PORT: number;
+
+  @IsString()
+  @IsNotEmpty()
+  DRAFT_DATABASE_USERNAME: string;
+
+  @IsString()
+  @IsNotEmpty()
+  DRAFT_DATABASE_PASSWORD: string;
 }
