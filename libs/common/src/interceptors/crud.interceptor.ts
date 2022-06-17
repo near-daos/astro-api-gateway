@@ -46,10 +46,6 @@ export class BaseCrudRequestInterceptor extends CrudRequestInterceptor {
     crudRequest.parsed.offset = offset || 0;
     crudRequest.parsed.limit = limit || 50;
 
-    crudRequest.options.query.join = {
-      ...this.parsedJoinToOptions(crudRequest),
-    };
-
     return crudRequest;
   }
 
