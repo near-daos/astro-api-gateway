@@ -29,15 +29,15 @@ import {
 } from '@sputnik-v2/proposal-template';
 import {
   AccountAccessGuard,
-  BaseCrudRequestInterceptor,
-  EntityQuery,
   FindOneParams,
   HttpCacheInterceptor,
   QueryFailedErrorFilter,
 } from '@sputnik-v2/common';
 import { SharedProposalTemplateService } from '@sputnik-v2/proposal-template/shared-proposal-template.service';
+import { EntityQueryWithJoin } from '@sputnik-v2/common/dto/EntityQueryWithJoin';
 
 import { CouncilMemberGuard } from '../guards/council-member.guard';
+import { SharedProposalTemplateCrudRequestInterceptor } from './interceptors/shared-proposal-template-crud.interceptor';
 
 @ApiTags('Proposals')
 @Controller('/proposals')
@@ -46,7 +46,7 @@ export class SharedProposalTemplateController {
     private readonly sharedProposalTemplateService: SharedProposalTemplateService,
   ) {}
 
-  @ApiQuery({ type: EntityQuery })
+  @ApiQuery({ type: EntityQueryWithJoin })
   @ApiResponse({
     status: 200,
     description: 'List of Shared Proposal Templates',
@@ -55,7 +55,10 @@ export class SharedProposalTemplateController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(HttpCacheInterceptor, BaseCrudRequestInterceptor)
+  @UseInterceptors(
+    HttpCacheInterceptor,
+    SharedProposalTemplateCrudRequestInterceptor,
+  )
   @UseFilters(new QueryFailedErrorFilter())
   @Get('/templates')
   async sharedProposalTemplates(
