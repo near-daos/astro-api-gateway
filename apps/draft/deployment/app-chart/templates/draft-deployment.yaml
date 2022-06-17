@@ -72,6 +72,10 @@ spec:
               name: documentdb-secret
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+          - mountPath: /rds-ca/rds-combined-ca-bundle.pem
+            name: documentdb-ca
+            subPath: RDS_CA_BUNDLE
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -84,3 +88,8 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
     {{- end }}
+      volumes:
+      - name: documentdb-ca
+        secret:
+          defaultMode: 420
+          secretName: documentdb-secret
