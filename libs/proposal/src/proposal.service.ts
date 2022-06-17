@@ -381,17 +381,17 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
         ? council.accountIds.includes(accountId)
         : false,
       canApprove: this.checkPermissions(
-        proposal.kind.type,
+        proposal.kind?.type,
         'VoteApprove',
         permissions,
       ),
       canReject: this.checkPermissions(
-        proposal.kind.type,
+        proposal.kind?.type,
         'VoteReject',
         permissions,
       ),
       canDelete: this.checkPermissions(
-        proposal.kind.type,
+        proposal.kind?.type,
         'VoteRemove',
         permissions,
       ),
