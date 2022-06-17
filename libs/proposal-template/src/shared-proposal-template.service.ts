@@ -5,10 +5,14 @@ import { Injectable, Logger } from '@nestjs/common';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { SharedProposalTemplate } from '@sputnik-v2/proposal-template/entities';
+import {
+  ProposalTemplate,
+  SharedProposalTemplate,
+} from '@sputnik-v2/proposal-template/entities';
 import { CreateSharedProposalTemplateDto } from '@sputnik-v2/proposal-template/dto';
 
 import { SharedProposalTemplateDao } from './entities/shared-proposal-template-dao.entity';
+import { ProposalTemplateService } from './proposal-template.service';
 
 @Injectable()
 export class SharedProposalTemplateService extends TypeOrmCrudService<SharedProposalTemplate> {
@@ -16,6 +20,8 @@ export class SharedProposalTemplateService extends TypeOrmCrudService<SharedProp
 
   constructor(
     private readonly configService: ConfigService,
+
+    private readonly proposalTemplateService: ProposalTemplateService,
 
     @InjectRepository(SharedProposalTemplate)
     private readonly sharedProposalTemplateRepository: Repository<SharedProposalTemplate>,
@@ -73,7 +79,11 @@ export class SharedProposalTemplateService extends TypeOrmCrudService<SharedProp
   async cloneToDao(
     proposalTemplateId: string,
     daoId: string,
-  ): Promise<SharedProposalTemplateDao> {
+  ): Promise<ProposalTemplate> {
+    this.logger.log(
+      `Cloning Shared Proposal Template ${proposalTemplateId} to DAO ${daoId}`,
+    );
+
     const sharedProposalTemplateDao =
       await this.sharedProposalTemplateDaoRepository.save({
         proposalTemplateId,
@@ -84,15 +94,21 @@ export class SharedProposalTemplateService extends TypeOrmCrudService<SharedProp
       where: { proposalTemplateId },
     });
 
-    this.logger.log(
-      `Cloning Shared Proposal Template ${proposalTemplateId} to DAO ${daoId}`,
-    );
-
     await this.sharedProposalTemplateRepository.update(
       { id: proposalTemplateId },
       { daoCount },
     );
 
-    return sharedProposalTemplateDao;
+    const sharedProposalTemplate =
+      await this.sharedProposalTemplateRepository.findOne({
+        where: { id: proposalTemplateId },
+        select: ['config', 'description', 'name'],
+      });
+
+    return this.proposalTemplateService.create({
+      ...sharedProposalTemplate,
+      daoId,
+      isEnabled: true,
+    });
   }
 }

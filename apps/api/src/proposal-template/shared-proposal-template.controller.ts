@@ -20,6 +20,8 @@ import {
 } from '@nestjs/swagger';
 
 import {
+  ProposalTemplate,
+  ProposalTemplateDto,
   sharedProposalTemplateManyResponseToDTO,
   SharedProposalTemplateResponseDto,
   sharedProposalTemplateResponseToDTO,
@@ -99,6 +101,7 @@ export class SharedProposalTemplateController {
   @ApiResponse({
     status: 200,
     description: 'Clone Shared Proposal Template to DAO',
+    type: ProposalTemplateDto,
   })
   @ApiForbiddenResponse({
     description:
@@ -110,7 +113,7 @@ export class SharedProposalTemplateController {
   async createProposalTemplate(
     @Param('id') id: string,
     @Param('daoId') daoId: string,
-  ): Promise<any> {
+  ): Promise<ProposalTemplate> {
     return this.sharedProposalTemplateService.cloneToDao(id, daoId);
   }
 }
