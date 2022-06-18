@@ -47,10 +47,10 @@ spec:
           readinessProbe:
             httpGet:
               path: "{{ .path }}"
-              port: {{ .readinessProbe.port }}
+              port: {{ .port }}
               scheme: HTTP
             initialDelaySeconds: {{ .initialDelaySeconds }}
-            periodSeconds: {{ .readinessProbe.periodSeconds }}
+            periodSeconds: {{ .periodSeconds }}
             timeoutSeconds: {{ .timeoutSeconds }}
             successThreshold: {{ .successThreshold }}
             failureThreshold: {{ .failureThreshold }}
