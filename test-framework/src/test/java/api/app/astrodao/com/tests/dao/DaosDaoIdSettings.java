@@ -38,6 +38,9 @@ public class DaosDaoIdSettings extends BaseTest {
 	@Value("${accounts.account1.token}")
 	private String accountAuthToken;
 
+	@Value("${accounts.account1.accountId}")
+	private String accountId;
+
 	@Value("${accounts.account1.publicKey}")
 	private String accountPublicKey;
 
@@ -91,6 +94,23 @@ public class DaosDaoIdSettings extends BaseTest {
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
 				      "message", equalTo("Authorization header payload is invalid"),
+				      "error", equalTo("Forbidden"));
+	}
+
+	@ParameterizedTest
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 403 for DAO settings with null and invalid 'publicKey' parameter")
+	@DisplayName("Get HTTP 403 for DAO settings with null and invalid 'publicKey' parameter")
+	@NullSource
+	@CsvSource({"invalidPublicKey"})
+	void getHttp403ForDaoSettingsWithNullAndInvalidPublicKeyParam(String publicKey) {
+		String authToken = Base64Utils.encodeAuthToken(accountId, publicKey, accountSignature);
+		Map<String, String> fakeJson = Map.of("rickAndMortyQuote", faker.rickAndMorty().quote());
+
+		daoApiSteps.patchDaoSettings(testDao, fakeJson, authToken).then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo("Account testdao2.testnet identity is invalid - public key"),
 				      "error", equalTo("Forbidden"));
 	}
 }
