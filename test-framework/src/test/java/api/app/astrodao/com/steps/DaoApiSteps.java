@@ -27,4 +27,14 @@ public class DaoApiSteps extends BaseSteps {
     public Response getAccountDaos(String accountId) {
         return daoApi.getAccountDaos(accountId);
     }
+
+    @Step("Patch DAO settings by daoId '{daoId}'")
+    public Response patchDaoSettings(String daoId, Map<String, String> json, String token) {
+        return daoApi.patchDaoSettings(daoId, json, token);
+    }
+
+    @Step("Get DAO settings by daoId '{daoId}'")
+    public Response getDaoSettings(String daoId) {
+        return daoApi.getDaoSettings(daoId);
+    }
 }
