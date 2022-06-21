@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 
 import java.util.Map;
 
+import static api.app.astrodao.com.core.Constants.Variables.EMPTY_STRING;
 import static java.net.HttpURLConnection.HTTP_FORBIDDEN;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static org.hamcrest.Matchers.equalTo;
@@ -75,6 +76,21 @@ public class DaosDaoIdSettings extends BaseTest {
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
 				      "message", equalTo(errorMessage),
+				      "error", equalTo("Forbidden"));
+	}
+
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 403 for DAO settings with empty 'accountId' parameter")
+	@DisplayName("Get HTTP 403 for DAO settings with empty 'accountId' parameter")
+	void getHttp403ForDaoSettingsWithEmptyAccountIdParam() {
+		String authToken = Base64Utils.encodeAuthToken(EMPTY_STRING, accountPublicKey, accountSignature);
+		Map<String, String> fakeJson = Map.of("rickAndMortyQuote", faker.rickAndMorty().quote());
+
+		daoApiSteps.patchDaoSettings(testDao, fakeJson, authToken).then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo("Authorization header payload is invalid"),
 				      "error", equalTo("Forbidden"));
 	}
 }
