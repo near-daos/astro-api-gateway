@@ -144,4 +144,19 @@ public class DaosDaoIdSettings extends BaseTest {
 				      "message", equalTo("Invalid signature"),
 				      "error", equalTo("Forbidden"));
 	}
+
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 403 for DAO settings with null 'signature' parameter")
+	@DisplayName("Get HTTP 403 for DAO settings with null 'signature' parameter")
+	void getHttp403ForDaoSettingsWithNullSignatureParam() {
+		String authToken = Base64Utils.encodeAuthToken(accountId, accountPublicKey, null);
+		Map<String, String> fakeJson = Map.of("rickAndMortyQuote", faker.rickAndMorty().quote());
+
+		daoApiSteps.patchDaoSettings(testDao, fakeJson, authToken).then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo("Invalid signature"),
+				      "error", equalTo("Forbidden"));
+	}
 }
