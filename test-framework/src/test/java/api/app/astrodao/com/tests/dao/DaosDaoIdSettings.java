@@ -1,20 +1,24 @@
 package api.app.astrodao.com.tests.dao;
 
+import api.app.astrodao.com.core.utils.Base64Utils;
 import api.app.astrodao.com.steps.DaoApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import com.github.javafaker.Faker;
 import io.qameta.allure.*;
 import lombok.RequiredArgsConstructor;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.NullSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.util.Map;
 
+import static java.net.HttpURLConnection.HTTP_FORBIDDEN;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -33,6 +37,12 @@ public class DaosDaoIdSettings extends BaseTest {
 	@Value("${accounts.account1.token}")
 	private String accountAuthToken;
 
+	@Value("${accounts.account1.publicKey}")
+	private String accountPublicKey;
+
+	@Value("${accounts.account1.signature}")
+	private String accountSignature;
+
 
 	@Test
 	@Severity(SeverityLevel.CRITICAL)
@@ -48,5 +58,23 @@ public class DaosDaoIdSettings extends BaseTest {
 		daoApiSteps.getDaoSettings(testDao).then()
 				.statusCode(HTTP_OK)
 				.body("", equalTo(fakeJson));
+	}
+
+	@ParameterizedTest
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 403 for DAO settings with null and invalid 'accountId' parameter")
+	@DisplayName("Get HTTP 403 for DAO settings with null and invalid 'accountId' parameter")
+	@NullSource
+	@CsvSource({"astro-automation.testnet", "another-magic.near", "test-dao-1641395769436.sputnikv2.testnet"})
+	void getHttp403ForDaoSettingsWithNullAndInvalidAccountIdParam(String accountId) {
+		String authToken = Base64Utils.encodeAuthToken(accountId, accountPublicKey, accountSignature);
+		String errorMessage = String.format("Account %s identity is invalid - public key", accountId);
+		Map<String, String> fakeJson = Map.of("rickAndMortyQuote", faker.rickAndMorty().quote());
+
+		daoApiSteps.patchDaoSettings(testDao, fakeJson, authToken).then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo(errorMessage),
+				      "error", equalTo("Forbidden"));
 	}
 }
