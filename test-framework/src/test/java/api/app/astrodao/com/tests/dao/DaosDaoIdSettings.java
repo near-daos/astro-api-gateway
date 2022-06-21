@@ -128,4 +128,20 @@ public class DaosDaoIdSettings extends BaseTest {
 				      "message", equalTo("Authorization header payload is invalid"),
 				      "error", equalTo("Forbidden"));
 	}
+
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 403 for DAO settings with invalid 'signature' parameter")
+	@DisplayName("Get HTTP 403 for DAO settings with invalid 'signature' parameter")
+	void getHttp403ForDaoSettingsWithInvalidSignatureParam() {
+		String invalidSignature = accountSignature.substring(10);
+		String authToken = Base64Utils.encodeAuthToken(accountId, accountPublicKey, invalidSignature);
+		Map<String, String> fakeJson = Map.of("rickAndMortyQuote", faker.rickAndMorty().quote());
+
+		daoApiSteps.patchDaoSettings(testDao, fakeJson, authToken).then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo("Invalid signature"),
+				      "error", equalTo("Forbidden"));
+	}
 }
