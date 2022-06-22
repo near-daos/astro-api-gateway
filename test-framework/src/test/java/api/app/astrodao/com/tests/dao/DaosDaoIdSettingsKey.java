@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import static java.net.HttpURLConnection.HTTP_FORBIDDEN;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -70,5 +71,17 @@ public class DaosDaoIdSettingsKey extends BaseTest {
 		daoApiSteps.getDaoSettings(testDao).then()
 				.statusCode(HTTP_OK)
 				.body("", equalTo(fakeJson));
+	}
+
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 403 for update DAO settings by 'key' param with correct token and wrong 'daoId' parameter")
+	@DisplayName("Get HTTP 403 for update DAO settings by 'key' param with correct token and wrong 'daoId' parameter")
+	void getHttp403ForDaoSettingsWithCorrectTokenAndWrongDaoIdParam() {
+		daoApiSteps.patchDaoSettingsByKey("rs-dao-1.sputnikv2.testnet", "hipsterWord", faker.hipster().word(), accountAuthToken).then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo("Forbidden resource"),
+				      "error", equalTo("Forbidden"));
 	}
 }
