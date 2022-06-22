@@ -34,14 +34,14 @@ export class TransactionActionMapperService {
     for (const accountChange of accountChanges) {
       try {
         this.logger.log(
-          `Received transaction: ${accountChange.causedByTransactionHash}`,
+          `Received transaction: ${accountChange.causedByReceipt.originatedFromTransaction.transactionHash}`,
         );
         const res = await this.getActionsByAccountChange(accountChange);
         transactions = transactions.concat(res.transaction);
         actions = actions.concat(res.actions);
       } catch (error) {
         this.logger.error(
-          `Failed to get transaction action ${accountChange.causedByTransactionHash} with error: ${error}`,
+          `Failed to get transaction action ${accountChange.causedByReceipt.originatedFromTransaction.transactionHash} with error: ${error}`,
         );
       }
     }
