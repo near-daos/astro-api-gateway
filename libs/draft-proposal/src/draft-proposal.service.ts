@@ -11,7 +11,7 @@ import {
   DRAFT_DB_CONNECTION,
   Order,
 } from '@sputnik-v2/common';
-import { ProposalKind } from '@sputnik-v2/proposal';
+import { ProposalKind, ProposalService } from '@sputnik-v2/proposal';
 import { DraftHashtagService } from '@sputnik-v2/draft-hashtag';
 
 import { DraftProposal, DraftProposalHistory } from './entities';
@@ -36,12 +36,26 @@ export class DraftProposalService {
     @InjectRepository(DraftProposalHistory, DRAFT_DB_CONNECTION)
     private draftProposalHistoryRepository: MongoRepository<DraftProposalHistory>,
     private draftHashtagService: DraftHashtagService,
+    private proposalService: ProposalService,
   ) {}
 
   async create(
     accountId: string,
     draftProposalDto: CreateDraftProposal,
   ): Promise<string> {
+    const accountPermissions =
+      await this.proposalService.getAccountPermissionByDao(
+        draftProposalDto.daoId,
+        accountId,
+        draftProposalDto.type,
+      );
+
+    if (!accountPermissions.canAdd) {
+      throw new ForbiddenException(
+        `Account ${accountId} does not have permissions to create this type of proposal`,
+      );
+    }
+
     await this.draftHashtagService.createMultiple(draftProposalDto.hashtags);
     const draftProposal = await this.draftProposalRepository.save({
       daoId: draftProposalDto.daoId,
@@ -72,6 +86,19 @@ export class DraftProposalService {
 
     if (draftProposal.proposer !== accountId) {
       throw new ForbiddenException('Account is not the proposer');
+    }
+
+    const accountPermissions =
+      await this.proposalService.getAccountPermissionByDao(
+        draftProposal.daoId,
+        accountId,
+        draftProposalDto.type,
+      );
+
+    if (!accountPermissions.canAdd) {
+      throw new ForbiddenException(
+        `Account ${accountId} does not have permissions to create this type of proposal`,
+      );
     }
 
     await this.draftHashtagService.createMultiple(draftProposalDto.hashtags);
@@ -105,8 +132,15 @@ export class DraftProposalService {
       throw new NotFoundException(`Draft proposal ${id} does not exist`);
     }
 
-    if (draftProposal.proposer !== accountId) {
-      throw new ForbiddenException('Account is not the proposer');
+    const accountPermissions =
+      await this.proposalService.getAccountPermissionByDao(
+        draftProposal.daoId,
+        accountId,
+        draftProposal.type,
+      );
+
+    if (draftProposal.proposer !== accountId && !accountPermissions.isCouncil) {
+      throw new ForbiddenException('Account is not the proposer or council');
     }
 
     if (draftProposal.state === DraftProposalState.Closed) {
@@ -215,7 +249,7 @@ export class DraftProposalService {
     }
 
     if (type) {
-      queries.push({ type: { $eq: type } });
+      queries.push({ type: { $in: type.split(',') } });
     }
 
     if (state) {

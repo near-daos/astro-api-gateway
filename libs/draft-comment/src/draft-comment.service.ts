@@ -1,16 +1,19 @@
 import { MongoRepository } from 'typeorm';
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import {
-  castDraftProposalBasicResponse,
-  DraftProposalService,
-} from '@sputnik-v2/draft-proposal';
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { DraftProposalService } from '@sputnik-v2/draft-proposal';
 import { DRAFT_DB_CONNECTION, Order } from '@sputnik-v2/common';
+import { ProposalKind, ProposalService } from '@sputnik-v2/proposal';
 import { DraftComment } from './entities';
 import {
   castDraftCommentResponse,
   CreateDraftComment,
   DraftCommentsRequest,
+  UpdateDraftComment,
 } from './dto';
 import { DraftCommentContextType } from './types';
 
@@ -20,6 +23,7 @@ export class DraftCommentService {
     @InjectRepository(DraftComment, DRAFT_DB_CONNECTION)
     private draftCommentRepository: MongoRepository<DraftComment>,
     private draftProposalService: DraftProposalService,
+    private proposalService: ProposalService,
   ) {}
 
   private async createDraftProposalComment(
@@ -37,6 +41,7 @@ export class DraftCommentService {
     }
 
     const draftComment = await this.draftCommentRepository.save({
+      daoId: draftProposal.daoId,
       contextId: draftCommentDto.contextId,
       contextType: DraftCommentContextType.DraftProposal,
       author: accountId,
@@ -69,6 +74,7 @@ export class DraftCommentService {
     }
 
     const draftComment = await this.draftCommentRepository.save({
+      daoId: draftCommentReplied.daoId,
       contextId: draftCommentReplied.contextId,
       contextType: draftCommentReplied.contextType,
       author: accountId,
@@ -103,6 +109,29 @@ export class DraftCommentService {
     }
   }
 
+  async update(
+    id: string,
+    accountId: string,
+    draftCommentDto: UpdateDraftComment,
+  ): Promise<string> {
+    const draftComment = await this.draftCommentRepository.findOne(id);
+
+    if (!draftComment) {
+      throw new NotFoundException(`Draft comment ${id} does not exist`);
+    }
+
+    if (draftComment.author !== accountId) {
+      throw new ForbiddenException('Account is not the author');
+    }
+
+    await this.draftCommentRepository.save({
+      ...draftComment,
+      message: draftCommentDto.message,
+    });
+
+    return draftComment.id.toString();
+  }
+
   async like(id: string, accountId: string): Promise<boolean> {
     const draftComment = await this.draftCommentRepository.findOne(id);
 
@@ -133,6 +162,28 @@ export class DraftCommentService {
         ),
       });
     }
+
+    return true;
+  }
+
+  async delete(id: string, accountId: string): Promise<boolean> {
+    const draftComment = await this.draftCommentRepository.findOne(id);
+
+    if (!draftComment) {
+      throw new NotFoundException(`Draft comment ${id} does not exist`);
+    }
+
+    const accountPermissions =
+      await this.proposalService.getAccountPermissionByDao(
+        draftComment.daoId,
+        accountId,
+      );
+
+    if (draftComment.author !== accountId && !accountPermissions.isCouncil) {
+      throw new ForbiddenException('Account is not the author or council');
+    }
+
+    await this.draftCommentRepository.delete(draftComment);
 
     return true;
   }

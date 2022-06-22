@@ -7,6 +7,9 @@ export class DraftComment extends BaseEntity {
   @ObjectIdColumn({ unique: true })
   id: string;
 
+  @Column()
+  daoId: string;
+
   @Column({ nullable: false })
   contextId: string;
 
