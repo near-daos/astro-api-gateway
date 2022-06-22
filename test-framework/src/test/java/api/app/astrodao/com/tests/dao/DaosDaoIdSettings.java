@@ -174,4 +174,18 @@ public class DaosDaoIdSettings extends BaseTest {
 				      "message", equalTo("Authorization header payload is invalid"),
 				      "error", equalTo("Forbidden"));
 	}
+
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 403 for DAO settings with correct token and wrong 'daoId' parameter")
+	@DisplayName("Get HTTP 403 for DAO settings with correct token and wrong 'daoId' parameter")
+	void getHttp403ForDaoSettingsWithCorrectTokenAndWrongDaoIdParam() {
+		Map<String, String> fakeJson = Map.of("rickAndMortyQuote", faker.rickAndMorty().quote());
+
+		daoApiSteps.patchDaoSettings("rs-dao-1.sputnikv2.testnet", fakeJson, accountAuthToken).then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo("Forbidden resource"),
+				      "error", equalTo("Forbidden"));
+	}
 }
