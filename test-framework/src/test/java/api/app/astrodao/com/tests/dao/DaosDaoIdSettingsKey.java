@@ -1,5 +1,6 @@
 package api.app.astrodao.com.tests.dao;
 
+import api.app.astrodao.com.core.utils.Base64Utils;
 import api.app.astrodao.com.steps.DaoApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import com.github.javafaker.Faker;
@@ -9,6 +10,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.NullSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -77,11 +81,28 @@ public class DaosDaoIdSettingsKey extends BaseTest {
 	@Severity(SeverityLevel.CRITICAL)
 	@Story("Get HTTP 403 for update DAO settings by 'key' param with correct token and wrong 'daoId' parameter")
 	@DisplayName("Get HTTP 403 for update DAO settings by 'key' param with correct token and wrong 'daoId' parameter")
-	void getHttp403ForDaoSettingsWithCorrectTokenAndWrongDaoIdParam() {
+	void getHttp403ForDaoSettingsByKeyParamWithCorrectTokenAndWrongDaoIdParam() {
 		daoApiSteps.patchDaoSettingsByKey("rs-dao-1.sputnikv2.testnet", "hipsterWord", faker.hipster().word(), accountAuthToken).then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
 				      "message", equalTo("Forbidden resource"),
+				      "error", equalTo("Forbidden"));
+	}
+
+	@ParameterizedTest
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 403 for update DAO settings by 'key' param with null and invalid 'accountId' parameter")
+	@DisplayName("Get HTTP 403 for update DAO settings by 'key' param with null and invalid 'accountId' parameter")
+	@NullSource
+	@CsvSource({"astro-automation.testnet", "another-magic.near", "test-dao-1641395769436.sputnikv2.testnet"})
+	void getHttp403ForDaoSettingsByKeyParamWithNullAndInvalidAccountIdParam(String accountId) {
+		String authToken = Base64Utils.encodeAuthToken(accountId, accountPublicKey, accountSignature);
+		String errorMessage = String.format("Account %s identity is invalid - public key", accountId);
+
+		daoApiSteps.patchDaoSettingsByKey(testDao, "jodaQuote", faker.yoda().quote(), authToken).then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo(errorMessage),
 				      "error", equalTo("Forbidden"));
 	}
 }
