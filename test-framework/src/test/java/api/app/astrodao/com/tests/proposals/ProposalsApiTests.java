@@ -106,7 +106,7 @@ public class ProposalsApiTests extends BaseTest {
         proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getProposalId() >= 0, "data/proposalId");
         proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getDaoId().endsWith(".sputnikv2.testnet"), "data/daoId");
         proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> !r.getProposer().isEmpty(), "data/proposer");
-        proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> !r.getDescription().isEmpty(), "data/description");
+        proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getDescription() != null, "data/description");
         proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getStatus() != null, "data/status");
         proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getVoteStatus() != null, "data/voteStatus");
         proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getKind() != null, "data/kind");
@@ -152,7 +152,7 @@ public class ProposalsApiTests extends BaseTest {
         proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getProposalId() >= 0, "data/proposalId");
         proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getDaoId().endsWith(".sputnikv2.testnet"), "data/daoId");
         proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> !r.getProposer().isEmpty(), "data/proposer");
-        proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> !r.getDescription().isEmpty(), "data/description");
+        proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getDescription() != null, "data/description");
         proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getStatus() != null, "data/status");
         proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getVoteStatus() != null, "data/voteStatus");
         proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getKind() != null, "data/kind");
@@ -243,7 +243,7 @@ public class ProposalsApiTests extends BaseTest {
         proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getProposalId() >= 0, "data/proposalId");
         proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getDaoId().endsWith(".sputnikv2.testnet"), "data/daoId");
         proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> !r.getProposer().isEmpty(), "data/proposer");
-        proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> !r.getDescription().isEmpty(), "data/description");
+        proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getDescription() != null, "data/description");
         proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getStatus() != null, "data/status");
         proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getVoteStatus() != null, "data/voteStatus");
         proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getKind() != null, "data/kind");
