@@ -2,6 +2,7 @@ package api.app.astrodao.com.core.controllers;
 
 import api.app.astrodao.com.core.utils.JsonUtils;
 import api.app.astrodao.com.openapi.models.PatchSettingsBodyDto;
+import api.app.astrodao.com.openapi.models.PatchSettingsParamBodyDto;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
@@ -55,5 +56,17 @@ public class DaoApi {
         return given().spec(requestSpec)
                 .accept(ContentType.JSON)
                 .get(DAOS_DAO_ID_SETTINGS, daoId);
+    }
+
+    public Response patchDaoSettingsByKey(String daoId, String key, String newValue, String authToken) {
+        PatchSettingsParamBodyDto patchSettingsParamBodyDto = new PatchSettingsParamBodyDto();
+        patchSettingsParamBodyDto.setValue(newValue);
+
+        return given().spec(requestSpec)
+                .accept(ContentType.JSON)
+                .header("Authorization", "Bearer " + authToken)
+                .contentType(ContentType.JSON)
+                .body(JsonUtils.writeValueAsString(patchSettingsParamBodyDto))
+                .patch(DAOS_DAO_ID_SETTINGS_KEY, daoId, key);
     }
 }

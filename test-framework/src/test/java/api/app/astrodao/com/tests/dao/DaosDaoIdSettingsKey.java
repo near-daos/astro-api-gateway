@@ -16,6 +16,7 @@ import org.junit.jupiter.params.provider.NullSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import static api.app.astrodao.com.core.Constants.Variables.EMPTY_STRING;
@@ -23,16 +24,16 @@ import static java.net.HttpURLConnection.HTTP_FORBIDDEN;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static org.hamcrest.Matchers.equalTo;
 
-@Tags({@Tag("all"), @Tag("daosDaoIdSettingsApiTests")})
+@Tags({@Tag("all"), @Tag("daosDaoIdSettingsKeyApiTests")})
 @Epic("DAO")
-@Feature("/daos/{daoId}/settings API tests")
-@DisplayName("/daos/{daoId}/settings API tests")
+@Feature("/daos/{daoId}/settings/{key} API tests")
+@DisplayName("/daos/{daoId}/settings/{key} API tests")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-public class DaosDaoIdSettings extends BaseTest {
+public class DaosDaoIdSettingsKey extends BaseTest {
 	private final Faker faker;
 	private final DaoApiSteps daoApiSteps;
 
-	@Value("${test.dao1}")
+	@Value("${test.dao2}")
 	private String testDao;
 
 	@Value("${accounts.account1.token}")
@@ -50,10 +51,11 @@ public class DaosDaoIdSettings extends BaseTest {
 
 	@Test
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("Patch and get DAO settings")
-	@DisplayName("Patch and get DAO settings")
-	void patchAndGetDaoSettings() {
-		Map<String, String> fakeJson = Map.of("chuckNorrisFact", faker.chuckNorris().fact());
+	@Story("Update DAO settings by 'daoId' and 'key' params")
+	@DisplayName("Update DAO settings by 'daoId' and 'key' params")
+	void updateDaoSettingsByDaoIdAndKeyParams() {
+		String key = "hipsterWord";
+		HashMap<String, String> fakeJson = new HashMap<>(Map.of(key, faker.hipster().word()));
 
 		daoApiSteps.patchDaoSettings(testDao, fakeJson, accountAuthToken).then()
 				.statusCode(HTTP_OK)
@@ -62,20 +64,42 @@ public class DaosDaoIdSettings extends BaseTest {
 		daoApiSteps.getDaoSettings(testDao).then()
 				.statusCode(HTTP_OK)
 				.body("", equalTo(fakeJson));
+
+
+		String newValue = faker.harryPotter().spell();
+		fakeJson.put(key, newValue);
+		daoApiSteps.patchDaoSettingsByKey(testDao, key, newValue, accountAuthToken).then()
+				.statusCode(HTTP_OK)
+				.body("", equalTo(fakeJson));
+
+		daoApiSteps.getDaoSettings(testDao).then()
+				.statusCode(HTTP_OK)
+				.body("", equalTo(fakeJson));
+	}
+
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 403 for update DAO settings by 'key' param with correct token and wrong 'daoId' parameter")
+	@DisplayName("Get HTTP 403 for update DAO settings by 'key' param with correct token and wrong 'daoId' parameter")
+	void getHttp403ForDaoSettingsByKeyParamWithCorrectTokenAndWrongDaoIdParam() {
+		daoApiSteps.patchDaoSettingsByKey("rs-dao-1.sputnikv2.testnet", "hipsterWord", faker.hipster().word(), accountAuthToken).then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo("Forbidden resource"),
+				      "error", equalTo("Forbidden"));
 	}
 
 	@ParameterizedTest
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("Get HTTP 403 for DAO settings with null and invalid 'accountId' parameter")
-	@DisplayName("Get HTTP 403 for DAO settings with null and invalid 'accountId' parameter")
+	@Story("Get HTTP 403 for update DAO settings by 'key' param with null and invalid 'accountId' parameter")
+	@DisplayName("Get HTTP 403 for update DAO settings by 'key' param with null and invalid 'accountId' parameter")
 	@NullSource
 	@CsvSource({"astro-automation.testnet", "another-magic.near", "test-dao-1641395769436.sputnikv2.testnet"})
-	void getHttp403ForDaoSettingsWithNullAndInvalidAccountIdParam(String accountId) {
+	void getHttp403ForDaoSettingsByKeyParamWithNullAndInvalidAccountIdParam(String accountId) {
 		String authToken = Base64Utils.encodeAuthToken(accountId, accountPublicKey, accountSignature);
 		String errorMessage = String.format("Account %s identity is invalid - public key", accountId);
-		Map<String, String> fakeJson = Map.of("rickAndMortyQuote", faker.rickAndMorty().quote());
 
-		daoApiSteps.patchDaoSettings(testDao, fakeJson, authToken).then()
+		daoApiSteps.patchDaoSettingsByKey(testDao, "jodaQuote", faker.yoda().quote(), authToken).then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
 				      "message", equalTo(errorMessage),
@@ -84,13 +108,12 @@ public class DaosDaoIdSettings extends BaseTest {
 
 	@Test
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("Get HTTP 403 for DAO settings with empty 'accountId' parameter")
-	@DisplayName("Get HTTP 403 for DAO settings with empty 'accountId' parameter")
-	void getHttp403ForDaoSettingsWithEmptyAccountIdParam() {
+	@Story("Get HTTP 403 for update DAO settings by 'key' param with empty 'accountId' parameter")
+	@DisplayName("Get HTTP 403 for update DAO settings by 'key' param with empty 'accountId' parameter")
+	void getHttp403ForDaoSettingsByKeyParamWithEmptyAccountIdParam() {
 		String authToken = Base64Utils.encodeAuthToken(EMPTY_STRING, accountPublicKey, accountSignature);
-		Map<String, String> fakeJson = Map.of("rickAndMortyQuote", faker.rickAndMorty().quote());
 
-		daoApiSteps.patchDaoSettings(testDao, fakeJson, authToken).then()
+		daoApiSteps.patchDaoSettingsByKey(testDao, "jodaQuote", faker.yoda().quote(), authToken).then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
 				      "message", equalTo("Authorization header payload is invalid"),
@@ -99,15 +122,14 @@ public class DaosDaoIdSettings extends BaseTest {
 
 	@ParameterizedTest
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("Get HTTP 403 for DAO settings with null and invalid 'publicKey' parameter")
-	@DisplayName("Get HTTP 403 for DAO settings with null and invalid 'publicKey' parameter")
+	@Story("Get HTTP 403 for update DAO settings by 'key' param with null and invalid 'publicKey' parameter")
+	@DisplayName("Get HTTP 403 for update DAO settings by 'key' param with null and invalid 'publicKey' parameter")
 	@NullSource
 	@CsvSource({"invalidPublicKey"})
-	void getHttp403ForDaoSettingsWithNullAndInvalidPublicKeyParam(String publicKey) {
+	void getHttp403ForDaoSettingsByKeyParamWithNullAndInvalidPublicKeyParam(String publicKey) {
 		String authToken = Base64Utils.encodeAuthToken(accountId, publicKey, accountSignature);
-		Map<String, String> fakeJson = Map.of("rickAndMortyQuote", faker.rickAndMorty().quote());
 
-		daoApiSteps.patchDaoSettings(testDao, fakeJson, authToken).then()
+		daoApiSteps.patchDaoSettingsByKey(testDao, "jodaQuote", faker.yoda().quote(), authToken).then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
 				      "message", equalTo("Account testdao2.testnet identity is invalid - public key"),
@@ -116,13 +138,12 @@ public class DaosDaoIdSettings extends BaseTest {
 
 	@Test
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("Get HTTP 403 for DAO settings with empty 'publicKey' parameter")
-	@DisplayName("Get HTTP 403 for DAO settings with empty 'publicKey' parameter")
-	void getHttp403ForDaoSettingsWithEmptyPublicKeyParam() {
+	@Story("Get HTTP 403 for update DAO settings by 'key' param with empty 'publicKey' parameter")
+	@DisplayName("Get HTTP 403 for update DAO settings by 'key' param with empty 'publicKey' parameter")
+	void getHttp403ForDaoSettingsByKeyParamWithEmptyPublicKeyParam() {
 		String authToken = Base64Utils.encodeAuthToken(accountId, EMPTY_STRING, accountSignature);
-		Map<String, String> fakeJson = Map.of("rickAndMortyQuote", faker.rickAndMorty().quote());
 
-		daoApiSteps.patchDaoSettings(testDao, fakeJson, authToken).then()
+		daoApiSteps.patchDaoSettingsByKey(testDao, "jodaQuote", faker.yoda().quote(), authToken).then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
 				      "message", equalTo("Authorization header payload is invalid"),
@@ -131,14 +152,13 @@ public class DaosDaoIdSettings extends BaseTest {
 
 	@Test
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("Get HTTP 403 for DAO settings with invalid 'signature' parameter")
-	@DisplayName("Get HTTP 403 for DAO settings with invalid 'signature' parameter")
-	void getHttp403ForDaoSettingsWithInvalidSignatureParam() {
+	@Story("Get HTTP 403 for update DAO settings by 'key' param with invalid 'signature' parameter")
+	@DisplayName("Get HTTP 403 for update DAO settings by 'key' param with invalid 'signature' parameter")
+	void getHttp403ForDaoSettingsByKeyParamWithInvalidSignatureParam() {
 		String invalidSignature = accountSignature.substring(10);
 		String authToken = Base64Utils.encodeAuthToken(accountId, accountPublicKey, invalidSignature);
-		Map<String, String> fakeJson = Map.of("rickAndMortyQuote", faker.rickAndMorty().quote());
 
-		daoApiSteps.patchDaoSettings(testDao, fakeJson, authToken).then()
+		daoApiSteps.patchDaoSettingsByKey(testDao, "jodaQuote", faker.yoda().quote(), authToken).then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
 				      "message", equalTo("Invalid signature"),
@@ -147,13 +167,12 @@ public class DaosDaoIdSettings extends BaseTest {
 
 	@Test
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("Get HTTP 403 for DAO settings with null 'signature' parameter")
-	@DisplayName("Get HTTP 403 for DAO settings with null 'signature' parameter")
-	void getHttp403ForDaoSettingsWithNullSignatureParam() {
+	@Story("Get HTTP 403 for update DAO settings by 'key' param with null 'signature' parameter")
+	@DisplayName("Get HTTP 403 for update DAO settings by 'key' param with null 'signature' parameter")
+	void getHttp403ForDaoSettingsByKeyParamWithNullSignatureParam() {
 		String authToken = Base64Utils.encodeAuthToken(accountId, accountPublicKey, null);
-		Map<String, String> fakeJson = Map.of("rickAndMortyQuote", faker.rickAndMorty().quote());
 
-		daoApiSteps.patchDaoSettings(testDao, fakeJson, authToken).then()
+		daoApiSteps.patchDaoSettingsByKey(testDao, "jodaQuote", faker.yoda().quote(), authToken).then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
 				      "message", equalTo("Invalid signature"),
@@ -162,30 +181,15 @@ public class DaosDaoIdSettings extends BaseTest {
 
 	@Test
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("Get HTTP 403 for DAO settings with empty 'signature' parameter")
-	@DisplayName("Get HTTP 403 for DAO settings with empty 'signature' parameter")
-	void getHttp403ForDaoSettingsWithEmptySignatureParam() {
+	@Story("Get HTTP 403 for update DAO settings by 'key' param with empty 'signature' parameter")
+	@DisplayName("Get HTTP 403 for update DAO settings by 'key' param with empty 'signature' parameter")
+	void getHttp403ForDaoSettingsByKeyParamWithEmptySignatureParam() {
 		String authToken = Base64Utils.encodeAuthToken(accountId, accountPublicKey, EMPTY_STRING);
-		Map<String, String> fakeJson = Map.of("rickAndMortyQuote", faker.rickAndMorty().quote());
 
-		daoApiSteps.patchDaoSettings(testDao, fakeJson, authToken).then()
+		daoApiSteps.patchDaoSettingsByKey(testDao, "jodaQuote", faker.yoda().quote(), authToken).then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
 				      "message", equalTo("Authorization header payload is invalid"),
-				      "error", equalTo("Forbidden"));
-	}
-
-	@Test
-	@Severity(SeverityLevel.CRITICAL)
-	@Story("Get HTTP 403 for DAO settings with correct token and wrong 'daoId' parameter")
-	@DisplayName("Get HTTP 403 for DAO settings with correct token and wrong 'daoId' parameter")
-	void getHttp403ForDaoSettingsWithCorrectTokenAndWrongDaoIdParam() {
-		Map<String, String> fakeJson = Map.of("rickAndMortyQuote", faker.rickAndMorty().quote());
-
-		daoApiSteps.patchDaoSettings("rs-dao-1.sputnikv2.testnet", fakeJson, accountAuthToken).then()
-				.statusCode(HTTP_FORBIDDEN)
-				.body("statusCode", equalTo(HTTP_FORBIDDEN),
-				      "message", equalTo("Forbidden resource"),
 				      "error", equalTo("Forbidden"));
 	}
 }
