@@ -51,7 +51,7 @@ jobs:
           exit 0
         fi
 
-        echo "::set-output name=apps::[\"aggregator\", \"api\", \"notifier\"]"
+        echo "::set-output name=apps::[\"aggregator\", \"api\", \"notifier\", \"draft\"]"
 
   get-environment:
     name: Get Environment
