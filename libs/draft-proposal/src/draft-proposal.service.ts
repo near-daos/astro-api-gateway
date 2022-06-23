@@ -228,6 +228,7 @@ export class DraftProposalService {
       search,
       orderBy = 'createdAt',
       order = Order.DESC,
+      daoId,
       type,
       state,
       isRead,
@@ -244,6 +245,10 @@ export class DraftProposalService {
           { hashtags: { $in: search.split(',') } },
         ],
       });
+    }
+
+    if (daoId) {
+      queries.push({ daoId: { $eq: daoId } });
     }
 
     if (type) {

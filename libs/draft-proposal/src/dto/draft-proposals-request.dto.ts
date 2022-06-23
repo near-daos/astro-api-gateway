@@ -8,6 +8,11 @@ export class DraftProposalsRequest extends SearchDto {
   @ApiProperty({ required: false })
   @IsOptional()
   @IsString()
+  daoId: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
   type: string;
 
   @ApiProperty({ required: false, enum: DraftProposalState })
