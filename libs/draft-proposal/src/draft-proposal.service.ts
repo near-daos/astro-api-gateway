@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { MongoRepository } from 'typeorm';
+import { DeleteResult, MongoRepository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   BaseResponseDto,
@@ -125,7 +125,7 @@ export class DraftProposalService {
     return draftProposal.id.toString();
   }
 
-  async delete(id: string, accountId: string): Promise<boolean> {
+  async delete(id: string, accountId: string): Promise<DeleteResult> {
     const draftProposal = await this.draftProposalRepository.findOne(id);
 
     if (!draftProposal) {
@@ -147,12 +147,10 @@ export class DraftProposalService {
       throw new BadRequestException(`Draft proposal is closed`);
     }
 
-    await this.draftProposalRepository.delete(draftProposal);
     await this.draftProposalHistoryRepository.deleteMany({
       draftProposalId: { $eq: draftProposal.id },
     });
-
-    return true;
+    return this.draftProposalRepository.delete(draftProposal);
   }
 
   async view(id: string, accountId: string): Promise<boolean> {

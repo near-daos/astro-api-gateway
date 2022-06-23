@@ -35,6 +35,7 @@ import {
   AuthorizedRequest,
   BaseResponseDto,
 } from '@sputnik-v2/common';
+import { DeleteResult } from 'typeorm';
 
 @ApiTags('Draft Proposals')
 @Controller('/draft-proposals')
@@ -146,7 +147,7 @@ export class DraftProposalController {
   deleteDraftProposal(
     @Param('id') id: string,
     @Req() req: AuthorizedRequest,
-  ): Promise<boolean> {
+  ): Promise<DeleteResult> {
     return this.draftProposalService.delete(id, req.accountId);
   }
 

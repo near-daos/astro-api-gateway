@@ -31,6 +31,7 @@ import {
   DraftCommentsRequest,
   UpdateDraftComment,
 } from '@sputnik-v2/draft-comment';
+import { DeleteResult } from 'typeorm';
 
 @ApiTags('Draft Comments')
 @Controller('/draft-comments')
@@ -174,7 +175,7 @@ export class DraftCommentController {
   deleteDraftComment(
     @Param('id') id: string,
     @Req() req: AuthorizedRequest,
-  ): Promise<boolean> {
+  ): Promise<DeleteResult> {
     return this.draftCommentService.delete(id, req.accountId);
   }
 }
