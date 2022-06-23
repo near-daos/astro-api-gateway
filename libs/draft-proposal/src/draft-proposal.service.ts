@@ -4,14 +4,14 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { MongoRepository } from 'typeorm';
+import { DeleteResult, MongoRepository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   BaseResponseDto,
   DRAFT_DB_CONNECTION,
   Order,
 } from '@sputnik-v2/common';
-import { ProposalKind } from '@sputnik-v2/proposal';
+import { ProposalKind, ProposalService } from '@sputnik-v2/proposal';
 import { DraftHashtagService } from '@sputnik-v2/draft-hashtag';
 
 import { DraftProposal, DraftProposalHistory } from './entities';
@@ -36,12 +36,26 @@ export class DraftProposalService {
     @InjectRepository(DraftProposalHistory, DRAFT_DB_CONNECTION)
     private draftProposalHistoryRepository: MongoRepository<DraftProposalHistory>,
     private draftHashtagService: DraftHashtagService,
+    private proposalService: ProposalService,
   ) {}
 
   async create(
     accountId: string,
     draftProposalDto: CreateDraftProposal,
   ): Promise<string> {
+    const accountPermissions =
+      await this.proposalService.getAccountPermissionByDao(
+        draftProposalDto.daoId,
+        accountId,
+        draftProposalDto.type,
+      );
+
+    if (!accountPermissions.canAdd) {
+      throw new ForbiddenException(
+        `Account ${accountId} does not have permissions to create this type of proposal`,
+      );
+    }
+
     await this.draftHashtagService.createMultiple(draftProposalDto.hashtags);
     const draftProposal = await this.draftProposalRepository.save({
       daoId: draftProposalDto.daoId,
@@ -74,6 +88,19 @@ export class DraftProposalService {
       throw new ForbiddenException('Account is not the proposer');
     }
 
+    const accountPermissions =
+      await this.proposalService.getAccountPermissionByDao(
+        draftProposal.daoId,
+        accountId,
+        draftProposalDto.type,
+      );
+
+    if (!accountPermissions.canAdd) {
+      throw new ForbiddenException(
+        `Account ${accountId} does not have permissions to create this type of proposal`,
+      );
+    }
+
     await this.draftHashtagService.createMultiple(draftProposalDto.hashtags);
     await this.draftProposalHistoryRepository.save({
       draftProposalId: draftProposal.id,
@@ -98,27 +125,32 @@ export class DraftProposalService {
     return draftProposal.id.toString();
   }
 
-  async delete(id: string, accountId: string): Promise<boolean> {
+  async delete(id: string, accountId: string): Promise<DeleteResult> {
     const draftProposal = await this.draftProposalRepository.findOne(id);
 
     if (!draftProposal) {
       throw new NotFoundException(`Draft proposal ${id} does not exist`);
     }
 
-    if (draftProposal.proposer !== accountId) {
-      throw new ForbiddenException('Account is not the proposer');
+    const accountPermissions =
+      await this.proposalService.getAccountPermissionByDao(
+        draftProposal.daoId,
+        accountId,
+        draftProposal.type,
+      );
+
+    if (draftProposal.proposer !== accountId && !accountPermissions.isCouncil) {
+      throw new ForbiddenException('Account is not the proposer or council');
     }
 
     if (draftProposal.state === DraftProposalState.Closed) {
       throw new BadRequestException(`Draft proposal is closed`);
     }
 
-    await this.draftProposalRepository.delete(draftProposal);
     await this.draftProposalHistoryRepository.deleteMany({
       draftProposalId: { $eq: draftProposal.id },
     });
-
-    return true;
+    return this.draftProposalRepository.delete(draftProposal);
   }
 
   async view(id: string, accountId: string): Promise<boolean> {
@@ -215,7 +247,7 @@ export class DraftProposalService {
     }
 
     if (type) {
-      queries.push({ type: { $eq: type } });
+      queries.push({ type: { $in: type.split(',') } });
     }
 
     if (state) {

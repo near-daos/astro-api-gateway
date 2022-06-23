@@ -347,6 +347,19 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
     }
   }
 
+  public async getAccountPermissionByDao(
+    daoId: string,
+    accountId: string,
+    type?: ProposalType,
+  ): Promise<ProposalPermissions> {
+    const daoRoles = await this.roleRepository
+      .createQueryBuilder('role')
+      .leftJoinAndSelect('role.policy', 'policy')
+      .where('policy_dao_id = :daoId', { daoId })
+      .getMany();
+    return this.getAccountPermissions(type, daoRoles, accountId);
+  }
+
   private populateProposalPermissions(
     proposal: Proposal,
     roles: Role[],
@@ -354,12 +367,16 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
   ): Proposal {
     return {
       ...proposal,
-      permissions: this.getAccountPermissions(proposal, roles, accountId),
+      permissions: this.getAccountPermissions(
+        proposal.kind?.type,
+        roles,
+        accountId,
+      ),
     } as Proposal;
   }
 
   private getAccountPermissions(
-    proposal: Proposal,
+    type: ProposalType,
     roles: Role[],
     accountId?: string,
     accountBalance?: bigint,
@@ -380,21 +397,10 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
       isCouncil: council?.accountIds
         ? council.accountIds.includes(accountId)
         : false,
-      canApprove: this.checkPermissions(
-        proposal.kind.type,
-        'VoteApprove',
-        permissions,
-      ),
-      canReject: this.checkPermissions(
-        proposal.kind.type,
-        'VoteReject',
-        permissions,
-      ),
-      canDelete: this.checkPermissions(
-        proposal.kind.type,
-        'VoteRemove',
-        permissions,
-      ),
+      canApprove: this.checkPermissions(type, 'VoteApprove', permissions),
+      canReject: this.checkPermissions(type, 'VoteReject', permissions),
+      canDelete: this.checkPermissions(type, 'VoteRemove', permissions),
+      canAdd: this.checkPermissions(type, 'AddProposal', permissions),
     };
   }
 

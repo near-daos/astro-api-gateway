@@ -1,8 +1,10 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
+  Patch,
   Post,
   Query,
   Req,
@@ -27,7 +29,9 @@ import {
   DraftCommentResponse,
   DraftCommentService,
   DraftCommentsRequest,
+  UpdateDraftComment,
 } from '@sputnik-v2/draft-comment';
+import { DeleteResult } from 'typeorm';
 
 @ApiTags('Draft Comments')
 @Controller('/draft-comments')
@@ -67,6 +71,34 @@ export class DraftCommentController {
     @Body() body: CreateDraftComment,
   ): Promise<string> {
     return this.draftCommentService.create(req.accountId, body);
+  }
+
+  @ApiParam({
+    name: 'id',
+    type: String,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Updated',
+    type: String,
+  })
+  @ApiForbiddenResponse({
+    description:
+      'Account <accountId> identity is invalid - public key / invalid signature / invalid accountId / not author',
+  })
+  @ApiNotFoundResponse({
+    description: 'Draft comment <id> does not exist',
+  })
+  @ApiBearerAuth()
+  @UseGuards(ThrottlerGuard)
+  @UseGuards(AccountAccessGuard)
+  @Patch('/:id')
+  updateDraftComment(
+    @Param('id') id: string,
+    @Req() req: AuthorizedRequest,
+    @Body() body: UpdateDraftComment,
+  ): Promise<string> {
+    return this.draftCommentService.update(id, req.accountId, body);
   }
 
   @ApiParam({
@@ -119,5 +151,31 @@ export class DraftCommentController {
     @Req() req: AuthorizedRequest,
   ): Promise<boolean> {
     return this.draftCommentService.unlike(id, req.accountId);
+  }
+
+  @ApiParam({
+    name: 'id',
+    type: String,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Deleted',
+    type: Boolean,
+  })
+  @ApiForbiddenResponse({
+    description:
+      'Account <accountId> identity is invalid - public key / invalid signature / invalid accountId / not author or council',
+  })
+  @ApiNotFoundResponse({
+    description: 'Draft comment <id> does not exist',
+  })
+  @ApiBearerAuth()
+  @UseGuards(AccountAccessGuard)
+  @Delete('/:id')
+  deleteDraftComment(
+    @Param('id') id: string,
+    @Req() req: AuthorizedRequest,
+  ): Promise<DeleteResult> {
+    return this.draftCommentService.delete(id, req.accountId);
   }
 }

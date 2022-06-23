@@ -35,6 +35,7 @@ import {
   AuthorizedRequest,
   BaseResponseDto,
 } from '@sputnik-v2/common';
+import { DeleteResult } from 'typeorm';
 
 @ApiTags('Draft Proposals')
 @Controller('/draft-proposals')
@@ -80,7 +81,7 @@ export class DraftProposalController {
   })
   @ApiForbiddenResponse({
     description:
-      'Account <accountId> identity is invalid - public key / invalid signature / invalid accountId',
+      'Account <accountId> identity is invalid - public key / invalid signature / invalid accountId / no permissions',
   })
   @ApiBearerAuth()
   @UseGuards(ThrottlerGuard)
@@ -107,7 +108,7 @@ export class DraftProposalController {
   })
   @ApiForbiddenResponse({
     description:
-      'Account <accountId> identity is invalid - public key / invalid signature / invalid accountId / not proposer',
+      'Account <accountId> identity is invalid - public key / invalid signature / invalid accountId / no permissions / not proposer',
   })
   @ApiBearerAuth()
   @UseGuards(ThrottlerGuard)
@@ -132,7 +133,7 @@ export class DraftProposalController {
   })
   @ApiForbiddenResponse({
     description:
-      'Account <accountId> identity is invalid - public key / invalid signature / invalid accountId / not proposer',
+      'Account <accountId> identity is invalid - public key / invalid signature / invalid accountId / not proposer or council',
   })
   @ApiNotFoundResponse({
     description: 'Draft proposal <id> does not exist',
@@ -146,7 +147,7 @@ export class DraftProposalController {
   deleteDraftProposal(
     @Param('id') id: string,
     @Req() req: AuthorizedRequest,
-  ): Promise<boolean> {
+  ): Promise<DeleteResult> {
     return this.draftProposalService.delete(id, req.accountId);
   }
 
