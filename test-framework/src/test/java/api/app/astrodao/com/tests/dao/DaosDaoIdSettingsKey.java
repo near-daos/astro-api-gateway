@@ -149,4 +149,19 @@ public class DaosDaoIdSettingsKey extends BaseTest {
 				      "message", equalTo("Authorization header payload is invalid"),
 				      "error", equalTo("Forbidden"));
 	}
+
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 403 for update DAO settings by 'key' param with invalid 'signature' parameter")
+	@DisplayName("Get HTTP 403 for update DAO settings by 'key' param with invalid 'signature' parameter")
+	void getHttp403ForDaoSettingsByKeyParamWithInvalidSignatureParam() {
+		String invalidSignature = accountSignature.substring(10);
+		String authToken = Base64Utils.encodeAuthToken(accountId, accountPublicKey, invalidSignature);
+
+		daoApiSteps.patchDaoSettingsByKey(testDao, "jodaQuote", faker.yoda().quote(), authToken).then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo("Invalid signature"),
+				      "error", equalTo("Forbidden"));
+	}
 }
