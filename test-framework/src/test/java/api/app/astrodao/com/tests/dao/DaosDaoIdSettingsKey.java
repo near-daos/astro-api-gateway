@@ -16,7 +16,6 @@ import org.junit.jupiter.params.provider.NullSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -118,6 +117,22 @@ public class DaosDaoIdSettingsKey extends BaseTest {
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
 				      "message", equalTo("Authorization header payload is invalid"),
+				      "error", equalTo("Forbidden"));
+	}
+
+	@ParameterizedTest
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 403 for update DAO settings by 'key' param with null and invalid 'publicKey' parameter")
+	@DisplayName("Get HTTP 403 for update DAO settings by 'key' param with null and invalid 'publicKey' parameter")
+	@NullSource
+	@CsvSource({"invalidPublicKey"})
+	void getHttp403ForDaoSettingsByKeyParamWithNullAndInvalidPublicKeyParam(String publicKey) {
+		String authToken = Base64Utils.encodeAuthToken(accountId, publicKey, accountSignature);
+
+		daoApiSteps.patchDaoSettingsByKey(testDao, "jodaQuote", faker.yoda().quote(), authToken).then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo("Account testdao2.testnet identity is invalid - public key"),
 				      "error", equalTo("Forbidden"));
 	}
 }
