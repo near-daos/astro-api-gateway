@@ -135,4 +135,18 @@ public class DaosDaoIdSettingsKey extends BaseTest {
 				      "message", equalTo("Account testdao2.testnet identity is invalid - public key"),
 				      "error", equalTo("Forbidden"));
 	}
+
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get HTTP 403 for update DAO settings by 'key' param with empty 'publicKey' parameter")
+	@DisplayName("Get HTTP 403 for update DAO settings by 'key' param with empty 'publicKey' parameter")
+	void getHttp403ForDaoSettingsByKeyParamWithEmptyPublicKeyParam() {
+		String authToken = Base64Utils.encodeAuthToken(accountId, EMPTY_STRING, accountSignature);
+
+		daoApiSteps.patchDaoSettingsByKey(testDao, "jodaQuote", faker.yoda().quote(), authToken).then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo("Authorization header payload is invalid"),
+				      "error", equalTo("Forbidden"));
+	}
 }
