@@ -1,24 +1,24 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "sputnik-v2-api.fullname" . }}
+  name: {{ include "sputnik-v2-draft.fullname" . }}
   labels:
-    {{- include "sputnik-v2-api.labels" . | nindent 4 }}
+    {{- include "sputnik-v2-draft.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      {{- include "sputnik-v2-api.selectorLabels" . | nindent 6 }}
+      {{- include "sputnik-v2-draft.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        {{- include "sputnik-v2-api.selectorLabels" . | nindent 8 }}
+        {{- include "sputnik-v2-draft.selectorLabels" . | nindent 8 }}
     spec:
     {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
     {{- end }}
-      serviceAccountName: {{ include "sputnik-v2-api.serviceAccountName" . }}
+      serviceAccountName: {{ include "sputnik-v2-draft.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
@@ -31,31 +31,35 @@ spec:
             - name: http
               containerPort: {{ .Values.container.internalPort }}
               protocol: TCP
+          {{- with .Values.container.livenessProbe }}
           livenessProbe:
             httpGet:
-              path: "{{ .Values.container.livenessProbe.path }}"
-              port: {{ .Values.container.livenessProbe.port }}
+              path: "{{ .path }}"
+              port: {{ .port }}
               scheme: HTTP
-            initialDelaySeconds: {{ .Values.container.livenessProbe.initialDelaySeconds }}
-            periodSeconds: {{ .Values.container.livenessProbe.periodSeconds }}
-            timeoutSeconds: {{ .Values.container.livenessProbe.timeoutSeconds }}
-            successThreshold: {{ .Values.container.livenessProbe.successThreshold }}
-            failureThreshold: {{ .Values.container.livenessProbe.failureThreshold }}
+            initialDelaySeconds: {{ .initialDelaySeconds }}
+            periodSeconds: {{ .periodSeconds }}
+            timeoutSeconds: {{ .timeoutSeconds }}
+            successThreshold: {{ .successThreshold }}
+            failureThreshold: {{ .failureThreshold }}
+          {{- end }}
+          {{- with .Values.container.readinessProbe }}
           readinessProbe:
             httpGet:
-              path: "{{ .Values.container.readinessProbe.path }}"
-              port: {{ .Values.container.readinessProbe.port }}
+              path: "{{ .path }}"
+              port: {{ .port }}
               scheme: HTTP
-            initialDelaySeconds: {{ .Values.container.readinessProbe.initialDelaySeconds }}
-            periodSeconds: {{ .Values.container.readinessProbe.periodSeconds }}
-            timeoutSeconds: {{ .Values.container.readinessProbe.timeoutSeconds }}
-            successThreshold: {{ .Values.container.readinessProbe.successThreshold }}
-            failureThreshold: {{ .Values.container.readinessProbe.failureThreshold }}
+            initialDelaySeconds: {{ .initialDelaySeconds }}
+            periodSeconds: {{ .periodSeconds }}
+            timeoutSeconds: {{ .timeoutSeconds }}
+            successThreshold: {{ .successThreshold }}
+            failureThreshold: {{ .failureThreshold }}
+          {{- end }}
           envFrom:
           - configMapRef:
               name: sputnik-v2-configmap
           - configMapRef:
-              name: sputnik-v2-api-configmap
+              name: sputnik-v2-draft-configmap
           - configMapRef:
               name: {{ .Release.Name }}-version
           - secretRef:
@@ -64,8 +68,14 @@ spec:
               name: near-indexer-db-secret
           - secretRef:
               name: redis-secret
+          - secretRef:
+              name: documentdb-secret
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+          - mountPath: /rds-ca/rds-combined-ca-bundle.pem
+            name: documentdb-ca
+            subPath: RDS_CA_BUNDLE
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -78,3 +88,8 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
     {{- end }}
+      volumes:
+      - name: documentdb-ca
+        secret:
+          defaultMode: 420
+          secretName: documentdb-secret
