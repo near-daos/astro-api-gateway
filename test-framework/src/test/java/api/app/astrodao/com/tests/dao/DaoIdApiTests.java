@@ -41,7 +41,7 @@ public class DaoIdApiTests extends BaseTest {
 	}
 
 	@Test
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 400 for invalid DAO name")
 	@DisplayName("Get HTTP 400 for invalid DAO name")
 	void getHttp400ForInvalidDaoName() {

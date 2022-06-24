@@ -349,7 +349,7 @@ public class ProposalsApiTests extends BaseTest {
             "fields; id; kind field is required",
             "fields; id,kind; createdAt field is required",
     }, delimiter = 59)
-    @Severity(SeverityLevel.CRITICAL)
+    @Severity(SeverityLevel.NORMAL)
     @Story("Get HTTP 400 status code for proposals")
     @DisplayName("Get HTTP 400 status code for proposals")
     void getHttp400StatusCodeForProposals(String key, String value, String errorMsg) {

@@ -290,7 +290,7 @@ public class BountyContextsTests extends BaseTest {
 	}
 
 	@Test
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 400 for Bounty-contexts")
 	@DisplayName("Get HTTP 400 for Bounty-contexts")
 	void getHttp400ForBountyContexts() {

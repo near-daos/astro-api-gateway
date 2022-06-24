@@ -57,7 +57,7 @@ public class SearchApiTests extends BaseTest {
     }
 
     @Test
-    @Severity(SeverityLevel.CRITICAL)
+    @Severity(SeverityLevel.NORMAL)
     @Story("Get HTTP 400 for a Search")
     @DisplayName("Get HTTP 400 for a Search")
     void getHttp400ForSearch() {

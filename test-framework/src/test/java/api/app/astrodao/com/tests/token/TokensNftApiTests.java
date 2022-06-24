@@ -131,7 +131,7 @@ public class TokensNftApiTests extends BaseTest {
 	}
 
 	@Test
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("User should not be able to get NFTs for request with invalid params")
 	@DisplayName("User should not be able to get NFTs for request with invalid params")
 	void userShouldNotBeAbleToGetNFTsForRequestWithInvalidParams() {

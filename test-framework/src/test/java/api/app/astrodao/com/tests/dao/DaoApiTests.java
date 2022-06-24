@@ -154,7 +154,7 @@ public class DaoApiTests extends BaseTest {
     }
 
     @Test
-    @Severity(SeverityLevel.CRITICAL)
+    @Severity(SeverityLevel.NORMAL)
     @Story("Get HTTP 400 for DAOs")
     @DisplayName("Get HTTP 400 for DAOs")
     void getHttp400ForDaos() {

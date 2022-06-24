@@ -217,7 +217,7 @@ public class BountiesApiTests extends BaseTest {
     }
 
     @Test
-    @Severity(SeverityLevel.CRITICAL)
+    @Severity(SeverityLevel.NORMAL)
     @Story("User should be able to get list of notifications with invalid query param")
     @DisplayName("User should be able to get list of notifications with invalid query param")
     void getListOfNotificationsWithInvalidParameters() {

@@ -61,7 +61,7 @@ public class SubscriptionsApiTests extends BaseTest {
     }
 
      @Test
-    @Severity(SeverityLevel.CRITICAL)
+    @Severity(SeverityLevel.NORMAL)
     @Story("User should not be able to subscribe to an invalid DAO")
     @DisplayName("User should not be able to subscribe to an invalid DAO")
     void userShouldNotBeAbleToSubscribeToInvalidDao() {
@@ -76,7 +76,7 @@ public class SubscriptionsApiTests extends BaseTest {
     }
 
     @Test
-    @Severity(SeverityLevel.CRITICAL)
+    @Severity(SeverityLevel.NORMAL)
     @Story("User should not be able to delete subscription for account with invalid signature")
     @DisplayName("User should not be able to delete subscription for account with invalid signature")
     void userShouldNotBeAbleToSubscribeToDaoWithInvalidSignature() {
