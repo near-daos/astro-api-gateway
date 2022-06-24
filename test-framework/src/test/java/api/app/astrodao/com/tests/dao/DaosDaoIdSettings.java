@@ -65,7 +65,7 @@ public class DaosDaoIdSettings extends BaseTest {
 	}
 
 	@ParameterizedTest
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 403 for DAO settings with null and invalid 'accountId' parameter")
 	@DisplayName("Get HTTP 403 for DAO settings with null and invalid 'accountId' parameter")
 	@NullSource
@@ -83,7 +83,7 @@ public class DaosDaoIdSettings extends BaseTest {
 	}
 
 	@Test
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 403 for DAO settings with empty 'accountId' parameter")
 	@DisplayName("Get HTTP 403 for DAO settings with empty 'accountId' parameter")
 	void getHttp403ForDaoSettingsWithEmptyAccountIdParam() {
@@ -98,7 +98,7 @@ public class DaosDaoIdSettings extends BaseTest {
 	}
 
 	@ParameterizedTest
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 403 for DAO settings with null and invalid 'publicKey' parameter")
 	@DisplayName("Get HTTP 403 for DAO settings with null and invalid 'publicKey' parameter")
 	@NullSource
@@ -115,7 +115,7 @@ public class DaosDaoIdSettings extends BaseTest {
 	}
 
 	@Test
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 403 for DAO settings with empty 'publicKey' parameter")
 	@DisplayName("Get HTTP 403 for DAO settings with empty 'publicKey' parameter")
 	void getHttp403ForDaoSettingsWithEmptyPublicKeyParam() {
@@ -130,7 +130,7 @@ public class DaosDaoIdSettings extends BaseTest {
 	}
 
 	@Test
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 403 for DAO settings with invalid 'signature' parameter")
 	@DisplayName("Get HTTP 403 for DAO settings with invalid 'signature' parameter")
 	void getHttp403ForDaoSettingsWithInvalidSignatureParam() {
@@ -146,7 +146,7 @@ public class DaosDaoIdSettings extends BaseTest {
 	}
 
 	@Test
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 403 for DAO settings with null 'signature' parameter")
 	@DisplayName("Get HTTP 403 for DAO settings with null 'signature' parameter")
 	void getHttp403ForDaoSettingsWithNullSignatureParam() {
@@ -161,7 +161,7 @@ public class DaosDaoIdSettings extends BaseTest {
 	}
 
 	@Test
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 403 for DAO settings with empty 'signature' parameter")
 	@DisplayName("Get HTTP 403 for DAO settings with empty 'signature' parameter")
 	void getHttp403ForDaoSettingsWithEmptySignatureParam() {
@@ -176,7 +176,7 @@ public class DaosDaoIdSettings extends BaseTest {
 	}
 
 	@Test
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 403 for DAO settings with correct token and wrong 'daoId' parameter")
 	@DisplayName("Get HTTP 403 for DAO settings with correct token and wrong 'daoId' parameter")
 	void getHttp403ForDaoSettingsWithCorrectTokenAndWrongDaoIdParam() {

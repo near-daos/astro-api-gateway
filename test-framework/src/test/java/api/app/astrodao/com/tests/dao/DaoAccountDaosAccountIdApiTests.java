@@ -58,7 +58,7 @@ public class DaoAccountDaosAccountIdApiTests extends BaseTest {
 	}
 
 	@ParameterizedTest
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 404 for account-daos with invalid DAO accountId")
 	@DisplayName("Get HTTP 404 for account-daos with invalid DAO accountId")
 	@CsvSource({"invalidAccountId", "2212332141", "-1", "0",
@@ -74,7 +74,7 @@ public class DaoAccountDaosAccountIdApiTests extends BaseTest {
 	}
 
 	@Test
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 400 for Account-daos")
 	@DisplayName("Get HTTP 400 for Account-daos")
 	void getHttp400ForAccountDaos() {

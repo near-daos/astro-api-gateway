@@ -42,7 +42,7 @@ public class TokensNftsEventsApiTests extends BaseTest {
 	}
 
 	@Test
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Getting events for invalid NFT ID")
 	@DisplayName("Getting events for invalid NFT ID")
 	void getEventsForInvalidNftID() {

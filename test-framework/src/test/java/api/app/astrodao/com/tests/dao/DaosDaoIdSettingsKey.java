@@ -78,7 +78,7 @@ public class DaosDaoIdSettingsKey extends BaseTest {
 	}
 
 	@Test
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 403 for update DAO settings by 'key' param with correct token and wrong 'daoId' parameter")
 	@DisplayName("Get HTTP 403 for update DAO settings by 'key' param with correct token and wrong 'daoId' parameter")
 	void getHttp403ForDaoSettingsByKeyParamWithCorrectTokenAndWrongDaoIdParam() {
@@ -90,7 +90,7 @@ public class DaosDaoIdSettingsKey extends BaseTest {
 	}
 
 	@ParameterizedTest
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 403 for update DAO settings by 'key' param with null and invalid 'accountId' parameter")
 	@DisplayName("Get HTTP 403 for update DAO settings by 'key' param with null and invalid 'accountId' parameter")
 	@NullSource
@@ -107,7 +107,7 @@ public class DaosDaoIdSettingsKey extends BaseTest {
 	}
 
 	@Test
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 403 for update DAO settings by 'key' param with empty 'accountId' parameter")
 	@DisplayName("Get HTTP 403 for update DAO settings by 'key' param with empty 'accountId' parameter")
 	void getHttp403ForDaoSettingsByKeyParamWithEmptyAccountIdParam() {
@@ -121,7 +121,7 @@ public class DaosDaoIdSettingsKey extends BaseTest {
 	}
 
 	@ParameterizedTest
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 403 for update DAO settings by 'key' param with null and invalid 'publicKey' parameter")
 	@DisplayName("Get HTTP 403 for update DAO settings by 'key' param with null and invalid 'publicKey' parameter")
 	@NullSource
@@ -137,7 +137,7 @@ public class DaosDaoIdSettingsKey extends BaseTest {
 	}
 
 	@Test
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 403 for update DAO settings by 'key' param with empty 'publicKey' parameter")
 	@DisplayName("Get HTTP 403 for update DAO settings by 'key' param with empty 'publicKey' parameter")
 	void getHttp403ForDaoSettingsByKeyParamWithEmptyPublicKeyParam() {
@@ -151,7 +151,7 @@ public class DaosDaoIdSettingsKey extends BaseTest {
 	}
 
 	@Test
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 403 for update DAO settings by 'key' param with invalid 'signature' parameter")
 	@DisplayName("Get HTTP 403 for update DAO settings by 'key' param with invalid 'signature' parameter")
 	void getHttp403ForDaoSettingsByKeyParamWithInvalidSignatureParam() {
@@ -166,7 +166,7 @@ public class DaosDaoIdSettingsKey extends BaseTest {
 	}
 
 	@Test
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 403 for update DAO settings by 'key' param with null 'signature' parameter")
 	@DisplayName("Get HTTP 403 for update DAO settings by 'key' param with null 'signature' parameter")
 	void getHttp403ForDaoSettingsByKeyParamWithNullSignatureParam() {
@@ -180,7 +180,7 @@ public class DaosDaoIdSettingsKey extends BaseTest {
 	}
 
 	@Test
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 403 for update DAO settings by 'key' param with empty 'signature' parameter")
 	@DisplayName("Get HTTP 403 for update DAO settings by 'key' param with empty 'signature' parameter")
 	void getHttp403ForDaoSettingsByKeyParamWithEmptySignatureParam() {

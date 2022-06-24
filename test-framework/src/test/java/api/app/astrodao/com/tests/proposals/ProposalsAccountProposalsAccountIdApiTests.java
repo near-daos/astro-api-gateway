@@ -60,7 +60,7 @@ public class ProposalsAccountProposalsAccountIdApiTests extends BaseTest {
 		proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getProposalId() >= 0, "data/proposalId");
 		proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getDaoId().endsWith(".sputnikv2.testnet"), "data/daoId");
 		proposalsApiSteps.assertCollectionContainsOnly(proposalResponse.getData(), ProposalDto::getProposer, account1Id, "data/proposer");
-		proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> !r.getDescription().isEmpty(), "data/description");
+		proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getDescription() != null, "data/description");
 		proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getStatus() != null, "data/status");
 		proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getVoteStatus() != null, "data/voteStatus");
 		proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getKind() != null, "data/kind");
@@ -246,7 +246,7 @@ public class ProposalsAccountProposalsAccountIdApiTests extends BaseTest {
 		proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getProposalId() >= 0, "data/proposalId");
 		proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getDaoId().endsWith(".sputnikv2.testnet"), "data/daoId");
 		proposalsApiSteps.assertCollectionContainsOnly(proposalResponse.getData(), ProposalDto::getProposer, account1Id, "data/proposer");
-		proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> !r.getDescription().isEmpty(), "data/description");
+		proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getDescription() != null, "data/description");
 		proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getStatus() != null, "data/status");
 		proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getVoteStatus() != null, "data/voteStatus");
 		proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getKind() != null, "data/kind");
@@ -326,7 +326,7 @@ public class ProposalsAccountProposalsAccountIdApiTests extends BaseTest {
 		proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getProposalId() >= 0, "data/proposalId");
 		proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getDaoId().endsWith(".sputnikv2.testnet"), "data/daoId");
 		proposalsApiSteps.assertCollectionContainsOnly(proposalResponse.getData(), ProposalDto::getProposer, account1Id, "data/proposer");
-		proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> !r.getDescription().isEmpty(), "data/description");
+		proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getDescription() != null, "data/description");
 		proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getStatus() != null, "data/status");
 		proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getVoteStatus() != null, "data/voteStatus");
 		proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getKind() != null, "data/kind");
@@ -351,7 +351,7 @@ public class ProposalsAccountProposalsAccountIdApiTests extends BaseTest {
 			"filter; string; Invalid filter value",
 			"or; null; Invalid or value",
 	}, delimiter = 59)
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 400 status code for account proposals with 'accountId' param")
 	@DisplayName("Get HTTP 400 status code for account proposals with 'accountId' param")
 	void getHttp400StatusCodeForAccountProposalsWithAccountIdParam(String key, String value, String errorMsg) {
@@ -364,7 +364,7 @@ public class ProposalsAccountProposalsAccountIdApiTests extends BaseTest {
 	}
 
 	@ParameterizedTest
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 404 for account proposals with invalid 'accountId' param")
 	@DisplayName("Get HTTP 404 for account proposals with invalid 'accountId' param")
 	@CsvSource({"invalidAccountId", "2212332141", "-1", "0", "testdao3132498.testnet",

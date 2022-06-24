@@ -221,7 +221,7 @@ public class NotificationsApiTests extends BaseTest {
             "page; -2; PAGE must not be negative",
             "s; query; Invalid search param. JSON expected"
     }, delimiter = 59)
-    @Severity(SeverityLevel.CRITICAL)
+    @Severity(SeverityLevel.NORMAL)
     @Story("Get HTTP 400 for notifications")
     @DisplayName("Get HTTP 400 for notifications")
     void getHttp400StatusCodeForNotifications(String key, String value, String errorMsg) {

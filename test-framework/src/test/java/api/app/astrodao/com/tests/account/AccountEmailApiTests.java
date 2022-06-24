@@ -45,7 +45,7 @@ public class AccountEmailApiTests extends BaseTest {
 
 
 	@ParameterizedTest
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 403 for account email with null and invalid 'accountId' parameter")
 	@DisplayName("Get HTTP 403 for account email with null and invalid 'accountId' parameter")
 	@NullSource
@@ -63,7 +63,7 @@ public class AccountEmailApiTests extends BaseTest {
 	}
 
 	@ParameterizedTest
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 403 for account email with null and invalid 'publicKey' parameter")
 	@DisplayName("Get HTTP 403 for account email with null and invalid 'publicKey' parameter")
 	@NullSource
@@ -80,7 +80,7 @@ public class AccountEmailApiTests extends BaseTest {
 	}
 
 	@Test
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 403 for account email with invalid 'signature' parameter")
 	@DisplayName("Get HTTP 403 for account email with invalid 'signature' parameter")
 	void getHttp403ForAccountEmailWithInvalidSignatureParam() {
@@ -96,7 +96,7 @@ public class AccountEmailApiTests extends BaseTest {
 	}
 
 	@Test
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 403 for account email with null 'signature' parameter")
 	@DisplayName("Get HTTP 403 for account email with null 'signature' parameter")
 	void getHttp403ForAccountEmailWithNullSignatureParam() {
@@ -111,7 +111,7 @@ public class AccountEmailApiTests extends BaseTest {
 	}
 
 	@Test
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 400 for account email with empty 'email' parameter")
 	@DisplayName("Get HTTP 400 for account email with empty 'email' parameter")
 	void getHttp400ForAccountEmailWithEmptyEmailParam() {
@@ -126,7 +126,7 @@ public class AccountEmailApiTests extends BaseTest {
 	}
 
 	@Test
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 400 for account email with null 'email' parameter")
 	@DisplayName("Get HTTP 400 for account email with null 'email' parameter")
 	void getHttp400ForAccountEmailWithNullEmailParam() {
@@ -141,7 +141,7 @@ public class AccountEmailApiTests extends BaseTest {
 	}
 
 	@ParameterizedTest
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 400 for account email with invalid 'email' parameter")
 	@DisplayName("Get HTTP 400 for account email with invalid 'email' parameter")
 	@CsvSource({"invalidEmail", "null"})
@@ -157,7 +157,7 @@ public class AccountEmailApiTests extends BaseTest {
 	}
 
 	@Test
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 403 for account email with empty 'accountId' parameter")
 	@DisplayName("Get HTTP 403 for account email with empty 'accountId' parameter")
 	void getHttp403ForAccountEmailWithEmptyAccountIdParam() {
@@ -172,7 +172,7 @@ public class AccountEmailApiTests extends BaseTest {
 	}
 
 	@Test
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 403 for account email with empty 'publicKey' parameter")
 	@DisplayName("Get HTTP 403 for account email with empty 'publicKey' parameter")
 	void getHttp403ForAccountEmailWithEmptyPublicKeyParam() {
@@ -187,7 +187,7 @@ public class AccountEmailApiTests extends BaseTest {
 	}
 
 	@Test
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 403 for account email with empty 'signature' parameter")
 	@DisplayName("Get HTTP 403 for account email with empty 'signature' parameter")
 	void getHttp403ForAccountEmailWithEmptySignatureParam() {

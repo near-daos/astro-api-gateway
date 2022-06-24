@@ -176,7 +176,7 @@ public class ProposalsIdApiTests extends BaseTest {
             "test-dao-1641395769436.sputnikv2.testnet; Invalid Proposal ID",
             "test-dao-1641395769436.sputnikv2.testnet-; Invalid Proposal ID",
     }, delimiter = 59)
-    @Severity(SeverityLevel.CRITICAL)
+    @Severity(SeverityLevel.NORMAL)
     @Story("Get HTTP 400 status code for invalid proposal ID")
     @DisplayName("Get HTTP 400 status code for invalid proposal ID")
     void getHttp400StatusCodeForInvalidProposalId(String proposal, String errorMsg) {

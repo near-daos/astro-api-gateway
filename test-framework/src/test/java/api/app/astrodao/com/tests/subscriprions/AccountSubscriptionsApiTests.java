@@ -67,7 +67,7 @@ public class AccountSubscriptionsApiTests extends BaseTest {
 	}
 
 	@ParameterizedTest
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 404 for account-subscriptions with invalid accountId")
 	@DisplayName("Get HTTP 404 for account-subscriptions with invalid accountId")
 	@CsvSource({"invalidAccountId", "2212332141", "-1", "0", "testdao3132498.testnet",

@@ -56,7 +56,7 @@ public class StatsDaoBountiesApiTests extends BaseTest {
 	}
 
 	@ParameterizedTest
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 404 for DAO Bounties with invalid daoId")
 	@DisplayName("Get HTTP 404 for DAO Bounties with invalid daoId")
 	@CsvSource({"invalidDaoId", "2212332141", "-1", "0",

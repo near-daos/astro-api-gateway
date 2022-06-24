@@ -337,7 +337,7 @@ public class CommentsApiTests extends BaseTest {
     }
 
     @Test
-    @Severity(SeverityLevel.CRITICAL)
+    @Severity(SeverityLevel.NORMAL)
     @Story("User should not be able to create comment for a proposal (by using invalid public key)")
     @DisplayName("User should not be able to create comment for a proposal (by using invalid public key)")
     void createNewCommentForProposalWithInvalidPublicKey() {
@@ -354,7 +354,7 @@ public class CommentsApiTests extends BaseTest {
     }
 
     @Test
-    @Severity(SeverityLevel.CRITICAL)
+    @Severity(SeverityLevel.NORMAL)
     @Story("User should not be able to create comment for non-existing proposal")
     @DisplayName("User should not be able to create comment for non-existing proposal")
     void createNewCommentForNonExistingProposal() {
@@ -406,7 +406,7 @@ public class CommentsApiTests extends BaseTest {
     }
 
     @Test
-    @Severity(SeverityLevel.CRITICAL)
+    @Severity(SeverityLevel.NORMAL)
     @Story("User should not be able to delete non-existing comment for a proposal")
     @DisplayName("User should not be able to delete non-existing comment for a proposal")
     void deleteNonExistingCommentForProposal() {
@@ -423,7 +423,7 @@ public class CommentsApiTests extends BaseTest {
     }
 
     @Test
-    @Severity(SeverityLevel.CRITICAL)
+    @Severity(SeverityLevel.NORMAL)
     @Story("User should not be able to delete existing comment for a proposal (by using invalid public key in authToken)")
     @DisplayName("User should not be able to delete existing comment for a proposal (by using invalid public key in authToken)")
     void deleteExistingCommentForProposalWithInvalidPublicKeyInAuthToken() {

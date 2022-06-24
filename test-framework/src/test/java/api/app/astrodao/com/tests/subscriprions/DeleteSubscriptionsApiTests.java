@@ -68,7 +68,7 @@ public class DeleteSubscriptionsApiTests extends BaseTest {
 	}
 
 	@Test
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("User should not be able to delete invalid subscription for account")
 	@DisplayName("User should not be able to delete invalid subscription for account")
 	void userShouldNotBeAbleToDeleteInvalidSubscription() {
@@ -82,7 +82,7 @@ public class DeleteSubscriptionsApiTests extends BaseTest {
 	}
 
 	@Test
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("User should not be able to delete subscription for account with invalid signature")
 	@DisplayName("User should not be able to delete subscription for account with invalid signature")
 	void userShouldNotBeAbleToDeleteSubscriptionWithInvalidSignature() {
