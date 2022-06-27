@@ -84,11 +84,10 @@ export class SharedProposalTemplateService extends TypeOrmCrudService<SharedProp
       `Cloning Shared Proposal Template ${proposalTemplateId} to DAO ${daoId}`,
     );
 
-    const sharedProposalTemplateDao =
-      await this.sharedProposalTemplateDaoRepository.save({
-        proposalTemplateId,
-        daoId,
-      });
+    await this.sharedProposalTemplateDaoRepository.save({
+      proposalTemplateId,
+      daoId,
+    });
 
     const daoCount = await this.sharedProposalTemplateDaoRepository.count({
       where: { proposalTemplateId },

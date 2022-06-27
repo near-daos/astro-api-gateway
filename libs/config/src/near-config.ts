@@ -18,6 +18,7 @@ export type NEAR_CONFIG = {
   bridgeTokenFactoryContractName: string;
   nftWhitelistContracts: string[];
   tokenApiUrl: string;
+  pagodaRpcApiKey: string;
 };
 
 export type NearConfig = {
@@ -35,6 +36,7 @@ export type NearConfig = {
   helperUrl?: string;
   explorerUrl?: string;
   providerUrl?: string;
+  providerHeaders?: Record<string, string>;
   keyPath?: string;
 };
 
@@ -46,6 +48,7 @@ export const getNearConfig = (nearConfig: NEAR_CONFIG): NearConfig => {
     bridgeTokenFactoryContractName,
     nftWhitelistContracts,
     tokenApiUrl,
+    pagodaRpcApiKey,
   } = nearConfig;
 
   switch (env) {
@@ -81,7 +84,8 @@ export const getNearConfig = (nearConfig: NEAR_CONFIG): NearConfig => {
         walletUrl: 'https://wallet.testnet.near.org',
         helperUrl: 'https://helper.testnet.near.org',
         explorerUrl: 'https://explorer.testnet.near.org',
-        providerUrl: 'https://archival-rpc.testnet.near.org',
+        providerUrl: 'https://rpc.testnet.pagoda.co',
+        providerHeaders: { 'x-api-key': pagodaRpcApiKey },
       };
     case 'betanet':
       return {
@@ -156,5 +160,6 @@ export default registerAs('near', () =>
     nftWhitelistContracts:
       process.env.NEAR_NFT_WHITELIST_CONTRACTS?.split(',') || [],
     tokenApiUrl: process.env.NEAR_TOKEN_API_URL,
+    pagodaRpcApiKey: process.env.PAGODA_RPC_API_KEY,
   } as NEAR_CONFIG),
 );
