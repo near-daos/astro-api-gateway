@@ -24,6 +24,7 @@ env:
   KUBE_CONFIG_DATA:  ${{ secrets.KUBE_CONFIG_DATA }}
   NOTIFI_SID:  ${{ secrets.NOTIFI_SID }}
   NOTIFI_SECRET:  ${{ secrets.NOTIFI_SECRET }}
+  PAGODA_RPC_API_KEY:  ${{ secrets.PAGODA_RPC_API_KEY }}
 
 jobs:
   get-updated-apps:
@@ -145,6 +146,7 @@ jobs:
             --set environment.notifi_secret=$NOTIFI_SECRET \
             --set environment.notifi_env=$NOTIFI_ENV \
             --set environment.notifi_prefix=$NOTIFI_PREFIX \
+            --set environment.pagoda_rpc_api_key=$PAGODA_RPC_API_KEY \
             --set ingress.host=$K8S_INGRESS_HOST
 
   # experimental sleep to nail down issue with tests failing after deploy

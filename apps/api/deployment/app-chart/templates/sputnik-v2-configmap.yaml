@@ -12,3 +12,4 @@ data:
   LOG_LEVELS: "log,warn,error"
   NOTIFI_ENV: "{{ .Values.environment.notifi_env }}"
   NOTIFI_PREFIX: "{{ .Values.environment.notifi_prefix }}"
+  PAGODA_RPC_API_KEY: "{{ .Values.environment.pagoda_rpc_api_key }}"
