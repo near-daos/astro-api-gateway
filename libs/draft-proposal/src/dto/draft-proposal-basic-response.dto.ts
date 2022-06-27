@@ -40,6 +40,9 @@ export class DraftProposalBasicResponse {
   replies: number;
 
   @ApiProperty()
+  saves: number;
+
+  @ApiProperty()
   createdAt: Date;
 
   @ApiProperty()
@@ -67,6 +70,7 @@ export function castDraftProposalBasicResponse(
     hashtags: draftProposal.hashtags,
     replies: draftProposal.replies,
     views: draftProposal.viewAccounts.length,
+    saves: draftProposal.saveAccounts.length,
     updatedAt: draftProposal.updatedAt,
     createdAt: draftProposal.createdAt,
     isRead: accountId ? draftProposal.viewAccounts.includes(accountId) : false,
