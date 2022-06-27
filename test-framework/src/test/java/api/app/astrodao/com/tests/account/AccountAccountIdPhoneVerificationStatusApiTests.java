@@ -46,4 +46,19 @@ public class AccountAccountIdPhoneVerificationStatusApiTests extends BaseTest {
 		accountApiSteps.assertDtoValueIsNull(verificationStatus, VerificationStatus::getCreatedAt, "createdAt");
 		accountApiSteps.assertDtoValueIsNull(verificationStatus, VerificationStatus::getTtl, "ttl");
 	}
+
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("User should be able to get phone verification status by 'accountId' parameter for not verified account")
+	@DisplayName("User should be able to get phone verification status by 'accountId' parameter for not verified account")
+	void getAccountIdPhoneVerificationStatusForNotVerifiedAccount() {
+		VerificationStatus verificationStatus = accountApiSteps.getAccountPhoneVerificationStatus(accountId2).then()
+				.statusCode(HTTP_OK)
+				.extract().as(VerificationStatus.class);
+
+		accountApiSteps.assertDtoValue(verificationStatus, VerificationStatus::getIsVerified, false, "isVerified");
+		accountApiSteps.assertDtoValue(verificationStatus, VerificationStatus::getIsSend, false, "isSend");
+		accountApiSteps.assertDtoValueIsNull(verificationStatus, VerificationStatus::getCreatedAt, "createdAt");
+		accountApiSteps.assertDtoValueIsNull(verificationStatus, VerificationStatus::getTtl, "ttl");
+	}
 }
