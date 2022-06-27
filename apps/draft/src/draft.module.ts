@@ -8,7 +8,6 @@ import configuration, {
 } from '@sputnik-v2/config/draft-config';
 import { DraftValidationSchema } from '@sputnik-v2/config/validation';
 import { DRAFT_DB_CONNECTION } from '@sputnik-v2/common';
-import { ProposalModule } from '@sputnik-v2/proposal';
 
 import { DraftProposalModule } from './draft-proposal/draft-proposal.module';
 import { DraftCommentModule } from './draft-comment/draft-comment.module';
