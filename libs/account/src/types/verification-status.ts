@@ -4,12 +4,12 @@ export class VerificationStatus {
   @ApiProperty()
   isVerified: boolean;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   isSend?: boolean;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   createdAt?: number;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   ttl?: number;
 }
