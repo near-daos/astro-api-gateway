@@ -297,6 +297,7 @@ export class DraftProposalService {
 
     const history = await this.draftProposalHistoryRepository.find({
       where: { draftProposalId: { $eq: draftProposal.id } },
+      order: { createdAt: 'DESC' },
     });
 
     return castDraftProposalResponse(draftProposal, history, params.accountId);

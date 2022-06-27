@@ -9,7 +9,7 @@ export class DraftProposalHistoryResponse {
   @ApiProperty()
   daoId: string;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   draftProposalId: string;
 
   @ApiProperty()
@@ -34,7 +34,7 @@ export class DraftProposalHistoryResponse {
   hashtags: string[];
 
   @ApiProperty()
-  createdAt: Date;
+  updatedAt: Date;
 }
 
 export function castDraftProposalHistoryResponse(
@@ -50,6 +50,6 @@ export function castDraftProposalHistoryResponse(
     type: draftProposalHistory.type,
     kind: draftProposalHistory.kind as ProposalKindSwaggerDto,
     hashtags: draftProposalHistory.hashtags,
-    createdAt: draftProposalHistory.date,
+    updatedAt: draftProposalHistory.date || draftProposalHistory.updatedAt,
   };
 }
