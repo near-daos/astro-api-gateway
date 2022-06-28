@@ -102,7 +102,7 @@ public class CommentsReportApiTests extends BaseTest {
 	}
 
 	@Test
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("User should not be able to submit new report for a comment (by using invalid public key in authToken)")
 	@DisplayName("User should not be able to submit new report for a comment (by using invalid public key in authToken)")
 	void createNewReportForCommentWithInvalidPublicKeyInAuthToken() {

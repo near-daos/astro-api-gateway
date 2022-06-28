@@ -48,7 +48,7 @@ public class AccountEmailSendVerificationApiTests extends BaseTest {
 
 
 	@ParameterizedTest
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 403 for account email send verification with null and invalid 'publicKey' parameter")
 	@DisplayName("Get HTTP 403 for account email send verification with null and invalid 'publicKey' parameter")
 	@NullSource
@@ -65,7 +65,7 @@ public class AccountEmailSendVerificationApiTests extends BaseTest {
 
 	@ParameterizedTest
 	@NullSource
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 403 for account email send verification with null and invalid 'accountId' parameter")
 	@DisplayName("Get HTTP 403 for account email send verification with null and invalid 'accountId' parameter")
 	@CsvSource({"astro-automation.testnet", "another-magic.near", "test-dao-1641395769436.sputnikv2.testnet"})
@@ -81,7 +81,7 @@ public class AccountEmailSendVerificationApiTests extends BaseTest {
 	}
 
 	@Test
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 403 for account email send verification with invalid 'signature' parameter")
 	@DisplayName("Get HTTP 403 for account email send verification with invalid 'signature' parameter")
 	void getHttp403ForAccountEmailSendVerificationWithInvalidSignatureParam() {
@@ -96,7 +96,7 @@ public class AccountEmailSendVerificationApiTests extends BaseTest {
 	}
 
 	@Test
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 403 for account email send verification with null 'signature' parameter")
 	@DisplayName("Get HTTP 403 for account email send verification with null 'signature' parameter")
 	void getHttp403ForAccountEmailSendVerificationWithNullSignatureParam() {
@@ -110,7 +110,7 @@ public class AccountEmailSendVerificationApiTests extends BaseTest {
 	}
 
 	@Test
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 403 for account email send verification with empty 'accountId' parameter")
 	@DisplayName("Get HTTP 403 for account email send verification with empty 'accountId' parameter")
 	void getHttp403ForAccountEmailSendVerificationWithEmptyAccountIdParam() {
@@ -124,7 +124,7 @@ public class AccountEmailSendVerificationApiTests extends BaseTest {
 	}
 
 	@Test
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 403 for account email send verification with empty 'signature' parameter")
 	@DisplayName("Get HTTP 403 for account email send verification with empty 'signature' parameter")
 	void getHttp403ForAccountEmailSendVerificationWithEmptySignatureParam() {
@@ -138,7 +138,7 @@ public class AccountEmailSendVerificationApiTests extends BaseTest {
 	}
 
 	@Test
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 403 for account email send verification with empty 'publicKey' parameter")
 	@DisplayName("Get HTTP 403 for account email send verification with empty 'publicKey' parameter")
 	void getHttp403ForAccountEmailSendVerificationWithEmptyPublicKeyParam() {
@@ -152,7 +152,7 @@ public class AccountEmailSendVerificationApiTests extends BaseTest {
 	}
 
 	@Test
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 400 for account email send verification with no account email")
 	@DisplayName("Get HTTP 400 for account email send verification with no account email")
 	void getHttp400ForAccountEmailSendVerificationForNoAccountEmail() {
@@ -164,7 +164,7 @@ public class AccountEmailSendVerificationApiTests extends BaseTest {
 	}
 
 	@Test
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 400 for account email send verification for non-existing account email")
 	@DisplayName("Get HTTP 400 for account email send verification for non-existing account email")
 	void getHttp400ForAccountEmailSendVerificationForNonExistingAccountEmail() {
@@ -176,7 +176,7 @@ public class AccountEmailSendVerificationApiTests extends BaseTest {
 	}
 
 	@Test
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 400 for account email send verification when sending the code again")
 	@DisplayName("Get HTTP 400 for account email send verification when sending the code again")
 	void getHttp400ForAccountEmailSendVerificationWhenSendingTheCodeAgain() {

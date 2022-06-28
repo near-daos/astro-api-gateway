@@ -65,7 +65,7 @@ public class NotificationsIdApiTests extends BaseTest {
 	}
 
 	@ParameterizedTest
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 400 for Notification ID")
 	@DisplayName("Get HTTP 400 for Notification ID")
 	@CsvSource({"invalidId", "2212332141", "-1", "0",

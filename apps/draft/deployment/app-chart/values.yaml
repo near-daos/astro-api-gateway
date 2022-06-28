@@ -1,0 +1,113 @@
+# Default values for sputnik-v2-draft.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: 398077236708.dkr.ecr.eu-central-1.amazonaws.com
+  tag: latest
+  name: sputnik-v2-draft
+  pullPolicy: Always
+
+imagePullSecrets: [ ]
+nameOverride: ""
+fullnameOverride: ""
+
+draftNameOverride: "sputnik-v2-draft"
+draftFullnameOverride: "sputnik-v2-draft"
+
+container:
+  # Specifies the internal container port
+  internalPort: 3000
+  # Specifies the endpoint for liveness checks
+  livenessProbe:
+    failureThreshold: 2
+    initialDelaySeconds: 10
+    periodSeconds: 60
+    successThreshold: 1
+    timeoutSeconds: 10
+    port: 3000
+    path: /api/v1/draft-proposals
+  readinessProbe:
+    failureThreshold: 2
+    initialDelaySeconds: 10
+    periodSeconds: 60
+    successThreshold: 1
+    timeoutSeconds: 10
+    port: 3000
+    path: /api/v1/draft-proposals
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: false
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name:
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 3000
+
+ingress:
+  host: "sputnik-v2-draft-host"
+
+resources:
+  limits:
+    memory: 600Mi
+  requests:
+    cpu: 50m
+    memory: 500Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+version:
+  commit: latest
+  branch: develop
+
+monitoring:
+  metrics:
+    enabled: true
+    endpoints:
+    - path: /api/v1/metrics
+      port: api
+
+environment:
+  near_env: "testnet"
+  near_contract_name: "sputnikv2.testnet"
+  near_token_factory_contract_name: "tokenfactory.testnet"
+  near_bridge_token_factory_contract_name: "f.ropsten.testnet"
+  aggregator_polling_interval: "5000"
+  aggregator_token_polling_interval: "10000"
+  aggregator_token_prices_polling_interval: "100000"
+  # 12 hours
+  aggregator_dao_status_polling_interval: "43200000"
+  # Every day at 23:55
+  aggregator_dao_stats_cron_time: "55 23 * * *"
+  wallet_callback_url: ""
+  frontend_url: ""
+  api_rate_ttl: "60"
+  api_rate_limit: "5"
+  admin_accounts: "vhorin-dev.near"
+  notifi_env: "Development"
+  notifi_sid: ""
+  notifi_secret: ""
+  notifi_prefix: "dev"

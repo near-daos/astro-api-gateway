@@ -10,10 +10,12 @@ import io.qameta.allure.*;
 import io.restassured.response.Response;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.parallel.Execution;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import static java.net.HttpURLConnection.*;
+import static org.junit.jupiter.api.parallel.ExecutionMode.SAME_THREAD;
 
 @Tags({@Tag("all"), @Tag("deleteSubscriptionsApiTests")})
 @Epic("Subscription")
@@ -21,6 +23,7 @@ import static java.net.HttpURLConnection.*;
 @DisplayName("Delete /subscriptions/{id} API tests")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@Execution(SAME_THREAD)
 public class DeleteSubscriptionsApiTests extends BaseTest {
 	private final SubscriptionsApiSteps subscriptionsApiSteps;
 	private final Faker faker;
@@ -65,7 +68,7 @@ public class DeleteSubscriptionsApiTests extends BaseTest {
 	}
 
 	@Test
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("User should not be able to delete invalid subscription for account")
 	@DisplayName("User should not be able to delete invalid subscription for account")
 	void userShouldNotBeAbleToDeleteInvalidSubscription() {
@@ -79,7 +82,7 @@ public class DeleteSubscriptionsApiTests extends BaseTest {
 	}
 
 	@Test
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("User should not be able to delete subscription for account with invalid signature")
 	@DisplayName("User should not be able to delete subscription for account with invalid signature")
 	void userShouldNotBeAbleToDeleteSubscriptionWithInvalidSignature() {

@@ -43,7 +43,7 @@ public class BountiesIdApiTests extends BaseTest {
 	}
 
 	@ParameterizedTest
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 400 for an invalid bounty")
 	@DisplayName("Get HTTP 400 for an invalid bounty")
 	@CsvSource({"proposal", "2212332141", "dao-1.sputnikv2.test"})

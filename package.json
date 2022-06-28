@@ -18,6 +18,8 @@
     "start-aggregator:dev": "nest start aggregator --watch",
     "start-notifier": "nest start notifier",
     "start-notifier:dev": "nest start notifier --watch",
+    "start-draft": "nest start draft",
+    "start-draft:dev": "nest start draft --watch",
     "start": "concurrently \"yarn start-aggregator\" \"yarn start-api\" \"yarn start-notifier\"",
     "start:dev": "concurrently \"yarn start-aggregator:dev\" \"yarn start-api:dev\" \"yarn start-notifier:dev\"",
     "start-migrations": "nest start migrations",
@@ -69,7 +71,9 @@
     "class-validator": "^0.13.1",
     "firebase-admin": "^9.10.0",
     "ioredis": "^4.14.1",
+    "mongodb": "^3.7.3",
     "near-api-js": "^0.44.2",
+    "morgan": "^1.10.0",
     "object-hash": "^2.2.0",
     "parse-redis-url-simple": "^1.0.2",
     "pg": "^8.6.0",
@@ -91,7 +95,9 @@
     "@types/hapi__joi": "^17.1.6",
     "@types/ioredis": "^4.27.4",
     "@types/jest": "^26.0.22",
+    "@types/morgan": "^1.9.3",
     "@types/node": "^14.14.36",
+    "@types/object-hash": "^2.2.1",
     "@types/supertest": "^2.0.10",
     "@typescript-eslint/eslint-plugin": "^4.19.0",
     "@typescript-eslint/parser": "^4.19.0",
@@ -176,7 +182,13 @@
       "@sputnik-v2/otp/(.*)": "<rootDir>/libs/otp/src/$1",
       "@sputnik-v2/otp": "<rootDir>/libs/otp/src",
       "@sputnik-v2/proposal-template/(.*)": "<rootDir>/libs/proposal-template/src/$1",
-      "@sputnik-v2/proposal-template": "<rootDir>/libs/proposal-template/src"
+      "@sputnik-v2/proposal-template": "<rootDir>/libs/proposal-template/src",
+      "@sputnik-v2/draft-proposal/(.*)": "<rootDir>/libs/draft-proposal/src/$1",
+      "@sputnik-v2/draft-proposal": "<rootDir>/libs/draft-proposal/src",
+      "@sputnik-v2/draft-comment/(.*)": "<rootDir>/libs/draft-comment/src/$1",
+      "@sputnik-v2/draft-comment": "<rootDir>/libs/draft-comment/src",
+      "@sputnik-v2/draft-hashtag/(.*)": "<rootDir>/libs/draft-hashtag/src/$1",
+      "@sputnik-v2/draft-hashtag": "<rootDir>/libs/draft-hashtag/src"
     }
   }
 }

@@ -117,3 +117,4 @@ environment:
   notifi_sid: ""
   notifi_secret: ""
   notifi_prefix: "dev"
+  pagoda_rpc_api_key: ""

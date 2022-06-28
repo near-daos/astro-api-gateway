@@ -9,6 +9,10 @@ on:
         required: true
         description: Docker tag to deploy. Valid values are "latest", "<branch>-latest", "<commit_sha>", "<environment>-<commit_sha>". Exact values can be found in "Docker Build Publish" step of "Build Deploy" job.
         default: latest
+      apps:
+        required: false
+        default: aggregator api draft notifier
+        description: List of application to deploy (space separated).
 
 env:
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -18,14 +22,37 @@ env:
   KUBE_CONFIG_DATA:  ${{ secrets.KUBE_CONFIG_DATA }}
   NOTIFI_SID:  ${{ secrets.NOTIFI_SID }}
   NOTIFI_SECRET:  ${{ secrets.NOTIFI_SECRET }}
+  PAGODA_RPC_API_KEY:  ${{ secrets.PAGODA_RPC_API_KEY }}
 
 jobs:
+  get-updated-apps:
+    name: Get Updated Apps
+    runs-on: ubuntu-latest
+    outputs:
+      updated-apps: ${{ steps.updated-apps.outputs.apps }}
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 2
+
+    - id: updated-apps
+      shell: bash
+      run: |
+        array_to_json () {
+          echo "[$(echo $1 | xargs | sed -e 's| |", "|g;s|.*|"&"|')]"
+        }
+        echo "List of apps was provided manually: ${{ github.event.inputs.apps }}"
+        export UPDATED_APPS=$(array_to_json "${{ github.event.inputs.apps }}")
+        echo "::set-output name=apps::$UPDATED_APPS"
+
   helm-deploy:
     name: Helm Deploy
     runs-on: ubuntu-latest
+    needs:
+    - get-updated-apps
     strategy:
       matrix:
-        app: ["api", "aggregator", "notifier"]
+        app: ${{ fromJSON(needs.get-updated-apps.outputs.updated-apps) }}
     environment:
       name: ${{ github.event.inputs.environment }}
     steps:
@@ -41,7 +68,7 @@ jobs:
         command: |
           export CHART_FOLDER=apps/${{ matrix.app }}/deployment/app-chart
           helm lint $CHART_FOLDER
-          helm -n $DEPLOYMENT_NAMESPACE upgrade --install --create-namespace --wait --timeout 10m sputnik-v2-${{ matrix.app }} $CHART_FOLDER \
+          helm -n $DEPLOYMENT_NAMESPACE upgrade --install --wait --timeout 10m sputnik-v2-${{ matrix.app }} $CHART_FOLDER \
             --set image.tag=$DOCKER_ENV_TAG \
             --set environment.near_env=$NEAR_ENV \
             --set environment.near_contract_name=$NEAR_CONTRACT_NAME \
@@ -57,4 +84,5 @@ jobs:
             --set environment.notifi_secret=$NOTIFI_SECRET \
             --set environment.notifi_env=$NOTIFI_ENV \
             --set environment.notifi_prefix=$NOTIFI_PREFIX \
+            --set environment.pagoda_rpc_api_key=$PAGODA_RPC_API_KEY \
             --set ingress.host=$K8S_INGRESS_HOST

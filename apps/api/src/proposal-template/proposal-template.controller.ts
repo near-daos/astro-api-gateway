@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -20,15 +21,17 @@ import {
   ProposalTemplate,
   ProposalTemplateService,
 } from '@sputnik-v2/proposal-template';
-import { AccountAccessGuard } from '@sputnik-v2/common';
+import { AccountAccessGuard, AuthorizedRequest } from '@sputnik-v2/common';
 import { CouncilMemberGuard } from '../guards/council-member.guard';
 import { ProposalTemplateBodyDto } from './dto/proposal-template-body.dto';
+import { SharedProposalTemplateService } from '@sputnik-v2/proposal-template/shared-proposal-template.service';
 
 @ApiTags('DAO')
 @Controller('/daos')
 export class ProposalTemplateController {
   constructor(
     private readonly proposalTemplateService: ProposalTemplateService,
+    private readonly sharedProposalTemplateService: SharedProposalTemplateService,
   ) {}
 
   @ApiParam({
@@ -71,14 +74,25 @@ export class ProposalTemplateController {
   @UseGuards(AccountAccessGuard, CouncilMemberGuard)
   @Post('/:daoId/proposal-templates')
   async createProposalTemplate(
+    @Req() req: AuthorizedRequest,
     @Param('daoId') daoId: string,
-    @Body() { name, isEnabled, config }: ProposalTemplateBodyDto,
+    @Body() { name, description, isEnabled, config }: ProposalTemplateBodyDto,
   ): Promise<ProposalTemplate> {
-    return this.proposalTemplateService.create({
-      daoId,
+    const proposalTemplate = {
       name,
-      isEnabled,
+      description,
+      daoId,
       config,
+    };
+
+    await this.sharedProposalTemplateService.create({
+      ...proposalTemplate,
+      createdBy: req.accountId,
+    });
+
+    return this.proposalTemplateService.create({
+      ...proposalTemplate,
+      isEnabled,
     });
   }
 

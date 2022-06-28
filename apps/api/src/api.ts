@@ -8,6 +8,8 @@ import {
 } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { Transport } from '@nestjs/microservices';
+import morgan from 'morgan';
+
 import { EVENT_API_QUEUE_NAME } from '@sputnik-v2/common';
 
 import { AppModule } from './api.module';
@@ -23,6 +25,10 @@ export default class Api {
     });
     app.enableCors();
     app.setGlobalPrefix('/api/v1');
+
+    if (logger.includes('debug')) {
+      app.use(morgan('tiny'));
+    }
 
     initAdapters(app);
 

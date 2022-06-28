@@ -136,7 +136,7 @@ public class TokensApiTests extends BaseTest {
     }
 
     @Test
-    @Severity(SeverityLevel.CRITICAL)
+    @Severity(SeverityLevel.NORMAL)
     @Story("User should not be able to get tokens for request with invalid params")
     @DisplayName("User should not be able to get tokens for request with invalid params")
     void userShouldNotBeAbleToGetTokensForRequestWithInvalidParams() {

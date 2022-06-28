@@ -46,7 +46,7 @@ public class AccountTokensApiTests extends BaseTest {
 	}
 
 	@ParameterizedTest
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 404 for account-tokens with invalid DAO")
 	@DisplayName("Get HTTP 404 for account-tokens with invalid DAO")
 	@CsvSource({"invalidAccountId", "2212332141", "-1", "0", "wqeqrrr.sputnikv2.testnet",

@@ -32,7 +32,11 @@ import { Comment, CommentReport } from '@sputnik-v2/comment/entities';
 import { DaoStats } from '@sputnik-v2/stats/entities';
 import { DaoSettings } from '@sputnik-v2/dao-settings';
 import { OTP } from '@sputnik-v2/otp';
-import { ProposalTemplate } from '@sputnik-v2/proposal-template/entities';
+import {
+  ProposalTemplate,
+  SharedProposalTemplate,
+} from '@sputnik-v2/proposal-template/entities';
+import { SharedProposalTemplateDao } from '@sputnik-v2/proposal-template/entities/shared-proposal-template-dao.entity';
 
 export default registerAs('db_default', () => ({
   type: 'postgres',
@@ -72,6 +76,8 @@ export default registerAs('db_default', () => ({
     DaoStats,
     OTP,
     ProposalTemplate,
+    SharedProposalTemplate,
+    SharedProposalTemplateDao,
   ],
   synchronize: false,
   namingStrategy: new SnakeNamingStrategy(),

@@ -12,4 +12,6 @@ export class ProposalPermissions {
 
   @ApiProperty()
   isCouncil: boolean;
+
+  canAdd: boolean;
 }

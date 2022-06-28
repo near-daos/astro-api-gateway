@@ -219,7 +219,7 @@ public class NotificationSettingsApiTests extends BaseTest {
 			"page; -2; PAGE must not be negative",
 			"s; query; Invalid search param. JSON expected"
 	}, delimiter = 59)
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 400 status code for notification settings")
 	@DisplayName("Get HTTP 400 status code for notification settings")
 	void getHttp400StatusCodeForNotificationSettings(String key, String value, String errorMsg) {
@@ -262,7 +262,7 @@ public class NotificationSettingsApiTests extends BaseTest {
 	}
 
 	@ParameterizedTest
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 403 for account notification settings with null and invalid 'publicKey' parameter")
 	@DisplayName("Get HTTP 403 for account notification settings with null and invalid 'publicKey' parameter")
 	@NullSource
@@ -280,7 +280,7 @@ public class NotificationSettingsApiTests extends BaseTest {
 	}
 
 	@Test
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 403 for account notification settings with empty 'publicKey' parameter")
 	@DisplayName("Get HTTP 403 for account notification settings with empty 'publicKey' parameter")
 	void getHttp403ForAccountNotificationSettingsWithEmptyPublicKeyParam() {
@@ -296,7 +296,7 @@ public class NotificationSettingsApiTests extends BaseTest {
 	}
 
 	@ParameterizedTest
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 403 for account notification settings with null and invalid 'accountId' parameter")
 	@DisplayName("Get HTTP 403 for account notification settings with null and invalid 'accountId' parameter")
 	@NullSource
@@ -315,7 +315,7 @@ public class NotificationSettingsApiTests extends BaseTest {
 	}
 
 	@Test
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 403 for account notification settings with empty 'accountId' parameter")
 	@DisplayName("Get HTTP 403 for account notification settings with empty 'accountId' parameter")
 	void getHttp403ForAccountNotificationSettingsWithEmptyAccountIdParam() {
@@ -332,7 +332,7 @@ public class NotificationSettingsApiTests extends BaseTest {
 	}
 
 	@Test
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 403 for account notification settings with invalid 'signature' parameter")
 	@DisplayName("Get HTTP 403 for account notification settings with invalid 'signature' parameter")
 	void getHttp403ForAccountNotificationSettingsWithInvalidSignatureParam() {
@@ -349,7 +349,7 @@ public class NotificationSettingsApiTests extends BaseTest {
 	}
 
 	@Test
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 403 for account notification settings with null 'signature' parameter")
 	@DisplayName("Get HTTP 403 for account notification settings with null 'signature' parameter")
 	void getHttp403ForAccountNotificationSettingsWithNullSignatureParam() {
@@ -365,7 +365,7 @@ public class NotificationSettingsApiTests extends BaseTest {
 	}
 
 	@Test
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 403 for account notification settings with empty 'signature' parameter")
 	@DisplayName("Get HTTP 403 for account notification settings with empty 'signature' parameter")
 	void getHttp403ForAccountNotificationSettingsWithEmptySignatureParam() {
@@ -410,7 +410,7 @@ public class NotificationSettingsApiTests extends BaseTest {
 	}
 
 	@Test
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 400 for account notification settings with null 'mutedUntilTimestamp' param")
 	@DisplayName("Get HTTP 400 for account notification settings with null 'mutedUntilTimestamp' param")
 	void getHttp400ForAccountNotificationSettingsWithNullMutedUntilTimestampParam() {
@@ -425,7 +425,7 @@ public class NotificationSettingsApiTests extends BaseTest {
 	}
 
 	@ParameterizedTest
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 400 for account notification settings with invalid 'mutedUntilTimestamp' param")
 	@DisplayName("Get HTTP 400 for account notification settings with invalid 'mutedUntilTimestamp' param")
 	@CsvSource({"null", "test-dao-1641395769436.sputnikv2.testnet", "true", "false"})
@@ -441,7 +441,7 @@ public class NotificationSettingsApiTests extends BaseTest {
 	}
 
 	@ParameterizedTest
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 400 for account notification settings with null, empty and invalid 'types' param")
 	@DisplayName("Get HTTP 400 for account notification settings with null, empty and invalid 'types' param")
 	@EmptySource
@@ -458,7 +458,7 @@ public class NotificationSettingsApiTests extends BaseTest {
 	}
 
 	@ParameterizedTest
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 400 for account notification settings with null and invalid 'enableSms', 'enableEmail', 'isAllMuted' params")
 	@DisplayName("Get HTTP 400 for account notification settings with null and invalid 'enableSms', 'enableEmail', 'isAllMuted' params")
 	@CsvSource({"null, null, null", "0, 0, 0", "1, 1, 1"})
@@ -484,7 +484,7 @@ public class NotificationSettingsApiTests extends BaseTest {
 	}
 
 	@Test
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 400 for account notification settings with alphabetic 'enableSms', 'enableEmail', 'isAllMuted' boolean params")
 	@DisplayName("Get HTTP 400 for account notification settings with alphabetic 'enableSms', 'enableEmail', 'isAllMuted' boolean params")
 	void getHttp400ForAccountNotificationSettingsWithAlphabeticBooleanParams() {
@@ -509,7 +509,7 @@ public class NotificationSettingsApiTests extends BaseTest {
 	}
 
 	@ParameterizedTest
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 400 for account notification settings with null, empty and invalid 'daoId' param")
 	@DisplayName("Get HTTP 400 for account notification settings with null, empty and invalid 'daoId' param")
 	@NullAndEmptySource
