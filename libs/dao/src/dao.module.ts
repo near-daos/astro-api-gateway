@@ -6,10 +6,11 @@ import { NearApiModule } from '@sputnik-v2/near-api';
 
 import { Dao, DaoVersion, Policy } from './entities';
 import { DaoService } from './dao.service';
+import { Delegation } from './entities/delegation.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Dao, Policy, DaoVersion]),
+    TypeOrmModule.forFeature([Dao, Policy, DaoVersion, Delegation]),
     ProposalModule,
     TokenModule,
     NearApiModule,
