@@ -18,7 +18,11 @@ import { Transaction } from '@sputnik-v2/near-indexer';
 import { BountyContextService, BountyService } from '@sputnik-v2/bounty';
 import { EventService } from '@sputnik-v2/event';
 import { TokenService } from '@sputnik-v2/token';
-import { buildBountyId, buildProposalId } from '@sputnik-v2/utils';
+import {
+  buildBountyId,
+  buildDelegationId,
+  buildProposalId,
+} from '@sputnik-v2/utils';
 
 import {
   castActProposal,
@@ -69,6 +73,7 @@ export class TransactionActionHandlerService {
           bounty_claim: this.handleClaimUnclaimBounty.bind(this),
           bounty_giveup: this.handleClaimUnclaimBounty.bind(this),
           delegate: this.handleDelegate.bind(this),
+          undelegate: this.handleDelegate.bind(this),
         },
         defaultHandler: this.handleUnknownDaoTransaction.bind(this),
       },
@@ -654,9 +659,16 @@ export class TransactionActionHandlerService {
       account_id: accountId,
     });
 
-    await this.daoService.createDelegation({ daoId, accountId, balance });
+    await this.daoService.saveDelegation({
+      daoId,
+      accountId,
+      balance,
+    });
 
-    // Checking delegated amounts for signer
+    const existingDelegations = await this.daoService.getDelegationsByDaoId(
+      daoId,
+    );
+
     const dao = await this.daoService.findOne(daoId);
     if (!dao.stakingContract) {
       this.logger.warn(
@@ -666,13 +678,15 @@ export class TransactionActionHandlerService {
       return;
     }
 
-    const stakingContract = this.nearApiService.getContract(
-      'sputnikStaking',
+    const stakingContract = await this.nearApiService.getStakingContract(
       dao.stakingContract,
     );
 
     const user = await stakingContract.get_user({ account_id: txSignerId });
     const { delegated_amounts } = user || {};
+    if (!delegated_amounts?.length) {
+      return;
+    }
 
     const delegatedAmounts = delegated_amounts?.reduce(
       (acc, value) => ({
@@ -683,14 +697,30 @@ export class TransactionActionHandlerService {
     );
 
     for (const delegationAccountId in delegatedAmounts) {
+      const delegation = {
+        daoId,
+        accountId: delegationAccountId,
+        delegators: {
+          ...existingDelegations.find(
+            ({ id }) => id === buildDelegationId(daoId, delegationAccountId),
+          )?.delegators,
+          [txSignerId]: delegatedAmounts[delegationAccountId],
+        },
+      };
+
       if (accountId === delegationAccountId) {
+        await this.daoService.saveDelegation(delegation);
+
         continue;
       }
 
-      await this.daoService.createDelegation({
-        daoId,
-        accountId: delegationAccountId,
-        balance: delegatedAmounts[delegationAccountId],
+      const accountBalance = await daoContract.delegation_balance_of({
+        account_id: delegationAccountId,
+      });
+
+      await this.daoService.saveDelegation({
+        ...delegation,
+        balance: accountBalance,
       });
     }
   }

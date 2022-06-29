@@ -61,10 +61,6 @@ export const nearApiProvider = {
           ],
           changeMethods: ['add_proposal', 'act_proposal'],
         },
-        sputnikStaking: {
-          viewMethods: ['ft_total_supply', 'ft_balance_of', 'get_user'],
-          changeMethods: ['delegate', 'undelegate', 'withdraw'],
-        },
         fToken: {
           viewMethods: ['ft_balance_of', 'ft_metadata', 'ft_total_supply'],
         },
