@@ -14,9 +14,6 @@ import { ActionKind } from '@sputnik-v2/near-indexer';
 export type TransactionAction = {
   receiverId: string;
   signerId: string;
-  // added for backward compatibility with original signer id that can be a predecessor in some cases
-  txSignerId?: string;
-  predecessorId?: string;
   transactionHash: string;
   methodName?: string;
   args: any;
@@ -51,8 +48,6 @@ export function castNearIndexerReceiptAction(
   return {
     receiverId: ac.receiptReceiverAccountId,
     signerId: ac.receiptPredecessorAccountId,
-    txSignerId: receipt.originatedFromTransaction?.signerAccountId,
-    predecessorId: ac.receiptPredecessorAccountId,
     transactionHash: receipt.originatedFromTransaction.transactionHash,
     methodName: ac?.args?.method_name as string,
     args: ac?.args?.args_json,
