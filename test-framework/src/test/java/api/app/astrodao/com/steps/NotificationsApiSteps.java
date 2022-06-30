@@ -44,4 +44,13 @@ public class NotificationsApiSteps extends BaseSteps {
     public Response setNotificationSettings(String authToken, String body) {
         return notificationsApi.setNotificationSettings(authToken, body);
     }
-}
+
+    @Step("Read All account notification settings")
+    public Response patchReadAllAccountNotifications(String authToken) {
+        return notificationsApi.patchReadAllAccountNotifications(authToken);
+    }
+
+    @Step("Patch account notifications by 'notificationId' param")
+    public Response patchAccountNotificationsById(String authToken, String notificationId, boolean isMuted, boolean isRead, boolean isArchived) {
+        return notificationsApi.patchAccountNotificationsById(authToken, notificationId, isMuted, isRead, isArchived);
+    }}
