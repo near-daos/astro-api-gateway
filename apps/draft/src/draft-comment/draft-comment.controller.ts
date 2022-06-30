@@ -14,6 +14,7 @@ import {
   ApiBearerAuth,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
+  ApiBadRequestResponse,
   ApiParam,
   ApiResponse,
   ApiTags,
@@ -117,6 +118,9 @@ export class DraftCommentController {
   @ApiNotFoundResponse({
     description: 'Draft comment <id> does not exist',
   })
+  @ApiBadRequestResponse({
+    description: 'Draft comment <id> is disliked by <accountId>',
+  })
   @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
   @Post('/:id/like')
@@ -145,12 +149,67 @@ export class DraftCommentController {
   })
   @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
-  @Post('/:id/unlike')
-  unlikeDraftComment(
+  @Post('/:id/remove-like')
+  removeLikeFromDraftComment(
     @Param('id') id: string,
     @Req() req: AuthorizedRequest,
   ): Promise<boolean> {
-    return this.draftCommentService.unlike(id, req.accountId);
+    return this.draftCommentService.removeLike(id, req.accountId);
+  }
+
+  @ApiParam({
+    name: 'id',
+    type: String,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Liked',
+    type: Boolean,
+  })
+  @ApiForbiddenResponse({
+    description:
+      'Account <accountId> identity is invalid - public key / invalid signature / invalid accountId',
+  })
+  @ApiNotFoundResponse({
+    description: 'Draft comment <id> does not exist',
+  })
+  @ApiBadRequestResponse({
+    description: 'Draft comment <id> is liked by <accountId>',
+  })
+  @ApiBearerAuth()
+  @UseGuards(AccountAccessGuard)
+  @Post('/:id/dislike')
+  dislikeDraftComment(
+    @Param('id') id: string,
+    @Req() req: AuthorizedRequest,
+  ): Promise<boolean> {
+    return this.draftCommentService.dislike(id, req.accountId);
+  }
+
+  @ApiParam({
+    name: 'id',
+    type: String,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Unliked',
+    type: Boolean,
+  })
+  @ApiForbiddenResponse({
+    description:
+      'Account <accountId> identity is invalid - public key / invalid signature / invalid accountId',
+  })
+  @ApiNotFoundResponse({
+    description: 'Draft comment <id> does not exist',
+  })
+  @ApiBearerAuth()
+  @UseGuards(AccountAccessGuard)
+  @Post('/:id/remove-dislike')
+  removeDislikeFromDraftComment(
+    @Param('id') id: string,
+    @Req() req: AuthorizedRequest,
+  ): Promise<boolean> {
+    return this.draftCommentService.removeDislike(id, req.accountId);
   }
 
   @ApiParam({

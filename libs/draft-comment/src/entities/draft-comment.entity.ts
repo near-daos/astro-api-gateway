@@ -30,4 +30,7 @@ export class DraftComment extends BaseEntity {
 
   @Column()
   likeAccounts: string[];
+
+  @Column()
+  dislikeAccounts: string[];
 }

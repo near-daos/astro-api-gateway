@@ -1,5 +1,6 @@
 import { MongoRepository, DeleteResult } from 'typeorm';
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -47,6 +48,7 @@ export class DraftCommentService {
       author: accountId,
       message: draftCommentDto.message,
       likeAccounts: [],
+      dislikeAccounts: [],
     });
     await this.draftProposalService.updateReplies(
       draftProposal.id,
@@ -81,6 +83,7 @@ export class DraftCommentService {
       message: draftCommentDto.message,
       replyTo: draftCommentDto.replyTo,
       likeAccounts: [],
+      dislikeAccounts: [],
     });
 
     if (draftComment.contextType === DraftCommentContextType.DraftProposal) {
@@ -139,6 +142,12 @@ export class DraftCommentService {
       throw new NotFoundException(`Draft comment ${id} does not exist`);
     }
 
+    if (draftComment.dislikeAccounts?.includes(accountId)) {
+      throw new BadRequestException(
+        `Draft comment ${id} is disliked by ${accountId}`,
+      );
+    }
+
     if (!draftComment.likeAccounts.includes(accountId)) {
       await this.draftCommentRepository.update(draftComment.id, {
         likeAccounts: [...draftComment.likeAccounts, accountId],
@@ -148,7 +157,7 @@ export class DraftCommentService {
     return true;
   }
 
-  async unlike(id: string, accountId: string): Promise<boolean> {
+  async removeLike(id: string, accountId: string): Promise<boolean> {
     const draftComment = await this.draftCommentRepository.findOne(id);
 
     if (!draftComment) {
@@ -158,6 +167,46 @@ export class DraftCommentService {
     if (draftComment.likeAccounts.includes(accountId)) {
       await this.draftCommentRepository.update(draftComment.id, {
         likeAccounts: draftComment.likeAccounts.filter(
+          (item) => item !== accountId,
+        ),
+      });
+    }
+
+    return true;
+  }
+
+  async dislike(id: string, accountId: string): Promise<boolean> {
+    const draftComment = await this.draftCommentRepository.findOne(id);
+
+    if (!draftComment) {
+      throw new NotFoundException(`Draft comment ${id} does not exist`);
+    }
+
+    if (draftComment.likeAccounts.includes(accountId)) {
+      throw new BadRequestException(
+        `Draft comment ${id} is liked by ${accountId}`,
+      );
+    }
+
+    if (!draftComment.dislikeAccounts?.includes(accountId)) {
+      await this.draftCommentRepository.update(draftComment.id, {
+        dislikeAccounts: [...draftComment.dislikeAccounts, accountId],
+      });
+    }
+
+    return true;
+  }
+
+  async removeDislike(id: string, accountId: string): Promise<boolean> {
+    const draftComment = await this.draftCommentRepository.findOne(id);
+
+    if (!draftComment) {
+      throw new NotFoundException(`Draft comment ${id} does not exist`);
+    }
+
+    if (draftComment.dislikeAccounts?.includes(accountId)) {
+      await this.draftCommentRepository.update(draftComment.id, {
+        dislikeAccounts: draftComment.dislikeAccounts.filter(
           (item) => item !== accountId,
         ),
       });
