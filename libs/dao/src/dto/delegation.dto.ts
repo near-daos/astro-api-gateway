@@ -12,7 +12,4 @@ export class DelegationDto {
 
   @ApiProperty()
   accountId: string;
-
-  @ApiProperty()
-  delegators: Record<string, any>;
 }

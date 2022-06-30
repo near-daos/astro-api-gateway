@@ -385,7 +385,7 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     return version?.hash;
   }
 
-  async saveDelegation(
+  async createDelegation(
     delegationDto: Partial<DelegationDto>,
   ): Promise<Delegation> {
     const { daoId, accountId } = delegationDto;
