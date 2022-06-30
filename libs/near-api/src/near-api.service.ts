@@ -72,6 +72,15 @@ export class NearApiService {
     });
   }
 
+  public async getStakingContract(contractId: string): Promise<Contract & any> {
+    const account = await this.near.account(contractId);
+
+    return new Contract(account, contractId, {
+      viewMethods: ['ft_total_supply', 'ft_balance_of', 'get_user'],
+      changeMethods: ['delegate', 'undelegate', 'withdraw'],
+    });
+  }
+
   public async getContractVersionHash(id: string): Promise<string> {
     const response = await this.provider.query<ViewCodeResponse>({
       request_type: 'view_code',
