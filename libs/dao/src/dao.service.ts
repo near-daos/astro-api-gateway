@@ -10,7 +10,12 @@ import {
   ProposalStatus,
   ProposalVoteStatus,
 } from '@sputnik-v2/proposal';
-import { calculateFunds, getBlockTimestamp, paginate } from '@sputnik-v2/utils';
+import {
+  buildDelegationId,
+  calculateFunds,
+  getBlockTimestamp,
+  paginate,
+} from '@sputnik-v2/utils';
 import { TokenService } from '@sputnik-v2/token';
 import { DaoStatus, DaoVariant } from '@sputnik-v2/dao/types';
 
@@ -26,6 +31,8 @@ import { Dao, DaoVersion, RoleKindType } from './entities';
 import { WeightKind } from '@sputnik-v2/sputnikdao';
 import { SearchQuery } from '@sputnik-v2/common';
 import { NearApiService } from '@sputnik-v2/near-api';
+import { Delegation } from './entities/delegation.entity';
+import { DelegationDto } from './dto/delegation.dto';
 
 @Injectable()
 export class DaoService extends TypeOrmCrudService<Dao> {
@@ -34,6 +41,8 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     private readonly daoRepository: Repository<Dao>,
     @InjectRepository(DaoVersion)
     private readonly daoVersionRepository: Repository<DaoVersion>,
+    @InjectRepository(Delegation)
+    private readonly delegationRepository: Repository<Delegation>,
     @InjectConnection()
     private connection: Connection,
     private readonly proposalService: ProposalService,
@@ -373,5 +382,20 @@ export class DaoService extends TypeOrmCrudService<Dao> {
       daoVersionHash: version?.hash,
     });
     return version?.hash;
+  }
+
+  async saveDelegation(
+    delegationDto: Partial<DelegationDto>,
+  ): Promise<Delegation> {
+    const { daoId, accountId } = delegationDto;
+
+    return this.delegationRepository.save({
+      ...delegationDto,
+      id: buildDelegationId(daoId, accountId),
+    });
+  }
+
+  async getDelegationsByDaoId(daoId: string): Promise<Delegation[]> {
+    return this.delegationRepository.find({ where: { daoId } });
   }
 }

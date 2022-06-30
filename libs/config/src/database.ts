@@ -37,6 +37,7 @@ import {
   SharedProposalTemplate,
 } from '@sputnik-v2/proposal-template/entities';
 import { SharedProposalTemplateDao } from '@sputnik-v2/proposal-template/entities/shared-proposal-template-dao.entity';
+import { Delegation } from '@sputnik-v2/dao/entities/delegation.entity';
 
 export default registerAs('db_default', () => ({
   type: 'postgres',
@@ -78,6 +79,7 @@ export default registerAs('db_default', () => ({
     ProposalTemplate,
     SharedProposalTemplate,
     SharedProposalTemplateDao,
+    Delegation,
   ],
   synchronize: false,
   namingStrategy: new SnakeNamingStrategy(),

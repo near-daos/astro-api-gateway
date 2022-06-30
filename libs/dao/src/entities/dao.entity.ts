@@ -4,14 +4,16 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   OneToOne,
   PrimaryColumn,
 } from 'typeorm';
 import { TransactionEntity } from '@sputnik-v2/common';
+import { DaoVersion } from '@sputnik-v2/dao/entities/dao-version.entity';
 
 import { DaoConfig, DaoStatus } from '../types';
 import { Policy } from './policy.entity';
-import { DaoVersion } from '@sputnik-v2/dao/entities/dao-version.entity';
+import { Delegation } from './delegation.entity';
 
 @Entity()
 export class Dao extends TransactionEntity {
@@ -123,4 +125,11 @@ export class Dao extends TransactionEntity {
   @ApiProperty()
   @Column({ type: 'float', default: 0 })
   totalDaoFunds: number;
+
+  @OneToMany(() => Delegation, (delegation) => delegation.dao, {
+    eager: false,
+    nullable: true,
+    persistence: false,
+  })
+  delegations?: Delegation[];
 }

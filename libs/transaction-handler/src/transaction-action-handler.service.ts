@@ -18,7 +18,11 @@ import { Transaction } from '@sputnik-v2/near-indexer';
 import { BountyContextService, BountyService } from '@sputnik-v2/bounty';
 import { EventService } from '@sputnik-v2/event';
 import { TokenService } from '@sputnik-v2/token';
-import { buildBountyId, buildProposalId } from '@sputnik-v2/utils';
+import {
+  buildBountyId,
+  buildDelegationId,
+  buildProposalId,
+} from '@sputnik-v2/utils';
 
 import {
   castActProposal,
@@ -68,6 +72,8 @@ export class TransactionActionHandlerService {
           act_proposal: this.handleActProposal.bind(this),
           bounty_claim: this.handleClaimUnclaimBounty.bind(this),
           bounty_giveup: this.handleClaimUnclaimBounty.bind(this),
+          delegate: this.handleDelegate.bind(this),
+          undelegate: this.handleDelegate.bind(this),
         },
         defaultHandler: this.handleUnknownDaoTransaction.bind(this),
       },
@@ -641,6 +647,82 @@ export class TransactionActionHandlerService {
     this.logger.log(`Updating DAO: ${receiverId} due to transaction`);
     await this.daoService.saveWithFunds({ ...dao });
     this.logger.log(`DAO successfully updated: ${receiverId}`);
+  }
+
+  async handleDelegate(txAction: TransactionAction) {
+    const { txSignerId, receiverId: daoId, args } = txAction;
+    const { account_id: accountId } = args;
+
+    const daoContract = this.nearApiService.getContract('sputnikDao', daoId);
+
+    const balance = await daoContract.delegation_balance_of({
+      account_id: accountId,
+    });
+
+    await this.daoService.saveDelegation({
+      daoId,
+      accountId,
+      balance,
+    });
+
+    const existingDelegations = await this.daoService.getDelegationsByDaoId(
+      daoId,
+    );
+
+    const dao = await this.daoService.findOne(daoId);
+    if (!dao.stakingContract) {
+      this.logger.warn(
+        `Inconsistent state - no staking contract registered for DAO ${daoId}.`,
+      );
+
+      return;
+    }
+
+    const stakingContract = await this.nearApiService.getStakingContract(
+      dao.stakingContract,
+    );
+
+    const user = await stakingContract.get_user({ account_id: txSignerId });
+    const { delegated_amounts } = user || {};
+    if (!delegated_amounts?.length) {
+      return;
+    }
+
+    const delegatedAmounts = delegated_amounts?.reduce(
+      (acc, value) => ({
+        ...acc,
+        [value[0]]: (BigInt(acc[value[0]] || 0) + BigInt(value[1])).toString(),
+      }),
+      {},
+    );
+
+    for (const delegationAccountId in delegatedAmounts) {
+      const delegation = {
+        daoId,
+        accountId: delegationAccountId,
+        delegators: {
+          ...existingDelegations.find(
+            ({ id }) => id === buildDelegationId(daoId, delegationAccountId),
+          )?.delegators,
+          [txSignerId]: delegatedAmounts[delegationAccountId],
+        },
+      };
+
+      if (accountId === delegationAccountId) {
+        await this.daoService.saveDelegation(delegation);
+
+        continue;
+      }
+
+      const accountBalance = await daoContract.delegation_balance_of({
+        account_id: delegationAccountId,
+      });
+
+      await this.daoService.saveDelegation({
+        ...delegation,
+        balance: accountBalance,
+      });
+    }
   }
 
   private getContractHandlers(receiverId: string): ContractHandler[] {

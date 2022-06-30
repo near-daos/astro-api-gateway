@@ -60,6 +60,7 @@ export const nearApiProvider = {
             'get_bounty',
             'get_bounty_claims',
             'get_bounty_number_of_claims',
+            'delegation_balance_of',
           ],
           changeMethods: ['add_proposal', 'act_proposal'],
         },
