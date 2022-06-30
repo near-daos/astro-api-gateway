@@ -68,7 +68,6 @@ export class TransactionActionHandlerService {
           act_proposal: this.handleActProposal.bind(this),
           bounty_claim: this.handleClaimUnclaimBounty.bind(this),
           bounty_giveup: this.handleClaimUnclaimBounty.bind(this),
-          delegate: this.handleDelegate.bind(this),
         },
         defaultHandler: this.handleUnknownDaoTransaction.bind(this),
       },
@@ -643,57 +642,6 @@ export class TransactionActionHandlerService {
     this.logger.log(`Updating DAO: ${receiverId} due to transaction`);
     await this.daoService.saveWithFunds({ ...dao });
     this.logger.log(`DAO successfully updated: ${receiverId}`);
-  }
-
-  async handleDelegate(txAction: TransactionAction) {
-    const { txSignerId, receiverId: daoId, args } = txAction;
-    const { account_id: accountId } = args;
-
-    const daoContract = this.nearApiService.getContract('sputnikDao', daoId);
-
-    const balance = await daoContract.delegation_balance_of({
-      account_id: accountId,
-    });
-
-    await this.daoService.createDelegation({ daoId, accountId, balance });
-
-    // Checking delegated amounts for signer
-    const dao = await this.daoService.findOne(daoId);
-    if (!dao.stakingContract) {
-      this.logger.warn(
-        `Inconsistent state - no staking contract registered for DAO ${daoId}.`,
-      );
-
-      return;
-    }
-
-    const stakingContract = this.nearApiService.getContract(
-      'sputnikStaking',
-      dao.stakingContract,
-    );
-
-    const user = await stakingContract.get_user({ account_id: txSignerId });
-    const { delegated_amounts } = user || {};
-
-    const delegatedAmounts = delegated_amounts?.reduce(
-      (acc, value) => ({
-        ...acc,
-        [value[0]]: (BigInt(acc[value[0]] || 0) + BigInt(value[1])).toString(),
-      }),
-      {},
-    );
-
-    for (const delegationAccountId in delegatedAmounts) {
-      if (accountId === delegationAccountId) {
-        continue;
-      }
-
-      await this.daoService.createDelegation({
-        daoId,
-        accountId: delegationAccountId,
-        balance: delegatedAmounts[delegationAccountId],
-      });
-    }
   }
 
   private getContractHandlers(receiverId: string): ContractHandler[] {

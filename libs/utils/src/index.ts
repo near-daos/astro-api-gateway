@@ -113,10 +113,6 @@ export const buildTemplateId = (daoId: string): string => {
   return `${daoId}-${Date.now()}`;
 };
 
-export const buildDelegationId = (daoId: string, accountId: string): string => {
-  return `${daoId}-${accountId}`;
-};
-
 export const decodeBase64 = (b: string) => {
   return Buffer.from(b, 'base64').toString('utf-8');
 };

@@ -31,7 +31,6 @@ import {
   DaoResponse,
   DaoService,
 } from '@sputnik-v2/dao';
-import { DelegationDto } from '@sputnik-v2/dao/dto/delegation.dto';
 
 import { DaoCrudRequestInterceptor } from './interceptors/dao-crud.interceptor';
 
@@ -123,21 +122,5 @@ export class DaoController {
   @Get('/:id/members')
   async daoMembers(@Param() { id }: FindOneParams): Promise<DaoMemberVote[]> {
     return this.daoService.getDaoMemberVotes(id);
-  }
-
-  @ApiParam({
-    name: 'id',
-    type: String,
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'DAO Delegations',
-    type: DelegationDto,
-    isArray: true,
-  })
-  @UseInterceptors(HttpCacheInterceptor)
-  @Get('/:id/delegations')
-  async delegations(@Param() { id }: FindOneParams): Promise<DelegationDto[]> {
-    return this.daoService.getDelegationsByDaoId(id);
   }
 }
