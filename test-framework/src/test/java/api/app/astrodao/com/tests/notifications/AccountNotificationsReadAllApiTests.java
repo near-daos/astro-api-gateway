@@ -1,5 +1,6 @@
 package api.app.astrodao.com.tests.notifications;
 
+import api.app.astrodao.com.core.utils.Base64Utils;
 import api.app.astrodao.com.openapi.models.AccountNotification;
 import api.app.astrodao.com.openapi.models.NotificationStatusResponse;
 import api.app.astrodao.com.steps.NotificationsApiSteps;
@@ -10,10 +11,15 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.NullSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
+import static java.net.HttpURLConnection.HTTP_FORBIDDEN;
 import static java.net.HttpURLConnection.HTTP_OK;
+import static org.hamcrest.Matchers.equalTo;
 
 @Tags({@Tag("all"), @Tag("accountNotificationsReadAllApiTests")})
 @Epic("Notifications")
@@ -29,6 +35,12 @@ public class AccountNotificationsReadAllApiTests extends BaseTest {
 
 	@Value("${accounts.account2.token}")
 	private String account2token;
+
+	@Value("${accounts.account2.publicKey}")
+	private String accountPublicKey;
+
+	@Value("${accounts.account2.signature}")
+	private String accountSignature;
 
 
 	@Test
@@ -72,5 +84,22 @@ public class AccountNotificationsReadAllApiTests extends BaseTest {
 
 		notificationsApiSteps.assertDtoHasValue(notificationStatus, NotificationStatusResponse::getAccountId, account2Id);
 		notificationsApiSteps.assertDtoValue(notificationStatus, notificationStatusResponse -> notificationStatusResponse.getUnreadCount().intValue(), 1, "unreadCount");
+	}
+
+	@ParameterizedTest
+	@Severity(SeverityLevel.NORMAL)
+	@Story("Get HTTP 403 for read all account notifications endpoint with null and invalid 'accountId' parameter")
+	@DisplayName("Get HTTP 403 for read all account notifications endpoint with null and invalid 'accountId' parameter")
+	@NullSource
+	@CsvSource({"astro-automation.testnet", "another-magic.near", "test-dao-1641395769436.sputnikv2.testnet"})
+	void getHttp403ForReadAllAccountNotificationsEndpointWithNullAndInvalidAccountIdParam(String accountId) {
+		String authToken = Base64Utils.encodeAuthToken(accountId, accountPublicKey, accountSignature);
+		String errorMessage = String.format("Account %s identity is invalid - public key", accountId);
+
+		notificationsApiSteps.patchReadAllAccountNotifications(authToken).then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo(errorMessage),
+				      "error", equalTo("Forbidden"));
 	}
 }
