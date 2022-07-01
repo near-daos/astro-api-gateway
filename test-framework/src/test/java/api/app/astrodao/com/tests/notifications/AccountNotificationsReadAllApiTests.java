@@ -147,4 +147,19 @@ public class AccountNotificationsReadAllApiTests extends BaseTest {
 				      "message", equalTo("Authorization header payload is invalid"),
 				      "error", equalTo("Forbidden"));
 	}
+
+	@Test
+	@Severity(SeverityLevel.NORMAL)
+	@Story("Get HTTP 403 for read all account notifications endpoint with invalid 'signature' parameter")
+	@DisplayName("Get HTTP 403 for read all account notifications endpoint with invalid 'signature' parameter")
+	void getHttp403ForReadAllAccountNotificationsEndpointWithInvalidSignatureParam() {
+		String invalidSignature = accountSignature.substring(10);
+		String authToken = Base64Utils.encodeAuthToken(account2Id, accountPublicKey, invalidSignature);
+
+		notificationsApiSteps.patchReadAllAccountNotifications(authToken).then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo("Invalid signature"),
+				      "error", equalTo("Forbidden"));
+	}
 }
