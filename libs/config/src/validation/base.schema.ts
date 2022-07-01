@@ -43,5 +43,5 @@ export class BaseValidationSchema {
 
   @IsString()
   @IsNotEmpty()
-  LOG_LEVELS: string;
+  LOG_LEVEL: string;
 }

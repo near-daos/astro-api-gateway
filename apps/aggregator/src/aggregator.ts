@@ -1,6 +1,8 @@
 import { NestFactory, Reflector } from '@nestjs/core';
-import { ClassSerializerInterceptor, Logger, LogLevel } from '@nestjs/common';
+import { ClassSerializerInterceptor, Logger } from '@nestjs/common';
 import { Transport } from '@nestjs/microservices';
+import { Logger as PinoLogger } from 'nestjs-pino';
+
 import { EVENT_AGGREGATOR_QUEUE_NAME } from '@sputnik-v2/common';
 
 import { AggregatorModule } from './aggregator.module';
@@ -10,9 +12,8 @@ export default class Aggregator {
   private readonly logger = new Logger(Aggregator.name);
 
   async bootstrap(): Promise<void> {
-    const logger = [...(process.env.LOG_LEVELS.split(',') as LogLevel[])];
     const app = await NestFactory.createMicroservice(AggregatorModule, {
-      logger,
+      bufferLogs: true,
       transport: Transport.REDIS,
       options: {
         url: process.env.REDIS_EVENT_URL,
@@ -22,6 +23,8 @@ export default class Aggregator {
         },
       },
     });
+
+    app.useLogger(app.get(PinoLogger));
 
     app.useGlobalInterceptors(
       new ClassSerializerInterceptor(app.get(Reflector)),
