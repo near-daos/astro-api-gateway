@@ -15,9 +15,9 @@ import org.springframework.beans.factory.annotation.Value;
 import static java.net.HttpURLConnection.HTTP_OK;
 
 @Tags({@Tag("all"), @Tag("accountNotificationStatusApiTests")})
-@Epic("Account")
-@Feature("account-notification-status/{accountId} API tests")
-@DisplayName("account-notification-status/{accountId} API tests")
+@Epic("Notifications")
+@Feature("/account-notification-status/{accountId} API tests")
+@DisplayName("/account-notification-status/{accountId} API tests")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class AccountNotificationStatusApiTests extends BaseTest {
 	private final NotificationsApiSteps notificationsApiSteps;

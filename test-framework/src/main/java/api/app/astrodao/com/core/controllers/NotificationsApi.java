@@ -1,6 +1,8 @@
 package api.app.astrodao.com.core.controllers;
 
+import api.app.astrodao.com.core.utils.JsonUtils;
 import api.app.astrodao.com.openapi.models.CreateAccountNotificationSettingsDto;
+import api.app.astrodao.com.openapi.models.UpdateAccountNotificationDto;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
@@ -69,5 +71,28 @@ public class NotificationsApi {
 				.contentType(ContentType.JSON)
 				.body(body)
 				.post(NOTIFICATIONS_SETTINGS);
+	}
+
+	public Response patchReadAllAccountNotifications(String authToken) {
+		return given().spec(requestSpec)
+				.accept(ContentType.JSON)
+				.header("Authorization", "Bearer " + authToken)
+				.contentType(ContentType.JSON)
+				.patch(ACCOUNT_NOTIFICATIONS_READ_ALL);
+	}
+
+	public Response patchAccountNotificationsById(String authToken, String notificationId,
+	                                              boolean isMuted, boolean isRead, boolean isArchived) {
+		UpdateAccountNotificationDto updateAccountNotificationDto = new UpdateAccountNotificationDto();
+		updateAccountNotificationDto.setIsMuted(isMuted);
+		updateAccountNotificationDto.setIsRead(isRead);
+		updateAccountNotificationDto.setIsArchived(isArchived);
+
+		return given().spec(requestSpec)
+				.accept(ContentType.JSON)
+				.header("Authorization", "Bearer " + authToken)
+				.contentType(ContentType.JSON)
+				.body(JsonUtils.writeValueAsString(updateAccountNotificationDto))
+				.patch(ACCOUNT_NOTIFICATIONS_ID, notificationId);
 	}
 }
