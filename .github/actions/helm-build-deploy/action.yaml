@@ -16,5 +16,6 @@ runs:
           --set environment.near_bridge_token_factory_contract_name=$NEAR_BRIDGE_TOKEN_FACTORY_CONTRACT_NAME \
           --set environment.wallet_callback_url=$WALLET_CALLBACK_URL \
           --set environment.frontend_url=$FRONTEND_URL \
+          --set environment.datadog_env=$DATADOG_ENV \
           --set ingress.host=$K8S_INGRESS_HOST
 
