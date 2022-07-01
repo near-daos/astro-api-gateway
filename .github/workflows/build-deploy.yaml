@@ -147,6 +147,7 @@ jobs:
             --set environment.notifi_env=$NOTIFI_ENV \
             --set environment.notifi_prefix=$NOTIFI_PREFIX \
             --set environment.pagoda_rpc_api_key=$PAGODA_RPC_API_KEY \
+            --set environment.datadog_env=$DATADOG_ENV \
             --set ingress.host=$K8S_INGRESS_HOST
 
   # experimental sleep to nail down issue with tests failing after deploy
