@@ -167,13 +167,27 @@ public class AccountNotificationsReadAllApiTests extends BaseTest {
 	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 403 for read all account notifications endpoint with null 'signature' parameter")
 	@DisplayName("Get HTTP 403 for read all account notifications endpoint with null 'signature' parameter")
-	void getHttp403ForrReadAllAccountNotificationsEndpointWithNullSignatureParam() {
+	void getHttp403ForReadAllAccountNotificationsEndpointWithNullSignatureParam() {
 		String authToken = Base64Utils.encodeAuthToken(account2Id, accountPublicKey, null);
 
 		notificationsApiSteps.patchReadAllAccountNotifications(authToken).then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
 				      "message", equalTo("Invalid signature"),
+				      "error", equalTo("Forbidden"));
+	}
+
+	@Test
+	@Severity(SeverityLevel.NORMAL)
+	@Story("Get HTTP 403 for read all account notifications endpoint with empty 'signature' parameter")
+	@DisplayName("Get HTTP 403 for read all account notifications endpoint with empty 'signature' parameter")
+	void getHttp403ForReadAllAccountNotificationsEndpointWithEmptySignatureParam() {
+		String authToken = Base64Utils.encodeAuthToken(account2Id, accountPublicKey, EMPTY_STRING);
+
+		notificationsApiSteps.patchReadAllAccountNotifications(authToken).then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo("Authorization header payload is invalid"),
 				      "error", equalTo("Forbidden"));
 	}
 }
