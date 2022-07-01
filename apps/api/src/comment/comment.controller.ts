@@ -21,6 +21,7 @@ import {
 } from '@nestjs/swagger';
 import { CrudRequest, ParsedRequest } from '@nestjsx/crud';
 import { ThrottlerGuard } from '@nestjs/throttler';
+import { Span } from 'nestjs-ddtrace';
 
 import {
   AccountAccessGuard,
@@ -44,6 +45,7 @@ import { CommentDeleteDto } from '@sputnik-v2/comment/dto/comment-delete.dto';
 
 import { CommentCrudRequestInterceptor } from './interceptors/comment-crud.interceptor';
 
+@Span()
 @ApiTags('Comments')
 @Controller('comments')
 export class CommentsController {

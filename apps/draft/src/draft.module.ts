@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ThrottlerModule, ThrottlerModuleOptions } from '@nestjs/throttler';
+import { LoggerModule, Params } from 'nestjs-pino';
+
 import configuration, {
   TypeOrmConfigService,
   validate,
@@ -15,6 +17,17 @@ import { DraftHashtagModule } from './draft-hashtag/draft-hashtag.module';
 
 @Module({
   imports: [
+    LoggerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService): Params => {
+        return {
+          pinoHttp: {
+            level: configService.get('logLevel'),
+          },
+        };
+      },
+    }),
     ConfigModule.forRoot({
       isGlobal: true,
       load: configuration,

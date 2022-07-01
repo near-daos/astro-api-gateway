@@ -3,32 +3,29 @@ import { ConfigService } from '@nestjs/config';
 import {
   ClassSerializerInterceptor,
   Logger,
-  LogLevel,
   ValidationPipe,
 } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { Transport } from '@nestjs/microservices';
-import morgan from 'morgan';
+import { Logger as PinoLogger } from 'nestjs-pino';
 
 import { EVENT_API_QUEUE_NAME } from '@sputnik-v2/common';
 
 import { AppModule } from './api.module';
 import { initAdapters } from './adapters.init';
+import './tracing';
 
 export default class Api {
   private readonly logger = new Logger(Api.name);
 
   async bootstrap(): Promise<void> {
-    const logger = [...(process.env.LOG_LEVELS.split(',') as LogLevel[])];
     const app = await NestFactory.create(AppModule, {
-      logger,
+      bufferLogs: true,
     });
     app.enableCors();
     app.setGlobalPrefix('/api/v1');
 
-    if (logger.includes('debug')) {
-      app.use(morgan('tiny'));
-    }
+    app.useLogger(app.get(PinoLogger));
 
     initAdapters(app);
 
@@ -73,7 +70,7 @@ export default class Api {
 
     const { port } = configService.get('api');
 
-    await app.startAllMicroservicesAsync();
+    await app.startAllMicroservices();
 
     await app.listen(port, () =>
       this.logger.log('API Service is listening...'),

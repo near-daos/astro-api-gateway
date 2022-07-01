@@ -22,6 +22,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { CrudRequest, ParsedRequest } from '@nestjsx/crud';
+import { Span } from 'nestjs-ddtrace';
 
 import {
   NotificationService,
@@ -50,6 +51,7 @@ import {
 import { AccountNotificationCrudRequestInterceptor } from './interceptors/account-notification-crud.interceptor';
 import { NotificationCrudRequestInterceptor } from './interceptors/notification-crud.interceptor';
 
+@Span()
 @ApiTags('Notifications')
 @Controller()
 export class NotificationController {

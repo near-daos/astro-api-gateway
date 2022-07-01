@@ -1,3 +1,4 @@
+import { DeleteResult } from 'typeorm';
 import {
   Body,
   Controller,
@@ -19,6 +20,9 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { ThrottlerGuard } from '@nestjs/throttler';
+import { Span } from 'nestjs-ddtrace';
+
 import {
   CloseDraftProposal,
   CreateDraftProposal,
@@ -29,14 +33,13 @@ import {
   DraftProposalsRequest,
   UpdateDraftProposal,
 } from '@sputnik-v2/draft-proposal';
-import { ThrottlerGuard } from '@nestjs/throttler';
 import {
   AccountAccessGuard,
   AuthorizedRequest,
   BaseResponseDto,
 } from '@sputnik-v2/common';
-import { DeleteResult } from 'typeorm';
 
+@Span()
 @ApiTags('Draft Proposals')
 @Controller('/draft-proposals')
 export class DraftProposalController {

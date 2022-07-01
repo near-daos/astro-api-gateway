@@ -23,7 +23,7 @@ export class SocketStateAdapter extends IoAdapter implements WebSocketAdapter {
     super(app);
   }
 
-  public create(
+  public createIOServer(
     port: number,
     options: socketio.ServerOptions,
   ): socketio.Server {

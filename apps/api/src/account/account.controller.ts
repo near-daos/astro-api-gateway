@@ -17,6 +17,8 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { Span } from 'nestjs-ddtrace';
+
 import {
   AccountEmailDto,
   AccountPhoneDto,
@@ -33,6 +35,7 @@ import {
   ValidAccountGuard,
 } from '@sputnik-v2/common';
 
+@Span()
 @ApiTags('Account')
 @Controller('/account')
 export class AccountController {

@@ -18,6 +18,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { Span } from 'nestjs-ddtrace';
 
 import {
   SubscriptionService,
@@ -33,6 +34,7 @@ import {
   AuthorizedRequest,
 } from '@sputnik-v2/common';
 
+@Span()
 @ApiTags('Subscriptions')
 @Controller('subscriptions')
 export class SubscriptionsController {

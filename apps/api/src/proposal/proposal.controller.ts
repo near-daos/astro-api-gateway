@@ -16,6 +16,9 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { ParsedRequest, CrudRequest } from '@nestjsx/crud';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
+import { Span } from 'nestjs-ddtrace';
+
 import {
   FindOneParams,
   HttpCacheInterceptor,
@@ -31,8 +34,8 @@ import {
 } from '@sputnik-v2/proposal';
 
 import { ProposalCrudRequestInterceptor } from './interceptors/proposal-crud.interceptor';
-import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 
+@Span()
 @ApiTags('Proposals')
 @Controller()
 export class ProposalController {

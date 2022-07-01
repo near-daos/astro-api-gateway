@@ -7,6 +7,8 @@ import {
 } from '@nestjs/common';
 import { ApiBadRequestResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ParsedRequest, CrudRequest } from '@nestjsx/crud';
+import { Span } from 'nestjs-ddtrace';
+
 import {
   HttpCacheInterceptor,
   SearchQuery,
@@ -17,6 +19,7 @@ import {
 import { SearchResultDto } from './dto/search-result.dto';
 import { SearchService } from './search.service';
 
+@Span()
 @ApiTags('Search')
 @Controller()
 @UseInterceptors(HttpCacheInterceptor)
