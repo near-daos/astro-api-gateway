@@ -2,6 +2,7 @@ import { CacheModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { LoggerModule, Params } from 'nestjs-pino';
+import { DatadogTraceModule } from 'nestjs-ddtrace';
 
 import { ApiValidationSchema } from '@sputnik-v2/config/validation/api.schema';
 import configuration, {
@@ -45,6 +46,7 @@ import { ProposalTemplateModule } from './proposal-template/proposal-template.mo
         };
       },
     }),
+    DatadogTraceModule.forRoot(),
     CacheModule.registerAsync({
       useClass: CacheConfigService,
     }),

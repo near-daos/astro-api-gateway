@@ -16,6 +16,8 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { CrudRequest, ParsedRequest } from '@nestjsx/crud';
+import { Span } from 'nestjs-ddtrace';
+
 import {
   EntityQuery,
   FindAccountParams,
@@ -35,6 +37,7 @@ import { DelegationDto } from '@sputnik-v2/dao/dto/delegation.dto';
 
 import { DaoCrudRequestInterceptor } from './interceptors/dao-crud.interceptor';
 
+@Span()
 @ApiTags('DAO')
 @Controller('/daos')
 export class DaoController {

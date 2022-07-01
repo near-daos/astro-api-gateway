@@ -18,6 +18,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { Span } from 'nestjs-ddtrace';
 
 import {
   ProposalTemplate,
@@ -39,6 +40,7 @@ import { EntityQueryWithJoin } from '@sputnik-v2/common/dto/EntityQueryWithJoin'
 import { CouncilMemberGuard } from '../guards/council-member.guard';
 import { SharedProposalTemplateCrudRequestInterceptor } from './interceptors/shared-proposal-template-crud.interceptor';
 
+@Span()
 @ApiTags('Proposals')
 @Controller('/proposals')
 export class SharedProposalTemplateController {

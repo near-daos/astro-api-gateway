@@ -20,6 +20,8 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { ParsedRequest, CrudRequest } from '@nestjsx/crud';
+import { Span } from 'nestjs-ddtrace';
+
 import {
   FindOneParams,
   HttpCacheInterceptor,
@@ -41,6 +43,7 @@ import { BountyContextCrudRequestInterceptor } from './interceptors/bounty-conte
 import { CouncilMemberGuard } from '../guards/council-member.guard';
 import { UpdateBountyContextDto } from './dto/update-bounty-context.dto';
 
+@Span()
 @ApiTags('Bounty')
 @Controller()
 export class BountyController {

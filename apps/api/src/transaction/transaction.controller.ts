@@ -19,6 +19,8 @@ import {
 import { Response } from 'express';
 import querystring, { ParsedUrlQueryInput } from 'querystring';
 import { ConfigService } from '@nestjs/config';
+import { Span } from 'nestjs-ddtrace';
+
 import {
   HttpCacheInterceptor,
   WalletCallbackParams,
@@ -30,6 +32,7 @@ import {
 import { TransactionService } from '@sputnik-v2/transaction';
 import { Receipt, NearIndexerService } from '@sputnik-v2/near-indexer';
 
+@Span()
 @ApiTags('Transactions')
 @Controller('/transactions')
 export class TransactionController {

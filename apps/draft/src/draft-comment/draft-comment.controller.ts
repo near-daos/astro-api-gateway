@@ -1,3 +1,4 @@
+import { DeleteResult } from 'typeorm';
 import {
   Body,
   Controller,
@@ -20,6 +21,8 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { ThrottlerGuard } from '@nestjs/throttler';
+import { Span } from 'nestjs-ddtrace';
+
 import {
   AccountAccessGuard,
   AuthorizedRequest,
@@ -32,8 +35,8 @@ import {
   DraftCommentsRequest,
   UpdateDraftComment,
 } from '@sputnik-v2/draft-comment';
-import { DeleteResult } from 'typeorm';
 
+@Span()
 @ApiTags('Draft Comments')
 @Controller('/draft-comments')
 export class DraftCommentController {

@@ -1,5 +1,6 @@
 import { Controller, Post, Param, UseGuards, Req } from '@nestjs/common';
 import { ApiBearerAuth, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Span } from 'nestjs-ddtrace';
 
 import {
   AccountAccessGuard,
@@ -9,6 +10,7 @@ import {
 } from '@sputnik-v2/common';
 import { EventService } from '@sputnik-v2/event';
 
+@Span()
 @ApiTags('Aggregator')
 @Controller('aggregator')
 export class AggregatorController {
