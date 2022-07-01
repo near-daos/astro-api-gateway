@@ -9,7 +9,7 @@ data:
   NEAR_BRIDGE_TOKEN_FACTORY_CONTRACT_NAME: "{{ .Values.environment.near_bridge_token_factory_contract_name }}"
   ADMIN_ACCOUNTS: "{{ .Values.environment.admin_accounts }}"
   NEAR_CREDENTIALS_DIR: ".near-credentials"
-  LOG_LEVELS: "log,warn,error"
+  LOG_LEVEL: "info"
   NOTIFI_ENV: "{{ .Values.environment.notifi_env }}"
   NOTIFI_PREFIX: "{{ .Values.environment.notifi_prefix }}"
   PAGODA_RPC_API_KEY: "{{ .Values.environment.pagoda_rpc_api_key }}"
