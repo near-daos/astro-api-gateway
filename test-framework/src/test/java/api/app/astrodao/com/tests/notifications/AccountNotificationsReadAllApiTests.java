@@ -133,4 +133,18 @@ public class AccountNotificationsReadAllApiTests extends BaseTest {
 				      "message", equalTo(String.format("Account %s identity is invalid - public key", account2Id)),
 				      "error", equalTo("Forbidden"));
 	}
+
+	@Test
+	@Severity(SeverityLevel.NORMAL)
+	@Story("Get HTTP 403 for read all account notifications endpoint with empty 'publicKey' parameter")
+	@DisplayName("Get HTTP 403 for read all account notifications endpoint with empty 'publicKey' parameter")
+	void getHttp403ForReadAllAccountNotificationsEndpointWithEmptyPublicKeyParam() {
+		String authToken = Base64Utils.encodeAuthToken(account2Id, EMPTY_STRING, accountSignature);
+
+		notificationsApiSteps.patchReadAllAccountNotifications(authToken).then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo("Authorization header payload is invalid"),
+				      "error", equalTo("Forbidden"));
+	}
 }
