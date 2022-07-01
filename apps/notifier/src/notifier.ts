@@ -26,8 +26,8 @@ export default class Notifier {
       new ClassSerializerInterceptor(app.get(Reflector)),
     );
 
-    await app.listen(() =>
-      this.logger.log('Notifications Microservice is listening...'),
-    );
+    await app.listen();
+
+    this.logger.log('Notifications Microservice is listening...');
   }
 }
