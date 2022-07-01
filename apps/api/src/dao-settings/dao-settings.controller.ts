@@ -6,12 +6,15 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { Span } from 'nestjs-ddtrace';
+
 import { AccountAccessGuard } from '@sputnik-v2/common';
 import { DaoSettingsDto, DaoSettingsService } from '@sputnik-v2/dao-settings';
 import { PatchSettingsBodyDto } from './dto/patch-settings-body.dto';
 import { CouncilMemberGuard } from '../guards/council-member.guard';
 import { PatchSettingsParamBodyDto } from './dto/patch-settings-param-body.dto';
 
+@Span()
 @ApiTags('DAO')
 @Controller('/daos')
 export class DaoSettingsController {

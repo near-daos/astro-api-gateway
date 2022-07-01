@@ -13,6 +13,7 @@ import { EVENT_API_QUEUE_NAME } from '@sputnik-v2/common';
 
 import { AppModule } from './api.module';
 import { initAdapters } from './adapters.init';
+import './tracing';
 
 export default class Api {
   private readonly logger = new Logger(Api.name);

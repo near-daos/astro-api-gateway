@@ -5,6 +5,8 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { Span } from 'nestjs-ddtrace';
+
 import {
   DaoStatsEntryFields,
   DaoStatsService,
@@ -15,6 +17,7 @@ import {
 
 import { FindOneParams } from '@sputnik-v2/common';
 
+@Span()
 @ApiTags('Stats')
 @Controller('/stats')
 export class StatsController {

@@ -1,8 +1,11 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Span } from 'nestjs-ddtrace';
+
 import { BaseResponseDto, SearchDto } from '@sputnik-v2/common';
 import { DraftHashtag, DraftHashtagService } from '@sputnik-v2/draft-hashtag';
 
+@Span()
 @ApiTags('Draft Hashtags')
 @Controller('/draft-hashtags')
 export class DraftHashtagController {
