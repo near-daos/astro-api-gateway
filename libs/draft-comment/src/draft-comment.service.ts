@@ -17,6 +17,7 @@ import {
   UpdateDraftComment,
 } from './dto';
 import { DraftCommentContextType } from './types';
+import { EventService } from '@sputnik-v2/event';
 
 @Injectable()
 export class DraftCommentService {
@@ -25,6 +26,7 @@ export class DraftCommentService {
     private draftCommentRepository: MongoRepository<DraftComment>,
     private draftProposalService: DraftProposalService,
     private proposalService: ProposalService,
+    private eventService: EventService,
   ) {}
 
   private async createDraftProposalComment(
@@ -56,6 +58,10 @@ export class DraftCommentService {
         contextId: { $eq: draftComment.contextId },
         contextType: { $eq: draftComment.contextType },
       }),
+    );
+
+    await this.eventService.sendNewDraftCommentEvent(
+      castDraftCommentResponse(draftComment),
     );
 
     return draftComment.id.toString();
@@ -96,6 +102,10 @@ export class DraftCommentService {
       );
     }
 
+    await this.eventService.sendNewDraftCommentEvent(
+      castDraftCommentResponse(draftComment),
+    );
+
     return draftComment.id.toString();
   }
 
@@ -127,10 +137,13 @@ export class DraftCommentService {
       throw new ForbiddenException('Account is not the author');
     }
 
-    await this.draftCommentRepository.save({
+    const updatedComment = await this.draftCommentRepository.save({
       ...draftComment,
       message: draftCommentDto.message,
     });
+    await this.eventService.sendUpdateDraftCommentEvent(
+      castDraftCommentResponse(updatedComment),
+    );
 
     return draftComment.id.toString();
   }
@@ -149,9 +162,13 @@ export class DraftCommentService {
     }
 
     if (!draftComment.likeAccounts.includes(accountId)) {
+      const likeAccounts = [...draftComment.likeAccounts, accountId];
       await this.draftCommentRepository.update(draftComment.id, {
-        likeAccounts: [...draftComment.likeAccounts, accountId],
+        likeAccounts,
       });
+      await this.eventService.sendUpdateDraftCommentEvent(
+        castDraftCommentResponse({ ...draftComment, likeAccounts }),
+      );
     }
 
     return true;
@@ -165,11 +182,15 @@ export class DraftCommentService {
     }
 
     if (draftComment.likeAccounts.includes(accountId)) {
+      const likeAccounts = draftComment.likeAccounts.filter(
+        (item) => item !== accountId,
+      );
       await this.draftCommentRepository.update(draftComment.id, {
-        likeAccounts: draftComment.likeAccounts.filter(
-          (item) => item !== accountId,
-        ),
+        likeAccounts,
       });
+      await this.eventService.sendUpdateDraftCommentEvent(
+        castDraftCommentResponse({ ...draftComment, likeAccounts }),
+      );
     }
 
     return true;
@@ -189,9 +210,13 @@ export class DraftCommentService {
     }
 
     if (!draftComment.dislikeAccounts?.includes(accountId)) {
+      const dislikeAccounts = [...draftComment.dislikeAccounts, accountId];
       await this.draftCommentRepository.update(draftComment.id, {
-        dislikeAccounts: [...draftComment.dislikeAccounts, accountId],
+        dislikeAccounts,
       });
+      await this.eventService.sendUpdateDraftCommentEvent(
+        castDraftCommentResponse({ ...draftComment, dislikeAccounts }),
+      );
     }
 
     return true;
@@ -205,11 +230,15 @@ export class DraftCommentService {
     }
 
     if (draftComment.dislikeAccounts?.includes(accountId)) {
+      const dislikeAccounts = draftComment.dislikeAccounts.filter(
+        (item) => item !== accountId,
+      );
       await this.draftCommentRepository.update(draftComment.id, {
-        dislikeAccounts: draftComment.dislikeAccounts.filter(
-          (item) => item !== accountId,
-        ),
+        dislikeAccounts,
       });
+      await this.eventService.sendUpdateDraftCommentEvent(
+        castDraftCommentResponse({ ...draftComment, dislikeAccounts }),
+      );
     }
 
     return true;
@@ -233,6 +262,11 @@ export class DraftCommentService {
     }
 
     await this.draftCommentRepository.delete(draftComment);
+
+    await this.eventService.sendDeleteDraftCommentEvent(
+      castDraftCommentResponse(draftComment),
+    );
+
     return { id, deleted: true };
   }
 

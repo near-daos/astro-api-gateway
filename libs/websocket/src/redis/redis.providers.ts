@@ -16,7 +16,7 @@ export const redisProviders: Provider[] = [
         redisPort: port,
         redisDB: db,
         redisPassword: password,
-      } = configService.get('api');
+      } = configService.get('redis');
 
       return new Redis({ host, port, db, password });
     },
@@ -30,7 +30,7 @@ export const redisProviders: Provider[] = [
         redisPort: port,
         redisDB: db,
         redisPassword: password,
-      } = configService.get('api');
+      } = configService.get('redis');
 
       return new Redis({ host, port, db, password });
     },

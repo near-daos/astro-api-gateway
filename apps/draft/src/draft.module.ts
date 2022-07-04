@@ -10,10 +10,12 @@ import configuration, {
 } from '@sputnik-v2/config/draft-config';
 import { DraftValidationSchema } from '@sputnik-v2/config/validation';
 import { DRAFT_DB_CONNECTION } from '@sputnik-v2/common';
+import { WebsocketGateway, WebsocketModule } from '@sputnik-v2/websocket';
 
 import { DraftProposalModule } from './draft-proposal/draft-proposal.module';
 import { DraftCommentModule } from './draft-comment/draft-comment.module';
 import { DraftHashtagModule } from './draft-hashtag/draft-hashtag.module';
+import { DraftController } from './draft.controller';
 
 @Module({
   imports: [
@@ -51,11 +53,12 @@ import { DraftHashtagModule } from './draft-hashtag/draft-hashtag.module';
         };
       },
     }),
+    WebsocketModule,
     DraftProposalModule,
     DraftCommentModule,
     DraftHashtagModule,
   ],
-  controllers: [],
-  providers: [],
+  controllers: [DraftController],
+  providers: [WebsocketGateway],
 })
 export class DraftModule {}
