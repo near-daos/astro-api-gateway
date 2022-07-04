@@ -1,4 +1,3 @@
-import { DeleteResult } from 'typeorm';
 import {
   Body,
   Controller,
@@ -27,6 +26,7 @@ import {
   AccountAccessGuard,
   AuthorizedRequest,
   BaseResponseDto,
+  DeleteResponse,
 } from '@sputnik-v2/common';
 import {
   CreateDraftComment,
@@ -237,7 +237,7 @@ export class DraftCommentController {
   deleteDraftComment(
     @Param('id') id: string,
     @Req() req: AuthorizedRequest,
-  ): Promise<DeleteResult> {
+  ): Promise<DeleteResponse> {
     return this.draftCommentService.delete(id, req.accountId);
   }
 }

@@ -4,10 +4,11 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { DeleteResult, MongoRepository } from 'typeorm';
+import { MongoRepository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   BaseResponseDto,
+  DeleteResponse,
   DRAFT_DB_CONNECTION,
   Order,
 } from '@sputnik-v2/common';
@@ -125,7 +126,7 @@ export class DraftProposalService {
     return draftProposal.id.toString();
   }
 
-  async delete(id: string, accountId: string): Promise<DeleteResult> {
+  async delete(id: string, accountId: string): Promise<DeleteResponse> {
     const draftProposal = await this.draftProposalRepository.findOne(id);
 
     if (!draftProposal) {
@@ -150,7 +151,11 @@ export class DraftProposalService {
     await this.draftProposalHistoryRepository.deleteMany({
       draftProposalId: { $eq: draftProposal.id },
     });
-    return this.draftProposalRepository.delete(draftProposal);
+    await this.draftProposalRepository.delete(draftProposal);
+    return {
+      id,
+      deleted: true,
+    };
   }
 
   async view(id: string, accountId: string): Promise<boolean> {

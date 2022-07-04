@@ -1,4 +1,3 @@
-import { DeleteResult } from 'typeorm';
 import {
   Body,
   Controller,
@@ -37,6 +36,7 @@ import {
   AccountAccessGuard,
   AuthorizedRequest,
   BaseResponseDto,
+  DeleteResponse,
 } from '@sputnik-v2/common';
 
 @Span()
@@ -150,7 +150,7 @@ export class DraftProposalController {
   deleteDraftProposal(
     @Param('id') id: string,
     @Req() req: AuthorizedRequest,
-  ): Promise<DeleteResult> {
+  ): Promise<DeleteResponse> {
     return this.draftProposalService.delete(id, req.accountId);
   }
 
