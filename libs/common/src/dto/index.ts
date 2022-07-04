@@ -13,3 +13,4 @@ export * from './WalletCallbackParams';
 export * from './pagination.dto';
 export * from './search.dto';
 export * from './base-response.dto';
+export * from './delete-response.dto';

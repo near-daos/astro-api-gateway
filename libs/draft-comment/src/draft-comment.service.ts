@@ -1,4 +1,4 @@
-import { MongoRepository, DeleteResult } from 'typeorm';
+import { MongoRepository } from 'typeorm';
 import {
   BadRequestException,
   ForbiddenException,
@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DraftProposalService } from '@sputnik-v2/draft-proposal';
-import { DRAFT_DB_CONNECTION, Order } from '@sputnik-v2/common';
+import { DeleteResponse, DRAFT_DB_CONNECTION, Order } from '@sputnik-v2/common';
 import { ProposalService } from '@sputnik-v2/proposal';
 import { DraftComment } from './entities';
 import {
@@ -215,7 +215,7 @@ export class DraftCommentService {
     return true;
   }
 
-  async delete(id: string, accountId: string): Promise<DeleteResult> {
+  async delete(id: string, accountId: string): Promise<DeleteResponse> {
     const draftComment = await this.draftCommentRepository.findOne(id);
 
     if (!draftComment) {
@@ -232,7 +232,8 @@ export class DraftCommentService {
       throw new ForbiddenException('Account is not the author or council');
     }
 
-    return this.draftCommentRepository.delete(draftComment);
+    await this.draftCommentRepository.delete(draftComment);
+    return { id, deleted: true };
   }
 
   async getAll(params: DraftCommentsRequest) {
