@@ -105,7 +105,7 @@ export function castActProposalDao({
     ...dao,
     ...daoPolicy,
     config,
-    metadata: btoaJSON(config.metadata),
+    metadata: config?.metadata ? btoaJSON(config.metadata) : undefined,
     lastBountyId,
     stakingContract,
     amount: amount && Number(amount),
