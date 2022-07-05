@@ -189,7 +189,9 @@
       "@sputnik-v2/draft-comment/(.*)": "<rootDir>/libs/draft-comment/src/$1",
       "@sputnik-v2/draft-comment": "<rootDir>/libs/draft-comment/src",
       "@sputnik-v2/draft-hashtag/(.*)": "<rootDir>/libs/draft-hashtag/src/$1",
-      "@sputnik-v2/draft-hashtag": "<rootDir>/libs/draft-hashtag/src"
+      "@sputnik-v2/draft-hashtag": "<rootDir>/libs/draft-hashtag/src",
+      "@sputnik-v2/websocket/(.*)": "<rootDir>/libs/websocket/src/$1",
+      "@sputnik-v2/websocket": "<rootDir>/libs/websocket/src"
     }
   }
 }

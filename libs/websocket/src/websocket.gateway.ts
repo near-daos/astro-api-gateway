@@ -3,7 +3,7 @@ import { SubscribeMessage, WebSocketGateway } from '@nestjs/websockets';
 import { from, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-import { RedisPropagatorInterceptor } from './redis-propagator/redis-propagator.interceptor';
+import { RedisPropagatorInterceptor } from './redis-propagator';
 
 @UseInterceptors(RedisPropagatorInterceptor)
 @WebSocketGateway()

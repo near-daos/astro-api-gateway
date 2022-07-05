@@ -1,9 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Server } from 'socket.io';
-import { SocketStateService } from '../socket-state/socket-state.service';
-import { SocketEventEmitDTO } from './dto/socket-event-emit.dto';
-import { SocketEventSendDTO } from './dto/socket-event-send.dto';
-import { AuthenticatedSocket } from '../socket-state/socket-state.adapter';
+import { SocketEventEmitDTO, SocketEventSendDTO } from './dto';
+import { AuthenticatedSocket, SocketStateService } from '../socket-state';
 
 @Injectable()
 export class SocketService {

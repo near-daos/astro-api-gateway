@@ -13,6 +13,7 @@ import { CacheConfigService } from '@sputnik-v2/config/api-config';
 import { HttpCacheModule } from '@sputnik-v2/cache';
 import { ThrottlerModule, ThrottlerModuleOptions } from '@nestjs/throttler';
 import { EventModule } from '@sputnik-v2/event';
+import { WebsocketModule, WebsocketGateway } from '@sputnik-v2/websocket';
 
 import { BountyModule } from './bounty/bounty.module';
 import { DaoModule } from './dao/dao.module';
@@ -22,8 +23,6 @@ import { SubscriptionModule } from './subscription/subscription.module';
 import { TokenModule } from './token/token.module';
 import { TransactionModule } from './transaction/transaction.module';
 import { AppController } from './api.controller';
-import { WebsocketModule } from './websocket/websocket.module';
-import { WebsocketGateway } from './websocket/websocket.gateway';
 import { NotificationModule } from './notification/notification.module';
 import { CommentModule } from './comment/comment.module';
 import { AggregatorModule } from './aggregator/aggregator.module';

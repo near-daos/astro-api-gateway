@@ -10,8 +10,7 @@ import {
   EVENT_NEW_COMMENT,
   EVENT_NEW_NOTIFICATION,
 } from '@sputnik-v2/common';
-
-import { SocketService } from './websocket/socket/socket.service';
+import { SocketService } from '@sputnik-v2/websocket';
 
 @Span()
 @Controller()
