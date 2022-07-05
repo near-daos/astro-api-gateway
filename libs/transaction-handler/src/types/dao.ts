@@ -1,11 +1,7 @@
 import camelcaseKeys from 'camelcase-keys';
 import { RoleKindType } from '@sputnik-v2/dao/entities';
 import { SputnikDaoDto } from '@sputnik-v2/dao/dto';
-import {
-  buildRoleId,
-  decodeBase64,
-  getBlockTimestamp,
-} from '@sputnik-v2/utils';
+import { btoaJSON, buildRoleId, getBlockTimestamp } from '@sputnik-v2/utils';
 
 import { castRolePermission } from './role';
 import { castVotePolicy } from './vote-policy';
@@ -56,16 +52,11 @@ export function castCreateDao({
   daoInfo,
   timestamp = getBlockTimestamp(),
 }): SputnikDaoDto {
-  let metadata;
-  try {
-    metadata = JSON.parse(decodeBase64(daoInfo.config.metadata));
-  } catch (err) {}
-
   return {
     id: daoId,
     config: daoInfo.config,
     ...castDaoPolicy({ daoId, daoPolicy: daoInfo.policy }),
-    metadata,
+    metadata: btoaJSON(daoInfo.config.metadata),
     amount: Number(daoInfo.amount),
     status: DaoStatus.Active,
     totalSupply: daoInfo.totalSupply,
@@ -110,16 +101,11 @@ export function castActProposalDao({
   const daoPolicy = policy
     ? castDaoPolicy({ daoId: dao.id, daoPolicy: policy })
     : {};
-  let metadata;
-  try {
-    metadata = JSON.parse(decodeBase64(config.metadata));
-  } catch (err) {}
-
   return {
     ...dao,
     ...daoPolicy,
     config,
-    metadata,
+    metadata: btoaJSON(config.metadata),
     lastBountyId,
     stakingContract,
     amount: amount && Number(amount),
