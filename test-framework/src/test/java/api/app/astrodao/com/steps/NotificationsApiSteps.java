@@ -53,4 +53,10 @@ public class NotificationsApiSteps extends BaseSteps {
     @Step("Patch account notifications by 'notificationId' param")
     public Response patchAccountNotificationsById(String authToken, String notificationId, boolean isMuted, boolean isRead, boolean isArchived) {
         return notificationsApi.patchAccountNotificationsById(authToken, notificationId, isMuted, isRead, isArchived);
-    }}
+    }
+
+    @Step("Getting account notifications with query params '{queryParams}'")
+    public Response getAccountNotifications(Map<String, Object> queryParams) {
+        return notificationsApi.getAccountNotifications(queryParams);
+    }
+}

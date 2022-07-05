@@ -95,4 +95,11 @@ public class NotificationsApi {
 				.body(JsonUtils.writeValueAsString(updateAccountNotificationDto))
 				.patch(ACCOUNT_NOTIFICATIONS_ID, notificationId);
 	}
+
+	public Response getAccountNotifications(Map<String, Object> queryParams) {
+		return given().spec(requestSpec)
+				.queryParams(queryParams)
+				.accept(ContentType.JSON)
+				.get(ACCOUNT_NOTIFICATIONS);
+	}
 }
