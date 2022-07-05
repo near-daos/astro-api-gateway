@@ -110,12 +110,16 @@ export function castActProposalDao({
   const daoPolicy = policy
     ? castDaoPolicy({ daoId: dao.id, daoPolicy: policy })
     : {};
+  let metadata;
+  try {
+    metadata = JSON.parse(decodeBase64(config.metadata));
+  } catch (err) {}
 
   return {
     ...dao,
     ...daoPolicy,
     config,
-    metadata: config?.metadata ? decodeBase64(config.metadata) : undefined,
+    metadata,
     lastBountyId,
     stakingContract,
     amount: amount && Number(amount),
