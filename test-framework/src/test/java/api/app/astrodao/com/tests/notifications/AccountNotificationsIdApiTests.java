@@ -242,4 +242,19 @@ public class AccountNotificationsIdApiTests extends BaseTest {
 				      "message", equalTo("Invalid signature"),
 				      "error", equalTo("Forbidden"));
 	}
+
+	@Test
+	@Severity(SeverityLevel.NORMAL)
+	@Story("Get HTTP 403 for notifications id endpoint with null 'signature' parameter")
+	@DisplayName("Get HTTP 403 for notifications id endpoint with null 'signature' parameter")
+	void getHttp403ForNotificationsIdEndpointWithNullSignatureParam() {
+		String authToken = Base64Utils.encodeAuthToken(accountId, accountPublicKey, null);
+
+		String id = "testdao2.testnet-fgflgxxo7okrakcfwhxagzfcxdigua5nqcktvsqnnt3w-changeconfig";
+		notificationsApiSteps.patchAccountNotificationsById(authToken, id, true, true, true).then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo("Invalid signature"),
+				      "error", equalTo("Forbidden"));
+	}
 }
