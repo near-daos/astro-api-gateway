@@ -194,4 +194,21 @@ public class AccountNotificationsIdApiTests extends BaseTest {
 				      "message", equalTo("Authorization header payload is invalid"),
 				      "error", equalTo("Forbidden"));
 	}
+
+	@ParameterizedTest
+	@Severity(SeverityLevel.NORMAL)
+	@Story("Get HTTP 403 for notifications id endpoint with null and invalid 'publicKey' parameter")
+	@DisplayName("Get HTTP 403 for notifications id endpoint with null and invalid 'publicKey' parameter")
+	@NullSource
+	@CsvSource({"invalidPublicKey"})
+	void getHttp403ForNotificationsIdEndpointWithNullAndInvalidPublicKeyParam(String publicKey) {
+		String authToken = Base64Utils.encodeAuthToken(accountId, publicKey, accountSignature);
+
+		String id = "testdao2.testnet-fgflgxxo7okrakcfwhxagzfcxdigua5nqcktvsqnnt3w-changeconfig";
+		notificationsApiSteps.patchAccountNotificationsById(authToken, id, true, true, true).then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo(String.format("Account %s identity is invalid - public key", accountId)),
+				      "error", equalTo("Forbidden"));
+	}
 }
