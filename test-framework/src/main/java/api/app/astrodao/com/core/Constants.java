@@ -61,6 +61,7 @@ public class Constants {
 		public static final String ACCOUNT_NOTIFICATION_STATUS_ACCOUNT_ID = "/api/v1/account-notification-status/{accountId}";
 		public static final String ACCOUNT_NOTIFICATIONS_READ_ALL = "/api/v1/account-notifications/read-all";
 		public static final String ACCOUNT_NOTIFICATIONS_ID = "/api/v1/account-notifications/{id}";
+		public static final String ACCOUNT_NOTIFICATIONS = "/api/v1/account-notifications";
 
 		public static final String ACCOUNT_ID = "/api/v1/account/{id}";
 		public static final String ACCOUNT_EMAIL = "/api/v1/account/email";
