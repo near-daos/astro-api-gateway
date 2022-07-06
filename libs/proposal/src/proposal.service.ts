@@ -13,7 +13,7 @@ import {
   SelectQueryBuilder,
   UpdateResult,
 } from 'typeorm';
-import { Role, RoleKindType } from '@sputnik-v2/dao/entities';
+import { Role, RoleKindType, Delegation } from '@sputnik-v2/dao/entities';
 import { SearchQuery } from '@sputnik-v2/common';
 
 import {
@@ -30,6 +30,7 @@ import {
   ProposalTypeToPolicyLabel,
   ProposalVoteStatus,
 } from './types';
+import { buildDelegationId } from '@sputnik-v2/utils';
 
 @Injectable()
 export class ProposalService extends TypeOrmCrudService<Proposal> {
@@ -40,6 +41,8 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
     private readonly proposalRepository: Repository<Proposal>,
     @InjectRepository(Role)
     private readonly roleRepository: Repository<Role>,
+    @InjectRepository(Delegation)
+    private readonly delegationRepository: Repository<Delegation>,
     @InjectConnection()
     private connection: Connection,
   ) {
@@ -82,10 +85,15 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
       throw new BadRequestException('Invalid Proposal ID');
     }
 
+    const accountDelegation = await this.delegationRepository.findOne(
+      buildDelegationId(proposal.daoId, permissionsAccountId),
+    );
+
     return this.populateProposalPermissions(
       proposal,
       proposal.dao.policy.roles,
       permissionsAccountId,
+      accountDelegation?.balance,
     );
   }
 
@@ -329,14 +337,28 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
         .getMany();
     }
 
+    let accountDelegations = [];
+    if (permissionsAccountId) {
+      accountDelegations = await this.delegationRepository.find({
+        where: {
+          accountId: permissionsAccountId,
+          daoId: In(daoIds),
+        },
+      });
+    }
+
     proposals = proposals.map((proposal) => {
       const roles = daoRoles.filter(
         (role) => role.policy.daoId === proposal.daoId,
+      );
+      const accountDelegation = accountDelegations.find(
+        ({ daoId }) => daoId === proposal.daoId,
       );
       return this.populateProposalPermissions(
         proposal,
         roles,
         permissionsAccountId,
+        accountDelegation?.balance,
       );
     });
 
@@ -357,13 +379,22 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
       .leftJoinAndSelect('role.policy', 'policy')
       .where('policy_dao_id = :daoId', { daoId })
       .getMany();
-    return this.getAccountPermissions(type, daoRoles, accountId);
+    const accountDelegation = await this.delegationRepository.findOne(
+      buildDelegationId(daoId, accountId),
+    );
+    return this.getAccountPermissions(
+      type,
+      daoRoles,
+      accountId,
+      BigInt(accountDelegation?.balance || 0),
+    );
   }
 
   private populateProposalPermissions(
     proposal: Proposal,
     roles: Role[],
     accountId?: string,
+    accountBalance = '0',
   ): Proposal {
     return {
       ...proposal,
@@ -371,6 +402,7 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
         proposal.kind?.type,
         roles,
         accountId,
+        BigInt(accountBalance),
       ),
     } as Proposal;
   }
