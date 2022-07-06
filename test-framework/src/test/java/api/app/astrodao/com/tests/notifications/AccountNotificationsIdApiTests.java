@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Value;
 
 import java.util.Map;
 
+import static api.app.astrodao.com.core.Constants.Variables.EMPTY_STRING;
 import static java.net.HttpURLConnection.HTTP_FORBIDDEN;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static org.hamcrest.Matchers.equalTo;
@@ -176,6 +177,21 @@ public class AccountNotificationsIdApiTests extends BaseTest {
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
 				      "message", equalTo(errorMessage),
+				      "error", equalTo("Forbidden"));
+	}
+
+	@Test
+	@Severity(SeverityLevel.NORMAL)
+	@Story("Get HTTP 403 for notifications id endpoint with empty 'accountId' parameter")
+	@DisplayName("Get HTTP 403 for read all account notifications endpoint with empty 'accountId' parameter")
+	void getHttp403ForNotificationsIdEndpointWithEmptyAccountIdParam() {
+		String authToken = Base64Utils.encodeAuthToken(EMPTY_STRING, accountPublicKey, accountSignature);
+
+		String id = "testdao2.testnet-fgflgxxo7okrakcfwhxagzfcxdigua5nqcktvsqnnt3w-changeconfig";
+		notificationsApiSteps.patchAccountNotificationsById(authToken, id, true, true, true).then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo("Authorization header payload is invalid"),
 				      "error", equalTo("Forbidden"));
 	}
 }
