@@ -340,6 +340,7 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
     let accountDelegations = [];
     if (permissionsAccountId) {
       accountDelegations = await this.delegationRepository.find({
+        select: ['daoId', 'balance'],
         where: {
           accountId: permissionsAccountId,
           daoId: In(daoIds),
