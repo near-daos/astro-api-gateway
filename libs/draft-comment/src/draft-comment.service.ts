@@ -263,6 +263,16 @@ export class DraftCommentService {
 
     await this.draftCommentRepository.delete(draftComment);
 
+    if (draftComment.contextType === DraftCommentContextType.DraftProposal) {
+      await this.draftProposalService.updateReplies(
+        draftComment.contextId,
+        await this.draftCommentRepository.count({
+          contextId: { $eq: draftComment.contextId },
+          contextType: { $eq: draftComment.contextType },
+        }),
+      );
+    }
+
     await this.eventService.sendDeleteDraftCommentEvent(
       castDraftCommentResponse(draftComment),
     );
