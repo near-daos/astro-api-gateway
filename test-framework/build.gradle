@@ -109,7 +109,7 @@ tasks.named('test') {
 
     doFirst {
         new File(projectDir, "build/allure-results/environment.properties").text =
-                """Environment: ${System.getProperty("test.env")}
+                """Environment: ${"testnet"}
                Tags: ${System.getProperty("includeTags")}
             """
     }
@@ -152,7 +152,7 @@ openApiValidate {
 }
 
 task downloadSwaggerSpec(type: Download) {
-    src "https://api.${System.getProperty("test.env", "dev")}.app.astrodao.com/docs-json"
+    src "https://api.testnet.app.astrodao.com/docs-json"
     dest new File("${buildDir}/spec.json")
 }
 
