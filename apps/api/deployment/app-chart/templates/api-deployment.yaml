@@ -52,6 +52,7 @@ spec:
             successThreshold: {{ .Values.container.readinessProbe.successThreshold }}
             failureThreshold: {{ .Values.container.readinessProbe.failureThreshold }}
           env:
+            {{- if eq .Values.environment.datadog_env "production" }}
             - name: DD_AGENT_HOST
               valueFrom:
                 fieldRef:
@@ -70,6 +71,7 @@ spec:
               value: "1"
             - name: DD_PROFILING_ENABLED
               value: "true"
+            {{- end }}
           envFrom:
           - configMapRef:
               name: sputnik-v2-configmap
