@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { NearApiService, NearTransactionStatus } from '@sputnik-v2/near-api';
-import { AccountChange, Transaction } from '@sputnik-v2/near-indexer';
+import { Receipt, Transaction } from '@sputnik-v2/near-indexer';
 import { sleep } from '@sputnik-v2/utils';
 
 import {
@@ -25,40 +25,38 @@ export class TransactionActionMapperService {
     return this.getActionsByTxStatus(transactionHash, txStatus);
   }
 
-  async getActionsByNearIndexerAccountChanges(
-    accountChanges: AccountChange[],
+  async getActionsByReceipts(
+    receipts: Receipt[],
   ): Promise<TransactionActionsResponse> {
-    let transactions = [];
+    const transactions = {};
     let actions = [];
 
-    for (const accountChange of accountChanges) {
+    for (const receipt of receipts) {
       try {
         this.logger.log(
-          `Received transaction: ${accountChange.causedByTransactionHash}`,
+          `Received transaction: ${receipt.originatedFromTransactionHash}`,
         );
-        const res = await this.getActionsByAccountChange(accountChange);
-        transactions = transactions.concat(res.transaction);
+        const res = await this.getActionsByReceipt(receipt);
+        transactions[res.transaction.transactionHash] = res.transaction;
         actions = actions.concat(res.actions);
       } catch (error) {
         this.logger.error(
-          `Failed to get transaction action ${accountChange.causedByTransactionHash} with error: ${error}`,
+          `Failed to get transaction action ${receipt.originatedFromTransactionHash} with error: ${error}`,
         );
       }
     }
 
     return {
-      transactions,
+      transactions: Object.values(transactions),
       actions,
     };
   }
 
-  private async getActionsByAccountChange(accountChange) {
-    const originatedFromTransaction =
-      accountChange.causedByReceipt.originatedFromTransaction;
-
+  private async getActionsByReceipt(receipt: Receipt) {
+    const originatedFromTransaction = receipt.originatedFromTransaction;
     if (
       !originatedFromTransaction.transactionAction ||
-      !accountChange.causedByReceipt.receiptActions ||
+      !receipt.receiptActions ||
       this.isActFunctionCall(originatedFromTransaction)
     ) {
       const txStatus = await this.getTxStatus(
@@ -79,8 +77,8 @@ export class TransactionActionMapperService {
 
     return {
       transaction: originatedFromTransaction,
-      actions: accountChange.causedByReceipt.receiptActions.map((action) =>
-        castNearIndexerReceiptAction(accountChange.causedByReceipt, action),
+      actions: receipt.receiptActions.map((action) =>
+        castNearIndexerReceiptAction(receipt, action),
       ),
     };
   }

@@ -36,6 +36,7 @@ import {
   ProposalTemplate,
   SharedProposalTemplate,
 } from '@sputnik-v2/proposal-template/entities';
+import { TransactionHandlerState } from '@sputnik-v2/transaction-handler/entities';
 import { SharedProposalTemplateDao } from '@sputnik-v2/proposal-template/entities/shared-proposal-template-dao.entity';
 import { Delegation } from '@sputnik-v2/dao/entities/delegation.entity';
 
@@ -80,6 +81,7 @@ export default registerAs('db_default', () => ({
     SharedProposalTemplate,
     SharedProposalTemplateDao,
     Delegation,
+    TransactionHandlerState,
   ],
   synchronize: false,
   namingStrategy: new SnakeNamingStrategy(),

@@ -13,10 +13,11 @@ import { TokenModule } from '@sputnik-v2/token';
 import { TransactionHandlerService } from './transaction-handler.service';
 import { TransactionActionHandlerService } from './transaction-action-handler.service';
 import { TransactionActionMapperService } from './transaction-action-mapper.service';
+import { TransactionHandlerState } from './entities';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Transaction]),
+    TypeOrmModule.forFeature([Transaction, TransactionHandlerState]),
     NearApiModule,
     SputnikModule,
     DaoModule,

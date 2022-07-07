@@ -4,7 +4,6 @@ import { DaoModule as DaoModuleLib, Dao, Policy, Role } from '@sputnik-v2/dao';
 import { NearIndexerModule } from '@sputnik-v2/near-indexer';
 import { CacheConfigService } from '@sputnik-v2/config/api-config';
 
-import { DaoNearService } from './dao-near.service';
 import { DaoController } from './dao.controller';
 
 @Module({
@@ -16,8 +15,8 @@ import { DaoController } from './dao.controller';
     NearIndexerModule,
     DaoModuleLib,
   ],
-  providers: [DaoNearService],
+  providers: [],
   controllers: [DaoController],
-  exports: [DaoNearService],
+  exports: [],
 })
 export class DaoModule {}
