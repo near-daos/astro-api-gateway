@@ -5,7 +5,6 @@ This framework is intended to be used for testing of Sputnik v2 API
 [![Manual API Autotests run](https://github.com/near-daos/astro-api-gateway/actions/workflows/run-autotests.yaml/badge.svg)](https://github.com/near-daos/astro-api-gateway/actions/workflows/run-autotests.yaml)
 
 ## Test execution reports
-- [API test coverage and Allure reports - **develop** environment](https://automation-report.app.astrodao.com/develop/)
 - [API test coverage and Allure reports - **testnet** environment](https://automation-report.app.astrodao.com/test/)
 
 
@@ -30,7 +29,6 @@ This framework is intended to be used for testing of Sputnik v2 API
 
 ### Env (Test Environments)
 - `testnet` - run tests against testnet environment -Dtest.env=testnet (default option)
-- `dev` - run tests against dev environment -Dtest.env=dev
 
 ### Tags (Test Suites)
 - `all` - runs all tests by setting -DincludeTags=all
@@ -46,10 +44,7 @@ This framework is intended to be used for testing of Sputnik v2 API
  $ ./gradlew clean test -DincludeTags=all
  ```
  ```bash
- $ ./gradlew clean test -DincludeTags=all -Dtest.env=testnet
- ```
- ```bash
- $ ./gradlew clean test -DincludeTags=all -Dtest.env=dev
+ $ ./gradlew clean test -DincludeTags=daoApiTests
  ```
 
 ## Test Reports

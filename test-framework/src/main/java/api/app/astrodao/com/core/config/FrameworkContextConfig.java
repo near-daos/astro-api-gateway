@@ -22,7 +22,7 @@ import java.nio.file.Paths;
 @EnableAspectJAutoProxy
 @ComponentScan(basePackages = "api.app.astrodao.com", lazyInit = true)
 @PropertySource(factory = YamlPropertySourceFactory.class, value = "classpath:configs/framework.yml")
-@PropertySource(factory = YamlPropertySourceFactory.class, value = "classpath:configs/${test.env}.yml")
+@PropertySource(factory = YamlPropertySourceFactory.class, value = "classpath:configs/testnet.yml")
 public class FrameworkContextConfig {
 
     @Bean
