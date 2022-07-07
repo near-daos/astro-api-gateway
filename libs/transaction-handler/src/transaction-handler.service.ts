@@ -7,6 +7,7 @@ import { Receipt, Transaction } from '@sputnik-v2/near-indexer';
 import { TransactionActionMapperService } from './transaction-action-mapper.service';
 import { TransactionActionHandlerService } from './transaction-action-handler.service';
 import { TransactionHandlerState } from './entities';
+import { TransactionHandlerStatus } from '@sputnik-v2/transaction-handler/types';
 
 @Injectable()
 export class TransactionHandlerService {
@@ -23,12 +24,14 @@ export class TransactionHandlerService {
 
   async saveState(
     id: string,
-    lastTx: Transaction,
+    status: TransactionHandlerStatus,
+    lastTx?: Transaction,
   ): Promise<TransactionHandlerState> {
     return this.transactionHandlerStateRepository.save({
       id,
-      lastBlockHash: lastTx.includedInBlockHash,
-      lastBlockTimestamp: lastTx.blockTimestamp,
+      lastBlockHash: lastTx?.includedInBlockHash,
+      lastBlockTimestamp: lastTx?.blockTimestamp,
+      status,
     });
   }
 
@@ -38,28 +41,33 @@ export class TransactionHandlerService {
         transactionHash,
         accountId,
       );
-    const successActions =
+    const { success } =
       await this.transactionActionHandlerService.handleTransactionActions(
         actions,
       );
 
-    if (successActions.length !== actions.length) {
+    if (!success) {
       throw new Error(
         `Failed to handle actions of transaction ${transactionHash}`,
       );
     }
   }
 
-  async handleNearReceipts(receipts: Receipt[]): Promise<Transaction[]> {
+  async handleNearReceipts(
+    receipts: Receipt[],
+  ): Promise<{ transactions: Transaction[]; success: boolean }> {
     const { actions, transactions } =
       await this.transactionActionMapperService.getActionsByReceipts(receipts);
-    const handledTransactions =
+    const { handledTxHashes, success } =
       await this.transactionActionHandlerService.handleTransactionActions(
         actions,
       );
 
-    return transactions.filter((tx) =>
-      handledTransactions.includes(tx.transactionHash),
-    );
+    return {
+      transactions: transactions.filter((tx) =>
+        handledTxHashes.includes(tx.transactionHash),
+      ),
+      success,
+    };
   }
 }

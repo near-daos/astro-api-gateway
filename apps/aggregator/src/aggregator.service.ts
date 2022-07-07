@@ -7,7 +7,10 @@ import PromisePool from '@supercharge/promise-pool';
 import { Account, NearIndexerService } from '@sputnik-v2/near-indexer';
 import { TransactionService } from '@sputnik-v2/transaction';
 import { DaoService } from '@sputnik-v2/dao';
-import { TransactionHandlerService } from '@sputnik-v2/transaction-handler';
+import {
+  TransactionHandlerService,
+  TransactionHandlerStatus,
+} from '@sputnik-v2/transaction-handler';
 import { CacheService } from '@sputnik-v2/cache';
 import {
   NFTTokenService,
@@ -347,14 +350,23 @@ export class AggregatorService {
       return;
     }
 
+    await this.transactionHandlerService.saveState(
+      AGGREGATOR_HANDLER_STATE_ID,
+      TransactionHandlerStatus.InProgress,
+    );
+
     this.logger.log(`Found new receipts: ${receipts.length}`);
-    const transactions =
+    const { transactions, success } =
       await this.transactionHandlerService.handleNearReceipts(receipts);
 
     if (!transactions.length) {
       this.state.stopAggregation('dao');
       this.logger.warn(
         `Aggregation failed on receipt ${receipts[0].receiptId}`,
+      );
+      await this.transactionHandlerService.saveState(
+        AGGREGATOR_HANDLER_STATE_ID,
+        TransactionHandlerStatus.Failed,
       );
       return;
     }
@@ -363,9 +375,11 @@ export class AggregatorService {
     await this.transactionService.createMultiple(transactions);
 
     this.logger.log('Updating transaction handler state...');
-
     await this.transactionHandlerService.saveState(
       AGGREGATOR_HANDLER_STATE_ID,
+      success
+        ? TransactionHandlerStatus.Success
+        : TransactionHandlerStatus.Failed,
       transactions[transactions.length - 1],
     );
 
@@ -473,6 +487,7 @@ export class AggregatorService {
 
       await this.transactionHandlerService.saveState(
         AGGREGATOR_HANDLER_STATE_ID,
+        TransactionHandlerStatus.Success,
         daoTransactions[daoTransactions.length - 1],
       );
 

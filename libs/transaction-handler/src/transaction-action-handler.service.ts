@@ -35,6 +35,7 @@ import {
   castDoneBounty,
   ContractHandler,
   TransactionAction,
+  TransactionHandlerStatus,
   VoteAction,
 } from './types';
 
@@ -82,7 +83,7 @@ export class TransactionActionHandlerService {
 
   async handleTransactionActions(
     actions: TransactionAction[],
-  ): Promise<string[]> {
+  ): Promise<{ handledTxHashes: string[]; success: boolean }> {
     const handledTxHashes = [];
     // Actions are handled one by one to keep order of transactions
     for (const action of actions) {
@@ -95,13 +96,16 @@ export class TransactionActionHandlerService {
         );
 
         // If some action failed stop handling and remove failed transaction hash
-        return handledTxHashes.filter(
-          (transactionHash) => action.transactionHash === transactionHash,
-        );
+        return {
+          handledTxHashes: handledTxHashes.filter(
+            (transactionHash) => action.transactionHash === transactionHash,
+          ),
+          success: false,
+        };
       }
     }
 
-    return handledTxHashes;
+    return { handledTxHashes, success: true };
   }
 
   async handleTransactionAction(action: TransactionAction) {

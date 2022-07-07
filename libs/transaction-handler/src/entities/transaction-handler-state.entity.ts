@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Column, Entity, PrimaryColumn } from 'typeorm';
+import { TransactionHandlerStatus } from '../types/transaction-handler-status';
 
 @Entity()
 export class TransactionHandlerState {
@@ -14,4 +15,12 @@ export class TransactionHandlerState {
   @ApiProperty()
   @Column()
   lastBlockHash: string;
+
+  @ApiProperty()
+  @Column({
+    type: 'enum',
+    enum: TransactionHandlerStatus,
+    default: TransactionHandlerStatus.InProgress,
+  })
+  status: TransactionHandlerStatus;
 }
