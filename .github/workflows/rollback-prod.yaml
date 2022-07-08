@@ -1,0 +1,62 @@
+name: Rollback Latest Production Deployment
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        required: true
+        description: Specify environment to run on. Valid values are test, production
+        default: production
+
+env:
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  AWS_ECR_URL: ${{ secrets.AWS_ECR_URL }}
+  EKS_CLUSTER_NAME: ${{ secrets.EKS_CLUSTER_NAME }}
+  KUBE_CONFIG_DATA:  ${{ secrets.KUBE_CONFIG_DATA }}
+  NOTIFI_SID:  ${{ secrets.NOTIFI_SID }}
+  NOTIFI_SECRET:  ${{ secrets.NOTIFI_SECRET }}
+  PAGODA_RPC_API_KEY:  ${{ secrets.PAGODA_RPC_API_KEY }}
+
+jobs:
+  deploy:
+    strategy:
+      matrix:
+        app: [api, aggregator, notifier, draft]
+    runs-on: ubuntu-latest
+    name: Deploy
+    environment:
+      name: ${{ github.event.inputs.environment }}
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set Environment
+      run: |
+        cat ".github/env.common" >>$GITHUB_ENV
+        cat ".github/env.${{ github.event.inputs.environment }}" >>$GITHUB_ENV
+
+    - name: Get Previous Tag
+      id: get-previous-tag
+      run: |
+        TAG=$(aws ecr describe-images --repository-name api --region $AWS_DEFAULT_REGION | jq -r '.imageDetails | .[].imageTags | select(index( "prod-previous" )) | .[] | select(.|test("^[a-f0-9]{40}$"))' | sed -e '2,$d')
+        echo "::set-output name=tag::$TAG"
+
+    - name: Helm Deploy
+      uses: ./.github/actions/deploy
+      with:
+        name: ${{ matrix.app }}
+        namespace: ${{ env.DEPLOYMENT_NAMESPACE }}
+        tag: ${{ steps.get-previous-tag.outputs.tag }}
+        chart_directory: deployment/app-chart
+
+    - name: Tag Previous Image
+      uses: tmknom/retag-ecr-action@v1
+      with:
+        repository-name: api
+        source-tag: ${{ matrix-app }}-${{ github.event.inputs.environment }}-current
+        destination-tag: ${{ matrix-app }}-${{ github.event.inputs.environment }}-rolled-back
+
+    - name: Tag Current Image
+      uses: tmknom/retag-ecr-action@v1
+      with:
+        repository-name: api
+        source-tag: ${{ matrix-app }}-${{ github.event.inputs.environment }}-previous
+        destination-tag: ${{ matrix-app }}-${{ github.event.inputs.environment }}-current

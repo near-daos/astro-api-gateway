@@ -4,10 +4,10 @@ on:
     inputs:
       environment:
         required: true
-        description: Specify environment to run on. Valid values are develop, qa, test, staging, production
+        description: Specify environment to run on. Valid values are test, production
       tag:
         required: true
-        description: Docker tag to deploy. Valid values are "latest", "<branch>-latest", "<commit_sha>", "<environment>-<commit_sha>". Exact values can be found in "Docker Build Publish" step of "Build Deploy" job.
+        description: Docker tag to deploy. Valid values are "latest", "<branch>-latest", "<commit_sha>". Exact values can be found in "Docker Build Publish" step of "Build Deploy" job.
         default: latest
       apps:
         required: false
@@ -63,27 +63,23 @@ jobs:
         cat ".github/env.common" | grep -E -v '^\ *#' >>$GITHUB_ENV
         cat ".github/env.${{ github.event.inputs.environment }}" | grep -E -v '^\ *#' >>$GITHUB_ENV
     - name: Helm Deploy
-      uses: koslib/helm-eks-action@v1.8.0
+      uses: uses: ./.github/actions/deploy
       with:
-        command: |
-          export CHART_FOLDER=apps/${{ matrix.app }}/deployment/app-chart
-          helm lint $CHART_FOLDER
-          helm -n $DEPLOYMENT_NAMESPACE upgrade --install --wait --timeout 10m sputnik-v2-${{ matrix.app }} $CHART_FOLDER \
-            --set image.tag=$DOCKER_ENV_TAG \
-            --set environment.near_env=$NEAR_ENV \
-            --set environment.near_contract_name=$NEAR_CONTRACT_NAME \
-            --set environment.near_token_factory_contract_name=$NEAR_TOKEN_FACTORY_CONTRACT_NAME \
-            --set environment.near_bridge_token_factory_contract_name=$NEAR_BRIDGE_TOKEN_FACTORY_CONTRACT_NAME \
-            --set environment.wallet_callback_url=$WALLET_CALLBACK_URL \
-            --set environment.frontend_url=$FRONTEND_URL \
-            --set environment.near_token_api_url=$NEAR_TOKEN_API_URL \
-            --set environment.api_rate_ttl=$API_RATE_TTL \
-            --set environment.api_rate_limit=$API_RATE_LIMIT \
-            --set environment.admin_accounts=$ADMIN_ACCOUNTS \
-            --set environment.notifi_sid=$NOTIFI_SID \
-            --set environment.notifi_secret=$NOTIFI_SECRET \
-            --set environment.notifi_env=$NOTIFI_ENV \
-            --set environment.notifi_prefix=$NOTIFI_PREFIX \
-            --set environment.pagoda_rpc_api_key=$PAGODA_RPC_API_KEY \
-            --set environment.datadog_env=$DATADOG_ENV \
-            --set ingress.host=$K8S_INGRESS_HOST
+        name: sputnik-v2-${{ matrix.app }}
+        namespace: ${{ env.DEPLOYMENT_NAMESPACE }}
+        tag: ${{ github.event.inputs.tag }}
+        chart_directory: apps/${{ matrix.app }}/deployment/app-chart
+
+    - name: Tag Previous Image
+      uses: tmknom/retag-ecr-action@v1
+      with:
+        repository-name: api
+        source-tag: ${{ matrix-app }}-${{ github.event.inputs.environment }}-current
+        destination-tag: ${{ matrix-app }}-${{ github.event.inputs.environment }}-previous
+
+    - name: Tag Current Image
+      uses: tmknom/retag-ecr-action@v1
+      with:
+        repository-name: api
+        source-tag: ${{ github.event.inputs.tag }}
+        destination-tag: ${{ matrix-app }}-${{ github.event.inputs.environment }}-current
