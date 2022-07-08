@@ -20,8 +20,7 @@ import org.springframework.beans.factory.annotation.Value;
 import java.util.Map;
 
 import static api.app.astrodao.com.core.Constants.Variables.EMPTY_STRING;
-import static java.net.HttpURLConnection.HTTP_FORBIDDEN;
-import static java.net.HttpURLConnection.HTTP_OK;
+import static java.net.HttpURLConnection.*;
 import static org.hamcrest.Matchers.equalTo;
 
 @Tags({@Tag("all"), @Tag("accountNotificationsIdApiTests")})
@@ -271,5 +270,21 @@ public class AccountNotificationsIdApiTests extends BaseTest {
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
 				      "message", equalTo("Authorization header payload is invalid"),
 				      "error", equalTo("Forbidden"));
+	}
+
+	@ParameterizedTest
+	@Severity(SeverityLevel.NORMAL)
+	@Story("Get HTTP 400 for account notification with not valid id")
+	@DisplayName("Get HTTP 400 for account notification with not valid id")
+	@CsvSource({"invalidId", "2212332141", "-1", "0",
+			"*", "null", "autotest-dao-1.sputnikv2.testnet-1", "another-magic.near",
+			"test-dao-1641395769436.sputnikv2.testnet-3184", "test-dao-1641395769436.sputnikv2.testnet", "testdao2.testnet",
+			"testdao2.testnet-fgflgxxo7okrakcfwhxagzfcxdigua5nqcktvsqnnt3w-vote"})
+	void getHttp400ForAccountNotificationId(String id) {
+		notificationsApiSteps.patchAccountNotificationsById(accountToken, id, true, true, true).then()
+				.statusCode(HTTP_BAD_REQUEST)
+				.body("statusCode", equalTo(HTTP_BAD_REQUEST),
+				      "message", equalTo("Invalid Account Notification ID"),
+				      "error", equalTo("Bad Request"));
 	}
 }
