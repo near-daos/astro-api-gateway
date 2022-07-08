@@ -55,9 +55,9 @@ public class NotificationsIdApiTests extends BaseTest {
 		notificationsApiSteps.assertDtoValue(notifications, Notification::getSignerId, testAccountId, "signer");
 		notificationsApiSteps.assertDtoValue(notifications, notification1 -> notification1.getType().getValue(), type, "type");
 		notificationsApiSteps.assertDtoValue(notifications, notification1 -> notification1.getStatus().getValue(), status, "status");
-		notificationsApiSteps.assertDtoHasValue(notifications, notification -> notification.getMetadata() != null, "notification/metadata");
-		notificationsApiSteps.assertDtoHasValue(notifications.getDao(), dao -> dao.getMetadata() != null, "dao/metadata");
-		notificationsApiSteps.assertDtoHasValue(notifications.getDao(), dao -> dao.getPolicy().getRoles() != null, "dao/policy/roles");
+		notificationsApiSteps.assertDtoHasValue(notifications, Notification::getMetadata, "notification/metadata");
+		notificationsApiSteps.assertDtoHasValue(notifications.getDao(), Dao::getMetadata, "dao/metadata");
+		notificationsApiSteps.assertDtoHasValue(notifications.getDao(), dao -> dao.getPolicy().getRoles(), "dao/policy/roles");
 		notificationsApiSteps.assertDtoValue(notifications.getDao(), Dao::getId, daoId, "dao/id");
 		notificationsApiSteps.assertCollectionsAreEqual(notifications.getDao().getAccountIds(), List.of(testAccountId));
 		notificationsApiSteps.assertDtoValue(notifications.getDao().getPolicy(), Policy::getDaoId, daoId, "dao/policy/id");
