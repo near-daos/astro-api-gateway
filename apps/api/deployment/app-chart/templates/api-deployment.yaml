@@ -80,7 +80,7 @@ spec:
           - secretRef:
               name: db-secret
           - secretRef:
-              name: near-indexer-db-secret
+              name: astro-lake-indexer-db-secret-for-be
           - secretRef:
               name: redis-secret
           resources:
