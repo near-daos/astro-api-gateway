@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
-import PromisePool from '@supercharge/promise-pool';
 import { NEAR_INDEXER_DB_CONNECTION } from '@sputnik-v2/common';
 import { TokenUpdateDto } from '@sputnik-v2/token';
 import {
@@ -100,16 +99,6 @@ export class NearIndexerService {
     ).getOne();
   }
 
-  async findAccountChangesByContractName(
-    contractName: string,
-    fromBlockTimestamp?: number,
-  ): Promise<AccountChange[]> {
-    return this.buildAccountChangeQuery(
-      contractName,
-      fromBlockTimestamp,
-    ).getMany();
-  }
-
   /** Pass either single accountId or array of accountIds */
   async findLastTransactionByAccountIds(
     accountIds: string | string[],
@@ -136,97 +125,28 @@ export class NearIndexerService {
       .getMany();
   }
 
-  async findNFTActionReceiptsByReceiverAccountIds(
-    receiverAccountIds: string[],
-    fromBlockTimestamp?: number,
-  ): Promise<ActionReceiptAction[]> {
-    const { results: actionReceipts } = await PromisePool.withConcurrency(5)
-      .for(receiverAccountIds)
-      .process(async (id) => {
-        let queryBuilder = this.actionReceiptActionRepository
-          .createQueryBuilder('action_receipt_action')
-          .leftJoinAndSelect(
-            'action_receipt_action.transaction',
-            'transactions',
-          )
-          .where("action_kind = 'FUNCTION_CALL'")
-          .andWhere("action_receipt_action.args->>'args_json' is not null")
-          .andWhere(
-            "action_receipt_action.args->'args_json'->>'receiver_id' = :id",
-            {
-              id,
-            },
-          )
-          .andWhere("args->>'method_name' like 'nft_%'");
-
-        queryBuilder = fromBlockTimestamp
-          ? queryBuilder.andWhere('transaction.block_timestamp >= :from', {
-              from: fromBlockTimestamp,
-            })
-          : queryBuilder;
-
-        return await queryBuilder.getMany();
-      });
-
-    return actionReceipts.reduce((acc, prop) => acc.concat(prop), []);
-  }
-
-  async findTransaction(transactionHash: string): Promise<Transaction> {
-    return this.transactionRepository.findOne(transactionHash);
-  }
-
-  async findReceiptByTransactionHashAndPredecessor(
-    transactionHash: string,
-    predecessorContractName: string,
-  ): Promise<Receipt> {
-    //TODO: Revise a possibility of multiple receipts with the query below
+  async findReceipts(fromBlockTimestamp: number): Promise<Receipt[]> {
     return this.receiptRepository
-      .createQueryBuilder('receipt')
-      .leftJoinAndSelect('receipt.originatedFromTransaction', 'transactions')
-      .where('receipt.originated_from_transaction_hash = :transactionHash', {
-        transactionHash,
+      .createQueryBuilder('receipts')
+      .leftJoinAndSelect('receipts.originatedFromTransaction', 'transactions')
+      .leftJoinAndSelect(
+        'transactions.transactionAction',
+        'transaction_actions',
+      )
+      .leftJoinAndSelect('receipts.receiptActions', 'action_receipt_actions')
+      .leftJoin(
+        'execution_outcomes',
+        'execution_outcomes',
+        'execution_outcomes.receipt_id = receipts.receipt_id',
+      )
+      .where('execution_outcomes.status != :failStatus', {
+        failStatus: ExecutionOutcomeStatus.Failure,
       })
-      .andWhere('receipt.predecessor_account_id like :id', {
-        id: buildLikeContractName(predecessorContractName),
+      .andWhere('transactions.block_timestamp > :from', {
+        from: fromBlockTimestamp,
       })
-      .getOne();
-  }
-
-  async findAccountByReceiptId(receiptId: string): Promise<Account> {
-    return this.accountRepository
-      .createQueryBuilder('account')
-      .where('account.created_by_receipt_id = :receiptId', { receiptId })
-      .getOne();
-  }
-
-  async findReceiptsByReceiverAccountIds(
-    receiverAccountIds: string[],
-    fromBlockTimestamp?: number,
-  ): Promise<Receipt[]> {
-    let queryBuilder = this.receiptRepository
-      .createQueryBuilder('receipt')
-      .leftJoinAndSelect('receipt.receiptActions', 'action_receipt_actions')
-      .where('receipt.receiver_account_id IN (:...ids)', {
-        ids: receiverAccountIds,
-      });
-
-    queryBuilder = fromBlockTimestamp
-      ? queryBuilder.andWhere('receipt.included_in_block_timestamp >= :from', {
-          from: fromBlockTimestamp,
-        })
-      : queryBuilder;
-
-    return queryBuilder.getMany();
-  }
-
-  async findAccountChangeActionsByContractName(
-    contractName: string,
-    fromBlockTimestamp?: number,
-  ): Promise<AccountChange[]> {
-    return this.buildAccountChangeActionQuery(
-      contractName,
-      fromBlockTimestamp,
-    ).getMany();
+      .orderBy('transactions.block_timestamp', 'ASC')
+      .getMany();
   }
 
   // Account Likely Tokens - taken from NEAR Helper Indexer middleware
@@ -534,36 +454,5 @@ export class NearIndexerService {
       : queryBuilder;
 
     return queryBuilder;
-  }
-
-  private buildAccountChangeActionQuery(
-    contractName: string,
-    fromBlockTimestamp?: number,
-  ): SelectQueryBuilder<AccountChange> {
-    return this.accountChangeRepository
-      .createQueryBuilder('account_change')
-      .leftJoinAndSelect('account_change.causedByReceipt', 'receipts')
-      .leftJoinAndSelect('receipts.originatedFromTransaction', 'transactions')
-      .leftJoinAndSelect(
-        'transactions.transactionAction',
-        'transaction_actions',
-      )
-      .leftJoinAndSelect('receipts.receiptActions', 'action_receipt_actions')
-      .leftJoin(
-        'execution_outcomes',
-        'execution_outcomes',
-        'execution_outcomes.receipt_id = receipts.receipt_id',
-      )
-      .where('account_change.affected_account_id like :id', {
-        // Need to find all DAOs + factory contract changes
-        id: `%${contractName}`,
-      })
-      .andWhere('execution_outcomes.status != :failStatus', {
-        failStatus: ExecutionOutcomeStatus.Failure,
-      })
-      .andWhere('account_change.changed_in_block_timestamp > :from', {
-        from: fromBlockTimestamp,
-      })
-      .orderBy('transactions.block_timestamp', 'ASC');
   }
 }

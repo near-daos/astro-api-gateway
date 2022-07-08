@@ -30,6 +30,7 @@ module.exports = {
     'libs/subscription/src/entities/**/*.ts',
     'libs/token/src/entities/**/*.ts',
     'libs/otp/src/entities/**/*.ts',
+    'libs/transaction-handler/src/entities/**/*.ts',
   ],
   migrations: ['libs/orm-migrations/src/**/*.ts'],
   cli: {

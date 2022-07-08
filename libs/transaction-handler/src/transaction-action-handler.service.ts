@@ -35,6 +35,7 @@ import {
   castDoneBounty,
   ContractHandler,
   TransactionAction,
+  TransactionHandlerStatus,
   VoteAction,
 } from './types';
 
@@ -82,9 +83,8 @@ export class TransactionActionHandlerService {
 
   async handleTransactionActions(
     actions: TransactionAction[],
-  ): Promise<string[]> {
+  ): Promise<{ handledTxHashes: string[]; success: boolean }> {
     const handledTxHashes = [];
-
     // Actions are handled one by one to keep order of transactions
     for (const action of actions) {
       try {
@@ -95,28 +95,21 @@ export class TransactionActionHandlerService {
           `Failed to handle transaction ${action.transactionHash} with error: ${error}`,
         );
 
-        // If some action failed stop handling
-        return handledTxHashes;
+        // If some action failed stop handling and remove failed transaction hash
+        return {
+          handledTxHashes: handledTxHashes.filter(
+            (transactionHash) => action.transactionHash === transactionHash,
+          ),
+          success: false,
+        };
       }
     }
 
-    return handledTxHashes;
+    return { handledTxHashes, success: true };
   }
 
   async handleTransactionAction(action: TransactionAction) {
     this.logger.log(`Handling transaction: ${action.transactionHash}`);
-
-    const tx = await this.transactionRepository.findOne({
-      transactionHash: action.transactionHash,
-    });
-
-    if (tx) {
-      this.logger.log(
-        `Skip transaction ${action.transactionHash}. Already handled`,
-      );
-      return;
-    }
-
     const contractHandlers = this.getContractHandlers(action.receiverId);
 
     const { errors } = await PromisePool.for(contractHandlers).process(
@@ -211,7 +204,7 @@ export class TransactionActionHandlerService {
         proposalKind.receiverId,
         timestamp,
       );
-      proposal.bountyClaimId = bountyClaim.id;
+      proposal.bountyClaimId = bountyClaim?.id;
     }
 
     this.logger.log(`Storing Proposal: ${proposal.id} due to transaction`);

@@ -43,7 +43,7 @@ spec:
           - secretRef:
               name: redis-secret
           - secretRef:
-              name: near-indexer-db-secret
+              name: astro-lake-indexer-db-secret-for-be
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}

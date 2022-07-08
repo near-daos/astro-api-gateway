@@ -31,6 +31,8 @@ export const EVENT_DRAFT_DELETE_COMMENT = 'sputnik_dao_draft_delete_comment';
 export const EVENT_AGGREGATOR_SERVICE = 'EVENT_AGGREGATOR_SERVICE';
 export const EVENT_AGGREGATOR_QUEUE_NAME = 'sputnik-events-aggregator';
 
+export const AGGREGATOR_HANDLER_STATE_ID = 'aggregator';
+
 export const DB_FOREIGN_KEY_VIOLATION = '23503';
 
 export const PROPOSAL_DESC_SEPARATOR = '$$$$';

@@ -4,20 +4,20 @@ import { SchedulerRegistry } from '@nestjs/schedule';
 import { CronJob } from 'cron';
 import PromisePool from '@supercharge/promise-pool';
 
-import {
-  Account,
-  NearIndexerService,
-  Transaction,
-} from '@sputnik-v2/near-indexer';
+import { Account, NearIndexerService } from '@sputnik-v2/near-indexer';
 import { TransactionService } from '@sputnik-v2/transaction';
 import { DaoService } from '@sputnik-v2/dao';
-import { TransactionHandlerService } from '@sputnik-v2/transaction-handler';
+import {
+  TransactionHandlerService,
+  TransactionHandlerStatus,
+} from '@sputnik-v2/transaction-handler';
 import { CacheService } from '@sputnik-v2/cache';
 import {
   NFTTokenService,
   NFTTokenUpdateDto,
   TokenService,
 } from '@sputnik-v2/token';
+import { AGGREGATOR_HANDLER_STATE_ID } from '@sputnik-v2/common';
 
 import { DaoAggregatorService } from './dao-aggregator/dao-aggregator.service';
 import { ProposalAggregatorService } from './proposal-aggregator/proposal-aggregator.service';
@@ -337,54 +337,57 @@ export class AggregatorService {
 
     await this.proposalAggregatorService.updateExpiredProposals();
 
-    const { contractName } = this.configService.get('near');
+    const handlerState = await this.transactionHandlerService.getState(
+      AGGREGATOR_HANDLER_STATE_ID,
+    );
+    const receipts = await this.nearIndexerService.findReceipts(
+      handlerState?.lastBlockTimestamp,
+    );
 
-    const lastTx = await this.transactionService.lastTransaction();
-    const accountChangeActions =
-      await this.nearIndexerService.findAccountChangeActionsByContractName(
-        contractName,
-        lastTx?.blockTimestamp,
-      );
-
-    // Filter account changes made after last transaction
-    const newAccountChanges = accountChangeActions.filter((ac, i) => {
-      const { transactionHash, blockTimestamp } =
-        ac.causedByReceipt.originatedFromTransaction;
-      const isAfterLastTx =
-        !lastTx?.blockTimestamp || blockTimestamp > lastTx?.blockTimestamp;
-      return (
-        isAfterLastTx &&
-        i ===
-          accountChangeActions.findIndex(
-            (ac) =>
-              ac.causedByReceipt.originatedFromTransaction.transactionHash ===
-              transactionHash,
-          )
-      );
-    });
-
-    if (newAccountChanges.length === 0) {
+    if (receipts.length === 0) {
       this.logger.log('Skip DAO Aggregation. No changes found.');
       this.state.stopAggregation('dao');
       return;
     }
 
-    this.logger.log(`Found transactions: ${newAccountChanges.length}`);
-    const transactions =
-      await this.transactionHandlerService.handleNearIndexerAccountChanges(
-        newAccountChanges,
+    await this.transactionHandlerService.saveState(
+      AGGREGATOR_HANDLER_STATE_ID,
+      TransactionHandlerStatus.InProgress,
+    );
+
+    this.logger.log(`Found new receipts: ${receipts.length}`);
+    const { transactions, success } =
+      await this.transactionHandlerService.handleNearReceipts(receipts);
+
+    if (!transactions.length) {
+      this.state.stopAggregation('dao');
+      this.logger.warn(
+        `Aggregation failed on receipt ${receipts[0].receiptId}`,
       );
+      await this.transactionHandlerService.saveState(
+        AGGREGATOR_HANDLER_STATE_ID,
+        TransactionHandlerStatus.Failed,
+      );
+      return;
+    }
 
     this.logger.log('Storing aggregated Transactions...');
     await this.transactionService.createMultiple(transactions);
 
-    this.logger.log(
-      `Successfully aggregated transactions: ${transactions.length}/${newAccountChanges.length}`,
+    this.logger.log('Updating transaction handler state...');
+    await this.transactionHandlerService.saveState(
+      AGGREGATOR_HANDLER_STATE_ID,
+      success
+        ? TransactionHandlerStatus.Success
+        : TransactionHandlerStatus.Failed,
+      transactions[transactions.length - 1],
     );
-    // TODO: https://app.clickup.com/t/1ty89nk
-    await this.cacheService.clearCache();
 
     this.state.stopAggregation('dao');
+    this.logger.log(
+      `Successfully aggregated transactions: ${transactions.length}`,
+    );
+    await this.cacheService.clearCache();
   }
 
   // Aggregate new transactions for each dao
@@ -401,7 +404,12 @@ export class AggregatorService {
 
     await this.tokenAggregatorService.aggregateTokenPrices();
 
-    const tx = await this.transactionService.lastTransaction();
+    const handlerState = await this.transactionHandlerService.getState(
+      AGGREGATOR_HANDLER_STATE_ID,
+    );
+    const lastTx = await this.transactionService.lastTransaction();
+    const blockTimestamp =
+      handlerState?.lastBlockTimestamp || lastTx.blockTimestamp;
     const { contractName } = this.configService.get('near');
     const daoAccounts =
       await this.nearIndexerService.findAccountsByContractName(contractName);
@@ -409,19 +417,22 @@ export class AggregatorService {
     await PromisePool.withConcurrency(5)
       .for(daoAccounts)
       .process(
-        async (daoAccount) => await this.aggregateDaoByAccount(daoAccount, tx),
+        async (daoAccount) =>
+          await this.aggregateDaoByAccount(daoAccount, blockTimestamp),
       );
 
     await PromisePool.withConcurrency(5)
       .for(daoAccounts)
       .process(
-        async (daoAccount) => await this.aggregateDaoTokens(daoAccount, tx),
+        async (daoAccount) =>
+          await this.aggregateDaoTokens(daoAccount, blockTimestamp),
       );
 
     await PromisePool.withConcurrency(5)
       .for(daoAccounts)
       .process(
-        async (daoAccount) => await this.aggregateDaoNFTs(daoAccount, tx),
+        async (daoAccount) =>
+          await this.aggregateDaoNFTs(daoAccount, blockTimestamp),
       );
 
     this.state.stopAggregations([
@@ -434,13 +445,13 @@ export class AggregatorService {
     this.logger.log(`Finished all DAO aggregation`);
   }
 
-  public async aggregateDaoByAccount(account: Account, tx?: Transaction) {
+  public async aggregateDaoByAccount(account: Account, blockTimestamp: number) {
     this.logger.log(`Start aggregation for DAO: ${account.accountId}`);
 
     const daoTransactions =
       await this.nearIndexerService.findTransactionsByAccountIds(
         account.accountId,
-        tx?.blockTimestamp,
+        blockTimestamp,
       );
     const daoById = await this.daoService.findOne(account.accountId);
 
@@ -448,7 +459,7 @@ export class AggregatorService {
       daoById &&
       (daoTransactions.length === 0 ||
         daoTransactions[daoTransactions.length - 1].blockTimestamp ===
-          tx?.blockTimestamp)
+          blockTimestamp)
     ) {
       this.logger.log(
         `Skip aggregation for DAO: ${account.accountId}. No new transactions found`,
@@ -474,6 +485,12 @@ export class AggregatorService {
       this.logger.log('Storing aggregated Transactions...');
       await this.transactionService.createMultiple(daoTransactions);
 
+      await this.transactionHandlerService.saveState(
+        AGGREGATOR_HANDLER_STATE_ID,
+        TransactionHandlerStatus.Success,
+        daoTransactions[daoTransactions.length - 1],
+      );
+
       this.logger.log(`Successfully aggregated DAO: ${account.accountId}`);
     } catch (error) {
       this.logger.error(
@@ -482,7 +499,7 @@ export class AggregatorService {
     }
   }
 
-  public async aggregateDaoTokens(account: Account, tx?: Transaction) {
+  public async aggregateDaoTokens(account: Account, blockTimestamp: number) {
     this.logger.log(`Start aggregation tokens for DAO: ${account.accountId}`);
 
     try {
@@ -500,7 +517,7 @@ export class AggregatorService {
       await this.tokenAggregatorService.aggregateDaoTokens(
         account.accountId,
         daoTokenIds,
-        tx?.blockTimestamp,
+        blockTimestamp,
       );
 
       this.logger.log(
@@ -513,7 +530,7 @@ export class AggregatorService {
     }
   }
 
-  public async aggregateDaoNFTs(account: Account, tx?: Transaction) {
+  public async aggregateDaoNFTs(account: Account, blockTimestamp: number) {
     this.logger.log(`Start aggregation NFTs for DAO: ${account.accountId}`);
 
     try {
@@ -533,7 +550,7 @@ export class AggregatorService {
       await this.nftAggregatorService.aggregateDaoNFTs(
         account.accountId,
         nftIds,
-        tx?.blockTimestamp,
+        blockTimestamp,
       );
 
       this.logger.log(
