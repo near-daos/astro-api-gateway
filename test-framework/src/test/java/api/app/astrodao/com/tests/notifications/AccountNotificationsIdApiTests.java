@@ -164,11 +164,11 @@ public class AccountNotificationsIdApiTests extends BaseTest {
 
 	@ParameterizedTest
 	@Severity(SeverityLevel.NORMAL)
-	@Story("Get HTTP 403 for notifications id endpoint with null and invalid 'accountId' parameter")
-	@DisplayName("Get HTTP 403 for notifications id endpoint with null and invalid 'accountId' parameter")
+	@Story("Get HTTP 403 for account notifications id endpoint with null and invalid 'accountId' parameter")
+	@DisplayName("Get HTTP 403 for account notifications id endpoint with null and invalid 'accountId' parameter")
 	@NullSource
 	@CsvSource({"astro-automation.testnet", "another-magic.near", "test-dao-1641395769436.sputnikv2.testnet"})
-	void getHttp403ForNotificationsIdEndpointWithNullAndInvalidAccountIdParam(String accountId) {
+	void getHttp403ForAccountNotificationsIdEndpointWithNullAndInvalidAccountIdParam(String accountId) {
 		String authToken = Base64Utils.encodeAuthToken(accountId, accountPublicKey, accountSignature);
 		String errorMessage = String.format("Account %s identity is invalid - public key", accountId);
 
@@ -182,9 +182,9 @@ public class AccountNotificationsIdApiTests extends BaseTest {
 
 	@Test
 	@Severity(SeverityLevel.NORMAL)
-	@Story("Get HTTP 403 for notifications id endpoint with empty 'accountId' parameter")
-	@DisplayName("Get HTTP 403 for read all account notifications endpoint with empty 'accountId' parameter")
-	void getHttp403ForNotificationsIdEndpointWithEmptyAccountIdParam() {
+	@Story("Get HTTP 403 for account notifications id endpoint with empty 'accountId' parameter")
+	@DisplayName("Get HTTP 403 for account notifications id endpoint with empty 'accountId' parameter")
+	void getHttp403ForAccountNotificationsIdEndpointWithEmptyAccountIdParam() {
 		String authToken = Base64Utils.encodeAuthToken(EMPTY_STRING, accountPublicKey, accountSignature);
 
 		String id = "testdao2.testnet-fgflgxxo7okrakcfwhxagzfcxdigua5nqcktvsqnnt3w-changeconfig";
@@ -197,11 +197,11 @@ public class AccountNotificationsIdApiTests extends BaseTest {
 
 	@ParameterizedTest
 	@Severity(SeverityLevel.NORMAL)
-	@Story("Get HTTP 403 for notifications id endpoint with null and invalid 'publicKey' parameter")
-	@DisplayName("Get HTTP 403 for notifications id endpoint with null and invalid 'publicKey' parameter")
+	@Story("Get HTTP 403 for account notifications id endpoint with null and invalid 'publicKey' parameter")
+	@DisplayName("Get HTTP 403 for account notifications id endpoint with null and invalid 'publicKey' parameter")
 	@NullSource
 	@CsvSource({"invalidPublicKey"})
-	void getHttp403ForNotificationsIdEndpointWithNullAndInvalidPublicKeyParam(String publicKey) {
+	void getHttp403ForAccountNotificationsIdEndpointWithNullAndInvalidPublicKeyParam(String publicKey) {
 		String authToken = Base64Utils.encodeAuthToken(accountId, publicKey, accountSignature);
 
 		String id = "testdao2.testnet-fgflgxxo7okrakcfwhxagzfcxdigua5nqcktvsqnnt3w-changeconfig";
@@ -214,9 +214,9 @@ public class AccountNotificationsIdApiTests extends BaseTest {
 
 	@Test
 	@Severity(SeverityLevel.NORMAL)
-	@Story("Get HTTP 403 for notifications id endpoint with empty 'publicKey' parameter")
-	@DisplayName("Get HTTP 403 for notifications id endpoint with empty 'publicKey' parameter")
-	void getHttp403ForNotificationsIdEndpointWithEmptyPublicKeyParam() {
+	@Story("Get HTTP 403 for account notifications id endpoint with empty 'publicKey' parameter")
+	@DisplayName("Get HTTP 403 for account notifications id endpoint with empty 'publicKey' parameter")
+	void getHttp403ForAccountNotificationsIdEndpointWithEmptyPublicKeyParam() {
 		String authToken = Base64Utils.encodeAuthToken(accountId, EMPTY_STRING, accountSignature);
 
 		String id = "testdao2.testnet-fgflgxxo7okrakcfwhxagzfcxdigua5nqcktvsqnnt3w-changeconfig";
@@ -229,9 +229,9 @@ public class AccountNotificationsIdApiTests extends BaseTest {
 
 	@Test
 	@Severity(SeverityLevel.NORMAL)
-	@Story("Get HTTP 403 for notifications id endpoint with invalid 'signature' parameter")
-	@DisplayName("Get HTTP 403 for notifications id endpoint with invalid 'signature' parameter")
-	void getHttp403ForNotificationsIdEndpointWithInvalidSignatureParam() {
+	@Story("Get HTTP 403 for account notifications id endpoint with invalid 'signature' parameter")
+	@DisplayName("Get HTTP 403 for account notifications id endpoint with invalid 'signature' parameter")
+	void getHttp403ForAccountNotificationsIdEndpointWithInvalidSignatureParam() {
 		String invalidSignature = accountSignature.substring(10);
 		String authToken = Base64Utils.encodeAuthToken(accountId, accountPublicKey, invalidSignature);
 
@@ -245,9 +245,9 @@ public class AccountNotificationsIdApiTests extends BaseTest {
 
 	@Test
 	@Severity(SeverityLevel.NORMAL)
-	@Story("Get HTTP 403 for notifications id endpoint with null 'signature' parameter")
-	@DisplayName("Get HTTP 403 for notifications id endpoint with null 'signature' parameter")
-	void getHttp403ForNotificationsIdEndpointWithNullSignatureParam() {
+	@Story("Get HTTP 403 for account notifications id endpoint with null 'signature' parameter")
+	@DisplayName("Get HTTP 403 for account notifications id endpoint with null 'signature' parameter")
+	void getHttp403ForAccountNotificationsIdEndpointWithNullSignatureParam() {
 		String authToken = Base64Utils.encodeAuthToken(accountId, accountPublicKey, null);
 
 		String id = "testdao2.testnet-fgflgxxo7okrakcfwhxagzfcxdigua5nqcktvsqnnt3w-changeconfig";
@@ -260,9 +260,9 @@ public class AccountNotificationsIdApiTests extends BaseTest {
 
 	@Test
 	@Severity(SeverityLevel.NORMAL)
-	@Story("Get HTTP 403 for notifications id endpoint with empty 'signature' parameter")
-	@DisplayName("Get HTTP 403 for notifications id endpoint with empty 'signature' parameter")
-	void getHttp403ForNotificationsIdEndpointWithEmptySignatureParam() {
+	@Story("Get HTTP 403 for account notifications id endpoint with empty 'signature' parameter")
+	@DisplayName("Get HTTP 403 for account notifications id endpoint with empty 'signature' parameter")
+	void getHttp403ForAccountNotificationsIdEndpointWithEmptySignatureParam() {
 		String authToken = Base64Utils.encodeAuthToken(accountId, accountPublicKey, EMPTY_STRING);
 
 		String id = "testdao2.testnet-fgflgxxo7okrakcfwhxagzfcxdigua5nqcktvsqnnt3w-changeconfig";
