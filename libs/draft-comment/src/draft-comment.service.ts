@@ -261,7 +261,16 @@ export class DraftCommentService {
       throw new ForbiddenException('Account is not the author or council');
     }
 
-    await this.draftCommentRepository.delete(draftComment);
+    const replies = await this.draftCommentRepository.find({
+      where: { replyTo: id },
+      select: ['id'],
+    });
+
+    // Remove comment and all the replies
+    await this.draftCommentRepository.delete([
+      draftComment.id,
+      ...replies.map(({ id }) => id),
+    ]);
 
     if (draftComment.contextType === DraftCommentContextType.DraftProposal) {
       await this.draftProposalService.updateReplies(

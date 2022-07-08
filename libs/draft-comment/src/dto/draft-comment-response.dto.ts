@@ -34,6 +34,9 @@ export class DraftCommentResponse {
 
   @ApiProperty()
   createdAt: Date;
+
+  @ApiProperty()
+  updatedAt: Date;
 }
 
 export function castDraftCommentResponse(
@@ -54,5 +57,6 @@ export function castDraftCommentResponse(
     likeAccounts: draftComment.likeAccounts,
     dislikeAccounts: draftComment.dislikeAccounts,
     createdAt: draftComment.createdAt,
+    updatedAt: draftComment.updatedAt,
   };
 }
