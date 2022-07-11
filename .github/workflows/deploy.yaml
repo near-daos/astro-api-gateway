@@ -63,7 +63,7 @@ jobs:
         cat ".github/env.common" | grep -E -v '^\ *#' >>$GITHUB_ENV
         cat ".github/env.${{ github.event.inputs.environment }}" | grep -E -v '^\ *#' >>$GITHUB_ENV
     - name: Helm Deploy
-      uses: uses: ./.github/actions/deploy
+      uses: uses: near-daos/github-actions/deploy
       with:
         name: sputnik-v2-${{ matrix.app }}
         namespace: ${{ env.DEPLOYMENT_NAMESPACE }}

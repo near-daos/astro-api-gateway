@@ -40,7 +40,7 @@ jobs:
         echo "::set-output name=tag::$TAG"
 
     - name: Helm Deploy
-      uses: ./.github/actions/deploy
+      uses: near-daos/github-actions/deploy
       with:
         name: ${{ matrix.app }}
         namespace: ${{ env.DEPLOYMENT_NAMESPACE }}
