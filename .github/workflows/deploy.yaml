@@ -74,12 +74,12 @@ jobs:
       uses: tmknom/retag-ecr-action@v1
       with:
         repository-name: api
-        source-tag: ${{ matrix-app }}-${{ github.event.inputs.environment }}-current
-        destination-tag: ${{ matrix-app }}-${{ github.event.inputs.environment }}-previous
+        source-tag: ${{ matrix.app }}-${{ github.event.inputs.environment }}-current
+        destination-tag: ${{ matrix.app }}-${{ github.event.inputs.environment }}-previous
 
     - name: Tag Current Image
       uses: tmknom/retag-ecr-action@v1
       with:
         repository-name: api
         source-tag: ${{ github.event.inputs.tag }}
-        destination-tag: ${{ matrix-app }}-${{ github.event.inputs.environment }}-current
+        destination-tag: ${{ matrix.app }}-${{ github.event.inputs.environment }}-current
