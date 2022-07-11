@@ -1,32 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
 import camelcaseKeys from 'camelcase-keys';
-
-export enum WeightKind {
-  TokenWeight = 'TokenWeight',
-  RoleWeight = 'RoleWeight',
-}
-
-export enum WeightOrRatioType {
-  Weight = 'Weight',
-  Ratio = 'Ratio',
-}
-
-export class VotePolicy {
-  @ApiProperty({ enum: Object.keys(WeightKind) })
-  weightKind: WeightKind;
-
-  @ApiProperty()
-  quorum: number;
-
-  @ApiProperty({ enum: Object.keys(WeightOrRatioType) })
-  kind: WeightOrRatioType;
-
-  @ApiProperty()
-  weight?: number;
-
-  @ApiProperty()
-  ratio?: number[];
-}
+import { VotePolicy, WeightOrRatioType } from '@sputnik-v2/dao/types';
 
 export function castVotePolicy(policy): VotePolicy | null {
   if (!policy) {

@@ -1,8 +1,8 @@
 import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
 import { Column, Entity, ManyToOne, PrimaryColumn } from 'typeorm';
 import { BaseEntity } from '@sputnik-v2/common';
-import { VotePolicy } from '@sputnik-v2/sputnikdao/types/vote-policy';
 
+import { VotePolicy } from '../types';
 import { Policy } from './policy.entity';
 
 export enum RoleKindType {

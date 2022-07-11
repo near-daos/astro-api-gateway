@@ -1,19 +1,10 @@
 import camelcaseKeys from 'camelcase-keys';
 import { RoleKindType } from '@sputnik-v2/dao/entities';
+import { RolePermission } from '@sputnik-v2/dao/types';
 
-import { castVotePolicy, VotePolicy } from './vote-policy';
+import { castVotePolicy } from './vote-policy';
 
-export type RolePermissionDto = {
-  id: string;
-  name: string;
-  kind: RoleKindType;
-  balance: number;
-  accountIds: string[];
-  permissions: string[];
-  votePolicy: { [key: string]: VotePolicy };
-};
-
-export function castRolePermission(permission): RolePermissionDto | null {
+export function castRolePermission(permission): RolePermission | null {
   if (!permission) {
     return null;
   }

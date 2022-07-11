@@ -35,7 +35,6 @@ import {
   castDoneBounty,
   ContractHandler,
   TransactionAction,
-  TransactionHandlerStatus,
   VoteAction,
 } from './types';
 

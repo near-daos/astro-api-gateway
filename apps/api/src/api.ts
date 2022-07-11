@@ -4,6 +4,7 @@ import {
   ClassSerializerInterceptor,
   Logger,
   ValidationPipe,
+  VersioningType,
 } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { Transport } from '@nestjs/microservices';
@@ -23,7 +24,11 @@ export default class Api {
       bufferLogs: true,
     });
     app.enableCors();
-    app.setGlobalPrefix('/api/v1');
+    app.enableVersioning({
+      defaultVersion: '1',
+      type: VersioningType.URI,
+    });
+    app.setGlobalPrefix('/api');
 
     app.useLogger(app.get(PinoLogger));
 

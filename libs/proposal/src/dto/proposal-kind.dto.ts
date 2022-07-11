@@ -1,4 +1,4 @@
-import { PolicyDto, DaoConfig } from '@sputnik-v2/dao';
+import { PolicyDtoV1, DaoConfig } from '@sputnik-v2/dao';
 import { ActionCall } from '@sputnik-v2/sputnikdao/types';
 import { Bounty } from '@sputnik-v2/bounty/entities';
 
@@ -27,7 +27,7 @@ export type ProposalKindChangeConfig = {
 /// Change the full policy.
 export type ProposalKindChangePolicy = {
   type: ProposalType.ChangePolicy;
-  policy: PolicyDto | string[];
+  policy: PolicyDtoV1 | string[];
 };
 
 /// Add member to given role in the policy. This is short cut to updating the whole policy.

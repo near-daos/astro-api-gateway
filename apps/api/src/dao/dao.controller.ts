@@ -6,6 +6,7 @@ import {
   UseFilters,
   UseGuards,
   UseInterceptors,
+  Version,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -30,7 +31,9 @@ import {
   AccountDaoResponse,
   Dao,
   DaoMemberVote,
-  DaoResponse,
+  DaoPageResponse,
+  DaoResponseV1,
+  DaoResponseV2,
   DaoService,
 } from '@sputnik-v2/dao';
 import { DelegationDto } from '@sputnik-v2/dao/dto/delegation.dto';
@@ -46,7 +49,7 @@ export class DaoController {
   @ApiResponse({
     status: 200,
     description: 'List of aggregated Sputnik DAOs',
-    type: DaoResponse,
+    type: DaoPageResponse,
   })
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
@@ -57,7 +60,7 @@ export class DaoController {
   @Get('/')
   async daos(
     @ParsedRequest() query: CrudRequest,
-  ): Promise<Dao[] | DaoResponse> {
+  ): Promise<Dao[] | DaoPageResponse> {
     return await this.daoService.getMany(query);
   }
 
@@ -101,14 +104,31 @@ export class DaoController {
   @ApiBadRequestResponse({ description: 'Invalid Dao ID' })
   @UseInterceptors(HttpCacheInterceptor)
   @Get('/:id')
-  async daoById(@Param() { id }: FindOneParams): Promise<Dao> {
-    const dao: Dao = await this.daoService.findById(id);
+  async daoById(@Param() { id }: FindOneParams): Promise<DaoResponseV1> {
+    const dao = await this.daoService.findById(id);
 
     if (!dao) {
       throw new BadRequestException('Invalid Dao ID');
     }
 
     return dao;
+  }
+
+  @ApiParam({
+    name: 'id',
+    type: String,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Sputnik DAO',
+    type: Dao,
+  })
+  @ApiBadRequestResponse({ description: 'Invalid Dao ID' })
+  @UseInterceptors(HttpCacheInterceptor)
+  @Version('2')
+  @Get('/:id')
+  async daoByIdV2(@Param() { id }: FindOneParams): Promise<DaoResponseV2> {
+    return this.daoService.findByIdV2(id);
   }
 
   @ApiParam({
