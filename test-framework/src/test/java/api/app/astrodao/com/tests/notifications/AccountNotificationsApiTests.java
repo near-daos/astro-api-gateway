@@ -130,4 +130,48 @@ public class AccountNotificationsApiTests extends BaseTest {
 		notificationsApiSteps.assertOffsetDateTimesAreSortedCorrectly(updatedAt, Comparator.naturalOrder(),
 		                                                              "Account notifications should be sorted by 'updatedAt field in ASC order");
 	}
+
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("User should be able to get list of account notifications with query param: [sort, fields]")
+	@DisplayName("User should be able to get list of account notifications with query param: [sort, fields]")
+	void getListOfAccountNotificationsWithSortFieldsParams() {
+		Map<String, Object> queryParams = Map.of(
+				"sort", "id,DESC",
+				"fields", "createdAt,id,notification"
+		);
+
+		AccountNotificationResponse accountNotificationResponse = notificationsApiSteps.getAccountNotifications(queryParams).then()
+				.statusCode(HTTP_OK)
+				.extract()
+				.as(AccountNotificationResponse.class);
+
+		notificationsApiSteps.assertCollectionElementsHasValue(accountNotificationResponse.getData(), accountNotification -> accountNotification.getCreatedAt() != null, "data/createdAt");
+		notificationsApiSteps.assertCollectionElementsHasValue(accountNotificationResponse.getData(), accountNotification -> accountNotification.getId() != null, "data/id");
+		notificationsApiSteps.assertCollectionElementsHasNoValue(accountNotificationResponse.getData(), accountNotification -> accountNotification.getIsArchived() == null, "data/isArchived");
+		notificationsApiSteps.assertCollectionElementsHasNoValue(accountNotificationResponse.getData(), accountNotification -> accountNotification.getUpdatedAt() == null, "data/updatedAt");
+		notificationsApiSteps.assertCollectionElementsHasNoValue(accountNotificationResponse.getData(), accountNotification -> accountNotification.getNotificationId() == null, "data/notificationId");
+		notificationsApiSteps.assertCollectionElementsHasNoValue(accountNotificationResponse.getData(), accountNotification -> accountNotification.getAccountId() == null, "data/accountId");
+		notificationsApiSteps.assertCollectionElementsHasNoValue(accountNotificationResponse.getData(), accountNotification -> accountNotification.getIsPhone() == null, "data/isPhone");
+		notificationsApiSteps.assertCollectionElementsHasNoValue(accountNotificationResponse.getData(), accountNotification -> accountNotification.getIsEmail() == null, "data/isEmail");
+		notificationsApiSteps.assertCollectionElementsHasNoValue(accountNotificationResponse.getData(), accountNotification -> accountNotification.getIsMuted() == null, "data/isMuted");
+		notificationsApiSteps.assertCollectionElementsHasNoValue(accountNotificationResponse.getData(), accountNotification -> accountNotification.getIsRead() == null, "data/isRead");
+		notificationsApiSteps.assertCollectionElementsHasValue(accountNotificationResponse.getData(), accountNotification -> accountNotification.getNotification() != null, "data/notification");
+		notificationsApiSteps.assertCollectionElementsHasValue(accountNotificationResponse.getData(), accountNotification -> accountNotification.getNotification().getIsArchived() != null, "data/notification/isArchived");
+		notificationsApiSteps.assertCollectionElementsHasValue(accountNotificationResponse.getData(), accountNotification -> accountNotification.getNotification().getCreatedAt() != null, "data/notification/createdAt");
+		notificationsApiSteps.assertCollectionElementsHasValue(accountNotificationResponse.getData(), accountNotification -> accountNotification.getNotification().getUpdatedAt() != null, "data/notification/updatedAt");
+		notificationsApiSteps.assertCollectionElementsHasValue(accountNotificationResponse.getData(), accountNotification -> accountNotification.getNotification().getId() != null, "data/notification/id");
+		notificationsApiSteps.assertCollectionElementsHasValue(accountNotificationResponse.getData(), accountNotification -> accountNotification.getNotification().getDaoId() != null, "data/notification/daoId");
+		notificationsApiSteps.assertCollectionElementsHasValue(accountNotificationResponse.getData(), accountNotification -> accountNotification.getNotification().getTargetId() != null, "data/notification/targetId");
+		notificationsApiSteps.assertCollectionElementsHasValue(accountNotificationResponse.getData(), accountNotification -> accountNotification.getNotification().getSignerId() != null, "data/notification/signerId");
+		notificationsApiSteps.assertCollectionElementsHasValue(accountNotificationResponse.getData(), accountNotification -> accountNotification.getNotification().getType() != null, "data/notification/type");
+		notificationsApiSteps.assertCollectionElementsHasValue(accountNotificationResponse.getData(), accountNotification -> accountNotification.getNotification().getStatus() != null, "data/notification/status");
+		notificationsApiSteps.assertCollectionElementsHasValue(accountNotificationResponse.getData(), accountNotification -> accountNotification.getNotification().getMetadata() != null, "data/notification/metadata");
+		notificationsApiSteps.assertCollectionElementsHasValue(accountNotificationResponse.getData(), accountNotification -> accountNotification.getNotification().getTimestamp() != null, "data/notification/timestamp");
+		notificationsApiSteps.assertCollectionElementsHasValue(accountNotificationResponse.getData(), accountNotification -> accountNotification.getNotification().getDao() != null, "data/notification/dao");
+
+		List<String> ids = accountNotificationResponse.getData().stream().map(AccountNotification::getId).collect(Collectors.toList());
+		notificationsApiSteps.assertStringsAreSortedCorrectly(ids, Comparator.reverseOrder(),
+		                                                      "Account notifications should be sorted by ID in DESC order");
+	}
 }
