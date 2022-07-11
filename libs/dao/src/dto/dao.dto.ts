@@ -1,7 +1,7 @@
 import { TransactionInfo } from '@sputnik-v2/common';
 
 import { DaoConfig, DaoStatus } from '../types';
-import { PolicyDtoV1, PolicyDtoV2 } from './policy.dto';
+import { PolicyDtoV1 } from './policy.dto';
 
 export interface DaoDto extends TransactionInfo {
   id: string;

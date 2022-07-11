@@ -4,8 +4,7 @@ import { TransactionEntity } from '@sputnik-v2/common';
 import { DaoConfig, DaoStatus } from '@sputnik-v2/dao/types';
 import { DaoVersion, Policy } from '@sputnik-v2/dao/entities';
 
-import { castPolicyDtoV2, PolicyDtoV1, PolicyDtoV2 } from './policy.dto';
-import { castRoleDtoV2 } from '@sputnik-v2/dao/dto/role.dto';
+import { castPolicyDtoV2, PolicyDtoV2 } from './policy.dto';
 
 class DaoBaseResponse extends TransactionEntity {
   @ApiProperty()
