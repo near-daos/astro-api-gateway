@@ -34,7 +34,7 @@ export class AccountNotificationService extends TypeOrmCrudService<AccountNotifi
       await this.accountNotificationRepository.findOne(id);
 
     if (!accountNotification) {
-      throw new BadRequestException(`Account Notification ${id} not found`);
+      throw new BadRequestException(`Invalid Account Notification ID ${id}`);
     }
 
     return this.accountNotificationRepository.save({
