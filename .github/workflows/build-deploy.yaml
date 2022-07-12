@@ -148,8 +148,6 @@ jobs:
     - wait-for-aggregator
     if: needs.get-environment.outputs.environment == 'test'
     uses: near-daos/astro-api-gateway/.github/workflows/run-autotests.yaml@develop
-    with:
-      environment: ${{ needs.get-environment.outputs.environment }}
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
