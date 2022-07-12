@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.time.OffsetDateTime;
 import java.util.Comparator;
@@ -27,6 +28,9 @@ import static java.net.HttpURLConnection.HTTP_OK;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class AccountNotificationsApiTests extends BaseTest {
 	private final NotificationsApiSteps notificationsApiSteps;
+
+	@Value("${accounts.account2.accountId}")
+	private String account2Id;
 
 
 	@Test
@@ -173,5 +177,46 @@ public class AccountNotificationsApiTests extends BaseTest {
 		List<String> ids = accountNotificationResponse.getData().stream().map(AccountNotification::getId).collect(Collectors.toList());
 		notificationsApiSteps.assertStringsAreSortedCorrectly(ids, Comparator.reverseOrder(),
 		                                                      "Account notifications should be sorted by ID in DESC order");
+	}
+
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("User should be able to get list of account notifications with query param: [filter, or]")
+	@DisplayName("User should be able to get list of account notifications with query param: [filter, or]")
+	void getListOfAccountNotificationsWithFilterAndOrParameters() {
+		String account1Id = "extg.testnet";
+		Map<String, Object> queryParams = Map.of(
+				"filter", "accountId||$eq||" + account1Id,
+				"or", "accountId||$eq||" + account2Id
+		);
+
+		AccountNotificationResponse accountNotificationResponse = notificationsApiSteps.getAccountNotifications(queryParams).then()
+				.statusCode(HTTP_OK)
+				.extract()
+				.as(AccountNotificationResponse.class);
+
+		notificationsApiSteps.assertCollectionContainsExactlyInAnyOrder(accountNotificationResponse.getData(), AccountNotification::getAccountId, account1Id, account2Id);
+		notificationsApiSteps.assertCollectionElementsHasValue(accountNotificationResponse.getData(), accountNotification -> accountNotification.getIsArchived() != null, "data/isArchived");
+		notificationsApiSteps.assertCollectionElementsHasValue(accountNotificationResponse.getData(), accountNotification -> accountNotification.getCreatedAt() != null, "data/createdAt");
+		notificationsApiSteps.assertCollectionElementsHasValue(accountNotificationResponse.getData(), accountNotification -> accountNotification.getUpdatedAt() != null, "data/updatedAt");
+		notificationsApiSteps.assertCollectionElementsHasValue(accountNotificationResponse.getData(), accountNotification -> accountNotification.getId() != null, "data/id");
+		notificationsApiSteps.assertCollectionElementsHasValue(accountNotificationResponse.getData(), accountNotification -> accountNotification.getNotificationId() != null, "data/notificationId");
+		notificationsApiSteps.assertCollectionElementsHasValue(accountNotificationResponse.getData(), accountNotification -> accountNotification.getIsPhone() != null, "data/isPhone");
+		notificationsApiSteps.assertCollectionElementsHasValue(accountNotificationResponse.getData(), accountNotification -> accountNotification.getIsEmail() != null, "data/isEmail");
+		notificationsApiSteps.assertCollectionElementsHasValue(accountNotificationResponse.getData(), accountNotification -> accountNotification.getIsMuted() != null, "data/isMuted");
+		notificationsApiSteps.assertCollectionElementsHasValue(accountNotificationResponse.getData(), accountNotification -> accountNotification.getIsRead() != null, "data/isRead");
+		notificationsApiSteps.assertCollectionElementsHasValue(accountNotificationResponse.getData(), accountNotification -> accountNotification.getNotification() != null, "data/notification");
+		notificationsApiSteps.assertCollectionElementsHasValue(accountNotificationResponse.getData(), accountNotification -> accountNotification.getNotification().getIsArchived() != null, "data/notification/isArchived");
+		notificationsApiSteps.assertCollectionElementsHasValue(accountNotificationResponse.getData(), accountNotification -> accountNotification.getNotification().getCreatedAt() != null, "data/notification/createdAt");
+		notificationsApiSteps.assertCollectionElementsHasValue(accountNotificationResponse.getData(), accountNotification -> accountNotification.getNotification().getUpdatedAt() != null, "data/notification/updatedAt");
+		notificationsApiSteps.assertCollectionElementsHasValue(accountNotificationResponse.getData(), accountNotification -> accountNotification.getNotification().getId() != null, "data/notification/id");
+		notificationsApiSteps.assertCollectionElementsHasValue(accountNotificationResponse.getData(), accountNotification -> accountNotification.getNotification().getDaoId() != null, "data/notification/daoId");
+		notificationsApiSteps.assertCollectionElementsHasValue(accountNotificationResponse.getData(), accountNotification -> accountNotification.getNotification().getTargetId() != null, "data/notification/targetId");
+		notificationsApiSteps.assertCollectionElementsHasValue(accountNotificationResponse.getData(), accountNotification -> accountNotification.getNotification().getSignerId() != null, "data/notification/signerId");
+		notificationsApiSteps.assertCollectionElementsHasValue(accountNotificationResponse.getData(), accountNotification -> accountNotification.getNotification().getType() != null, "data/notification/type");
+		notificationsApiSteps.assertCollectionElementsHasValue(accountNotificationResponse.getData(), accountNotification -> accountNotification.getNotification().getStatus() != null, "data/notification/status");
+		notificationsApiSteps.assertCollectionElementsHasValue(accountNotificationResponse.getData(), accountNotification -> accountNotification.getNotification().getMetadata() != null, "data/notification/metadata");
+		notificationsApiSteps.assertCollectionElementsHasValue(accountNotificationResponse.getData(), accountNotification -> accountNotification.getNotification().getTimestamp() != null, "data/notification/timestamp");
+		notificationsApiSteps.assertCollectionElementsHasValue(accountNotificationResponse.getData(), accountNotification -> accountNotification.getNotification().getDao() != null, "data/notification/dao");
 	}
 }
