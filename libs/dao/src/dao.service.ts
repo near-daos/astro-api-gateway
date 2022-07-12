@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 import { CrudRequest } from '@nestjsx/crud';
@@ -17,22 +17,22 @@ import {
   paginate,
 } from '@sputnik-v2/utils';
 import { TokenService } from '@sputnik-v2/token';
-import { DaoStatus, DaoVariant } from '@sputnik-v2/dao/types';
+import { SearchQuery } from '@sputnik-v2/common';
+import { NearApiService } from '@sputnik-v2/near-api';
 
 import {
   AccountDaoResponse,
   DaoDto,
   DaoMemberVote,
-  DaoResponse,
+  DaoPageResponse,
   SearchMemberDto,
   SearchMemberResponse,
+  DelegationDto,
+  DaoResponseV2,
+  castDaoResponseV2,
 } from './dto';
-import { Dao, DaoVersion, RoleKindType } from './entities';
-import { WeightKind } from '@sputnik-v2/sputnikdao';
-import { SearchQuery } from '@sputnik-v2/common';
-import { NearApiService } from '@sputnik-v2/near-api';
-import { Delegation } from './entities/delegation.entity';
-import { DelegationDto } from './dto/delegation.dto';
+import { Dao, DaoVersion, Delegation, RoleKindType } from './entities';
+import { DaoStatus, DaoVariant, WeightKind } from './types';
 
 @Injectable()
 export class DaoService extends TypeOrmCrudService<Dao> {
@@ -76,6 +76,19 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     return this.daoRepository.findOne({ id, status: Not(DaoStatus.Disabled) });
   }
 
+  async findByIdV2(id: string): Promise<DaoResponseV2> {
+    const dao = await this.daoRepository.findOne({
+      id,
+      status: Not(DaoStatus.Disabled),
+    });
+
+    if (!dao) {
+      throw new BadRequestException('Invalid Dao ID');
+    }
+
+    return castDaoResponseV2(dao);
+  }
+
   async findByIds(daoIds?: string[]): Promise<Dao[]> {
     return daoIds
       ? await this.daoRepository.find({ id: In(daoIds) })
@@ -104,7 +117,7 @@ export class DaoService extends TypeOrmCrudService<Dao> {
   async search(
     req: CrudRequest,
     params: SearchQuery,
-  ): Promise<Dao[] | DaoResponse> {
+  ): Promise<Dao[] | DaoPageResponse> {
     const likeQuery = `%${params.query.toLowerCase()}%`;
     const { limit, offset, fields } = req.parsed;
     const [data, total] = await this.daoRepository

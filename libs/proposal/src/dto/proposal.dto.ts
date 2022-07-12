@@ -1,5 +1,5 @@
 import camelcaseKeys from 'camelcase-keys';
-import { PolicyDto } from '@sputnik-v2/dao';
+import { PolicyDtoV1 } from '@sputnik-v2/dao';
 import { TransactionInfo } from '@sputnik-v2/common';
 import { Vote } from '@sputnik-v2/sputnikdao/types';
 
@@ -113,7 +113,7 @@ export class ProposalKindDto {
       ProposalType.ChangePolicy === type
     ) {
       const thisPolicy = (this.kind as ProposalKindChangePolicy)?.policy as
-        | PolicyDto
+        | PolicyDtoV1
         | [];
       const { policy } = kind as ProposalKindChangePolicy;
 
@@ -129,7 +129,7 @@ export class ProposalKindDto {
         bountyForgivenessPeriod: thisBountyForgivenessPeriod,
         proposalBond: thisProposalBond,
         proposalPeriod: thisProposalPeriod,
-      } = thisPolicy as PolicyDto;
+      } = thisPolicy as PolicyDtoV1;
 
       const {
         bountyBond,

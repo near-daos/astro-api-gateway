@@ -1,9 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsArray, IsNumber, IsObject, IsString } from 'class-validator';
-import { RolePermissionDto, VotePolicy } from '@sputnik-v2/sputnikdao/types';
-import { RoleDto } from '@sputnik-v2/dao/dto/role.dto';
+import { VotePolicy } from '../types';
+import { castRoleDtoV2, RoleDtoV1, RoleDtoV2 } from './role.dto';
 
-export class PolicyDto {
+class PolicyBaseDto {
   daoId: string;
 
   @ApiProperty()
@@ -25,8 +25,23 @@ export class PolicyDto {
   @ApiProperty()
   @IsObject()
   defaultVotePolicy: VotePolicy;
+}
 
-  @ApiProperty({ type: RoleDto })
+export class PolicyDtoV1 extends PolicyBaseDto {
+  @ApiProperty({ type: RoleDtoV1 })
   @IsArray()
-  roles: RolePermissionDto[];
+  roles: RoleDtoV1[];
+}
+
+export class PolicyDtoV2 extends PolicyBaseDto {
+  @ApiProperty({ type: RoleDtoV2 })
+  @IsArray()
+  roles: RoleDtoV2[];
+}
+
+export function castPolicyDtoV2(policy: PolicyDtoV1): PolicyDtoV2 {
+  return {
+    ...policy,
+    roles: policy.roles.map((role) => castRoleDtoV2(role)),
+  };
 }

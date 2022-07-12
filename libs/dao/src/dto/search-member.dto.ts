@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { RoleKindType } from '../entities/role.entity';
+import { RoleKindType } from '../entities';
 
 export class SearchMemberRoleDto {
   @ApiProperty()

@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
 import { BaseEntity } from '@sputnik-v2/common';
-import { VotePolicy } from '@sputnik-v2/sputnikdao/types';
+import { VotePolicy } from '../types';
 
 import { Role } from './role.entity';
 

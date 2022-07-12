@@ -3,7 +3,7 @@ import { DaoStatus } from '@sputnik-v2/dao/types';
 
 import { DaoConfig } from '../types/dao-config';
 import { DaoDto } from './dao.dto';
-import { PolicyDto } from './policy.dto';
+import { PolicyDtoV1 } from './policy.dto';
 
 export class SputnikDaoDto extends TransactionInfo implements DaoDto {
   id: string;
@@ -12,7 +12,7 @@ export class SputnikDaoDto extends TransactionInfo implements DaoDto {
   lastBountyId: number;
   lastProposalId: number;
   stakingContract: string;
-  policy: PolicyDto;
+  policy: PolicyDtoV1;
   status?: DaoStatus;
   amount: number;
   council: string[];
