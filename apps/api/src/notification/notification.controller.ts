@@ -167,8 +167,8 @@ export class NotificationController {
     description: 'OK',
     type: AccountNotification,
   })
-  @ApiNotFoundResponse({
-    description: 'Account Notification with id <id> not found',
+  @ApiBadRequestResponse({
+    description: 'Invalid Account Notification ID <id>',
   })
   @ApiForbiddenResponse({
     description:
