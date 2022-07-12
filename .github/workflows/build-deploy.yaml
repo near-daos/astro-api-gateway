@@ -73,6 +73,9 @@ jobs:
 
   build-images:
     name: Build Image
+    strategy:
+      matrix:
+        app: ${{ fromJSON(needs.get-updated-apps.outputs.updated-apps) }}
     runs-on: ubuntu-latest
     needs:
     - get-updated-apps
@@ -83,7 +86,7 @@ jobs:
         cat ".github/env.common" | grep -E -v '^\ *#' >>$GITHUB_ENV
     - name: Docker Build Publish
       env:
-        APP_NAME: api
+        APP_NAME: ${{ matrix.app }}
       uses: ./.github/actions/docker-build-publish
 
   helm-deploy:
@@ -115,16 +118,16 @@ jobs:
     - name: Tag Previous Image
       uses: tmknom/retag-ecr-action@v1
       with:
-        repository-name: sputnik-v2-api
-        source-tag: ${{ matrix.app }}-${{ github.event.inputs.environment }}-current
-        destination-tag: ${{ matrix.app }}-${{ github.event.inputs.environment }}-previous
+        repository-name: sputnik-v2-${{ matrix.app }}
+        source-tag: ${{ github.event.inputs.environment }}-current
+        destination-tag: ${{ github.event.inputs.environment }}-previous
 
     - name: Tag Current Image
       uses: tmknom/retag-ecr-action@v1
       with:
-        repository-name: sputnik-v2-api
+        repository-name: sputnik-v2-${{ matrix.app }}
         source-tag: ${{ github.event.inputs.tag }}
-        destination-tag: ${{ matrix.app }}-${{ github.event.inputs.environment }}-current
+        destination-tag: ${{ github.event.inputs.environment }}-current
 
 
   # experimental sleep to nail down issue with tests failing after deploy

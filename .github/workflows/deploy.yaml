@@ -73,13 +73,13 @@ jobs:
     - name: Tag Previous Image
       uses: tmknom/retag-ecr-action@v1
       with:
-        repository-name: sputnik-v2-api
-        source-tag: ${{ matrix.app }}-${{ github.event.inputs.environment }}-current
-        destination-tag: ${{ matrix.app }}-${{ github.event.inputs.environment }}-previous
+        repository-name: sputnik-v2-${{ matrix.app }}
+        source-tag: ${{ github.event.inputs.environment }}-current
+        destination-tag: ${{ github.event.inputs.environment }}-previous
 
     - name: Tag Current Image
       uses: tmknom/retag-ecr-action@v1
       with:
-        repository-name: sputnik-v2-api
+        repository-name: sputnik-v2-${{ matrix.app }}
         source-tag: ${{ github.event.inputs.tag }}
-        destination-tag: ${{ matrix.app }}-${{ github.event.inputs.environment }}-current
+        destination-tag: ${{ github.event.inputs.environment }}-current
