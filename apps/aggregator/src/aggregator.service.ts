@@ -16,6 +16,7 @@ import {
   NFTTokenService,
   NFTTokenUpdateDto,
   TokenService,
+  TokenUpdateDto,
 } from '@sputnik-v2/token';
 import { AGGREGATOR_HANDLER_STATE_ID } from '@sputnik-v2/common';
 
@@ -160,22 +161,47 @@ export class AggregatorService {
     this.state.startAggregation('token');
 
     const { contractName } = this.configService.get('near');
-    const daoTokenUpdates =
-      await this.nearIndexerService.findLikelyTokenUpdates(
-        contractName,
-        timestamp,
-      );
 
-    if (daoTokenUpdates.length === 0) {
-      this.logger.log(`Skip aggregation for Tokens. No new transactions found`);
+    const newFtEvents = await this.nearIndexerService.findFTEventUpdates(
+      contractName,
+      timestamp,
+    );
+
+    if (newFtEvents.length === 0) {
+      this.logger.log(
+        `Skip aggregation for tokens. No new tokens events found`,
+      );
       this.state.stopAggregation('token');
       return;
     }
 
-    const uniqueUpdates = daoTokenUpdates.filter((tokenUpdate, index) => {
+    const tokenUpdates: TokenUpdateDto[] = newFtEvents.reduce(
+      (updates, ftEvent) => {
+        let accountId;
+        const accountIdWildcard = `.${contractName}`;
+        if (ftEvent.tokenNewOwnerAccountId.endsWith(accountIdWildcard)) {
+          accountId = ftEvent.tokenNewOwnerAccountId;
+        } else if (ftEvent.tokenOldOwnerAccountId.endsWith(accountIdWildcard)) {
+          accountId = ftEvent.tokenOldOwnerAccountId;
+        } else {
+          return updates;
+        }
+        return [
+          ...updates,
+          {
+            account: accountId,
+            token: ftEvent.emittedByContractAccountId,
+            timestamp: ftEvent.emittedAtBlockTimestamp,
+          },
+        ];
+      },
+      [],
+    );
+
+    const uniqueUpdates = tokenUpdates.filter((tokenUpdate, index) => {
       return (
         index ===
-        daoTokenUpdates.findIndex(
+        tokenUpdates.findIndex(
           ({ token, account }) =>
             tokenUpdate.token === token && tokenUpdate.account === account,
         )
