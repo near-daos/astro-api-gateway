@@ -112,7 +112,7 @@ jobs:
       with:
         name: sputnik-v2-${{ matrix.app }}
         namespace: ${{ env.DEPLOYMENT_NAMESPACE }}
-        tag: ${{ env.GITHUB_SHA }}
+        tag: ${{ github.sha }}
         chart_directory: apps/${{ matrix.app }}/deployment/app-chart
 
     - name: Tag Previous Image
