@@ -18,7 +18,6 @@ runs:
         ${{ env.AWS_ECR_URL }}/sputnik-v2-${{ env.APP_NAME }}
       tags: |
         type=raw,value=latest
-        type=raw,value=${{ env.DOCKER_ENV_TAG }}
         type=ref,event=branch,suffix=-latest
         type=sha,prefix=,format=long
 
