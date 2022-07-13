@@ -13,9 +13,9 @@ env:
   AWS_ECR_URL: ${{ secrets.AWS_ECR_URL }}
   EKS_CLUSTER_NAME: ${{ secrets.EKS_CLUSTER_NAME }}
   KUBE_CONFIG_DATA:  ${{ secrets.KUBE_CONFIG_DATA }}
-  NOTIFI_SID:  ${{ secrets.NOTIFI_SID }}
-  NOTIFI_SECRET:  ${{ secrets.NOTIFI_SECRET }}
-  PAGODA_RPC_API_KEY:  ${{ secrets.PAGODA_RPC_API_KEY }}
+  HELM_NOTIFI_SID:  ${{ secrets.NOTIFI_SID }}
+  HELM_NOTIFI_SECRET:  ${{ secrets.NOTIFI_SECRET }}
+  HELM_PAGODA_RPC_API_KEY:  ${{ secrets.PAGODA_RPC_API_KEY }}
 
 jobs:
   deploy:
