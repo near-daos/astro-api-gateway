@@ -303,6 +303,19 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     return dao;
   }
 
+  public async updateDaoMembers(daoId: string): Promise<Dao> {
+    const dao = await this.findOne(daoId);
+    const delegationAccounts = await this.getDelegationAccountsByDaoId(daoId);
+    const accountIds = [
+      ...new Set(dao.accountIds.concat(delegationAccounts)),
+    ].filter((accountId) => accountId);
+    return this.daoRepository.save({
+      ...dao,
+      accountIds,
+      numberOfMembers: accountIds.length,
+    });
+  }
+
   public async getDaoStatus(dao: Dao): Promise<DaoStatus> {
     if (dao.status === DaoStatus.Disabled) {
       return DaoStatus.Disabled;
@@ -410,5 +423,14 @@ export class DaoService extends TypeOrmCrudService<Dao> {
 
   async getDelegationsByDaoId(daoId: string): Promise<Delegation[]> {
     return this.delegationRepository.find({ where: { daoId } });
+  }
+
+  async getDelegationAccountsByDaoId(daoId: string): Promise<string[]> {
+    return (
+      await this.delegationRepository.find({
+        where: { daoId },
+        select: ['accountId'],
+      })
+    ).map(({ accountId }) => accountId);
   }
 }
