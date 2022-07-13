@@ -1,18 +1,7 @@
 name: Run Autotests
 on:
   workflow_dispatch:
-    inputs:
-      environment:
-        required: false
-        default: develop
-        description: Specify environment to run on. Valid values are develop, test
   workflow_call:
-    inputs:
-      environment:
-        required: true
-        default: develop
-        description: Specify environment to run on. Valid values are develop, test
-        type: string
     secrets:
       AWS_ACCESS_KEY_ID:
          required: true
