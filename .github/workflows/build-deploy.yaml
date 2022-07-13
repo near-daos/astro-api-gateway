@@ -109,12 +109,13 @@ jobs:
         cat ".github/env.common" | grep -E -v '^\ *#' >>$GITHUB_ENV
         cat ".github/env.${{ needs.get-environment.outputs.environment }}" | grep -E -v '^\ *#' >>$GITHUB_ENV
     - name: Helm Deploy
-      uses: near-daos/github-actions/deploy@v3
+      uses: near-daos/github-actions/deploy@main
       with:
         name: sputnik-v2-${{ matrix.app }}
         namespace: ${{ env.DEPLOYMENT_NAMESPACE }}
         tag: ${{ github.sha }}
         chart_directory: apps/${{ matrix.app }}/deployment/app-chart
+        debug: "true"
 
     - name: Tag Previous Image
       uses: tmknom/retag-ecr-action@v1
