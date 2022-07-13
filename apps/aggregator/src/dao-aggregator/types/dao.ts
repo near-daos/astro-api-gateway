@@ -16,6 +16,7 @@ export function castDao(
     lastBountyId,
     amount,
   }: DaoInfo,
+  delegationAccounts?: string[],
 ): SputnikDaoDto {
   const txUpdate = txs[txs.length - 1];
   return {
@@ -23,6 +24,7 @@ export function castDao(
     ...castDaoPolicy({
       daoId: daoAccount.accountId,
       daoPolicy: policy,
+      delegationAccounts,
     }),
     config,
     metadata: btoaJSON(config.metadata),
@@ -56,12 +58,14 @@ export function castDaoById(
     lastBountyId,
     amount,
   }: DaoInfo,
+  delegationAccounts?: string[],
 ): Partial<SputnikDaoDto> {
   return {
     id: daoId,
     ...castDaoPolicy({
       daoId: daoId,
       daoPolicy: policy,
+      delegationAccounts,
     }),
     config,
     metadata: btoaJSON(config.metadata),

@@ -20,12 +20,20 @@ export class DaoAggregatorService {
     txs: Transaction[],
   ): Promise<Dao> {
     const daoInfo = await this.sputnikService.getDaoInfo(daoAccount.accountId);
-    return this.daoService.create(castDao(daoAccount, txs, daoInfo));
+    const delegationAccounts =
+      await this.daoService.getDelegationAccountsByDaoId(daoAccount.accountId);
+    return this.daoService.create(
+      castDao(daoAccount, txs, daoInfo, delegationAccounts),
+    );
   }
 
   public async aggregateDaoById(daoId: string): Promise<Dao> {
     const daoInfo = await this.sputnikService.getDaoInfo(daoId);
-    return this.daoService.create(castDaoById(daoId, daoInfo));
+    const delegationAccounts =
+      await this.daoService.getDelegationAccountsByDaoId(daoId);
+    return this.daoService.create(
+      castDaoById(daoId, daoInfo, delegationAccounts),
+    );
   }
 
   public async aggregateDaoStatuses(): Promise<ReturnValue<Dao, Dao>> {

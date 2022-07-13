@@ -141,11 +141,14 @@ export class TransactionActionHandlerService {
     const { contractName } = this.configService.get('near');
     const daoId = `${args.name}.${contractName}`;
     const daoInfo = await this.sputnikService.getDaoInfo(daoId);
+    const delegationAccounts =
+      await this.daoService.getDelegationAccountsByDaoId(daoId);
     const dao = castCreateDao({
       signerId,
       transactionHash,
       daoId,
       daoInfo,
+      delegationAccounts,
       timestamp,
     });
 
@@ -319,6 +322,7 @@ export class TransactionActionHandlerService {
     const proposalKindType = proposal.kind?.kind.type;
     let config;
     let policy;
+    let delegationAccounts;
     let stakingContract;
     let lastBountyId;
 
@@ -353,6 +357,9 @@ export class TransactionActionHandlerService {
         ].includes(proposalKindType)
       ) {
         policy = await daoContract.get_policy();
+        delegationAccounts = await this.daoService.getDelegationAccountsByDaoId(
+          dao.id,
+        );
       }
 
       if (proposalKindType === ProposalType.SetStakingContract) {
@@ -410,6 +417,7 @@ export class TransactionActionHandlerService {
         amount: state.amount,
         config,
         policy,
+        delegationAccounts,
         lastBountyId,
         stakingContract,
         transactionHash,
@@ -715,6 +723,8 @@ export class TransactionActionHandlerService {
         balance: accountBalance,
       });
     }
+
+    await this.daoService.updateDaoMembers(daoId);
   }
 
   private getContractHandlers(receiverId: string): ContractHandler[] {
