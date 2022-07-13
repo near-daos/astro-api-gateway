@@ -22,6 +22,7 @@ jobs:
     strategy:
       matrix:
         app: [api, aggregator, notifier, draft]
+      fail-fast: false
     runs-on: ubuntu-latest
     name: Deploy
     environment:

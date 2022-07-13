@@ -95,6 +95,7 @@ jobs:
     strategy:
       matrix:
         app: ${{ fromJSON(needs.get-updated-apps.outputs.updated-apps) }}
+      fail-fast: false
     needs:
     - get-updated-apps
     - get-environment

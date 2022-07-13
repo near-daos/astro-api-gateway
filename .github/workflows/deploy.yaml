@@ -53,6 +53,7 @@ jobs:
     strategy:
       matrix:
         app: ${{ fromJSON(needs.get-updated-apps.outputs.updated-apps) }}
+      fail-fast: false
     environment:
       name: ${{ github.event.inputs.environment }}
     steps:
