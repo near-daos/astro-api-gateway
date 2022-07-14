@@ -35,4 +35,9 @@ public class AccountApiSteps extends BaseSteps {
 	public Response getAccountPhoneVerificationStatus(String accountId) {
 		return accountApi.getAccountPhoneVerificationStatus(accountId);
 	}
+
+	@Step("Getting account email verification status by '{accountId}' query param")
+	public Response getAccountEmailVerificationStatus(String accountId) {
+		return accountApi.getAccountEmailVerificationStatus(accountId);
+	}
 }

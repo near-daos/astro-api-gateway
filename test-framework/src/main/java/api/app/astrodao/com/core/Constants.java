@@ -68,6 +68,7 @@ public class Constants {
 		public static final String ACCOUNT_EMAIL_SEND_VERIFICATION = "/api/v1/account/email/send-verification";
 		public static final String ACCOUNT_EMAIL_VERIFY = "/api/v1/account/email/verify";
 		public static final String ACCOUNT_ACCOUNT_ID_PHONE_VERIFICATION_STATUS = "/api/v1/account/{accountId}/phone/verification-status";
+		public static final String ACCOUNT_ACCOUNT_ID_EMAIL_VERIFICATION_STATUS = "/api/v1/account/{accountId}/email/verification-status";
 
 		public static final String SEARCH = "/api/v1/search";
 
