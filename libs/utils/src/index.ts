@@ -1,13 +1,14 @@
 import Decimal from 'decimal.js';
 
-import { DaoDto, Dao, Role, RoleKindType } from '@sputnik-v2/dao';
+import { DaoDto } from '@sputnik-v2/dao/dto';
+import { Dao, Role, RoleKindType } from '@sputnik-v2/dao/entities';
 import {
-  ProposalDto,
-  Proposal,
   ProposalType,
   ProposalPermissions,
   ProposalTypeToPolicyLabel,
-} from '@sputnik-v2/proposal';
+} from '@sputnik-v2/proposal/types';
+import { Proposal } from '@sputnik-v2/proposal/entities';
+import { ProposalDto } from '@sputnik-v2/proposal/dto';
 import { BaseResponse, PROPOSAL_DESC_SEPARATOR } from '@sputnik-v2/common';
 
 export const formatTimestamp = (timestamp: number): string => {
