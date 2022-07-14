@@ -66,7 +66,7 @@ public class AccountAccountIdPhoneVerificationStatusApiTests extends BaseTest {
 	}
 
 	@Test
-	@Severity(SeverityLevel.CRITICAL)
+	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 400 for phone verification status for account without phone number")
 	@DisplayName("Get HTTP 400 for phone verification status for account without phone number")
 	void getHttp400ForPhoneVerificationStatusForAccountWithoutPhoneNumber() {
