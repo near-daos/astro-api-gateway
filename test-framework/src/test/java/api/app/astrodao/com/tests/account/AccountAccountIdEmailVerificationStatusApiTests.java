@@ -9,11 +9,12 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
-import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
-import static java.net.HttpURLConnection.HTTP_OK;
+import static java.net.HttpURLConnection.*;
 import static org.hamcrest.Matchers.equalTo;
 
 @Tags({@Tag("all"), @Tag("accountAccountIdEmailVerificationStatusApiTests")})
@@ -76,5 +77,20 @@ public class AccountAccountIdEmailVerificationStatusApiTests extends BaseTest {
 				.body("statusCode", equalTo(HTTP_BAD_REQUEST),
 				      "message", equalTo(errorMessage),
 				      "error", equalTo("Bad Request"));
+	}
+
+	@ParameterizedTest
+	@Severity(SeverityLevel.NORMAL)
+	@Story("Get HTTP 404 for email verification status endpoint for non-existing account")
+	@DisplayName("Get HTTP 404 for email verification status endpoint for non-existing account")
+	@CsvSource({"astro-automation.testnet", "another-magic.near"})
+	void getHttp404ForEmailVerificationStatusEndpointForNonExistingAccount(String accountId) {
+		String errorMessage = String.format("Account does not exist: %s", accountId);
+
+		accountApiSteps.getAccountEmailVerificationStatus(accountId).then()
+				.statusCode(HTTP_NOT_FOUND)
+				.body("statusCode", equalTo(HTTP_NOT_FOUND),
+				      "message", equalTo(errorMessage),
+				      "error", equalTo("Not Found"));
 	}
 }
