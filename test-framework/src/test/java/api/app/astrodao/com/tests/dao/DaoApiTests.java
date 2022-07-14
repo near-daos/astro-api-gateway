@@ -1,7 +1,7 @@
 package api.app.astrodao.com.tests.dao;
 
-import api.app.astrodao.com.openapi.models.Dao;
-import api.app.astrodao.com.openapi.models.DaoResponse;
+import api.app.astrodao.com.openapi.models.DaoPageResponse;
+import api.app.astrodao.com.openapi.models.DaoResponseV1;
 import api.app.astrodao.com.steps.DaoApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import io.qameta.allure.*;
@@ -39,9 +39,9 @@ public class DaoApiTests extends BaseTest {
         int limit = 10;
         int page = 1;
 
-        DaoResponse daoResponse = daoApiSteps.getDaos(query).then()
+        DaoPageResponse daoResponse = daoApiSteps.getDaos(query).then()
                 .statusCode(HTTP_OK)
-                .extract().as(DaoResponse.class);
+                .extract().as(DaoPageResponse.class);
 
         daoApiSteps.assertDtoValueGreaterThan(daoResponse, r -> r.getTotal().intValue(), limit, "total");
         daoApiSteps.assertDtoValueGreaterThan(daoResponse, r -> r.getPageCount().intValue(), 1, "pageCount");
@@ -63,9 +63,9 @@ public class DaoApiTests extends BaseTest {
                 "page", page
         );
 
-        DaoResponse daoResponse = daoApiSteps.getDaos(query).then()
+        DaoPageResponse daoResponse = daoApiSteps.getDaos(query).then()
                 .statusCode(HTTP_OK)
-                .extract().as(DaoResponse.class);
+                .extract().as(DaoPageResponse.class);
 
         daoApiSteps.assertDtoValueGreaterThan(daoResponse, r -> r.getTotal().intValue(), count, "total");
         daoApiSteps.assertDtoValueGreaterThan(daoResponse, r -> r.getPageCount().intValue(), 1, "pageCount");
@@ -87,9 +87,9 @@ public class DaoApiTests extends BaseTest {
                 "fields", "id,numberOfMembers"
         );
 
-        DaoResponse daoResponse = daoApiSteps.getDaos(query).then()
+        DaoPageResponse daoResponse = daoApiSteps.getDaos(query).then()
                 .statusCode(HTTP_OK)
-                .extract().as(DaoResponse.class);
+                .extract().as(DaoPageResponse.class);
 
         daoApiSteps.assertDtoValueGreaterThan(daoResponse, r -> r.getTotal().intValue(), count, "total");
         daoApiSteps.assertDtoValueGreaterThan(daoResponse, r -> r.getPageCount().intValue(), page, "pageCount");
@@ -112,9 +112,9 @@ public class DaoApiTests extends BaseTest {
                 "s", String.format("{\"numberOfMembers\": %s}", numberOfMembers)
         );
 
-        DaoResponse daoResponse = daoApiSteps.getDaos(query).then()
+        DaoPageResponse daoResponse = daoApiSteps.getDaos(query).then()
                 .statusCode(HTTP_OK)
-                .extract().as(DaoResponse.class);
+                .extract().as(DaoPageResponse.class);
 
         daoApiSteps.assertDtoValueGreaterThan(daoResponse, r -> r.getTotal().intValue(), count, "total");
         daoApiSteps.assertDtoValueGreaterThan(daoResponse, r -> r.getPageCount().intValue(), page, "pageCount");
@@ -139,9 +139,9 @@ public class DaoApiTests extends BaseTest {
                 "or", "id||$eq||" + dao2
         );
 
-        DaoResponse daoResponse = daoApiSteps.getDaos(query).then()
+        DaoPageResponse daoResponse = daoApiSteps.getDaos(query).then()
                 .statusCode(HTTP_OK)
-                .extract().as(DaoResponse.class);
+                .extract().as(DaoPageResponse.class);
 
         daoApiSteps.assertDtoValue(daoResponse, r -> r.getTotal().intValue(), count, "total");
         daoApiSteps.assertDtoValue(daoResponse, r -> r.getPageCount().intValue(), page, "pageCount");
@@ -150,7 +150,7 @@ public class DaoApiTests extends BaseTest {
         daoApiSteps.assertCollectionHasCorrectSize(daoResponse.getData(), count);
         daoApiSteps.assertCollectionElementsHasValue(daoResponse.getData(), r -> !r.getId().isBlank(), "id");
         daoApiSteps.assertCollectionElementsHasValue(daoResponse.getData(), r -> r.getNumberOfMembers().intValue() == 1, "id");
-        daoApiSteps.assertCollectionContainsExactlyInAnyOrder(daoResponse.getData(), Dao::getId, dao1, dao2);
+        daoApiSteps.assertCollectionContainsExactlyInAnyOrder(daoResponse.getData(), DaoResponseV1::getId, dao1, dao2);
     }
 
     @Test
