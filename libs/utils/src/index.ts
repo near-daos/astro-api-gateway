@@ -1,7 +1,13 @@
 import Decimal from 'decimal.js';
 
-import { DaoDto, Dao } from '@sputnik-v2/dao';
-import { ProposalDto, Proposal } from '@sputnik-v2/proposal';
+import { DaoDto, Dao, Role, RoleKindType } from '@sputnik-v2/dao';
+import {
+  ProposalDto,
+  Proposal,
+  ProposalType,
+  ProposalPermissions,
+  ProposalTypeToPolicyLabel,
+} from '@sputnik-v2/proposal';
 import { BaseResponse, PROPOSAL_DESC_SEPARATOR } from '@sputnik-v2/common';
 
 export const formatTimestamp = (timestamp: number): string => {
@@ -191,4 +197,46 @@ export const filterProposalDesc = (description = '') => {
   return separationIndex !== -1
     ? description.slice(0, separationIndex)
     : description;
+};
+
+export const getAccountPermissions = (
+  roles: Role[],
+  type?: ProposalType,
+  accountId?: string,
+  accountBalance?: bigint,
+): ProposalPermissions => {
+  const council = roles.find((role) => role.name.toLowerCase() === 'council');
+  const permissions = roles.reduce((roles, role) => {
+    if (
+      (role.kind === RoleKindType.Group &&
+        role.accountIds.includes(accountId)) ||
+      (role.kind === RoleKindType.Member && accountBalance >= role.balance)
+    ) {
+      return [...roles, ...role.permissions];
+    }
+    return roles;
+  }, []);
+
+  return {
+    isCouncil: council?.accountIds
+      ? council.accountIds.includes(accountId)
+      : false,
+    canApprove: checkPermissions(type, 'VoteApprove', permissions),
+    canReject: checkPermissions(type, 'VoteReject', permissions),
+    canDelete: checkPermissions(type, 'VoteRemove', permissions),
+    canAdd: checkPermissions(type, 'AddProposal', permissions),
+  };
+};
+
+export const checkPermissions = (
+  type: ProposalType,
+  permission: string,
+  permissions: string[],
+): boolean => {
+  const policyLabel = ProposalTypeToPolicyLabel[type];
+  return (
+    permissions.includes('*:*') ||
+    permissions.includes(`*:${permission}`) ||
+    permissions.includes(`${policyLabel}:${permission}`)
+  );
 };

@@ -32,4 +32,8 @@ export class DraftValidationSchema extends BaseValidationSchema {
   @IsString()
   @IsNotEmpty()
   DRAFT_DATABASE_PASSWORD: string;
+
+  @IsString()
+  @IsNotEmpty()
+  DAO_API_URL: string;
 }

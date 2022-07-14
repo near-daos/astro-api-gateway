@@ -40,9 +40,6 @@ import { DraftController } from './draft.controller';
       name: DRAFT_DB_CONNECTION,
       useClass: TypeOrmConfigService,
     }),
-    TypeOrmModule.forRootAsync({
-      useClass: TypeOrmConfigService,
-    }),
     ThrottlerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
