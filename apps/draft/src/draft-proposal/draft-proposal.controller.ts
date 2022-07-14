@@ -114,7 +114,7 @@ export class DraftProposalController {
   })
   @ApiForbiddenResponse({
     description:
-      'Account <accountId> identity is invalid - public key / invalid signature / invalid accountId / no permissions / not proposer',
+      'Account <accountId> identity is invalid - public key / invalid signature / invalid accountId / no permissions / not proposer or council',
   })
   @ApiBearerAuth()
   @UseGuards(ThrottlerGuard)
@@ -201,6 +201,32 @@ export class DraftProposalController {
   @Post('/:id/save')
   saveDraftProposal(@Param('id') id: string, @Req() req: AuthorizedRequest) {
     return this.draftProposalService.save(id, req.accountId);
+  }
+
+  @ApiParam({
+    name: 'id',
+    type: String,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Save Removed',
+    type: Boolean,
+  })
+  @ApiForbiddenResponse({
+    description:
+      'Account <accountId> identity is invalid - public key / invalid signature / invalid accountId',
+  })
+  @ApiNotFoundResponse({
+    description: 'Draft proposal <id> does not exist',
+  })
+  @ApiBearerAuth()
+  @UseGuards(AccountAccessGuard)
+  @Delete('/:id/save')
+  removeDraftProposalSave(
+    @Param('id') id: string,
+    @Req() req: AuthorizedRequest,
+  ) {
+    return this.draftProposalService.removeSave(id, req.accountId);
   }
 
   @ApiParam({

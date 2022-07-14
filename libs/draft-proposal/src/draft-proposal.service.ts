@@ -93,10 +93,6 @@ export class DraftProposalService {
       throw new NotFoundException(`Draft proposal ${id} does not exist`);
     }
 
-    if (draftProposal.proposer !== accountId) {
-      throw new ForbiddenException('Account is not the proposer');
-    }
-
     const { data: dao } = await this.daoApiService.getDao(draftProposal.daoId);
     const accountPermissions = getAccountPermissions(
       dao.policy.roles,
@@ -108,6 +104,10 @@ export class DraftProposalService {
       throw new ForbiddenException(
         `Account ${accountId} does not have permissions to create this type of proposal`,
       );
+    }
+
+    if (draftProposal.proposer !== accountId && !accountPermissions.isCouncil) {
+      throw new ForbiddenException('Account is not the proposer or council');
     }
 
     await this.draftHashtagService.createMultiple(draftProposalDto.hashtags);
@@ -192,6 +192,24 @@ export class DraftProposalService {
     if (!draftProposal.saveAccounts.includes(accountId)) {
       await this.draftProposalRepository.update(draftProposal.id, {
         saveAccounts: [...draftProposal.saveAccounts, accountId],
+      });
+    }
+
+    return true;
+  }
+
+  async removeSave(id: string, accountId: string): Promise<boolean> {
+    const draftProposal = await this.draftProposalRepository.findOne(id);
+
+    if (!draftProposal) {
+      throw new NotFoundException(`Draft proposal ${id} does not exist`);
+    }
+
+    if (draftProposal.saveAccounts.includes(accountId)) {
+      await this.draftProposalRepository.update(draftProposal.id, {
+        saveAccounts: draftProposal.saveAccounts.filter(
+          (item) => item !== accountId,
+        ),
       });
     }
 
