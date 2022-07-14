@@ -28,6 +28,24 @@ public class AccountAccountIdEmailVerificationStatusApiTests extends BaseTest {
 	@Value("${accounts.account2.accountId}")
 	private String accountId2;
 
+	@Value("${accounts.account3.accountId}")
+	private String accountId3;
+
+
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("User should be able to get email verification status by 'accountId' parameter for verified account")
+	@DisplayName("User should be able to get email verification status by 'accountId' parameter for verified account")
+	void getAccountIdEmailVerificationStatusForVerifiedAccount() {
+		VerificationStatus verificationStatus = accountApiSteps.getAccountEmailVerificationStatus(accountId3).then()
+				.statusCode(HTTP_OK)
+				.extract().as(VerificationStatus.class);
+
+		accountApiSteps.assertDtoValue(verificationStatus, VerificationStatus::getIsVerified, true, "isVerified");
+		accountApiSteps.assertDtoValueIsNull(verificationStatus, VerificationStatus::getIsSend, "isSend");
+		accountApiSteps.assertDtoValueIsNull(verificationStatus, VerificationStatus::getCreatedAt, "createdAt");
+		accountApiSteps.assertDtoValueIsNull(verificationStatus, VerificationStatus::getTtl, "ttl");
+	}
 
 	@Test
 	@Severity(SeverityLevel.CRITICAL)
@@ -43,6 +61,4 @@ public class AccountAccountIdEmailVerificationStatusApiTests extends BaseTest {
 		accountApiSteps.assertDtoValueIsNull(verificationStatus, VerificationStatus::getCreatedAt, "createdAt");
 		accountApiSteps.assertDtoValueIsNull(verificationStatus, VerificationStatus::getTtl, "ttl");
 	}
-
-
 }
