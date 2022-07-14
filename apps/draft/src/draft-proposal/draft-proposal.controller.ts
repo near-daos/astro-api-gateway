@@ -221,7 +221,7 @@ export class DraftProposalController {
   })
   @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
-  @Post('/:id/remove-save')
+  @Delete('/:id/save')
   removeDraftProposalSave(
     @Param('id') id: string,
     @Req() req: AuthorizedRequest,
