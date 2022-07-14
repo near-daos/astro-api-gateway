@@ -191,7 +191,9 @@
       "@sputnik-v2/draft-hashtag/(.*)": "<rootDir>/libs/draft-hashtag/src/$1",
       "@sputnik-v2/draft-hashtag": "<rootDir>/libs/draft-hashtag/src",
       "@sputnik-v2/websocket/(.*)": "<rootDir>/libs/websocket/src/$1",
-      "@sputnik-v2/websocket": "<rootDir>/libs/websocket/src"
+      "@sputnik-v2/websocket": "<rootDir>/libs/websocket/src",
+      "@sputnik-v2/dao-api/(.*)": "<rootDir>/libs/dao-api/src/$1",
+      "@sputnik-v2/dao-api": "<rootDir>/libs/dao-api/src"
     }
   }
 }

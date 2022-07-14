@@ -293,6 +293,15 @@
       "compilerOptions": {
         "tsConfigPath": "libs/websocket/tsconfig.lib.json"
       }
+    },
+    "dao-api": {
+      "type": "library",
+      "root": "libs/dao-api",
+      "entryFile": "index",
+      "sourceRoot": "libs/dao-api/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/dao-api/tsconfig.lib.json"
+      }
     }
   }
 }

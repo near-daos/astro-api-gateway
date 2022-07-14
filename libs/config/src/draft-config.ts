@@ -1,10 +1,10 @@
 import { registerAs } from '@nestjs/config';
 import { default as configuration } from './configuration';
 import { default as nearConfig } from './near-config';
-import { default as database } from './database';
 import databaseNearIndexer from './database-near-indexer';
 import { default as databaseDraft } from './database-draft';
 import { default as redis } from './redis';
+import { default as daoApi } from './dao-api';
 
 export { default as validate } from './validationSchema';
 export { TypeOrmConfigService } from './typeorm-config.service';
@@ -20,7 +20,7 @@ const draft = registerAs('draft', () => {
 
 export default [
   configuration,
-  database,
+  daoApi,
   nearConfig,
   databaseNearIndexer,
   databaseDraft,
