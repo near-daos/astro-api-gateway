@@ -86,6 +86,9 @@ export class DraftProposalController {
     description:
       'Account <accountId> identity is invalid - public key / invalid signature / invalid accountId / no permissions',
   })
+  @ApiForbiddenResponse({
+    description: 'Invalid DAO ID',
+  })
   @ApiBearerAuth()
   @UseGuards(ThrottlerGuard)
   @UseGuards(AccountAccessGuard)

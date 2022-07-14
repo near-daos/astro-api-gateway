@@ -12,8 +12,10 @@ import {
   DRAFT_DB_CONNECTION,
   Order,
 } from '@sputnik-v2/common';
-import { ProposalKind, ProposalService } from '@sputnik-v2/proposal';
+import { ProposalKind } from '@sputnik-v2/proposal';
 import { DraftHashtagService } from '@sputnik-v2/draft-hashtag';
+import { DaoApiService } from '@sputnik-v2/dao-api';
+import { getAccountPermissions } from '@sputnik-v2/utils';
 
 import { DraftProposal, DraftProposalHistory } from './entities';
 import {
@@ -37,19 +39,25 @@ export class DraftProposalService {
     @InjectRepository(DraftProposalHistory, DRAFT_DB_CONNECTION)
     private draftProposalHistoryRepository: MongoRepository<DraftProposalHistory>,
     private draftHashtagService: DraftHashtagService,
-    private proposalService: ProposalService,
+    private daoApiService: DaoApiService,
   ) {}
 
   async create(
     accountId: string,
     draftProposalDto: CreateDraftProposal,
   ): Promise<string> {
-    const accountPermissions =
-      await this.proposalService.getAccountPermissionByDao(
-        draftProposalDto.daoId,
-        accountId,
-        draftProposalDto.type,
-      );
+    const { data: dao } = await this.daoApiService
+      .getDao(draftProposalDto.daoId)
+      .catch(() => {
+        throw new BadRequestException(
+          `Invalid DAO ID ${draftProposalDto.daoId}`,
+        );
+      });
+    const accountPermissions = getAccountPermissions(
+      dao.policy.roles,
+      draftProposalDto.type,
+      accountId,
+    );
 
     if (!accountPermissions.canAdd) {
       throw new ForbiddenException(
@@ -89,12 +97,12 @@ export class DraftProposalService {
       throw new ForbiddenException('Account is not the proposer');
     }
 
-    const accountPermissions =
-      await this.proposalService.getAccountPermissionByDao(
-        draftProposal.daoId,
-        accountId,
-        draftProposalDto.type,
-      );
+    const { data: dao } = await this.daoApiService.getDao(draftProposal.daoId);
+    const accountPermissions = getAccountPermissions(
+      dao.policy.roles,
+      draftProposalDto.type,
+      accountId,
+    );
 
     if (!accountPermissions.canAdd) {
       throw new ForbiddenException(
@@ -133,12 +141,12 @@ export class DraftProposalService {
       throw new NotFoundException(`Draft proposal ${id} does not exist`);
     }
 
-    const accountPermissions =
-      await this.proposalService.getAccountPermissionByDao(
-        draftProposal.daoId,
-        accountId,
-        draftProposal.type,
-      );
+    const { data: dao } = await this.daoApiService.getDao(draftProposal.daoId);
+    const accountPermissions = getAccountPermissions(
+      dao.policy.roles,
+      draftProposal.type,
+      accountId,
+    );
 
     if (draftProposal.proposer !== accountId && !accountPermissions.isCouncil) {
       throw new ForbiddenException('Account is not the proposer or council');

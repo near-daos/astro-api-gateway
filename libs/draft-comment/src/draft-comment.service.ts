@@ -8,7 +8,8 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { DraftProposalService } from '@sputnik-v2/draft-proposal';
 import { DeleteResponse, DRAFT_DB_CONNECTION, Order } from '@sputnik-v2/common';
-import { ProposalService } from '@sputnik-v2/proposal';
+import { EventService } from '@sputnik-v2/event';
+import { DaoApiService } from '@sputnik-v2/dao-api';
 import { DraftComment } from './entities';
 import {
   castDraftCommentResponse,
@@ -17,7 +18,7 @@ import {
   UpdateDraftComment,
 } from './dto';
 import { DraftCommentContextType } from './types';
-import { EventService } from '@sputnik-v2/event';
+import { getAccountPermissions } from '@sputnik-v2/utils';
 
 @Injectable()
 export class DraftCommentService {
@@ -25,7 +26,7 @@ export class DraftCommentService {
     @InjectRepository(DraftComment, DRAFT_DB_CONNECTION)
     private draftCommentRepository: MongoRepository<DraftComment>,
     private draftProposalService: DraftProposalService,
-    private proposalService: ProposalService,
+    private daoApiService: DaoApiService,
     private eventService: EventService,
   ) {}
 
@@ -251,11 +252,12 @@ export class DraftCommentService {
       throw new NotFoundException(`Draft comment ${id} does not exist`);
     }
 
-    const accountPermissions =
-      await this.proposalService.getAccountPermissionByDao(
-        draftComment.daoId,
-        accountId,
-      );
+    const { data: dao } = await this.daoApiService.getDao(draftComment.daoId);
+    const accountPermissions = getAccountPermissions(
+      dao.policy.roles,
+      undefined,
+      accountId,
+    );
 
     if (draftComment.author !== accountId && !accountPermissions.isCouncil) {
       throw new ForbiddenException('Account is not the author or council');
