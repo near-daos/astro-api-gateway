@@ -211,6 +211,11 @@ export class DaoService extends TypeOrmCrudService<Dao> {
 
   async getDaoMembers(daoId: string): Promise<string[]> {
     const dao = await this.daoRepository.findOne(daoId);
+
+    if (!dao) {
+      throw new BadRequestException('Invalid Dao ID');
+    }
+
     const allMembers = dao?.policy?.roles.reduce((members, role) => {
       return members.concat(role.accountIds);
     }, []);
