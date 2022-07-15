@@ -59,4 +59,10 @@ public class AccountApi {
 				.accept(JSON)
 				.get(ACCOUNT_ACCOUNT_ID_PHONE_VERIFICATION_STATUS, accountId);
 	}
+
+	public Response getAccountEmailVerificationStatus(String accountId) {
+		return given().spec(requestSpec)
+				.accept(JSON)
+				.get(ACCOUNT_ACCOUNT_ID_EMAIL_VERIFICATION_STATUS, accountId);
+	}
 }

@@ -17,12 +17,12 @@ import org.springframework.beans.factory.annotation.Value;
 import static java.net.HttpURLConnection.*;
 import static org.hamcrest.Matchers.equalTo;
 
-@Tags({@Tag("all"), @Tag("accountAccountIdPhoneVerificationStatusApiTests")})
+@Tags({@Tag("all"), @Tag("accountAccountIdEmailVerificationStatusApiTests")})
 @Epic("Account")
-@Feature("/account/{accountId}/phone/verification-status API tests")
-@DisplayName("/account/{accountId}/phone/verification-status API tests")
+@Feature("/account/{accountId}/email/verification-status API tests")
+@DisplayName("/account/{accountId}/email/verification-status API tests")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-public class AccountAccountIdPhoneVerificationStatusApiTests extends BaseTest {
+public class AccountAccountIdEmailVerificationStatusApiTests extends BaseTest {
 	private final AccountApiSteps accountApiSteps;
 
 	@Value("${accounts.account1.accountId}")
@@ -31,16 +31,16 @@ public class AccountAccountIdPhoneVerificationStatusApiTests extends BaseTest {
 	@Value("${accounts.account2.accountId}")
 	private String accountId2;
 
-	@Value("${accounts.account4.accountId}")
-	private String accountId4;
+	@Value("${accounts.account3.accountId}")
+	private String accountId3;
 
 
 	@Test
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("User should be able to get phone verification status by 'accountId' parameter for verified account")
-	@DisplayName("User should be able to get phone verification status by 'accountId' parameter for verified account")
-	void getAccountIdPhoneVerificationStatusForVerifiedAccount() {
-		VerificationStatus verificationStatus = accountApiSteps.getAccountPhoneVerificationStatus(accountId4).then()
+	@Story("User should be able to get email verification status by 'accountId' parameter for verified account")
+	@DisplayName("User should be able to get email verification status by 'accountId' parameter for verified account")
+	void getAccountIdEmailVerificationStatusForVerifiedAccount() {
+		VerificationStatus verificationStatus = accountApiSteps.getAccountEmailVerificationStatus(accountId3).then()
 				.statusCode(HTTP_OK)
 				.extract().as(VerificationStatus.class);
 
@@ -52,10 +52,10 @@ public class AccountAccountIdPhoneVerificationStatusApiTests extends BaseTest {
 
 	@Test
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("User should be able to get phone verification status by 'accountId' parameter for not verified account")
-	@DisplayName("User should be able to get phone verification status by 'accountId' parameter for not verified account")
-	void getAccountIdPhoneVerificationStatusForNotVerifiedAccount() {
-		VerificationStatus verificationStatus = accountApiSteps.getAccountPhoneVerificationStatus(accountId2).then()
+	@Story("User should be able to get email verification status by 'accountId' parameter for not verified account")
+	@DisplayName("User should be able to get email verification status by 'accountId' parameter for not verified account")
+	void getAccountIdEmailVerificationStatusForNotVerifiedAccount() {
+		VerificationStatus verificationStatus = accountApiSteps.getAccountEmailVerificationStatus(accountId2).then()
 				.statusCode(HTTP_OK)
 				.extract().as(VerificationStatus.class);
 
@@ -67,12 +67,12 @@ public class AccountAccountIdPhoneVerificationStatusApiTests extends BaseTest {
 
 	@Test
 	@Severity(SeverityLevel.NORMAL)
-	@Story("Get HTTP 400 for phone verification status for account without phone number")
-	@DisplayName("Get HTTP 400 for phone verification status for account without phone number")
-	void getHttp400ForPhoneVerificationStatusForAccountWithoutPhoneNumber() {
-		String errorMessage = String.format("No phone number found for account: %s", accountId1);
+	@Story("Get HTTP 400 for email verification status for account without email")
+	@DisplayName("Get HTTP 400 for email verification status for account without email")
+	void getHttp400ForEmailVerificationStatusForAccountWithoutEmailNumber() {
+		String errorMessage = String.format("No email found for account: %s", accountId1);
 
-		accountApiSteps.getAccountPhoneVerificationStatus(accountId1).then()
+		accountApiSteps.getAccountEmailVerificationStatus(accountId1).then()
 				.statusCode(HTTP_BAD_REQUEST)
 				.body("statusCode", equalTo(HTTP_BAD_REQUEST),
 				      "message", equalTo(errorMessage),
@@ -81,13 +81,13 @@ public class AccountAccountIdPhoneVerificationStatusApiTests extends BaseTest {
 
 	@ParameterizedTest
 	@Severity(SeverityLevel.NORMAL)
-	@Story("Get HTTP 404 for phone verification status endpoint for non-existing account")
-	@DisplayName("Get HTTP 404 for phone verification status endpoint for non-existing account")
+	@Story("Get HTTP 404 for email verification status endpoint for non-existing account")
+	@DisplayName("Get HTTP 404 for email verification status endpoint for non-existing account")
 	@CsvSource({"astro-automation.testnet", "another-magic.near"})
-	void getHttp404ForPhoneVerificationStatusEndpointForNonExistingAccount(String accountId) {
+	void getHttp404ForEmailVerificationStatusEndpointForNonExistingAccount(String accountId) {
 		String errorMessage = String.format("Account does not exist: %s", accountId);
 
-		accountApiSteps.getAccountPhoneVerificationStatus(accountId).then()
+		accountApiSteps.getAccountEmailVerificationStatus(accountId).then()
 				.statusCode(HTTP_NOT_FOUND)
 				.body("statusCode", equalTo(HTTP_NOT_FOUND),
 				      "message", equalTo(errorMessage),
