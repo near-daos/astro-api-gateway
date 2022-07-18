@@ -33,6 +33,13 @@ jobs:
         ref: develop
       if: env.GITHUB_WORKFLOW != 'Run Autotests'
 
+    - name: Set Environment
+      id: set_environment
+      run: |
+        cat ".github/env.common" | grep -E -v '^\ *#' >>$GITHUB_ENV
+        cat ".github/env.test" | grep -E -v '^\ *#' >>$GITHUB_ENV
+        echo "::set-output name=workflow_name::${GITHUB_WORKFLOW// /-}"
+
     - name: Execute Tests
       uses: ./.github/actions/test
       with:
