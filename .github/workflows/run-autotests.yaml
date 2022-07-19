@@ -109,7 +109,7 @@ jobs:
       env:
         KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
       with:
-        args: exec -n sputnik-v2-development ${{ steps.get_pod.outputs.kubectl-out }} -- bash -c 'for d in $(ls -t1 /app/test | tail -n +12 | grep -v -e history -e HEADER.html); do rm -rf "/app/test/$d"; done'
+        args: exec -n sputnik-v2-development ${{ steps.get_pod.outputs.kubectl-out }} -- /app/cleanup.sh
 
     - name: Add Annotation
       run: |
