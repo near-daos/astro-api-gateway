@@ -89,4 +89,10 @@ export class NearApiService {
     });
     return response.hash;
   }
+
+  public async getLastBlock(): Promise<any> {
+    return this.provider.block({
+      finality: 'final',
+    });
+  }
 }

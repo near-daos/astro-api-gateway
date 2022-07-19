@@ -18,6 +18,8 @@ import {
   ActionReceiptAction,
   Receipt,
   AssetsNftEvent,
+  LastBlock,
+  Block,
 } from './entities';
 import { buildLikeContractName } from '@sputnik-v2/utils';
 import { ExecutionOutcomeStatus } from './types';
@@ -45,6 +47,12 @@ export class NearIndexerService {
     @InjectRepository(AssetsNftEvent, NEAR_INDEXER_DB_CONNECTION)
     private readonly assetsNftEventRepository: Repository<AssetsNftEvent>,
 
+    @InjectRepository(Block, NEAR_INDEXER_DB_CONNECTION)
+    private readonly blockRepository: Repository<Block>,
+
+    @InjectRepository(LastBlock, NEAR_INDEXER_DB_CONNECTION)
+    private readonly lastBlockRepository: Repository<LastBlock>,
+
     @InjectConnection(NEAR_INDEXER_DB_CONNECTION)
     private connection: Connection,
   ) {}
@@ -58,6 +66,22 @@ export class NearIndexerService {
   lastTransaction(): Promise<Transaction> {
     return this.transactionRepository.findOne({
       order: { blockTimestamp: 'DESC' },
+    });
+  }
+
+  lastBlock(): Promise<Block> {
+    return this.blockRepository.findOne({
+      order: { blockHeight: 'DESC' },
+    });
+  }
+
+  lastNearLakeBlock(): Promise<LastBlock> {
+    return this.lastBlockRepository.findOne();
+  }
+
+  findBlockByHash(blockHash: string): Promise<Block> {
+    return this.blockRepository.findOne({
+      blockHash,
     });
   }
 

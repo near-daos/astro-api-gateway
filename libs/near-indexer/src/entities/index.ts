@@ -7,3 +7,5 @@ export * from './transaction.entity';
 export * from './transaction-action.entity';
 export * from './assets-nft-event.entity';
 export * from './execution-outcome.entity';
+export * from './block.entity';
+export * from './last-block.entity';

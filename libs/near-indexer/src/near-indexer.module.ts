@@ -16,6 +16,8 @@ import {
   Transaction,
   AssetsNftEvent,
   ExecutionOutcome,
+  Block,
+  LastBlock,
 } from './entities';
 import { NearIndexerService } from './near-indexer.service';
 
@@ -36,6 +38,8 @@ import { NearIndexerService } from './near-indexer.service';
         AccountChange,
         AssetsNftEvent,
         ExecutionOutcome,
+        Block,
+        LastBlock,
       ],
       NEAR_INDEXER_DB_CONNECTION,
     ),
