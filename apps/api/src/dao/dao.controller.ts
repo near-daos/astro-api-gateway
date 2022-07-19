@@ -78,7 +78,7 @@ export class DaoController {
     description: 'Account does not exist',
   })
   @ApiBadRequestResponse({
-    description: 'Invalid Dao ID',
+    description: 'Invalid DAO ID',
   })
   @UseInterceptors(HttpCacheInterceptor)
   @UseGuards(ValidAccountGuard)
@@ -101,14 +101,14 @@ export class DaoController {
     description: 'Sputnik DAO',
     type: Dao,
   })
-  @ApiBadRequestResponse({ description: 'Invalid Dao ID' })
+  @ApiBadRequestResponse({ description: 'Invalid DAO ID <id>' })
   @UseInterceptors(HttpCacheInterceptor)
   @Get('/:id')
   async daoById(@Param() { id }: FindOneParams): Promise<DaoResponseV1> {
     const dao = await this.daoService.findById(id);
 
     if (!dao) {
-      throw new BadRequestException('Invalid Dao ID');
+      throw new BadRequestException(`Invalid DAO ID ${id}`);
     }
 
     return dao;
@@ -123,7 +123,7 @@ export class DaoController {
     description: 'Sputnik DAO',
     type: Dao,
   })
-  @ApiBadRequestResponse({ description: 'Invalid Dao ID' })
+  @ApiBadRequestResponse({ description: 'Invalid DAO ID <id>' })
   @UseInterceptors(HttpCacheInterceptor)
   @Version('2')
   @Get('/:id')
@@ -138,10 +138,9 @@ export class DaoController {
   @ApiResponse({
     status: 200,
     description: 'DAO Members',
-    type: DaoMemberVote,
-    isArray: true,
+    type: [DaoMemberVote],
   })
-  @ApiBadRequestResponse({ description: 'Invalid Dao ID' })
+  @ApiBadRequestResponse({ description: 'Invalid DAO ID <id>' })
   @UseInterceptors(HttpCacheInterceptor)
   @Get('/:id/members')
   async daoMembers(@Param() { id }: FindOneParams): Promise<DaoMemberVote[]> {

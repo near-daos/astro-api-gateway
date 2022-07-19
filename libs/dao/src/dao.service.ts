@@ -83,7 +83,7 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     });
 
     if (!dao) {
-      throw new BadRequestException('Invalid Dao ID');
+      throw new BadRequestException(`Invalid DAO ID ${id}`);
     }
 
     return castDaoResponseV2(dao);
@@ -213,7 +213,7 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     const dao = await this.daoRepository.findOne(daoId);
 
     if (!dao) {
-      throw new BadRequestException('Invalid Dao ID');
+      throw new BadRequestException(`Invalid DAO ID ${daoId}`);
     }
 
     return dao.accountIds;
