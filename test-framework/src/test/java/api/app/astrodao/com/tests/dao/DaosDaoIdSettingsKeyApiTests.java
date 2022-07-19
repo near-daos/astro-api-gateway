@@ -29,7 +29,7 @@ import static org.hamcrest.Matchers.equalTo;
 @Feature("/daos/{daoId}/settings/{key} API tests")
 @DisplayName("/daos/{daoId}/settings/{key} API tests")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-public class DaosDaoIdSettingsKey extends BaseTest {
+public class DaosDaoIdSettingsKeyApiTests extends BaseTest {
 	private final Faker faker;
 	private final DaoApiSteps daoApiSteps;
 
