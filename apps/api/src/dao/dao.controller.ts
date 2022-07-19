@@ -138,7 +138,8 @@ export class DaoController {
   @ApiResponse({
     status: 200,
     description: 'DAO Members',
-    type: [DaoMemberVote],
+    type: DaoMemberVote,
+    isArray: true,
   })
   @ApiBadRequestResponse({ description: 'Invalid DAO ID <id>' })
   @UseInterceptors(HttpCacheInterceptor)
