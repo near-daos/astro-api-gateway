@@ -28,7 +28,7 @@ import static org.hamcrest.Matchers.equalTo;
 @Feature("/daos/{daoId}/settings API tests")
 @DisplayName("/daos/{daoId}/settings API tests")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-public class DaosDaoIdSettings extends BaseTest {
+public class DaosDaoIdSettingsApiTests extends BaseTest {
 	private final Faker faker;
 	private final DaoApiSteps daoApiSteps;
 

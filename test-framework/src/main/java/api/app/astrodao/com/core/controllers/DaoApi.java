@@ -69,4 +69,10 @@ public class DaoApi {
                 .body(JsonUtils.writeValueAsString(patchSettingsParamBodyDto))
                 .patch(DAOS_DAO_ID_SETTINGS_KEY, daoId, key);
     }
+
+    public Response getDaoMembers(String daoId) {
+        return given().spec(requestSpec)
+                .accept(ContentType.JSON)
+                .get(DAOS_DAO_ID_MEMBERS, daoId);
+    }
 }

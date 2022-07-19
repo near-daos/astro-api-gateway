@@ -42,4 +42,9 @@ public class DaoApiSteps extends BaseSteps {
     public Response patchDaoSettingsByKey(String daoId, String key, String newValue, String authToken) {
         return daoApi.patchDaoSettingsByKey(daoId, key, newValue, authToken);
     }
+
+    @Step("Get DAO members by DAO id '{daoId}' parameter")
+    public Response getDaoMembers(String daoId) {
+        return daoApi.getDaoMembers(daoId);
+    }
 }
