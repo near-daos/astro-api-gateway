@@ -1,6 +1,7 @@
 package api.app.astrodao.com.tests.dao;
 
 import api.app.astrodao.com.core.dto.api.dao.members.DaoMemberVotes;
+import api.app.astrodao.com.openapi.models.DaoMemberVote;
 import api.app.astrodao.com.steps.DaoApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import io.qameta.allure.*;
@@ -25,6 +26,8 @@ public class DaosIdMembersApiTests extends BaseTest {
 	@Value("${test.dao1}")
 	private String testDao;
 
+	@Value("${accounts.account1.accountId}")
+	private String accountId;
 
 	@Test
 	@Severity(SeverityLevel.CRITICAL)
@@ -37,5 +40,18 @@ public class DaosIdMembersApiTests extends BaseTest {
 
 		daoApiSteps.assertCollectionElementsHasValue(daoMemberVote, daoMember -> !daoMember.getAccountId().isEmpty(), "accountId");
 		daoApiSteps.assertCollectionElementsHasValue(daoMemberVote, daoMember -> daoMember.getVoteCount().intValue() >= 0, "voteCount");
+	}
+
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("User should be able to get a list with single member for valid DAO")
+	@DisplayName("User should be able to get a list with single member for valid DAO")
+	void getListWithSingleMember() {
+		DaoMemberVotes daoMemberVote = daoApiSteps.getDaoMembers(testDao).then()
+				.statusCode(HTTP_OK)
+				.extract().as(DaoMemberVotes.class);
+
+		daoApiSteps.assertCollectionContainsOnly(daoMemberVote, DaoMemberVote::getAccountId, accountId, "accountId");
+		daoApiSteps.assertCollectionElementsHasValue(daoMemberVote, daoMember -> daoMember.getVoteCount().intValue() >= 710, "voteCount");
 	}
 }
