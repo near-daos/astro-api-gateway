@@ -10,10 +10,14 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
+import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_OK;
+import static org.hamcrest.Matchers.equalTo;
 
 @Tags({@Tag("all"), @Tag("daosIdMembersApiTests")})
 @Epic("DAO")
@@ -53,5 +57,21 @@ public class DaosIdMembersApiTests extends BaseTest {
 
 		daoApiSteps.assertCollectionContainsOnly(daoMemberVote, DaoMemberVote::getAccountId, accountId, "accountId");
 		daoApiSteps.assertCollectionElementsHasValue(daoMemberVote, daoMember -> daoMember.getVoteCount().intValue() >= 710, "voteCount");
+	}
+
+	@ParameterizedTest
+	@Severity(SeverityLevel.NORMAL)
+	@Story("Get HTTP 400 for DAO members with null, empty and invalid 'daoId' param")
+	@DisplayName("Get HTTP 400 for DAO members with null, empty and invalid 'daoId' param")
+	@CsvSource({"invalidAccountId", "2212332141", "-1", "0", "testdao3132498.testnet",
+			"*", "autotest-dao-1.sputnikv2.testnet-1", "another-magic.near", "null"})
+	void getHttp400ForDaoMembersWithNullEmptyAndInvalidDaoIdParam(String daoId) {
+		String errorMessage = "Invalid DAO ID " + daoId;
+
+		daoApiSteps.getDaoMembers(daoId).then()
+				.statusCode(HTTP_BAD_REQUEST)
+				.body("statusCode", equalTo(HTTP_BAD_REQUEST),
+				      "message", equalTo(errorMessage),
+				      "error", equalTo("Bad Request"));
 	}
 }
