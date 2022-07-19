@@ -15,6 +15,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
+import static api.app.astrodao.com.core.Constants.Variables.EMPTY_STRING;
 import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static org.hamcrest.Matchers.equalTo;
@@ -61,17 +62,29 @@ public class DaosIdMembersApiTests extends BaseTest {
 
 	@ParameterizedTest
 	@Severity(SeverityLevel.NORMAL)
-	@Story("Get HTTP 400 for DAO members with null, empty and invalid 'daoId' param")
-	@DisplayName("Get HTTP 400 for DAO members with null, empty and invalid 'daoId' param")
+	@Story("Get HTTP 400 for DAO members with invalid 'daoId' param")
+	@DisplayName("Get HTTP 400 for DAO members with invalid 'daoId' param")
 	@CsvSource({"invalidAccountId", "2212332141", "-1", "0", "testdao3132498.testnet",
 			"*", "autotest-dao-1.sputnikv2.testnet-1", "another-magic.near", "null"})
-	void getHttp400ForDaoMembersWithNullEmptyAndInvalidDaoIdParam(String daoId) {
+	void getHttp400ForDaoMembersWithInvalidDaoIdParam(String daoId) {
 		String errorMessage = "Invalid DAO ID " + daoId;
 
 		daoApiSteps.getDaoMembers(daoId).then()
 				.statusCode(HTTP_BAD_REQUEST)
 				.body("statusCode", equalTo(HTTP_BAD_REQUEST),
 				      "message", equalTo(errorMessage),
+				      "error", equalTo("Bad Request"));
+	}
+
+	@Test
+	@Severity(SeverityLevel.NORMAL)
+	@Story("Get HTTP 400 for DAO members with empty 'daoId' param")
+	@DisplayName("Get HTTP 400 for DAO members with empty 'daoId' param")
+	void getHttp400ForDaoMembersWithEmptyDaoIdParam() {
+		daoApiSteps.getDaoMembers(EMPTY_STRING).then()
+				.statusCode(HTTP_BAD_REQUEST)
+				.body("statusCode", equalTo(HTTP_BAD_REQUEST),
+				      "message", equalTo("Invalid DAO ID members"),
 				      "error", equalTo("Bad Request"));
 	}
 }
