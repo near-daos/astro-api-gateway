@@ -1,12 +1,20 @@
 import { ApiProperty } from '@nestjs/swagger';
 
+export class TransactionHandlerBlock {
+  @ApiProperty()
+  height: number;
+
+  @ApiProperty()
+  timestamp: number | bigint;
+}
+
 export class TransactionHandlerBlocks {
-  @ApiProperty()
-  lastBlock: number;
+  @ApiProperty({ type: TransactionHandlerBlock })
+  lastBlock: TransactionHandlerBlock;
 
-  @ApiProperty()
-  lastAstroBlock: number;
+  @ApiProperty({ type: TransactionHandlerBlock })
+  lastAstroBlock: TransactionHandlerBlock;
 
-  @ApiProperty()
-  lastHandledBlock: number;
+  @ApiProperty({ type: TransactionHandlerBlock })
+  lastHandledBlock: TransactionHandlerBlock;
 }
