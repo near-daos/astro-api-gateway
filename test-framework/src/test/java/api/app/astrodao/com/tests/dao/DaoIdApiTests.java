@@ -9,6 +9,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -40,15 +42,19 @@ public class DaoIdApiTests extends BaseTest {
 		daoApiSteps.assertDtoValueGreaterThan(dao, p -> p.getTotalDaoFunds().intValue(), 10, "totalDaoFunds");
 	}
 
-	@Test
+	@ParameterizedTest
 	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 400 for invalid DAO name")
 	@DisplayName("Get HTTP 400 for invalid DAO name")
-	void getHttp400ForInvalidDaoName() {
-		daoApiSteps.getDAOByID("InvaliDaoName").then()
+	@CsvSource({"invalidDaoId", "2212332141", "-1", "0", "testdao3132498.testnet",
+			"*", "autotest-dao-1.sputnikv2.testnet-1", "another-magic.near", "null"})
+	void getHttp400ForInvalidDaoName(String daoId) {
+		String errorMessage = "Invalid DAO ID " + daoId;
+
+		daoApiSteps.getDAOByID(daoId).then()
 				.statusCode(HTTP_BAD_REQUEST)
 				.body("statusCode", equalTo(HTTP_BAD_REQUEST),
-				      "message", equalTo("Invalid Dao ID"),
+				      "message", equalTo(errorMessage),
 				      "error", equalTo("Bad Request"));
 	}
 }
