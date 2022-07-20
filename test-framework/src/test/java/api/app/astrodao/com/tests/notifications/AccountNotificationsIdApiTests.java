@@ -281,10 +281,12 @@ public class AccountNotificationsIdApiTests extends BaseTest {
 			"test-dao-1641395769436.sputnikv2.testnet-3184", "test-dao-1641395769436.sputnikv2.testnet", "testdao2.testnet",
 			"testdao2.testnet-fgflgxxo7okrakcfwhxagzfcxdigua5nqcktvsqnnt3w-vote"})
 	void getHttp400ForAccountNotificationId(String id) {
+		String errorMessage = "Invalid Account Notification ID " + id;
+
 		notificationsApiSteps.patchAccountNotificationsById(accountToken, id, true, true, true).then()
 				.statusCode(HTTP_BAD_REQUEST)
 				.body("statusCode", equalTo(HTTP_BAD_REQUEST),
-				      "message", equalTo("Invalid Account Notification ID"),
+				      "message", equalTo(errorMessage),
 				      "error", equalTo("Bad Request"));
 	}
 }
