@@ -36,9 +36,18 @@ export class TransactionHandlerService {
     const lastBlock = await this.nearIndexerService.lastBlock();
     const lastNearLakeBlock = await this.nearIndexerService.lastNearLakeBlock();
     return {
-      lastBlock: lastNearLakeBlock.blockHeight,
-      lastAstroBlock: lastBlock.blockHeight,
-      lastHandledBlock: stateBlock.blockHeight,
+      lastBlock: {
+        height: lastNearLakeBlock.blockHeight,
+        timestamp: lastNearLakeBlock.blockTimestamp,
+      },
+      lastAstroBlock: {
+        height: lastBlock.blockHeight,
+        timestamp: lastBlock.blockTimestamp,
+      },
+      lastHandledBlock: {
+        height: stateBlock.blockHeight,
+        timestamp: stateBlock.blockTimestamp,
+      },
     };
   }
 

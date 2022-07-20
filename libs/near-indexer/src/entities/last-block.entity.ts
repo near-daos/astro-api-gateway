@@ -10,4 +10,8 @@ export class LastBlock {
   @ApiProperty()
   @Column({ type: 'timestamp without time zone' })
   updatedDate: Date;
+
+  @ApiProperty()
+  @Column()
+  blockTimestamp: number;
 }
