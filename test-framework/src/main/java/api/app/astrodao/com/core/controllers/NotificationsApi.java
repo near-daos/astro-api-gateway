@@ -46,8 +46,8 @@ public class NotificationsApi {
 				.get(ACCOUNT_NOTIFICATION_STATUS_ACCOUNT_ID, accountId);
 	}
 
-	public Response setNotificationSettings(String authToken, String daoId, List<String> types, String mutedUntilTimestamp,
-	                                        boolean isEnableSms, boolean isEnableEmail, boolean isAllMuted) {
+	public Response postNotificationSettings(String authToken, String daoId, List<String> types, String mutedUntilTimestamp,
+	                                         boolean isEnableSms, boolean isEnableEmail, boolean isAllMuted) {
 		CreateAccountNotificationSettingsDto createAccountNotificationSettings = new CreateAccountNotificationSettingsDto();
 		createAccountNotificationSettings.setDaoId(daoId);
 		createAccountNotificationSettings.setTypes(types);
@@ -64,7 +64,7 @@ public class NotificationsApi {
 				.post(NOTIFICATIONS_SETTINGS);
 	}
 
-	public Response setNotificationSettings(String authToken, String body) {
+	public Response postNotificationSettings(String authToken, String body) {
 		return given().spec(requestSpec)
 				.accept(ContentType.JSON)
 				.header("Authorization", "Bearer " + authToken)
