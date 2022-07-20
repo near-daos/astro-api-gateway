@@ -1,6 +1,7 @@
 import { Controller, Post, Param, UseGuards, Req, Get } from '@nestjs/common';
 import { ApiBearerAuth, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Span } from 'nestjs-ddtrace';
+import { Interval } from '@nestjs/schedule';
 
 import {
   AccountAccessGuard,
@@ -14,6 +15,7 @@ import {
   TransactionHandlerBlocks,
   TransactionHandlerService,
 } from '@sputnik-v2/transaction-handler';
+import { SocketService } from '@sputnik-v2/websocket';
 
 @Span()
 @ApiTags('Aggregator')
@@ -22,6 +24,7 @@ export class AggregatorController {
   constructor(
     private readonly eventService: EventService,
     private readonly transactionHandlerService: TransactionHandlerService,
+    private readonly socketService: SocketService,
   ) {}
 
   @ApiParam({
@@ -54,5 +57,15 @@ export class AggregatorController {
     return this.transactionHandlerService.getHandlerBlocks(
       AGGREGATOR_HANDLER_STATE_ID,
     );
+  }
+
+  @Interval(5000)
+  async emitBlocks() {
+    this.socketService.emitToAllEvent({
+      event: 'aggregator-blocks',
+      data: await this.transactionHandlerService.getHandlerBlocks(
+        AGGREGATOR_HANDLER_STATE_ID,
+      ),
+    });
   }
 }
