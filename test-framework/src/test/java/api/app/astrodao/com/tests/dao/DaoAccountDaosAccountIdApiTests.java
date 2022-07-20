@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import java.util.Arrays;
 import java.util.List;
 
+import static api.app.astrodao.com.core.Constants.Variables.EMPTY_STRING;
 import static java.net.HttpURLConnection.*;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -75,13 +76,13 @@ public class DaoAccountDaosAccountIdApiTests extends BaseTest {
 
 	@Test
 	@Severity(SeverityLevel.NORMAL)
-	@Story("Get HTTP 400 for Account-daos")
-	@DisplayName("Get HTTP 400 for Account-daos")
+	@Story("Get HTTP 400 for account-daos")
+	@DisplayName("Get HTTP 400 for account-daos")
 	void getHttp400ForAccountDaos() {
-		daoApiSteps.getAccountDaos("").then()
+		daoApiSteps.getAccountDaos(EMPTY_STRING).then()
 				.statusCode(HTTP_BAD_REQUEST)
 				.body("statusCode", equalTo(HTTP_BAD_REQUEST),
-				      "message", equalTo("Invalid Dao ID"),
+				      "message", equalTo("Invalid DAO ID account-daos"),
 				      "error", equalTo("Bad Request"));
 	}
 }

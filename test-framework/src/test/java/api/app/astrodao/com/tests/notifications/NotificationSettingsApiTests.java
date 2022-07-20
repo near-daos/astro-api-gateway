@@ -17,7 +17,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EmptySource;
-import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -512,7 +511,6 @@ public class NotificationSettingsApiTests extends BaseTest {
 	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 400 for account notification settings with null, empty and invalid 'daoId' param")
 	@DisplayName("Get HTTP 400 for account notification settings with null, empty and invalid 'daoId' param")
-	@NullAndEmptySource
 	@CsvSource({"invalidAccountId", "2212332141", "-1", "0", "testdao3132498.testnet",
 			"*", "autotest-dao-1.sputnikv2.testnet-1", "another-magic.near", "null"})
 	void getHttp400ForAccountNotificationSettingsWithNullEmptyAndInvalidDaoIdParam(String daoId) {
@@ -525,4 +523,6 @@ public class NotificationSettingsApiTests extends BaseTest {
 				      "message", equalTo(errorMessage),
 				      "error", equalTo("Bad Request"));
 	}
+
+	//TODO: add new tests for new feature - daoId is null and empty string. Should be 201. Settings applied to all user DAOs
 }
