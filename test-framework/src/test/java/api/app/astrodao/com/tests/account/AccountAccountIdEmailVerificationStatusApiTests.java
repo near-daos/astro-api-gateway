@@ -28,19 +28,18 @@ public class AccountAccountIdEmailVerificationStatusApiTests extends BaseTest {
 	@Value("${accounts.account1.accountId}")
 	private String accountId1;
 
-	@Value("${accounts.account2.accountId}")
-	private String accountId2;
+	@Value("${accounts.account4.accountId}")
+	private String accountId4;
 
-	@Value("${accounts.account3.accountId}")
-	private String accountId3;
-
+	@Value("${accounts.account5.accountId}")
+	private String accountId5;
 
 	@Test
 	@Severity(SeverityLevel.CRITICAL)
 	@Story("User should be able to get email verification status by 'accountId' parameter for verified account")
 	@DisplayName("User should be able to get email verification status by 'accountId' parameter for verified account")
 	void getAccountIdEmailVerificationStatusForVerifiedAccount() {
-		VerificationStatus verificationStatus = accountApiSteps.getAccountEmailVerificationStatus(accountId3).then()
+		VerificationStatus verificationStatus = accountApiSteps.getAccountEmailVerificationStatus(accountId4).then()
 				.statusCode(HTTP_OK)
 				.extract().as(VerificationStatus.class);
 
@@ -55,7 +54,7 @@ public class AccountAccountIdEmailVerificationStatusApiTests extends BaseTest {
 	@Story("User should be able to get email verification status by 'accountId' parameter for not verified account")
 	@DisplayName("User should be able to get email verification status by 'accountId' parameter for not verified account")
 	void getAccountIdEmailVerificationStatusForNotVerifiedAccount() {
-		VerificationStatus verificationStatus = accountApiSteps.getAccountEmailVerificationStatus(accountId2).then()
+		VerificationStatus verificationStatus = accountApiSteps.getAccountEmailVerificationStatus(accountId5).then()
 				.statusCode(HTTP_OK)
 				.extract().as(VerificationStatus.class);
 

@@ -33,3 +33,6 @@ accounts:
     publicKey: ed25519:5FwoV3MFB94ExfgycBvUQaTbTfgSMPAcfX62bgLBqEPR
     signature: u6z8PsgaiRabWflOzzBgiT+REEBQAGlfhF19nboVHODgH+6YJFC/qf0xUfa1xv37UU2BX0Lfa0J5g3TyHlc9BQ==
     token: YXN0cm8tYXV0b21hdGlvbi1yZXNlcnZlZDEudGVzdG5ldHxlZDI1NTE5OjVGd29WM01GQjk0RXhmZ3ljQnZVUWFUYlRmZ1NNUEFjZlg2MmJnTEJxRVBSfHU2ejhQc2dhaVJhYldmbE96ekJnaVQrUkVFQlFBR2xmaEYxOW5ib1ZIT0RnSCs2WUpGQy9xZjB4VWZhMXh2MzdVVTJCWDBMZmEwSjVnM1R5SGxjOUJRPT0=
+
+  account5:
+    accountId: astro-automation-reserved3.testnet

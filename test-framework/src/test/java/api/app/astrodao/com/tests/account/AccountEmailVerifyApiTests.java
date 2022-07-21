@@ -114,11 +114,12 @@ public class AccountEmailVerifyApiTests extends BaseTest {
 	void getHttp403ForAccountEmailVerifyWithNullAndInvalidPublicKeyParam(String publicKey) {
 		String code = String.valueOf(faker.number().randomNumber(6, false));
 		String authToken = Base64Utils.encodeAuthToken(account3Id, publicKey, account3Signature);
+		String errorMessage = String.format("Account %s identity is invalid - public key", account3Id);
 
 		accountApiSteps.verifyEmail(authToken, code).then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
-				      "message", equalTo("Account astro-automation-reserved6.testnet identity is invalid - public key"),
+				      "message", equalTo(errorMessage),
 				      "error", equalTo("Forbidden"));
 	}
 
