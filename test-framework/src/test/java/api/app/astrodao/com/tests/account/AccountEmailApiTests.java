@@ -70,12 +70,13 @@ public class AccountEmailApiTests extends BaseTest {
 	@CsvSource({"invalidPublicKey"})
 	void getHttp403ForAccountEmailWithNullAndInvalidPublicKeyParam(String publicKey) {
 		String authToken = Base64Utils.encodeAuthToken(accountId, publicKey, accountSignature);
+		String errorMessage = String.format("Account %s identity is invalid - public key", accountId);
 
 		accountApiSteps.setAccountEmail(authToken, email)
 				.then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
-				      "message", equalTo("Account astro-automation-reserved6.testnet identity is invalid - public key"),
+				      "message", equalTo(errorMessage),
 				      "error", equalTo("Forbidden"));
 	}
 
