@@ -1,6 +1,6 @@
 apiVersion: v2
-name: sputnik-v2-draft
-description: Helm chart for Sputnik V2 Draft
+name: astro-draft
+description: Helm chart for Astro Draft
 type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
