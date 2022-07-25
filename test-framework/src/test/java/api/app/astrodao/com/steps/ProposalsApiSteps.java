@@ -37,4 +37,9 @@ public class ProposalsApiSteps extends BaseSteps {
     public Response getAccountProposals(Map<String, Object> queryParams, String accountId) {
         return proposalsApi.getAccountProposals(queryParams, accountId);
     }
+
+    @Step("Get list of proposals templates with query params '{queryParams}'")
+    public Response getListOfProposalTemplates(Map<String, Object> queryParams) {
+        return proposalsApi.getListOfProposalTemplates(queryParams);
+    }
 }
