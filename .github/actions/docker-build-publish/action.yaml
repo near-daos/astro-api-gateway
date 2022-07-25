@@ -2,13 +2,13 @@ name: 'Docker Build Publish'
 runs:
   using: 'composite'
   steps:
-  - name: Cache Docker layers
-    uses: actions/cache@v2
-    with:
-      path: /tmp/.buildx-cache-sputnik-v2-${{ env.APP_NAME }}
-      key: ${{ runner.os }}-sputnik-v2-${{ env.APP_NAME }}-${{ github.sha }}
-      restore-keys: |
-        ${{ runner.os }}-sputnik-v2-${{ env.APP_NAME }}
+#  - name: Cache Docker layers
+#    uses: actions/cache@v2
+#    with:
+#      path: /tmp/.buildx-cache-sputnik-v2-${{ env.APP_NAME }}
+#      key: ${{ runner.os }}-sputnik-v2-${{ env.APP_NAME }}-${{ github.sha }}
+#      restore-keys: |
+#        ${{ runner.os }}-sputnik-v2-${{ env.APP_NAME }}
 
   - name: Docker meta
     id: meta
@@ -43,11 +43,11 @@ runs:
       tags: ${{ steps.meta.outputs.tags }}
       push: true
       build-args: APP_NAME=${{ env.APP_NAME }}
-      cache-from: type=local,src=/tmp/.buildx-cache-sputnik-v2-${{ env.APP_NAME }}
-      cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-sputnik-v2-${{ env.APP_NAME }}-new
+#      cache-from: type=local,src=/tmp/.buildx-cache-sputnik-v2-${{ env.APP_NAME }}
+#      cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-sputnik-v2-${{ env.APP_NAME }}-new
 
-  - name: Move cache
-    shell: bash
-    run: |
-      rm -rf /tmp/.buildx-cache-sputnik-v2-${{ env.APP_NAME }}
-      mv /tmp/.buildx-cache-sputnik-v2-${{ env.APP_NAME }}-new /tmp/.buildx-cache-sputnik-v2-${{ env.APP_NAME }}
+#  - name: Move cache
+#    shell: bash
+#    run: |
+#      rm -rf /tmp/.buildx-cache-sputnik-v2-${{ env.APP_NAME }}
+#      mv /tmp/.buildx-cache-sputnik-v2-${{ env.APP_NAME }}-new /tmp/.buildx-cache-sputnik-v2-${{ env.APP_NAME }}
