@@ -5,9 +5,9 @@
 replicaCount: 1
 
 image:
-  repository: 398077236708.dkr.ecr.eu-central-1.amazonaws.com
+  repository: 570288326086.dkr.ecr.us-east-1.amazonaws.com
   tag: latest
-  name: sputnik-v2-draft
+  name: astro-draft
   pullPolicy: Always
 
 imagePullSecrets: [ ]
