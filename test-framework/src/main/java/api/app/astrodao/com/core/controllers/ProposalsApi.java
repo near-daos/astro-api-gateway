@@ -1,6 +1,5 @@
 package api.app.astrodao.com.core.controllers;
 
-import api.app.astrodao.com.core.Constants;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
@@ -48,5 +47,12 @@ public class ProposalsApi {
                 .queryParams(queryParams)
                 .accept(ContentType.JSON)
                 .get(PROPOSALS_ACCOUNT_PROPOSALS_ACCOUNT_ID, account1Id);
+    }
+
+    public Response getListOfProposalTemplates(Map<String, Object> queryParams) {
+        return given().spec(requestSpec)
+                .queryParams(queryParams)
+                .accept(ContentType.JSON)
+                .get(PROPOSALS_TEMPLATES);
     }
 }

@@ -44,10 +44,10 @@ public class ProposalsApiTests extends BaseTest {
         Map<String, Object> query = Map.of(
                 "sort","createdAt,DESC",
                 "limit", 10,
-                "offset", 0
+                "offset", 10
         );
         int limit = 10;
-        int page = 1;
+        int page = 2;
 
         ProposalResponse proposalResponse = proposalsApiSteps.getProposals(query).then()
                 .statusCode(HTTP_OK)
