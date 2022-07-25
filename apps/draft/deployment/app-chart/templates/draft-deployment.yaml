@@ -92,4 +92,4 @@ spec:
       - name: documentdb-ca
         secret:
           defaultMode: 420
-          secretName: documentdb-secret
+          secretName: draft-documentdb-secrets
