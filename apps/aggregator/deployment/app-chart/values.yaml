@@ -14,8 +14,8 @@ imagePullSecrets: [ ]
 nameOverride: ""
 fullnameOverride: ""
 
-aggregatorNameOverride: "sputnik-v2-aggregator"
-aggregatorFullnameOverride: "sputnik-v2-aggregator"
+aggregatorNameOverride: "astro-aggregator"
+aggregatorFullnameOverride: "astro-aggregator"
 
 aggregatorDaoNameOverride: "sputnik-v2-aggregator-dao"
 aggregatorDaoFullnameOverride: "sputnik-v2-aggregator-dao"
