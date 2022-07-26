@@ -80,11 +80,11 @@ spec:
           - configMapRef:
               name: {{ .Release.Name }}-version
           - secretRef:
-              name: db-secret
+              name: api-rds-secrets
           - secretRef:
-              name: astro-lake-indexer-db-secret-for-be
+              name: draft-service-secrets
           - secretRef:
-              name: redis-secret
+              name: api-redis-secrets
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}

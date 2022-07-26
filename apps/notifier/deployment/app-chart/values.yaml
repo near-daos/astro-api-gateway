@@ -5,9 +5,9 @@
 replicaCount: 1
 
 image:
-  repository: 398077236708.dkr.ecr.eu-central-1.amazonaws.com
+  repository: 570288326086.dkr.ecr.us-east-1.amazonaws.com
   tag: latest
-  name: sputnik-v2-notifier
+  name: astro-notifier
   pullPolicy: Always
 
 imagePullSecrets: [ ]
@@ -20,8 +20,8 @@ aggregatorFullnameOverride: "sputnik-v2-aggregator"
 aggregatorDaoNameOverride: "sputnik-v2-aggregator-dao"
 aggregatorDaoFullnameOverride: "sputnik-v2-aggregator-dao"
 
-notifierNameOverride: "sputnik-v2-notifier"
-notifierFullnameOverride: "sputnik-v2-notifier"
+notifierNameOverride: "astro-notifier"
+notifierFullnameOverride: "astro-notifier"
 
 container:
   # Specifies the internal container port

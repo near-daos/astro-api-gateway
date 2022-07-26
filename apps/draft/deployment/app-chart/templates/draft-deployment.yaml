@@ -63,13 +63,13 @@ spec:
           - configMapRef:
               name: {{ .Release.Name }}-version
           - secretRef:
-              name: db-secret
+              name: api-rds-secrets
           - secretRef:
-              name: astro-lake-indexer-db-secret-for-be
+              name: draft-service-secrets
           - secretRef:
-              name: redis-secret
+              name: api-redis-secrets
           - secretRef:
-              name: documentdb-secret
+              name: draft-documentdb-secrets
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
@@ -92,4 +92,4 @@ spec:
       - name: documentdb-ca
         secret:
           defaultMode: 420
-          secretName: documentdb-secret
+          secretName: draft-documentdb-secrets

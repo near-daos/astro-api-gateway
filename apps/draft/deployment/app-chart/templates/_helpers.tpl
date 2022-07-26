@@ -287,3 +287,11 @@ Create the name of the service account to use
 {{- $size = toString (sub (int $size) 200) -}}
 {{- printf  $size -}}
 {{- end -}}
+
+{{- define "aws.env" -}}
+{{- if hasSuffix "test" .Release.Namespace -}}
+{{- print "Dev" -}}
+{{- else -}}
+{{- print "Prod" -}}
+{{- end -}}
+{{- end -}}
