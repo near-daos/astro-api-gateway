@@ -14,10 +14,10 @@ import static io.restassured.RestAssured.given;
 @Component
 @RequiredArgsConstructor
 public class SearchApi {
-    private final RequestSpecification requestSpec;
+    private final RequestSpecification requestSpecForApiService;
 
     public Response search(Map<String, Object> queryParams) {
-        return given().spec(requestSpec)
+        return given().spec(requestSpecForApiService)
                 .queryParams(queryParams)
                 .accept(ContentType.JSON)
                 .get(SEARCH);

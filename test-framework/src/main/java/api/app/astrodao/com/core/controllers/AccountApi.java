@@ -14,10 +14,10 @@ import static io.restassured.http.ContentType.JSON;
 @Component
 @RequiredArgsConstructor
 public class AccountApi {
-	private final RequestSpecification requestSpec;
+	private final RequestSpecification requestSpecForApiService;
 
 	public Response getAccountSettingsById(String accountId) {
-		return given().spec(requestSpec)
+		return given().spec(requestSpecForApiService)
 				.accept(JSON)
 				.get(ACCOUNT_ID, accountId);
 	}
@@ -26,7 +26,7 @@ public class AccountApi {
 		AccountEmailDto accountEmailDto = new AccountEmailDto();
 		accountEmailDto.setEmail(email);
 
-		return given().spec(requestSpec)
+		return given().spec(requestSpecForApiService)
 				.accept(JSON)
 				.header("Authorization", "Bearer " + authToken)
 				.contentType(JSON)
@@ -35,7 +35,7 @@ public class AccountApi {
 	}
 
 	public Response postSendEmailVerificationCode(String authToken) {
-		return given().spec(requestSpec)
+		return given().spec(requestSpecForApiService)
 				.accept(JSON)
 				.header("Authorization", "Bearer " + authToken)
 				.contentType(JSON)
@@ -46,7 +46,7 @@ public class AccountApi {
 		AccountVerificationDto accountVerificationDto = new AccountVerificationDto();
 		accountVerificationDto.setCode(code);
 
-		return given().spec(requestSpec)
+		return given().spec(requestSpecForApiService)
 				.accept(JSON)
 				.header("Authorization", "Bearer " + authToken)
 				.contentType(JSON)
@@ -55,13 +55,13 @@ public class AccountApi {
 	}
 
 	public Response getAccountPhoneVerificationStatus(String accountId) {
-		return given().spec(requestSpec)
+		return given().spec(requestSpecForApiService)
 				.accept(JSON)
 				.get(ACCOUNT_ACCOUNT_ID_PHONE_VERIFICATION_STATUS, accountId);
 	}
 
 	public Response getAccountEmailVerificationStatus(String accountId) {
-		return given().spec(requestSpec)
+		return given().spec(requestSpecForApiService)
 				.accept(JSON)
 				.get(ACCOUNT_ACCOUNT_ID_EMAIL_VERIFICATION_STATUS, accountId);
 	}

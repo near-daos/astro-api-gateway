@@ -17,23 +17,23 @@ import static io.restassured.RestAssured.given;
 @Component
 @RequiredArgsConstructor
 public class DaoApi {
-    private final RequestSpecification requestSpec;
+    private final RequestSpecification requestSpecForApiService;
 
     public Response getDaoByID(String daoId) {
-        return given().spec(requestSpec)
+        return given().spec(requestSpecForApiService)
                 .accept(ContentType.JSON)
                 .get(DAOS_ID, daoId);
     }
 
     public Response getDaos(Map<String, Object> queryParams) {
-        return given().spec(requestSpec)
+        return given().spec(requestSpecForApiService)
                 .queryParams(queryParams)
                 .accept(ContentType.JSON)
                 .get(DAOS);
     }
 
     public Response getAccountDaos(String accountId) {
-        return given().spec(requestSpec)
+        return given().spec(requestSpecForApiService)
                 .accept(ContentType.JSON)
                 .get(ACCOUNT_DAOS, accountId);
     }
@@ -42,7 +42,7 @@ public class DaoApi {
         PatchSettingsBodyDto patchSettings = new PatchSettingsBodyDto();
         patchSettings.setSettings(json);
 
-        return given().spec(requestSpec)
+        return given().spec(requestSpecForApiService)
                 .accept(ContentType.JSON)
                 .header("Authorization", "Bearer " + authToken)
                 .contentType(ContentType.JSON)
@@ -53,7 +53,7 @@ public class DaoApi {
     }
 
     public Response getDaoSettings(String daoId) {
-        return given().spec(requestSpec)
+        return given().spec(requestSpecForApiService)
                 .accept(ContentType.JSON)
                 .get(DAOS_DAO_ID_SETTINGS, daoId);
     }
@@ -62,7 +62,7 @@ public class DaoApi {
         PatchSettingsParamBodyDto patchSettingsParamBodyDto = new PatchSettingsParamBodyDto();
         patchSettingsParamBodyDto.setValue(newValue);
 
-        return given().spec(requestSpec)
+        return given().spec(requestSpecForApiService)
                 .accept(ContentType.JSON)
                 .header("Authorization", "Bearer " + authToken)
                 .contentType(ContentType.JSON)
@@ -71,7 +71,7 @@ public class DaoApi {
     }
 
     public Response getDaoMembers(String daoId) {
-        return given().spec(requestSpec)
+        return given().spec(requestSpecForApiService)
                 .accept(ContentType.JSON)
                 .get(DAOS_DAO_ID_MEMBERS, daoId);
     }
