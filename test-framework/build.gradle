@@ -20,7 +20,7 @@ plugins {
     id 'io.qameta.allure' version '2.8.1'
     id 'io.freefair.lombok' version '5.3.3.3'
     id "de.undercouch.download" version "4.1.2"
-    id "org.openapi.generator" version "5.3.1"
+    id "org.openapi.generator" version "6.0.1"
 }
 
 version '1.0'
@@ -115,10 +115,13 @@ tasks.named('test') {
     }
 }
 
-task generateOpenApiModels(type: GenerateTask) {
+task generateOpenApiModels(dependsOn: ['openApiModelsConfigForApiService', 'openApiModelsConfigForDraftService']) {
+}
+
+task openApiModelsConfigForApiService(type: GenerateTask) {
     generatorName = "java"
     validateSpec = false
-    inputSpec = "${buildDir}/spec.json"
+    inputSpec = "${buildDir}/specForApiService.json"
     outputDir = "$buildDir/generated".toString()
     outputDir = generatedDir
     modelPackage = "$modelsDir".replace('/', '.')
@@ -142,18 +145,49 @@ task generateOpenApiModels(type: GenerateTask) {
             into "$rootDir/$sourceFolder/$modelsDir"
         }
 
-        project.logger.lifecycle('Open Api models were generated')
+        project.logger.lifecycle('Open Api models for API service were generated')
     }
 }
 
-openApiValidate {
-    inputSpec = "${buildDir}/spec.json"
-    recommend = true
+task openApiModelsConfigForDraftService(type: GenerateTask) {
+    generatorName = "java"
+    validateSpec = false
+    inputSpec = "${buildDir}/specForDraftService.json"
+    outputDir = "$buildDir/generated".toString()
+    outputDir = generatedDir
+    modelPackage = "$modelsDir".replace('/', '.')
+    generateApiTests = false
+    generateModelTests = false
+    generateApiDocumentation = false
+    generateModelDocumentation = false
+    configOptions = [
+            java11              : "true",
+            dateLibrary         : "java8",
+            sourceFolder        : "",
+            library             : "resttemplate",
+            serializationLibrary: "jackson"
+    ]
+
+    doLast {
+        delete "$rootDir/$sourceFolder/$modelsDir"
+
+        copy {
+            from "$generatedDir/$modelsDir"
+            into "$rootDir/$sourceFolder/$modelsDir"
+        }
+
+        project.logger.lifecycle('Open Api models for Draft service were generated')
+    }
 }
 
-task downloadSwaggerSpec(type: Download) {
+task downloadSwaggerSpecForApiService(type: Download) {
     src "https://api.testnet.app.astrodao.com/docs-json"
-    dest new File("${buildDir}/spec.json")
+    dest new File("${buildDir}/specForApiService.json")
+}
+
+task downloadSwaggerSpecForDraftService(type: Download) {
+    src "https://draft.testnet.app.astrodao.com/docs-json"
+    dest new File("${buildDir}/specForDraftService.json")
 }
 
 task downloadCliForCoverage(type: Download) {
@@ -180,7 +214,9 @@ task generateCoverage(type: Exec) {
 }
 
 unzipCoverageCli {
-    dependsOn tasks.named("downloadCliForCoverage"), tasks.named("downloadSwaggerSpec")
+    dependsOn tasks.named("downloadCliForCoverage"),
+            tasks.named("downloadSwaggerSpecForApiService"),
+            tasks.named("downloadSwaggerSpecForDraftService")
 }
 
 generateCoverage {
@@ -188,7 +224,8 @@ generateCoverage {
 }
 
 generateOpenApiModels {
-    dependsOn tasks.named("downloadSwaggerSpec")
+    dependsOn tasks.named("downloadSwaggerSpecForApiService"),
+            tasks.named("downloadSwaggerSpecForDraftService")
 }
 
 compileJava.dependsOn tasks.generateOpenApiModels
