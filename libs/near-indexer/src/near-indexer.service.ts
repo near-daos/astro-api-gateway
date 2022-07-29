@@ -478,10 +478,16 @@ export class NearIndexerService {
         'execution_outcomes',
         'execution_outcomes.receipt_id = receipts.receipt_id',
       )
-      .where('account_change.affected_account_id like :id', {
-        // Need to find all DAOs + factory contract changes
-        id: `%${contractName}`,
-      })
+      .where(
+        new Brackets((qb) => {
+          qb.where(`account_change.affected_account_id = :contractName`, {
+            contractName,
+          });
+          qb.orWhere('account_change.affected_account_id like :id', {
+            id: `%.${contractName}`,
+          });
+        }),
+      )
       .andWhere('execution_outcomes.status != :failStatus', {
         failStatus: ExecutionOutcomeStatus.Failure,
       })
