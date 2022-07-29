@@ -500,7 +500,7 @@ export class TransactionActionHandlerService {
       }
 
       this.logger.log(`Removing Proposal: ${args.id} due to transaction`);
-      await this.proposalService.remove(proposalEntity.id);
+      await this.proposalService.remove(proposalEntity?.id);
     } else {
       this.logger.log(`Updating Proposal: ${proposal.id} due to transaction`);
       await this.proposalService.create(proposal);
@@ -532,7 +532,15 @@ export class TransactionActionHandlerService {
       lastBountyId,
       bountyData,
     );
-    const bountyId = daoBounty?.id;
+
+    if (!daoBounty) {
+      this.logger.warn(
+        `Bounty ${lastBountyId} not found for DAO ${dao.id}. Skip transaction ${transactionHash}`,
+      );
+      return;
+    }
+
+    const bountyId = daoBounty.id;
     const bounty = await this.bountyService.findOne({
       id: buildBountyId(dao.id, bountyId),
     });
@@ -568,6 +576,13 @@ export class TransactionActionHandlerService {
       buildBountyId(dao.id, bountyId),
       { relations: ['bountyClaims'] },
     );
+
+    if (!bounty) {
+      this.logger.warn(
+        `Bounty ${bountyId} not found for DAO ${dao.id}. Skip transaction ${transactionHash}`,
+      );
+      return;
+    }
 
     const bountyData = await daoContract.get_bounty({
       id: bountyId,
@@ -612,6 +627,13 @@ export class TransactionActionHandlerService {
       buildBountyId(receiverId, id),
       { relations: ['bountyClaims'] },
     );
+
+    if (!bounty) {
+      this.logger.warn(
+        `Bounty ${id} not found for DAO ${receiverId}. Skip transaction ${transactionHash}`,
+      );
+      return;
+    }
 
     const bountyClaims = await daoContract.get_bounty_claims({
       account_id: signerId,
