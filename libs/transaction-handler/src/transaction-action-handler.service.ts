@@ -97,7 +97,7 @@ export class TransactionActionHandlerService {
         // If some action failed stop handling and remove failed transaction hash
         return {
           handledTxHashes: handledTxHashes.filter(
-            (transactionHash) => action.transactionHash === transactionHash,
+            (transactionHash) => action.transactionHash !== transactionHash,
           ),
           success: false,
         };
@@ -167,7 +167,6 @@ export class TransactionActionHandlerService {
       transactionHash,
       receiverId,
     );
-
     const lastProposalId = parseInt(
       (txStatus.status as FinalExecutionStatus)?.SuccessValue,
     );
@@ -184,6 +183,13 @@ export class TransactionActionHandlerService {
       receiverId,
       lastProposalId,
     );
+
+    if (!daoProposal) {
+      this.logger.warn(
+        `Error proposal ${lastProposalId} not found for DAO ${receiverId}. Skip transaction ${transactionHash}`,
+      );
+      return;
+    }
 
     const proposal = castCreateProposal({
       transactionHash,
