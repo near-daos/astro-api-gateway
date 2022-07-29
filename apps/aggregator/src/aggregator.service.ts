@@ -337,11 +337,17 @@ export class AggregatorService {
 
     await this.proposalAggregatorService.updateExpiredProposals();
 
+    const { contractName } = this.configService.get('near');
     const handlerState = await this.transactionHandlerService.getState(
       AGGREGATOR_HANDLER_STATE_ID,
     );
-    const receipts = await this.nearIndexerService.findReceipts(
-      handlerState?.lastBlockTimestamp,
+    const accountChanges =
+      await this.nearIndexerService.findAccountChangeActionsByContractName(
+        contractName,
+        handlerState?.lastBlockTimestamp,
+      );
+    const receipts = accountChanges.map(
+      ({ causedByReceipt }) => causedByReceipt,
     );
 
     if (receipts.length === 0) {

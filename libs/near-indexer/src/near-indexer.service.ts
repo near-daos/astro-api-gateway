@@ -69,12 +69,6 @@ export class NearIndexerService {
     });
   }
 
-  lastBlock(): Promise<Block> {
-    return this.blockRepository.findOne({
-      order: { blockHeight: 'DESC' },
-    });
-  }
-
   lastNearLakeBlock(): Promise<LastBlock> {
     return this.lastBlockRepository.findOne();
   }
@@ -146,30 +140,6 @@ export class NearIndexerService {
       toBlockTimestamp,
     )
       .orderBy('transaction.block_timestamp', 'ASC')
-      .getMany();
-  }
-
-  async findReceipts(fromBlockTimestamp: number): Promise<Receipt[]> {
-    return this.receiptRepository
-      .createQueryBuilder('receipts')
-      .leftJoinAndSelect('receipts.originatedFromTransaction', 'transactions')
-      .leftJoinAndSelect(
-        'transactions.transactionAction',
-        'transaction_actions',
-      )
-      .leftJoinAndSelect('receipts.receiptActions', 'action_receipt_actions')
-      .leftJoin(
-        'execution_outcomes',
-        'execution_outcomes',
-        'execution_outcomes.receipt_id = receipts.receipt_id',
-      )
-      .where('execution_outcomes.status != :failStatus', {
-        failStatus: ExecutionOutcomeStatus.Failure,
-      })
-      .andWhere('transactions.block_timestamp > :from', {
-        from: fromBlockTimestamp,
-      })
-      .orderBy('transactions.block_timestamp', 'ASC')
       .getMany();
   }
 
@@ -478,5 +448,46 @@ export class NearIndexerService {
       : queryBuilder;
 
     return queryBuilder;
+  }
+
+  async findAccountChangeActionsByContractName(
+    contractName: string,
+    fromBlockTimestamp?: number,
+  ): Promise<AccountChange[]> {
+    return this.buildAccountChangeActionQuery(
+      contractName,
+      fromBlockTimestamp,
+    ).getMany();
+  }
+
+  private buildAccountChangeActionQuery(
+    contractName: string,
+    fromBlockTimestamp?: number,
+  ): SelectQueryBuilder<AccountChange> {
+    return this.accountChangeRepository
+      .createQueryBuilder('account_change')
+      .leftJoinAndSelect('account_change.causedByReceipt', 'receipts')
+      .leftJoinAndSelect('receipts.originatedFromTransaction', 'transactions')
+      .leftJoinAndSelect(
+        'transactions.transactionAction',
+        'transaction_actions',
+      )
+      .leftJoinAndSelect('receipts.receiptActions', 'action_receipt_actions')
+      .leftJoin(
+        'execution_outcomes',
+        'execution_outcomes',
+        'execution_outcomes.receipt_id = receipts.receipt_id',
+      )
+      .where('account_change.affected_account_id like :id', {
+        // Need to find all DAOs + factory contract changes
+        id: `%${contractName}`,
+      })
+      .andWhere('execution_outcomes.status != :failStatus', {
+        failStatus: ExecutionOutcomeStatus.Failure,
+      })
+      .andWhere('transactions.block_timestamp > :from', {
+        from: fromBlockTimestamp,
+      })
+      .orderBy('transactions.block_timestamp', 'ASC');
   }
 }

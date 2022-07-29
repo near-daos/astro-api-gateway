@@ -29,26 +29,48 @@ export class TransactionHandlerService {
   }
 
   async getHandlerBlocks(id: string): Promise<TransactionHandlerBlocks> {
-    const state = await this.getState(id);
-    const stateBlock = await this.nearIndexerService.findBlockByHash(
-      state.lastBlockHash,
-    );
-    const lastBlock = await this.nearIndexerService.lastBlock();
-    const lastNearLakeBlock = await this.nearIndexerService.lastNearLakeBlock();
-    return {
-      lastBlock: {
-        height: lastNearLakeBlock.blockHeight,
-        timestamp: lastNearLakeBlock.blockTimestamp,
-      },
-      lastAstroBlock: {
-        height: lastBlock.blockHeight,
-        timestamp: lastBlock.blockTimestamp,
-      },
-      lastHandledBlock: {
-        height: stateBlock.blockHeight,
-        timestamp: stateBlock.blockTimestamp,
-      },
-    };
+    try {
+      const state = await this.getState(id);
+      const stateBlock = await this.nearIndexerService.findBlockByHash(
+        state.lastBlockHash,
+      );
+      const lastTransaction = await this.nearIndexerService.lastTransaction();
+      const lastAstroBlock = await this.nearIndexerService.findBlockByHash(
+        lastTransaction.includedInBlockHash,
+      );
+      const lastNearLakeBlock =
+        await this.nearIndexerService.lastNearLakeBlock();
+      return {
+        lastBlock: {
+          height: lastNearLakeBlock.blockHeight,
+          timestamp: lastNearLakeBlock.blockTimestamp,
+        },
+        lastAstroBlock: {
+          height: lastAstroBlock.blockHeight,
+          timestamp: lastAstroBlock.blockTimestamp,
+        },
+        lastHandledBlock: {
+          height: stateBlock.blockHeight,
+          timestamp: stateBlock.blockTimestamp,
+        },
+      };
+      // Fallback flow in case of using public indexer database
+    } catch (err) {
+      return {
+        lastBlock: {
+          height: 0,
+          timestamp: 0,
+        },
+        lastAstroBlock: {
+          height: 0,
+          timestamp: 0,
+        },
+        lastHandledBlock: {
+          height: 0,
+          timestamp: 0,
+        },
+      };
+    }
   }
 
   async saveState(
