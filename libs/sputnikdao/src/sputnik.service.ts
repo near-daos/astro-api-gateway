@@ -62,7 +62,14 @@ export class SputnikService {
 
   public async getProposal(daoId: string, proposalId: number) {
     const daoContract = this.nearApiService.getContract('sputnikDao', daoId);
-    return daoContract.get_proposal({ id: proposalId });
+    try {
+      return await daoContract.get_proposal({ id: proposalId });
+    } catch (err) {
+      if (err.message.includes('ERR_NO_PROPOSAL')) {
+        return null;
+      }
+      throw err;
+    }
   }
 
   public async findLastProposal(
