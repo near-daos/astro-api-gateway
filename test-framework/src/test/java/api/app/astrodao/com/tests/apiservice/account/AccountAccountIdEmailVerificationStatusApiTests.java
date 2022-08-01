@@ -1,7 +1,7 @@
 package api.app.astrodao.com.tests.apiservice.account;
 
 import api.app.astrodao.com.openapi.models.VerificationStatus;
-import api.app.astrodao.com.steps.AccountApiSteps;
+import api.app.astrodao.com.steps.apiservice.AccountApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import io.qameta.allure.*;
 import lombok.RequiredArgsConstructor;

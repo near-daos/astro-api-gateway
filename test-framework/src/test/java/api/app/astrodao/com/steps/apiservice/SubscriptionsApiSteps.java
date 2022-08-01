@@ -1,10 +1,11 @@
-package api.app.astrodao.com.steps;
+package api.app.astrodao.com.steps.apiservice;
 
 import api.app.astrodao.com.core.annotations.Steps;
 import api.app.astrodao.com.core.controllers.SubscriptionsApi;
 import api.app.astrodao.com.core.dto.api.subscription.Subscriptions;
 import api.app.astrodao.com.core.exceptions.EntityNotFoundException;
 import api.app.astrodao.com.openapi.models.Subscription;
+import api.app.astrodao.com.steps.BaseSteps;
 import io.qameta.allure.Step;
 import io.restassured.response.Response;
 import lombok.RequiredArgsConstructor;

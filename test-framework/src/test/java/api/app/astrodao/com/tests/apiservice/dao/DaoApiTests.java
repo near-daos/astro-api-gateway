@@ -2,7 +2,7 @@ package api.app.astrodao.com.tests.apiservice.dao;
 
 import api.app.astrodao.com.openapi.models.DaoPageResponse;
 import api.app.astrodao.com.openapi.models.DaoResponseV1;
-import api.app.astrodao.com.steps.DaoApiSteps;
+import api.app.astrodao.com.steps.apiservice.DaoApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import io.qameta.allure.*;
 import lombok.RequiredArgsConstructor;

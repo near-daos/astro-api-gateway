@@ -3,7 +3,7 @@ package api.app.astrodao.com.tests.apiservice.notifications;
 import api.app.astrodao.com.core.utils.Base64Utils;
 import api.app.astrodao.com.openapi.models.AccountNotification;
 import api.app.astrodao.com.openapi.models.NotificationStatusResponse;
-import api.app.astrodao.com.steps.NotificationsApiSteps;
+import api.app.astrodao.com.steps.apiservice.NotificationsApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import io.qameta.allure.*;
 import lombok.RequiredArgsConstructor;

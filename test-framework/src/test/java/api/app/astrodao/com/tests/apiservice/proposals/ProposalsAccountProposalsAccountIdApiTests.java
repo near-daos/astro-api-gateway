@@ -2,7 +2,7 @@ package api.app.astrodao.com.tests.apiservice.proposals;
 
 import api.app.astrodao.com.core.dto.api.proposals.ProposalDto;
 import api.app.astrodao.com.core.dto.api.proposals.ProposalResponse;
-import api.app.astrodao.com.steps.ProposalsApiSteps;
+import api.app.astrodao.com.steps.apiservice.ProposalsApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import io.qameta.allure.*;
 import lombok.RequiredArgsConstructor;

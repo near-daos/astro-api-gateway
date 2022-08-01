@@ -3,7 +3,7 @@ package api.app.astrodao.com.tests.apiservice.subscriprions;
 import api.app.astrodao.com.core.dto.api.subscription.Subscriptions;
 import api.app.astrodao.com.core.utils.Base64Utils;
 import api.app.astrodao.com.openapi.models.Subscription;
-import api.app.astrodao.com.steps.SubscriptionsApiSteps;
+import api.app.astrodao.com.steps.apiservice.SubscriptionsApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import com.github.javafaker.Faker;
 import io.qameta.allure.*;

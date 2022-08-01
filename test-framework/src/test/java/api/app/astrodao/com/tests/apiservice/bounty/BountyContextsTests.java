@@ -2,7 +2,7 @@ package api.app.astrodao.com.tests.apiservice.bounty;
 
 import api.app.astrodao.com.openapi.models.BountyContext;
 import api.app.astrodao.com.openapi.models.BountyContextResponse;
-import api.app.astrodao.com.steps.BountiesApiSteps;
+import api.app.astrodao.com.steps.apiservice.BountiesApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import io.qameta.allure.*;
 import lombok.RequiredArgsConstructor;

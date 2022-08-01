@@ -1,4 +1,4 @@
-package api.app.astrodao.com.steps;
+package api.app.astrodao.com.steps.apiservice;
 
 import api.app.astrodao.com.core.annotations.Steps;
 import api.app.astrodao.com.core.controllers.TransactionsApi;

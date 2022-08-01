@@ -2,7 +2,7 @@ package api.app.astrodao.com.tests.apiservice.token;
 
 import api.app.astrodao.com.core.dto.api.tokens.TokensList;
 import api.app.astrodao.com.openapi.models.Token;
-import api.app.astrodao.com.steps.TokenApiSteps;
+import api.app.astrodao.com.steps.apiservice.TokenApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import io.qameta.allure.*;
 import lombok.RequiredArgsConstructor;

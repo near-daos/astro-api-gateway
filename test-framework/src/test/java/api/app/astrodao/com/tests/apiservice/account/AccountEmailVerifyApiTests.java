@@ -1,7 +1,7 @@
 package api.app.astrodao.com.tests.apiservice.account;
 
 import api.app.astrodao.com.core.utils.Base64Utils;
-import api.app.astrodao.com.steps.AccountApiSteps;
+import api.app.astrodao.com.steps.apiservice.AccountApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import com.github.javafaker.Faker;
 import io.qameta.allure.*;

@@ -1,7 +1,7 @@
 package api.app.astrodao.com.tests.apiservice.token;
 
 import api.app.astrodao.com.core.dto.api.tokens.AssetsNftEventList;
-import api.app.astrodao.com.steps.TokenApiSteps;
+import api.app.astrodao.com.steps.apiservice.TokenApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import io.qameta.allure.*;
 import io.restassured.response.Response;

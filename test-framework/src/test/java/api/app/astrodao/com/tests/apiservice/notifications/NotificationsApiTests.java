@@ -2,7 +2,7 @@ package api.app.astrodao.com.tests.apiservice.notifications;
 
 import api.app.astrodao.com.core.dto.api.notifications.Notification;
 import api.app.astrodao.com.core.dto.api.notifications.NotificationsResponse;
-import api.app.astrodao.com.steps.NotificationsApiSteps;
+import api.app.astrodao.com.steps.apiservice.NotificationsApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import io.qameta.allure.*;
 import io.restassured.response.Response;

@@ -4,7 +4,7 @@ import api.app.astrodao.com.core.utils.Base64Utils;
 import api.app.astrodao.com.core.utils.WaitUtils;
 import api.app.astrodao.com.openapi.models.Comment;
 import api.app.astrodao.com.openapi.models.CommentResponse;
-import api.app.astrodao.com.steps.CommentsApiSteps;
+import api.app.astrodao.com.steps.apiservice.CommentsApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import com.github.javafaker.Faker;
 import io.qameta.allure.*;

@@ -2,7 +2,7 @@ package api.app.astrodao.com.tests.apiservice.search;
 
 import api.app.astrodao.com.core.dto.api.search.DataItem;
 import api.app.astrodao.com.core.dto.api.search.SearchResultDto;
-import api.app.astrodao.com.steps.SearchApiSteps;
+import api.app.astrodao.com.steps.apiservice.SearchApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import io.qameta.allure.*;
 import lombok.RequiredArgsConstructor;
