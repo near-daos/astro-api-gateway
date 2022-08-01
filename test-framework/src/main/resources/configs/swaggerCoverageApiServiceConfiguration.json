@@ -1,0 +1,8 @@
+{
+  "writers": {
+    "html": {
+      "filename": "swagger-coverage-api-service.html",
+      "locale": "en"
+    }
+  }
+}
