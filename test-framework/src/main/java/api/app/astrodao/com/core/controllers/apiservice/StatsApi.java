@@ -1,4 +1,4 @@
-package api.app.astrodao.com.core.controllers;
+package api.app.astrodao.com.core.controllers.apiservice;
 
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
@@ -6,39 +6,41 @@ import io.restassured.specification.RequestSpecification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.Map;
-
 import static api.app.astrodao.com.core.Constants.Endpoints.*;
 import static io.restassured.RestAssured.given;
 
 @Component
 @RequiredArgsConstructor
-public class TokenApi {
+public class StatsApi {
     private final RequestSpecification requestSpecForApiService;
 
-    public Response getTokens(Map<String, Object> queryParams) {
+    public Response getStateForDao(String dao) {
         return given().spec(requestSpecForApiService)
                 .accept(ContentType.JSON)
-                .queryParams(queryParams)
-                .get(TOKENS);
+                .get(DAO_STATS_STATE, dao);
     }
 
-    public Response getTokensForDao(String dao) {
+    public Response getFundsForDao(String dao) {
         return given().spec(requestSpecForApiService)
                 .accept(ContentType.JSON)
-                .get(ACCOUNT_TOKENS, dao);
+                .get(DAO_STATS_FUNDS, dao);
     }
 
-    public Response getNFTs(Map<String, Object> queryParams) {
+    public Response getBountiesForDao(String dao) {
         return given().spec(requestSpecForApiService)
                 .accept(ContentType.JSON)
-                .queryParams(queryParams)
-                .get(TOKENS_NFTS);
+                .get(DAO_STATS_BOUNTIES, dao);
     }
 
-    public Response getEventsForNFT(String nftID) {
+    public Response getNFTsForDao(String dao) {
         return given().spec(requestSpecForApiService)
                 .accept(ContentType.JSON)
-                .get(TOKENS_NFTS_EVENTS, nftID);
+                .get(DAO_STATS_NFTS, dao);
+    }
+
+    public Response getProposalsForDao(String dao) {
+        return given().spec(requestSpecForApiService)
+                .accept(ContentType.JSON)
+                .get(DAO_STATS_PROPOSALS, dao);
     }
 }

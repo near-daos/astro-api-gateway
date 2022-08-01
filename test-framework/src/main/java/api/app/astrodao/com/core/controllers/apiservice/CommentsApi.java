@@ -1,4 +1,4 @@
-package api.app.astrodao.com.core.controllers;
+package api.app.astrodao.com.core.controllers.apiservice;
 
 import api.app.astrodao.com.core.utils.JsonUtils;
 import api.app.astrodao.com.openapi.models.CommentDeleteDto;

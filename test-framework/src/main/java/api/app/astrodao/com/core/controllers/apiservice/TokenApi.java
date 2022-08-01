@@ -1,4 +1,4 @@
-package api.app.astrodao.com.core.controllers;
+package api.app.astrodao.com.core.controllers.apiservice;
 
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
@@ -6,41 +6,39 @@ import io.restassured.specification.RequestSpecification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Map;
+
 import static api.app.astrodao.com.core.Constants.Endpoints.*;
 import static io.restassured.RestAssured.given;
 
 @Component
 @RequiredArgsConstructor
-public class StatsApi {
+public class TokenApi {
     private final RequestSpecification requestSpecForApiService;
 
-    public Response getStateForDao(String dao) {
+    public Response getTokens(Map<String, Object> queryParams) {
         return given().spec(requestSpecForApiService)
                 .accept(ContentType.JSON)
-                .get(DAO_STATS_STATE, dao);
+                .queryParams(queryParams)
+                .get(TOKENS);
     }
 
-    public Response getFundsForDao(String dao) {
+    public Response getTokensForDao(String dao) {
         return given().spec(requestSpecForApiService)
                 .accept(ContentType.JSON)
-                .get(DAO_STATS_FUNDS, dao);
+                .get(ACCOUNT_TOKENS, dao);
     }
 
-    public Response getBountiesForDao(String dao) {
+    public Response getNFTs(Map<String, Object> queryParams) {
         return given().spec(requestSpecForApiService)
                 .accept(ContentType.JSON)
-                .get(DAO_STATS_BOUNTIES, dao);
+                .queryParams(queryParams)
+                .get(TOKENS_NFTS);
     }
 
-    public Response getNFTsForDao(String dao) {
+    public Response getEventsForNFT(String nftID) {
         return given().spec(requestSpecForApiService)
                 .accept(ContentType.JSON)
-                .get(DAO_STATS_NFTS, dao);
-    }
-
-    public Response getProposalsForDao(String dao) {
-        return given().spec(requestSpecForApiService)
-                .accept(ContentType.JSON)
-                .get(DAO_STATS_PROPOSALS, dao);
+                .get(TOKENS_NFTS_EVENTS, nftID);
     }
 }

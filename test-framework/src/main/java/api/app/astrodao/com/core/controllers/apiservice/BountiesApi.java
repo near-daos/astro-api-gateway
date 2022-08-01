@@ -1,4 +1,4 @@
-package api.app.astrodao.com.core.controllers;
+package api.app.astrodao.com.core.controllers.apiservice;
 
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;

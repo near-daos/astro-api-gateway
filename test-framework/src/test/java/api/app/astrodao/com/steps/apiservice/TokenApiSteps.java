@@ -1,7 +1,7 @@
 package api.app.astrodao.com.steps.apiservice;
 
 import api.app.astrodao.com.core.annotations.Steps;
-import api.app.astrodao.com.core.controllers.TokenApi;
+import api.app.astrodao.com.core.controllers.apiservice.TokenApi;
 import api.app.astrodao.com.steps.BaseSteps;
 import io.qameta.allure.Step;
 import io.restassured.response.Response;

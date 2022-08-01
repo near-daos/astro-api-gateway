@@ -1,4 +1,4 @@
-package api.app.astrodao.com.core.controllers;
+package api.app.astrodao.com.core.controllers.apiservice;
 
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
@@ -6,20 +6,18 @@ import io.restassured.specification.RequestSpecification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.Map;
-
-import static api.app.astrodao.com.core.Constants.Endpoints.SEARCH;
+import static api.app.astrodao.com.core.Constants.Endpoints.TRANSACTIONS_CALLBACK;
 import static io.restassured.RestAssured.given;
 
 @Component
 @RequiredArgsConstructor
-public class SearchApi {
+public class TransactionsApi {
     private final RequestSpecification requestSpecForApiService;
 
-    public Response search(Map<String, Object> queryParams) {
+    public Response triggerCallback(String accountId, String transactionHashes) {
         return given().spec(requestSpecForApiService)
-                .queryParams(queryParams)
                 .accept(ContentType.JSON)
-                .get(SEARCH);
+                .queryParam("transactionHashes", transactionHashes)
+                .get(TRANSACTIONS_CALLBACK, accountId);
     }
 }
