@@ -15,13 +15,13 @@ import static io.restassured.http.ContentType.JSON;
 @Component
 @RequiredArgsConstructor
 public class SubscriptionsApi {
-    private final RequestSpecification requestSpec;
+    private final RequestSpecification requestSpecForApiService;
 
     public Response subscribeDao(String token, String daoId) {
         SubscriptionDto subscriptionDto = new SubscriptionDto();
         subscriptionDto.setDaoId(daoId);
 
-        return given().spec(requestSpec)
+        return given().spec(requestSpecForApiService)
                 .accept(ANY)
                 .header("Authorization", "Bearer " + token)
                 .contentType(JSON)
@@ -30,14 +30,14 @@ public class SubscriptionsApi {
     }
 
     public Response accountSubscriptions(String accountId) {
-        return given().spec(requestSpec)
+        return given().spec(requestSpecForApiService)
                 .accept(JSON)
                 .contentType(JSON)
                 .get(ACCOUNT_SUBSCRIPTIONS, accountId);
     }
 
     public Response deleteSubscription(String token, String daoId) {
-        return given().spec(requestSpec)
+        return given().spec(requestSpecForApiService)
                 .accept(ANY)
                 .header("Authorization", "Bearer " + token)
                 .contentType(JSON)

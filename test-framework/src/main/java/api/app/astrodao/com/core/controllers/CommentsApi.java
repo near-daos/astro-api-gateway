@@ -19,10 +19,10 @@ import static io.restassured.http.ContentType.JSON;
 @Component
 @RequiredArgsConstructor
 public class CommentsApi {
-    private final RequestSpecification requestSpec;
+    private final RequestSpecification requestSpecForApiService;
 
     public Response getComments(Map<String, Object> queryParams) {
-        return given().spec(requestSpec)
+        return given().spec(requestSpecForApiService)
                 .accept(JSON)
                 .queryParams(queryParams)
                 .get(COMMENTS);
@@ -34,7 +34,7 @@ public class CommentsApi {
         commentDto.setContextType(contextType);
         commentDto.setMessage(message);
 
-        return given().spec(requestSpec)
+        return given().spec(requestSpecForApiService)
                 .accept(JSON)
                 .header("Authorization", "Bearer " + authToken)
                 .contentType(JSON)
@@ -47,7 +47,7 @@ public class CommentsApi {
         commentDto.setCommentId(commentId);
         commentDto.setReason(reason);
 
-        return given().spec(requestSpec)
+        return given().spec(requestSpecForApiService)
                 .accept(JSON)
                 .header("Authorization", "Bearer " + authToken)
                 .contentType(JSON)
@@ -59,7 +59,7 @@ public class CommentsApi {
         CommentDeleteDto commentDto = new CommentDeleteDto();
         commentDto.setReason(reason);
 
-        return given().spec(requestSpec)
+        return given().spec(requestSpecForApiService)
                 .accept(JSON)
                 .header("Authorization", "Bearer " + authToken)
                 .contentType(JSON)

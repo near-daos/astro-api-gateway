@@ -18,30 +18,30 @@ import static io.restassured.RestAssured.given;
 @Component
 @RequiredArgsConstructor
 public class NotificationsApi {
-    private final RequestSpecification requestSpec;
+    private final RequestSpecification requestSpecForApiService;
 
     public Response getNotifications(Map<String, Object> queryParams) {
-        return given().spec(requestSpec)
+        return given().spec(requestSpecForApiService)
                 .queryParams(queryParams)
                 .accept(ContentType.JSON)
                 .get(NOTIFICATIONS);
     }
 
 	public Response getNotificationById(String notificationId) {
-		return given().spec(requestSpec)
+		return given().spec(requestSpecForApiService)
 				.accept(ContentType.JSON)
 				.get(NOTIFICATIONS_ID, notificationId);
 	}
 
 	public Response getNotificationsSettings(Map<String, Object> queryParams) {
-		return given().spec(requestSpec)
+		return given().spec(requestSpecForApiService)
 				.queryParams(queryParams)
 				.accept(ContentType.JSON)
 				.get(NOTIFICATIONS_SETTINGS);
 	}
 
 	public Response getAccountNotificationStatus(String accountId) {
-		return given().spec(requestSpec)
+		return given().spec(requestSpecForApiService)
 				.accept(ContentType.JSON)
 				.get(ACCOUNT_NOTIFICATION_STATUS_ACCOUNT_ID, accountId);
 	}
@@ -56,7 +56,7 @@ public class NotificationsApi {
 		createAccountNotificationSettings.setEnableEmail(isEnableEmail);
 		createAccountNotificationSettings.isAllMuted(isAllMuted);
 
-		return given().spec(requestSpec)
+		return given().spec(requestSpecForApiService)
 				.accept(ContentType.JSON)
 				.header("Authorization", "Bearer " + authToken)
 				.contentType(ContentType.JSON)
@@ -65,7 +65,7 @@ public class NotificationsApi {
 	}
 
 	public Response postNotificationSettings(String authToken, String body) {
-		return given().spec(requestSpec)
+		return given().spec(requestSpecForApiService)
 				.accept(ContentType.JSON)
 				.header("Authorization", "Bearer " + authToken)
 				.contentType(ContentType.JSON)
@@ -74,7 +74,7 @@ public class NotificationsApi {
 	}
 
 	public Response patchReadAllAccountNotifications(String authToken) {
-		return given().spec(requestSpec)
+		return given().spec(requestSpecForApiService)
 				.accept(ContentType.JSON)
 				.header("Authorization", "Bearer " + authToken)
 				.contentType(ContentType.JSON)
@@ -88,7 +88,7 @@ public class NotificationsApi {
 		updateAccountNotificationDto.setIsRead(isRead);
 		updateAccountNotificationDto.setIsArchived(isArchived);
 
-		return given().spec(requestSpec)
+		return given().spec(requestSpecForApiService)
 				.accept(ContentType.JSON)
 				.header("Authorization", "Bearer " + authToken)
 				.contentType(ContentType.JSON)
@@ -97,7 +97,7 @@ public class NotificationsApi {
 	}
 
 	public Response getAccountNotifications(Map<String, Object> queryParams) {
-		return given().spec(requestSpec)
+		return given().spec(requestSpecForApiService)
 				.queryParams(queryParams)
 				.accept(ContentType.JSON)
 				.get(ACCOUNT_NOTIFICATIONS);

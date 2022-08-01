@@ -59,3 +59,5 @@ To generate test coverage report for Swagger execute command below
  $ ./gradlew generateCoverage
  ```
 
+Coverage reports are here _build/swagger-coverage-commandline-1.5.0/bin_.
+Open .html files with your browser

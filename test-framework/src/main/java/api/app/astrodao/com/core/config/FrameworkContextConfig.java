@@ -31,7 +31,29 @@ public class FrameworkContextConfig {
     }
 
     @Bean
-    public RequestSpecification requestSpec(@Value("${framework.api.base.uri}") String baseUri) {
+    public RequestSpecification requestSpecForApiService(@Value("${framework.api.service.uri}") String baseUri) {
+        return getRequestSpecification(baseUri);
+    }
+
+    @Bean
+    public RequestSpecification requestSpecForDraftService(@Value("${framework.draft.service.uri}") String baseUri) {
+        return getRequestSpecification(baseUri);
+    }
+
+    @Bean
+    public RequestSpecification requestSpecForDisposableWebMail(@Value("${framework.webmail.provider.uri}") String baseUri) {
+        return new RequestSpecBuilder()
+                .setBaseUri(baseUri)
+                .log(LogDetail.ALL)
+                .addFilter(new AllureRestAssured())
+                .addFilter(new SwaggerCoverageV3RestAssured(
+                        new FileSystemOutputWriter(Paths.get("build/swagger-coverage-output")))
+                )
+                .addHeader("User-Agent", "API Test Framework")
+                .build();
+    }
+
+    private RequestSpecification getRequestSpecification(String baseUri) {
         HttpClientConfig httpClientConfig = HttpClientConfig.httpClientConfig()
                 .setParam("http.socket.timeout", 5000)
                 .setParam("http.connection.timeout", 5000);
@@ -46,19 +68,6 @@ public class FrameworkContextConfig {
                 .setBaseUri(baseUri)
                 .log(LogDetail.ALL)
                 .setConfig(restAssuredConfig)
-                .addFilter(new AllureRestAssured())
-                .addFilter(new SwaggerCoverageV3RestAssured(
-                        new FileSystemOutputWriter(Paths.get("build/swagger-coverage-output")))
-                )
-                .addHeader("User-Agent", "API Test Framework")
-                .build();
-    }
-
-    @Bean
-    public RequestSpecification requestSpecForDisposableWebMail(@Value("${framework.webmail.provider.uri}") String baseUri) {
-        return new RequestSpecBuilder()
-                .setBaseUri(baseUri)
-                .log(LogDetail.ALL)
                 .addFilter(new AllureRestAssured())
                 .addFilter(new SwaggerCoverageV3RestAssured(
                         new FileSystemOutputWriter(Paths.get("build/swagger-coverage-output")))

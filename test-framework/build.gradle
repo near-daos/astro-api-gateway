@@ -20,7 +20,7 @@ plugins {
     id 'io.qameta.allure' version '2.8.1'
     id 'io.freefair.lombok' version '5.3.3.3'
     id "de.undercouch.download" version "4.1.2"
-    id "org.openapi.generator" version "5.3.1"
+    id "org.openapi.generator" version "6.0.1"
 }
 
 version '1.0'
@@ -35,6 +35,8 @@ repositories {
 def modelsDir = 'api/app/astrodao/com/openapi/models'
 def generatedDir = "$buildDir/generated"
 def sourceFolder = 'src/main/java'
+def apiServiceConfigurationJson = '/src/main/resources/configs/swaggerCoverageApiServiceConfiguration.json'
+def draftServiceConfigurationJson  = '/src/main/resources/configs/swaggerCoverageDraftServiceConfiguration.json'
 
 dependencies {
     implementation "org.aspectj:aspectjweaver:${aspectjVersion}"
@@ -115,10 +117,19 @@ tasks.named('test') {
     }
 }
 
-task generateOpenApiModels(type: GenerateTask) {
+task generateOpenApiModels() {
+    dependsOn (
+            "downloadSwaggerSpecForApiService",
+            "downloadSwaggerSpecForDraftService",
+            "openApiModelsConfigForApiService",
+            "openApiModelsConfigForDraftService"
+    )
+}
+
+task openApiModelsConfigForApiService(type: GenerateTask) {
     generatorName = "java"
     validateSpec = false
-    inputSpec = "${buildDir}/spec.json"
+    inputSpec = "${buildDir}/specForApiService.json"
     outputDir = "$buildDir/generated".toString()
     outputDir = generatedDir
     modelPackage = "$modelsDir".replace('/', '.')
@@ -142,18 +153,49 @@ task generateOpenApiModels(type: GenerateTask) {
             into "$rootDir/$sourceFolder/$modelsDir"
         }
 
-        project.logger.lifecycle('Open Api models were generated')
+        project.logger.lifecycle('Open Api models for API service were generated')
     }
 }
 
-openApiValidate {
-    inputSpec = "${buildDir}/spec.json"
-    recommend = true
+task openApiModelsConfigForDraftService(type: GenerateTask) {
+    generatorName = "java"
+    validateSpec = false
+    inputSpec = "${buildDir}/specForDraftService.json"
+    outputDir = "$buildDir/generated".toString()
+    outputDir = generatedDir
+    modelPackage = "$modelsDir".replace('/', '.')
+    generateApiTests = false
+    generateModelTests = false
+    generateApiDocumentation = false
+    generateModelDocumentation = false
+    configOptions = [
+            java11              : "true",
+            dateLibrary         : "java8",
+            sourceFolder        : "",
+            library             : "resttemplate",
+            serializationLibrary: "jackson"
+    ]
+
+    doLast {
+        delete "$rootDir/$sourceFolder/$modelsDir"
+
+        copy {
+            from "$generatedDir/$modelsDir"
+            into "$rootDir/$sourceFolder/$modelsDir"
+        }
+
+        project.logger.lifecycle('Open Api models for Draft service were generated')
+    }
 }
 
-task downloadSwaggerSpec(type: Download) {
+task downloadSwaggerSpecForApiService(type: Download) {
     src "https://api.testnet.app.astrodao.com/docs-json"
-    dest new File("${buildDir}/spec.json")
+    dest new File("${buildDir}/specForApiService.json")
+}
+
+task downloadSwaggerSpecForDraftService(type: Download) {
+    src "https://draft.testnet.app.astrodao.com/docs-json"
+    dest new File("${buildDir}/specForDraftService.json")
 }
 
 task downloadCliForCoverage(type: Download) {
@@ -162,6 +204,12 @@ task downloadCliForCoverage(type: Download) {
 }
 
 task unzipCoverageCli(type: Copy) {
+    dependsOn(
+            "downloadCliForCoverage",
+            "downloadSwaggerSpecForApiService",
+            "downloadSwaggerSpecForDraftService"
+    )
+
     def zipFile = file("${buildDir}/swagger-coverage-commandline.zip")
     def outputDir = file(buildDir)
 
@@ -173,22 +221,25 @@ task unzipCoverageCli(type: Copy) {
     }
 }
 
-task generateCoverage(type: Exec) {
+task generateCoverage() {
+    dependsOn (
+            'generateApiServiceCoverage',
+            'generateDraftServiceCoverage'
+    )
+}
+
+task generateApiServiceCoverage(type: Exec) {
+    dependsOn tasks.named("unzipCoverageCli")
     workingDir "${buildDir}/swagger-coverage-commandline-${swaggerCoverageVersion}/bin"
 
-    commandLine "./swagger-coverage-commandline", "-s", "../../spec.json", "-i", "../../swagger-coverage-output"
+    commandLine './swagger-coverage-commandline', "-s", "../../specForApiService.json", "-i", "../../swagger-coverage-output", "-c", "../../../${apiServiceConfigurationJson}"
 }
 
-unzipCoverageCli {
-    dependsOn tasks.named("downloadCliForCoverage"), tasks.named("downloadSwaggerSpec")
-}
-
-generateCoverage {
+task generateDraftServiceCoverage(type: Exec) {
     dependsOn tasks.named("unzipCoverageCli")
-}
 
-generateOpenApiModels {
-    dependsOn tasks.named("downloadSwaggerSpec")
+    workingDir "${buildDir}/swagger-coverage-commandline-${swaggerCoverageVersion}/bin"
+    commandLine './swagger-coverage-commandline', "-s", "../../specForDraftService.json", "-i", "../../swagger-coverage-output", "-c", "../../../${draftServiceConfigurationJson}"
 }
 
 compileJava.dependsOn tasks.generateOpenApiModels
