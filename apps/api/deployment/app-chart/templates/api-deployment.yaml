@@ -82,7 +82,7 @@ spec:
           - secretRef:
               name: api-rds-secrets
           - secretRef:
-              name: draft-service-secrets
+              name: api-service-secrets
           - secretRef:
               name: api-redis-secrets
           resources:
