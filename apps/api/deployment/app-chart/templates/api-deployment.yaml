@@ -52,7 +52,7 @@ spec:
             successThreshold: {{ .Values.container.readinessProbe.successThreshold }}
             failureThreshold: {{ .Values.container.readinessProbe.failureThreshold }}
           env:
-            {{- if eq .Values.environment.datadog_apm_enabled "true" }}
+            {{- if eq .Values.environment.DATADOG_APM_ENABLED "true" }}
             - name: DD_AGENT_HOST
               valueFrom:
                 fieldRef:
