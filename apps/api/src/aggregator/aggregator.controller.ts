@@ -1,6 +1,6 @@
 import { Controller, Post, Param, UseGuards, Req, Get } from '@nestjs/common';
 import { ApiBearerAuth, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { Span } from 'nestjs-ddtrace';
+import { Span, TraceService } from 'nestjs-ddtrace';
 import { Interval } from '@nestjs/schedule';
 
 import {
@@ -25,6 +25,7 @@ export class AggregatorController {
     private readonly eventService: EventService,
     private readonly transactionHandlerService: TransactionHandlerService,
     private readonly socketService: SocketService,
+    private readonly traceService: TraceService,
   ) {}
 
   @ApiParam({
@@ -61,11 +62,20 @@ export class AggregatorController {
 
   @Interval(5000)
   async emitBlocks() {
+    const currentSpan = this.traceService.getActiveSpan();
+
+    const data: TransactionHandlerBlocks =
+      await this.transactionHandlerService.getHandlerBlocks(
+        AGGREGATOR_HANDLER_STATE_ID,
+      );
+
+    currentSpan.addTags({
+      ...data,
+    });
+
     this.socketService.emitToAllEvent({
       event: 'aggregator-blocks',
-      data: await this.transactionHandlerService.getHandlerBlocks(
-        AGGREGATOR_HANDLER_STATE_ID,
-      ),
+      data,
     });
   }
 }
