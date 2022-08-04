@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.util.Map;
 
-import static api.app.astrodao.com.core.Constants.Endpoints.*;
+import static api.app.astrodao.com.core.Constants.ApiServiceEndpoints.*;
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
 

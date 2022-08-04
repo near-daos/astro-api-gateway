@@ -6,7 +6,7 @@ import io.restassured.specification.RequestSpecification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import static api.app.astrodao.com.core.Constants.Endpoints.TRANSACTIONS_CALLBACK;
+import static api.app.astrodao.com.core.Constants.ApiServiceEndpoints.TRANSACTIONS_CALLBACK;
 import static io.restassured.RestAssured.given;
 
 @Component

@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
-import static api.app.astrodao.com.core.Constants.Endpoints.*;
+import static api.app.astrodao.com.core.Constants.ApiServiceEndpoints.*;
 import static io.restassured.RestAssured.given;
 
 @Component

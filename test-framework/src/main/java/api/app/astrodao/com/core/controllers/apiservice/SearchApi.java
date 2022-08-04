@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
-import static api.app.astrodao.com.core.Constants.Endpoints.SEARCH;
+import static api.app.astrodao.com.core.Constants.ApiServiceEndpoints.SEARCH;
 import static io.restassured.RestAssured.given;
 
 @Component

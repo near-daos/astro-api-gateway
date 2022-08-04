@@ -31,7 +31,7 @@ public class Constants {
 	}
 
 	@UtilityClass
-	public class Endpoints {
+	public class ApiServiceEndpoints {
 		public static final String DAOS = "/api/v1/daos";
 		public static final String DAOS_ID = "/api/v1/daos/{id}";
 		public static final String ACCOUNT_DAOS = "/api/v1/daos/account-daos/{accountId}";
