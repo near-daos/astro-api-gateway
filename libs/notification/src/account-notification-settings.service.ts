@@ -23,7 +23,7 @@ export class AccountNotificationSettingsService extends TypeOrmCrudService<Accou
     dto: CreateAccountNotificationSettingsDto,
   ): Promise<AccountNotificationSettings> {
     const dao = await this.daoService.findById(dto.daoId);
-    if (!dao) {
+    if (dto.daoId && !dao) {
       throw new BadRequestException(`Invalid DAO id ${dto.daoId}`);
     }
 
