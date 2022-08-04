@@ -35,6 +35,7 @@ import {
   DraftCommentsRequest,
   UpdateDraftComment,
 } from '@sputnik-v2/draft-comment';
+import { DraftCommentPageResponse } from './dto/draft-comment-page-response.dto';
 
 @Span()
 @ApiTags('Draft Comments')
@@ -45,7 +46,7 @@ export class DraftCommentController {
   @ApiResponse({
     status: 200,
     description: 'List of Draft Comments',
-    type: DraftCommentResponse,
+    type: DraftCommentPageResponse,
   })
   @Get('/')
   getDraftComments(
