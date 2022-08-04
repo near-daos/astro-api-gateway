@@ -38,6 +38,7 @@ import {
   BaseResponseDto,
   DeleteResponse,
 } from '@sputnik-v2/common';
+import { DraftPageResponse } from './dto/draft-page-response.dto';
 
 @Span()
 @ApiTags('Draft Proposals')
@@ -48,7 +49,7 @@ export class DraftProposalController {
   @ApiResponse({
     status: 200,
     description: 'List of Draft Proposals',
-    type: DraftProposalBasicResponse,
+    type: DraftPageResponse,
   })
   @Get('/')
   getDraftProposals(
