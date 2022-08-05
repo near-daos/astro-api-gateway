@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.time.OffsetDateTime;
 import java.util.Comparator;
@@ -28,6 +29,9 @@ import static java.net.HttpURLConnection.HTTP_OK;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class DraftProposalsApiTests extends BaseTest {
 	private final DraftProposalsApiSteps draftProposalsApiSteps;
+
+	@Value("${accounts.account2.accountId}")
+	private String account2Id;
 
 	@Test
 	@Severity(SeverityLevel.CRITICAL)
@@ -80,8 +84,8 @@ public class DraftProposalsApiTests extends BaseTest {
 				"orderBy","updatedAt",
 				"order", "ASC",
 				"state", "open",
-				"isRead", "false",
-				"isSaved", "false"
+				"isRead", false,
+				"isSaved", false
 		);
 
 		DraftPageResponse draftProposalResponse = draftProposalsApiSteps.getDraftProposals(query).then()
@@ -109,5 +113,39 @@ public class DraftProposalsApiTests extends BaseTest {
 		List<OffsetDateTime> updatedAtList = draftProposalResponse.getData().stream().map(DraftProposalBasicResponse::getUpdatedAt).collect(Collectors.toList());
 		draftProposalsApiSteps.assertOffsetDateTimesAreSortedCorrectly(updatedAtList, Comparator.naturalOrder(),
 		                                                               "Draft proposals should be sorted by 'updatedAt' field in ASC order");
+	}
+
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get list of draft-proposals with query param: [accountId, isRead, isSaved]")
+	@DisplayName("Get list of draft-proposals with query param: [accountId, isRead, isSaved]")
+	void getListOfDraftProposalsWithQueryParamsAccountIdIsReadIsSaved() {
+		Map<String, Object> query = Map.of(
+				"accountId", account2Id,
+				"isRead", true,
+				"isSaved", true
+		);
+
+		DraftPageResponse draftProposalResponse = draftProposalsApiSteps.getDraftProposals(query).then()
+				.statusCode(HTTP_OK)
+				.extract().as(DraftPageResponse.class);
+
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, draftPageResponse -> draftPageResponse.getLimit().intValue(), 10, "limit");
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, draftPageResponse -> draftPageResponse.getOffset().intValue(), 0, "offset");
+		draftProposalsApiSteps.assertDtoValueGreaterThanOrEqualTo(draftProposalResponse, draftPageResponse -> draftPageResponse.getTotal().intValue(), 2, "total");
+
+		draftProposalsApiSteps.assertCollectionElementsHasValue(draftProposalResponse.getData(), draftProposal -> !draftProposal.getId().isEmpty(), "id");
+		draftProposalsApiSteps.assertCollectionElementsHasValue(draftProposalResponse.getData(), draftProposal -> !draftProposal.getDaoId().isEmpty(), "daoId");
+		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getData(), DraftProposalBasicResponse::getProposer, account2Id, "proposer");
+		draftProposalsApiSteps.assertCollectionElementsHasValue(draftProposalResponse.getData(), draftProposal -> !draftProposal.getTitle().isEmpty(), "title");
+		draftProposalsApiSteps.assertCollectionElementsHasValue(draftProposalResponse.getData(), draftProposal -> !draftProposal.getType().getValue().isEmpty(), "type");
+		draftProposalsApiSteps.assertCollectionElementsHasValue(draftProposalResponse.getData(), draftProposal -> !draftProposal.getState().getValue().isEmpty(), "state");
+		draftProposalsApiSteps.assertCollectionElementsHasValue(draftProposalResponse.getData(), draftProposal -> draftProposal.getReplies().intValue() >= 0, "replies");
+		draftProposalsApiSteps.assertCollectionElementsHasValue(draftProposalResponse.getData(), draftProposal -> draftProposal.getViews().intValue() >= 1, "views");
+		draftProposalsApiSteps.assertCollectionElementsHasValue(draftProposalResponse.getData(), draftProposal -> draftProposal.getSaves().intValue() >= 1, "saves");
+		draftProposalsApiSteps.assertCollectionElementsHasValue(draftProposalResponse.getData(), draftProposal -> !draftProposal.getUpdatedAt().toString().isEmpty(), "updatedAt");
+		draftProposalsApiSteps.assertCollectionElementsHasValue(draftProposalResponse.getData(), draftProposal -> !draftProposal.getCreatedAt().toString().isEmpty(), "createdAt");
+		draftProposalsApiSteps.assertCollectionElementsHasBooleanValueAndSize(draftProposalResponse.getData(), DraftProposalBasicResponse::getIsRead, "No boolean value for field:", "isRead");
+		draftProposalsApiSteps.assertCollectionElementsHasBooleanValueAndSize(draftProposalResponse.getData(), DraftProposalBasicResponse::getIsSaved, "No boolean value for field:", "isSaved");
 	}
 }
