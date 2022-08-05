@@ -65,6 +65,8 @@ spec:
               name: draft-service-secrets
           - secretRef:
               name: api-redis-secrets
+          - secretRef:
+              name: api-service-secrets
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
