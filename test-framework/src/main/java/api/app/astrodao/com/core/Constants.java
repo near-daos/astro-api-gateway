@@ -86,4 +86,10 @@ public class Constants {
 
 		public static final String TRANSACTIONS_CALLBACK = "/api/v1/transactions/wallet/callback/{accountId}";
 	}
+
+	@UtilityClass
+	public class DraftServiceEndpoints {
+		public static final String DRAFT_PROPOSALS = "/api/v1/draft-proposals";
+
+	}
 }
