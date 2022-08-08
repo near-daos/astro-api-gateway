@@ -31,7 +31,7 @@ public class Constants {
 	}
 
 	@UtilityClass
-	public class Endpoints {
+	public class ApiServiceEndpoints {
 		public static final String DAOS = "/api/v1/daos";
 		public static final String DAOS_ID = "/api/v1/daos/{id}";
 		public static final String ACCOUNT_DAOS = "/api/v1/daos/account-daos/{accountId}";
@@ -85,5 +85,11 @@ public class Constants {
 		public static final String ACCOUNT_SUBSCRIPTIONS = "/api/v1/subscriptions/account-subscriptions/{accountId}";
 
 		public static final String TRANSACTIONS_CALLBACK = "/api/v1/transactions/wallet/callback/{accountId}";
+	}
+
+	@UtilityClass
+	public class DraftServiceEndpoints {
+		public static final String DRAFT_PROPOSALS = "/api/v1/draft-proposals";
+
 	}
 }
