@@ -24,9 +24,9 @@ import java.util.stream.Collectors;
 import static java.net.HttpURLConnection.HTTP_OK;
 
 @Tags({@Tag("all"), @Tag("draftProposalsApiTests")})
-@Epic("DAO")
-@Feature("/daos/account-daos/{accountId} API tests")
-@DisplayName("/daos/account-daos/{accountId} API tests")
+@Epic("Draft Proposals")
+@Feature("/draft-proposals API tests")
+@DisplayName("/draft-proposals API tests")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class DraftProposalsApiTests extends BaseTest {
 	private final DraftProposalsApiSteps draftProposalsApiSteps;
