@@ -1,4 +1,12 @@
-import { Controller, Post, Param, UseGuards, Req, Get } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Param,
+  UseGuards,
+  Req,
+  Get,
+  Logger,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Span, TraceService } from 'nestjs-ddtrace';
 import { Interval } from '@nestjs/schedule';
@@ -21,6 +29,8 @@ import { SocketService } from '@sputnik-v2/websocket';
 @ApiTags('Aggregator')
 @Controller('aggregator')
 export class AggregatorController {
+  private readonly logger = new Logger(AggregatorController.name);
+
   constructor(
     private readonly eventService: EventService,
     private readonly transactionHandlerService: TransactionHandlerService,
@@ -72,6 +82,8 @@ export class AggregatorController {
     currentSpan.addTags({
       ...data,
     });
+
+    this.logger.log(data);
 
     this.socketService.emitToAllEvent({
       event: 'aggregator-blocks',
