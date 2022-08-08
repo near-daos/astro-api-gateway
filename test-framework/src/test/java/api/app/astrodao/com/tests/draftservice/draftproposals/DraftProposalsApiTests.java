@@ -191,9 +191,8 @@ public class DraftProposalsApiTests extends BaseTest {
 	@Story("Get list of draft-proposals with query param: [search]")
 	@DisplayName("Get list of draft-proposals with query param: [search]")
 	void getListOfDraftProposalsWithQueryParamsSearch() {
-		String title = "Test draft proposal. N1";
 		Map<String, Object> query = Map.of(
-				"search", title
+				"search", "Test draft proposal. N1"
 		);
 
 		DraftPageResponse draftProposalResponse = draftProposalsApiSteps.getDraftProposals(query).then()
@@ -213,6 +212,39 @@ public class DraftProposalsApiTests extends BaseTest {
 		draftProposalsApiSteps.assertCollectionElementsHasValue(draftProposalResponse.getData(), draftProposal -> draftProposal.getReplies().intValue() == 0, "replies");
 		draftProposalsApiSteps.assertCollectionElementsHasValue(draftProposalResponse.getData(), draftProposal -> draftProposal.getViews().intValue() == 1, "views");
 		draftProposalsApiSteps.assertCollectionElementsHasValue(draftProposalResponse.getData(), draftProposal -> draftProposal.getSaves().intValue() == 1, "saves");
+		draftProposalsApiSteps.assertCollectionElementsHasValue(draftProposalResponse.getData(), draftProposal -> !draftProposal.getUpdatedAt().toString().isEmpty(), "updatedAt");
+		draftProposalsApiSteps.assertCollectionElementsHasValue(draftProposalResponse.getData(), draftProposal -> !draftProposal.getCreatedAt().toString().isEmpty(), "createdAt");
+		draftProposalsApiSteps.assertCollectionElementsHasBooleanValueAndSize(draftProposalResponse.getData(), draftProposalBasicResponse -> !draftProposalBasicResponse.getIsRead(), "No boolean value for field:", "isRead");
+		draftProposalsApiSteps.assertCollectionElementsHasBooleanValueAndSize(draftProposalResponse.getData(), draftProposalBasicResponse -> !draftProposalBasicResponse.getIsSaved(), "No boolean value for field:", "isSaved");
+	}
+
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get list of draft-proposals with query param: [daoId]")
+	@DisplayName("Get list of draft-proposals with query param: [daoId]")
+	void getListOfDraftProposalsWithQueryParamsDaoId() {
+		String daoId = "test-dao-for-ui-uno.sputnikv2.testnet";
+		Map<String, Object> query = Map.of(
+				"daoId", daoId
+		);
+
+		DraftPageResponse draftProposalResponse = draftProposalsApiSteps.getDraftProposals(query).then()
+				.statusCode(HTTP_OK)
+				.extract().as(DraftPageResponse.class);
+
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, draftPageResponse -> draftPageResponse.getLimit().intValue(), 10, "limit");
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, draftPageResponse -> draftPageResponse.getOffset().intValue(), 0, "offset");
+		draftProposalsApiSteps.assertDtoValueGreaterThanOrEqualTo(draftProposalResponse, draftPageResponse -> draftPageResponse.getTotal().intValue(), 4, "total");
+
+		draftProposalsApiSteps.assertCollectionElementsHasValue(draftProposalResponse.getData(), draftProposal -> !draftProposal.getId().isEmpty(), "id");
+		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getData(), DraftProposalBasicResponse::getDaoId, daoId, "daoId");
+		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getData(), DraftProposalBasicResponse::getProposer, account2Id, "proposer");
+		draftProposalsApiSteps.assertCollectionElementsHasValue(draftProposalResponse.getData(), draftProposal -> !draftProposal.getTitle().isEmpty(), "title");
+		draftProposalsApiSteps.assertCollectionElementsHasValue(draftProposalResponse.getData(), draftProposal -> !draftProposal.getType().getValue().isEmpty(), "type");
+		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getData(), DraftProposalBasicResponse::getState, DraftProposalState.OPEN, "state");
+		draftProposalsApiSteps.assertCollectionElementsHasValue(draftProposalResponse.getData(), draftProposal -> draftProposal.getReplies().intValue() >= 0, "replies");
+		draftProposalsApiSteps.assertCollectionElementsHasValue(draftProposalResponse.getData(), draftProposal -> draftProposal.getViews().intValue() >= 0, "views");
+		draftProposalsApiSteps.assertCollectionElementsHasValue(draftProposalResponse.getData(), draftProposal -> draftProposal.getSaves().intValue() >= 0, "saves");
 		draftProposalsApiSteps.assertCollectionElementsHasValue(draftProposalResponse.getData(), draftProposal -> !draftProposal.getUpdatedAt().toString().isEmpty(), "updatedAt");
 		draftProposalsApiSteps.assertCollectionElementsHasValue(draftProposalResponse.getData(), draftProposal -> !draftProposal.getCreatedAt().toString().isEmpty(), "createdAt");
 		draftProposalsApiSteps.assertCollectionElementsHasBooleanValueAndSize(draftProposalResponse.getData(), draftProposalBasicResponse -> !draftProposalBasicResponse.getIsRead(), "No boolean value for field:", "isRead");
