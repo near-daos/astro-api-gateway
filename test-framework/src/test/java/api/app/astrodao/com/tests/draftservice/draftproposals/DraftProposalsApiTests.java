@@ -186,4 +186,36 @@ public class DraftProposalsApiTests extends BaseTest {
 		                                                               "'Order' param is not set. Draft proposals should be sorted by 'createdAt' field in DESC order by default");
 	}
 
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get list of draft-proposals with query param: [search]")
+	@DisplayName("Get list of draft-proposals with query param: [search]")
+	void getListOfDraftProposalsWithQueryParamsSearch() {
+		String title = "Test draft proposal. N1";
+		Map<String, Object> query = Map.of(
+				"search", title
+		);
+
+		DraftPageResponse draftProposalResponse = draftProposalsApiSteps.getDraftProposals(query).then()
+				.statusCode(HTTP_OK)
+				.extract().as(DraftPageResponse.class);
+
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, draftPageResponse -> draftPageResponse.getLimit().intValue(), 10, "limit");
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, draftPageResponse -> draftPageResponse.getOffset().intValue(), 0, "offset");
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, draftPageResponse -> draftPageResponse.getTotal().intValue(), 1, "total");
+
+		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getData(), DraftProposalBasicResponse::getId, "62ed05c6520e2e000821f54f", "id");
+		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getData(), DraftProposalBasicResponse::getDaoId, "test-dao-for-ui-uno.sputnikv2.testnet", "daoId");
+		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getData(), DraftProposalBasicResponse::getProposer, account2Id, "proposer");
+		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getData(), DraftProposalBasicResponse::getTitle, "Test draft proposal. N1", "title");
+		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getData(), DraftProposalBasicResponse::getType, ProposalType.TRANSFER, "type");
+		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getData(), DraftProposalBasicResponse::getState, DraftProposalState.OPEN, "state");
+		draftProposalsApiSteps.assertCollectionElementsHasValue(draftProposalResponse.getData(), draftProposal -> draftProposal.getReplies().intValue() == 0, "replies");
+		draftProposalsApiSteps.assertCollectionElementsHasValue(draftProposalResponse.getData(), draftProposal -> draftProposal.getViews().intValue() == 1, "views");
+		draftProposalsApiSteps.assertCollectionElementsHasValue(draftProposalResponse.getData(), draftProposal -> draftProposal.getSaves().intValue() == 1, "saves");
+		draftProposalsApiSteps.assertCollectionElementsHasValue(draftProposalResponse.getData(), draftProposal -> !draftProposal.getUpdatedAt().toString().isEmpty(), "updatedAt");
+		draftProposalsApiSteps.assertCollectionElementsHasValue(draftProposalResponse.getData(), draftProposal -> !draftProposal.getCreatedAt().toString().isEmpty(), "createdAt");
+		draftProposalsApiSteps.assertCollectionElementsHasBooleanValueAndSize(draftProposalResponse.getData(), draftProposalBasicResponse -> !draftProposalBasicResponse.getIsRead(), "No boolean value for field:", "isRead");
+		draftProposalsApiSteps.assertCollectionElementsHasBooleanValueAndSize(draftProposalResponse.getData(), draftProposalBasicResponse -> !draftProposalBasicResponse.getIsSaved(), "No boolean value for field:", "isSaved");
+	}
 }
