@@ -209,6 +209,7 @@ export const getAccountPermissions = (
   const council = roles.find((role) => role.name.toLowerCase() === 'council');
   const permissions = roles.reduce((roles, role) => {
     if (
+      role.kind === RoleKindType.Everyone ||
       (role.kind === RoleKindType.Group &&
         role.accountIds.includes(accountId)) ||
       (role.kind === RoleKindType.Member && accountBalance >= role.balance)
