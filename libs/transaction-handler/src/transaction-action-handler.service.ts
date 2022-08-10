@@ -499,6 +499,13 @@ export class TransactionActionHandlerService {
         });
       }
 
+      if (proposalKindType === ProposalType.AddBounty) {
+        this.logger.log(
+          `Removing Bounty Context: ${proposalEntity?.id} due to transaction`,
+        );
+        await this.bountyContextService.remove(proposalEntity?.id);
+      }
+
       this.logger.log(`Removing Proposal: ${args.id} due to transaction`);
       await this.proposalService.remove(proposalEntity?.id);
     } else {
