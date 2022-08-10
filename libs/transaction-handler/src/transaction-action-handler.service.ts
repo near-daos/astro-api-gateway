@@ -17,7 +17,7 @@ import {
 import { Transaction } from '@sputnik-v2/near-indexer';
 import { BountyContextService, BountyService } from '@sputnik-v2/bounty';
 import { EventService } from '@sputnik-v2/event';
-import { TokenService } from '@sputnik-v2/token';
+import { NFTTokenService, TokenService } from '@sputnik-v2/token';
 import {
   buildBountyId,
   buildDelegationId,
@@ -56,8 +56,10 @@ export class TransactionActionHandlerService {
     private readonly bountyContextService: BountyContextService,
     private readonly eventService: EventService,
     private readonly tokenService: TokenService,
+    private readonly nftTokenService: NFTTokenService,
   ) {
     const { contractName } = this.configService.get('near');
+    // TODO: Split on multiple handlers
     this.contractHandlers = [
       {
         contractId: contractName,
@@ -76,6 +78,36 @@ export class TransactionActionHandlerService {
           undelegate: this.handleDelegate.bind(this),
         },
         defaultHandler: this.handleUnknownDaoTransaction.bind(this),
+      },
+      {
+        // Any contract id to handle ft and nft transactions
+        contractIdSuffix: '',
+        methodHandlers: {
+          // Common
+          mint: this.handleTokenMint.bind(this),
+
+          // FT
+          ft_mint: this.handleTokenMethods.bind(this),
+          ft_transfer_call: this.handleTokenMethods.bind(this),
+          ft_transfer: this.handleTokenMethods.bind(this),
+          storage_deposit: this.handleTokenMethods.bind(this),
+          storage_withdraw: this.handleTokenMethods.bind(this),
+
+          // NFT
+          nft_transfer: this.handleNftMethods.bind(this),
+          nft_batch_transfer: this.handleNftMethods.bind(this),
+          nft_transfer_call: this.handleNftMethods.bind(this),
+          nft_approve: this.handleNftMethods.bind(this),
+          nft_revoke: this.handleNftMethods.bind(this),
+          nft_transfer_payout: this.handleNftMethods.bind(this),
+          nft_on_approve: this.handleNftMethods.bind(this),
+          nft_mint: this.handleNftMethods.bind(this),
+          nft_batch_mint: this.handleNftMethods.bind(this),
+          nft_burn: this.handleNftMethods.bind(this),
+          nft_batch_burn: this.handleNftMethods.bind(this),
+          nft_create_series: this.handleNftMethods.bind(this),
+          nft_buy: this.handleNftMethods.bind(this),
+        },
       },
     ];
   }
@@ -123,12 +155,11 @@ export class TransactionActionHandlerService {
     );
 
     if (errors.length > 0) {
-      errors.forEach((error) => {
-        this.logger.error(
-          `Handling transaction ${action.transactionHash} failed with error: ${error}`,
-        );
-      });
-      throw new Error(`Handling transaction ${action.transactionHash} failed`);
+      const errorMessages = errors.map((error) => error.toString()).join('; ');
+      this.logger.error(
+        `Handling transaction ${action.transactionHash} failed with errors: ${errorMessages}`,
+      );
+      throw new Error(errorMessages);
     } else {
       this.logger.log(
         `Transaction successfully handled: ${action.transactionHash}`,
@@ -324,6 +355,9 @@ export class TransactionActionHandlerService {
     timestamp,
     status,
   }) {
+    const txStatus =
+      status ||
+      (await this.nearApiService.getTxStatus(transactionHash, receiverId));
     const state = await this.nearApiService.getAccountState(receiverId);
     const proposalKindType = proposal.kind?.kind.type;
     let config;
@@ -409,7 +443,7 @@ export class TransactionActionHandlerService {
         }, 30000);
       }
 
-      proposal.failure = status?.Failure;
+      proposal.failure = txStatus?.Failure;
     }
 
     this.logger.log(`Updating Proposal: ${proposal.id} due to transaction`);
@@ -755,6 +789,125 @@ export class TransactionActionHandlerService {
     await this.daoService.updateDaoMembers(daoId);
   }
 
+  async handleTokenMint(txAction: TransactionAction) {
+    this.logger.log(
+      `Handling "mint" method of ${txAction.receiverId} due to transaction: ${txAction.transactionHash}`,
+    );
+
+    try {
+      this.logger.log(`Checking if ${txAction.receiverId} is Fungible Token`);
+      const ftContract = this.nearApiService.getContract(
+        'fToken',
+        txAction.receiverId,
+      );
+      await ftContract.ft_total_supply();
+      await this.handleTokenMethods(txAction);
+      return;
+    } catch (err) {
+      this.logger.warn(`Contract ${txAction.receiverId} is not Fungible Token`);
+    }
+
+    try {
+      const nftContract = this.nearApiService.getContract(
+        'nft',
+        txAction.receiverId,
+      );
+      this.logger.log(`Checking if ${txAction.receiverId} is NFT`);
+      await nftContract.nft_total_supply();
+      await this.handleNftMethods(txAction);
+      return;
+    } catch (err) {
+      this.logger.warn(`Contract ${txAction.receiverId} is not NFT`);
+    }
+
+    this.logger.warn(
+      `Called "mint" method on unknown contract ${txAction.receiverId}. Skip transaction ${txAction.transactionHash}`,
+    );
+  }
+
+  async handleTokenMethods(txAction: TransactionAction) {
+    const daoIds = [
+      ...new Set([
+        txAction.txSignerId,
+        txAction.predecessorId,
+        txAction.args?.receiver_id,
+        txAction.args?.account_id,
+      ]),
+    ].filter((accountId) => accountId && this.isDaoContract(accountId));
+    await this.handleTokenUpdate(txAction, daoIds);
+  }
+
+  async handleNftMethods(txAction: TransactionAction) {
+    const daoIds = [
+      ...new Set([
+        txAction.txSignerId,
+        txAction.predecessorId,
+        txAction.args?.receiver_id,
+        txAction.args?.account_id,
+        txAction.args?.creator_id,
+        txAction.args?.owner_id,
+        ...(txAction.args?.token_ids?.map((arr) => arr[1]) || []),
+      ]),
+    ].filter((accountId) => accountId && this.isDaoContract(accountId));
+    await this.handleNftUpdate(txAction, daoIds);
+  }
+
+  async handleTokenUpdate(txAction: TransactionAction, accountIds: string[]) {
+    try {
+      this.logger.log(
+        `Storing Token: ${txAction.receiverId} due to transaction: ${txAction.transactionHash}`,
+      );
+      await this.tokenService.loadTokenById(
+        txAction.receiverId,
+        txAction.timestamp,
+      );
+      this.logger.log(`Token successfully stored: ${txAction.receiverId}`);
+    } catch (err) {
+      this.logger.warn(
+        `Failed to load token: ${txAction.receiverId}. Skip transaction ${txAction.transactionHash}. Error: ${err}`,
+      );
+      return;
+    }
+
+    for (const accountId of accountIds) {
+      try {
+        this.logger.log(
+          `Updating Token ${txAction.receiverId} balance for ${accountId} due to transaction: ${txAction.transactionHash}`,
+        );
+        await this.tokenService.loadBalanceById(txAction.receiverId, accountId);
+        this.logger.log(
+          `Token ${txAction.receiverId} balance for ${accountId} successfully updated`,
+        );
+      } catch (err) {
+        this.logger.warn(
+          `Failed to load token  ${txAction.receiverId} balance for ${accountId}. Transaction: ${txAction.transactionHash}. Error: ${err}`,
+        );
+      }
+    }
+  }
+
+  async handleNftUpdate(txAction: TransactionAction, accountIds: string[]) {
+    for (const accountId of accountIds) {
+      try {
+        this.logger.log(
+          `Updating NFT ${txAction.receiverId} for ${accountId} due to transaction: ${txAction.transactionHash}`,
+        );
+        await this.nftTokenService.loadNFT(
+          txAction.receiverId,
+          accountId,
+          txAction.timestamp,
+        );
+        this.logger.log(
+          `NFT ${txAction.receiverId} for ${accountId} successfully updated`,
+        );
+      } catch (err) {
+        this.logger.warn(
+          `Failed to load NFT ${txAction.receiverId} for ${accountId}. Transaction: ${txAction.transactionHash}. Error: ${err}`,
+        );
+      }
+    }
+  }
+
   private getContractHandlers(receiverId: string): ContractHandler[] {
     return this.contractHandlers.filter((contractHandler) => {
       return (
@@ -762,5 +915,10 @@ export class TransactionActionHandlerService {
         receiverId.endsWith(contractHandler.contractIdSuffix)
       );
     });
+  }
+
+  private isDaoContract(receiverId: string): boolean {
+    const { contractName } = this.configService.get('near');
+    return receiverId.endsWith(contractName);
   }
 }

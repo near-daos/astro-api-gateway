@@ -32,6 +32,7 @@ export const EVENT_AGGREGATOR_SERVICE = 'EVENT_AGGREGATOR_SERVICE';
 export const EVENT_AGGREGATOR_QUEUE_NAME = 'sputnik-events-aggregator';
 
 export const AGGREGATOR_HANDLER_STATE_ID = 'aggregator';
+export const INDEXER_PROCESSOR_HANDLER_STATE_ID = 'indexer-processor';
 
 export const DB_FOREIGN_KEY_VIOLATION = '23503';
 
