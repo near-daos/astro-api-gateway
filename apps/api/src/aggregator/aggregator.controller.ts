@@ -17,6 +17,7 @@ import {
   AGGREGATOR_HANDLER_STATE_ID,
   AuthorizedRequest,
   FindOneParams,
+  StatsDService,
 } from '@sputnik-v2/common';
 import { EventService } from '@sputnik-v2/event';
 import {
@@ -30,6 +31,8 @@ import { SocketService } from '@sputnik-v2/websocket';
 @Controller('aggregator')
 export class AggregatorController {
   private readonly logger = new Logger(AggregatorController.name);
+
+  private readonly statsDService = new StatsDService();
 
   constructor(
     private readonly eventService: EventService,
@@ -79,11 +82,47 @@ export class AggregatorController {
         AGGREGATOR_HANDLER_STATE_ID,
       );
 
+    const { lastBlock, lastAstroBlock, lastHandledBlock } = data;
+
     currentSpan.addTags({
       ...data,
     });
 
     this.logger.log(data);
+
+    this.statsDService.client.gauge('block.lastBlock.height', lastBlock.height);
+    this.statsDService.client.gauge(
+      'block.lastBlock.timestamp',
+      lastBlock.timestamp as number,
+    );
+
+    this.statsDService.client.gauge(
+      'block.lastAstroBlock.height',
+      lastAstroBlock.height,
+    );
+    this.statsDService.client.gauge(
+      'block.lastAstroBlock.timestamp',
+      lastAstroBlock.timestamp as number,
+    );
+
+    this.statsDService.client.gauge(
+      'block.lastHandledBlock.height',
+      lastHandledBlock.height,
+    );
+    this.statsDService.client.gauge(
+      'block.lastHandledBlock.timestamp',
+      lastHandledBlock.timestamp as number,
+    );
+
+    this.statsDService.client.gauge(
+      'block.lag.height',
+      lastAstroBlock.height - lastHandledBlock.height,
+    );
+    this.statsDService.client.gauge(
+      'block.lag.time',
+      (lastAstroBlock.timestamp as number) -
+        (lastHandledBlock.timestamp as number),
+    );
 
     this.socketService.emitToAllEvent({
       event: 'aggregator-blocks',
