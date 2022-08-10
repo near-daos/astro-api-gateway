@@ -20,6 +20,8 @@
     "start-notifier:dev": "nest start notifier --watch",
     "start-draft": "nest start draft",
     "start-draft:dev": "nest start draft --watch",
+    "start-indexer-processor": "nest start indexer-processor",
+    "start-indexer-processor:dev": "nest start indexer-processor --watch",
     "start": "concurrently \"yarn start-aggregator\" \"yarn start-api\" \"yarn start-notifier\"",
     "start:dev": "concurrently \"yarn start-aggregator:dev\" \"yarn start-api:dev\" \"yarn start-notifier:dev\"",
     "start-migrations": "nest start migrations",
@@ -193,7 +195,9 @@
       "@sputnik-v2/websocket/(.*)": "<rootDir>/libs/websocket/src/$1",
       "@sputnik-v2/websocket": "<rootDir>/libs/websocket/src",
       "@sputnik-v2/dao-api/(.*)": "<rootDir>/libs/dao-api/src/$1",
-      "@sputnik-v2/dao-api": "<rootDir>/libs/dao-api/src"
+      "@sputnik-v2/dao-api": "<rootDir>/libs/dao-api/src",
+      "@sputnik-v2/error-tracker/(.*)": "<rootDir>/libs/error-tracker/src/$1",
+      "@sputnik-v2/error-tracker": "<rootDir>/libs/error-tracker/src"
     }
   }
 }

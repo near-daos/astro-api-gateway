@@ -241,3 +241,11 @@ export const checkPermissions = (
     permissions.includes(`${policyLabel}:${permission}`)
   );
 };
+
+export const parseJSON = (s: string) => {
+  try {
+    return JSON.parse(s);
+  } catch (e) {
+    return s;
+  }
+};

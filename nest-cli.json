@@ -42,6 +42,15 @@
         "tsConfigPath": "apps/draft/tsconfig.app.json"
       }
     },
+    "indexer-processor": {
+      "type": "application",
+      "root": "apps/indexer-processor",
+      "entryFile": "main",
+      "sourceRoot": "apps/indexer-processor/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/indexer-processor/tsconfig.app.json"
+      }
+    },
     "config": {
       "type": "library",
       "root": "libs/config",
@@ -301,6 +310,15 @@
       "sourceRoot": "libs/dao-api/src",
       "compilerOptions": {
         "tsConfigPath": "libs/dao-api/tsconfig.lib.json"
+      }
+    },
+    "error-tracker": {
+      "type": "library",
+      "root": "libs/error-tracker",
+      "entryFile": "index",
+      "sourceRoot": "libs/error-tracker/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/error-tracker/tsconfig.lib.json"
       }
     }
   }

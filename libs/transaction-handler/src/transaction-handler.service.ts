@@ -76,7 +76,7 @@ export class TransactionHandlerService {
   async saveState(
     id: string,
     status: TransactionHandlerStatus,
-    lastTx?: Transaction,
+    lastTx?: Partial<Transaction>,
   ): Promise<TransactionHandlerState> {
     return this.transactionHandlerStateRepository.save({
       id,

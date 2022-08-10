@@ -31,6 +31,7 @@ module.exports = {
     'libs/token/src/entities/**/*.ts',
     'libs/otp/src/entities/**/*.ts',
     'libs/transaction-handler/src/entities/**/*.ts',
+    'libs/error-tracker/src/entities/**/*.ts',
   ],
   migrations: ['libs/orm-migrations/src/**/*.ts'],
   cli: {
