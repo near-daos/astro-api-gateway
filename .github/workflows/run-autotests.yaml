@@ -83,15 +83,14 @@ jobs:
         fi
         sudo mkdir test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}
         sudo cp -r test-framework/build/reports/allure-report test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/
-        sudo cp -r test-framework/build/swagger-coverage-output test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/
-        sudo find test-framework/build -name swagger-coverage-report.html -exec cp '{}' test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/swagger-coverage-output/index.html \;
-        sudo find test-framework/build -name swagger-coverage-results.json -exec cp '{}' test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/swagger-coverage-output/ \;
+        sudo find test-framework/build -name swagger-coverage-api-service.html -exec cp '{}' test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/ \;
+        sudo find test-framework/build -name swagger-coverage-draft-service.html -exec cp '{}' test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/ \;
         cat .github/actions/test/reports-site/HEADER.html.template | envsubst | sudo tee test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/HEADER.html
 
     - uses: actions/upload-artifact@v2
       with:
         name: coverage_report
-        path: test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/swagger-coverage-output/**
+        path: test-framework/build/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/swagger-coverage-*-service.html
 
     - uses: Consensys/kubernetes-action@1.1.0
       env:
@@ -114,5 +113,6 @@ jobs:
     - name: Add Annotation
       run: |
         echo "::notice title=Allure Report::https://automation-report.app.astrodao.com/test/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/allure-report/"
-        echo "::notice title=Coverage Report::https://automation-report.app.astrodao.com/test/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/swagger-coverage-output/"
+        echo "::notice title=Coverage Report API Service::https://automation-report.app.astrodao.com/test/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/swagger-coverage-api-service.html"
+        echo "::notice title=Coverage Report Draft Service::https://automation-report.app.astrodao.com/test/${{ steps.set_environment.outputs.workflow_name }}-${{ github.run_number }}/swagger-coverage-draft-service.html"
         echo "::notice title=History for Environment::https://automation-report.app.astrodao.com/test/"

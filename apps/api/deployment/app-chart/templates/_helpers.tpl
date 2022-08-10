@@ -41,8 +41,8 @@ helm.sh/chart: {{ include "sputnik-v2-api.chart" . }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
-{{- if eq .Values.environment.datadog_env "production" }}
-tags.datadoghq.com/env: "{{ .Values.environment.datadog_env }}"
+{{- if eq .Values.environment.DATADOG_APM_ENABLED "true" }}
+tags.datadoghq.com/env: "{{ .Values.environment.DATADOG_ENV }}"
 tags.datadoghq.com/service: sputnik-v2-api
 tags.datadoghq.com/version: 0.0.3
 {{- end -}}
@@ -62,8 +62,8 @@ Metadata labels
 {{- define "sputnik-v2-api.metadataLabels" -}}
 app.kubernetes.io/name: {{ include "sputnik-v2-api.name" . }}
 app.kubernetes.io/instance: "sputnik-v2-api"
-{{- if eq .Values.environment.datadog_env "production" }}
-tags.datadoghq.com/env: "{{ .Values.environment.datadog_env }}"
+{{- if eq .Values.environment.DATADOG_APM_ENABLED "true" }}
+tags.datadoghq.com/env: "{{ .Values.environment.DATADOG_ENV }}"
 tags.datadoghq.com/service: sputnik-v2-api
 tags.datadoghq.com/version: 0.0.3
 {{- end -}}

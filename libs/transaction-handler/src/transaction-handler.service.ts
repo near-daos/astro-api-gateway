@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -16,6 +16,8 @@ import { TransactionHandlerBlocks } from '@sputnik-v2/transaction-handler/dto';
 
 @Injectable()
 export class TransactionHandlerService {
+  private readonly logger = new Logger(TransactionHandlerService.name);
+
   constructor(
     @InjectRepository(TransactionHandlerState)
     private readonly transactionHandlerStateRepository: Repository<TransactionHandlerState>,
@@ -56,6 +58,7 @@ export class TransactionHandlerService {
       };
       // Fallback flow in case of using public indexer database
     } catch (err) {
+      this.logger.error(`Failed to query handler blocks with error: ${err}`);
       return {
         lastBlock: {
           height: 0,
