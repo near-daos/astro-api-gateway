@@ -4,7 +4,6 @@ import {
   DraftProposal,
   DraftProposalHistory,
 } from '@sputnik-v2/draft-proposal/entities';
-import { DraftHashtag } from '@sputnik-v2/draft-hashtag/entities';
 import { DraftComment } from '@sputnik-v2/draft-comment/entities';
 import * as fs from 'fs';
 
@@ -19,7 +18,7 @@ export default registerAs(`db_${DRAFT_DB_CONNECTION}`, () => {
     ssl: !!certPath,
     sslValidate: false,
     sslCert: certPath ? fs.readFileSync(certPath).toString() : undefined,
-    entities: [DraftProposal, DraftProposalHistory, DraftHashtag, DraftComment],
+    entities: [DraftProposal, DraftProposalHistory, DraftComment],
     synchronize: true,
   };
 });

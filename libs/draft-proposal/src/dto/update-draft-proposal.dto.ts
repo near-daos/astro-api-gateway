@@ -24,8 +24,4 @@ export class UpdateDraftProposal {
   @ApiProperty({ type: ProposalKindSwaggerDto })
   @IsNotEmpty()
   kind: ProposalKindSwaggerDto;
-
-  @ApiProperty({ type: [String] })
-  @IsString({ each: true })
-  hashtags: string[];
 }

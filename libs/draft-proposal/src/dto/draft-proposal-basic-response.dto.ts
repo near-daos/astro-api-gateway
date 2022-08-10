@@ -30,9 +30,6 @@ export class DraftProposalBasicResponse {
   })
   state: DraftProposalState;
 
-  @ApiProperty({ type: [String] })
-  hashtags: string[];
-
   @ApiProperty()
   views: number;
 
@@ -67,7 +64,6 @@ export function castDraftProposalBasicResponse(
     title: draftProposal.title,
     type: draftProposal.type,
     state: draftProposal.state,
-    hashtags: draftProposal.hashtags,
     replies: draftProposal.replies,
     views: draftProposal.viewAccounts.length,
     saves: draftProposal.saveAccounts.length,

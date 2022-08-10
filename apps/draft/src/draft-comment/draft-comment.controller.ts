@@ -27,6 +27,7 @@ import {
   AuthorizedRequest,
   BaseResponseDto,
   DeleteResponse,
+  FindOneMongoParams,
 } from '@sputnik-v2/common';
 import {
   CreateDraftComment,
@@ -99,7 +100,7 @@ export class DraftCommentController {
   @UseGuards(AccountAccessGuard)
   @Patch('/:id')
   updateDraftComment(
-    @Param('id') id: string,
+    @Param() { id }: FindOneMongoParams,
     @Req() req: AuthorizedRequest,
     @Body() body: UpdateDraftComment,
   ): Promise<string> {
@@ -129,7 +130,7 @@ export class DraftCommentController {
   @UseGuards(AccountAccessGuard)
   @Post('/:id/like')
   likeDraftComment(
-    @Param('id') id: string,
+    @Param() { id }: FindOneMongoParams,
     @Req() req: AuthorizedRequest,
   ): Promise<boolean> {
     return this.draftCommentService.like(id, req.accountId);
@@ -155,7 +156,7 @@ export class DraftCommentController {
   @UseGuards(AccountAccessGuard)
   @Post('/:id/remove-like')
   removeLikeFromDraftComment(
-    @Param('id') id: string,
+    @Param() { id }: FindOneMongoParams,
     @Req() req: AuthorizedRequest,
   ): Promise<boolean> {
     return this.draftCommentService.removeLike(id, req.accountId);
@@ -184,7 +185,7 @@ export class DraftCommentController {
   @UseGuards(AccountAccessGuard)
   @Post('/:id/dislike')
   dislikeDraftComment(
-    @Param('id') id: string,
+    @Param() { id }: FindOneMongoParams,
     @Req() req: AuthorizedRequest,
   ): Promise<boolean> {
     return this.draftCommentService.dislike(id, req.accountId);
@@ -210,7 +211,7 @@ export class DraftCommentController {
   @UseGuards(AccountAccessGuard)
   @Post('/:id/remove-dislike')
   removeDislikeFromDraftComment(
-    @Param('id') id: string,
+    @Param() { id }: FindOneMongoParams,
     @Req() req: AuthorizedRequest,
   ): Promise<boolean> {
     return this.draftCommentService.removeDislike(id, req.accountId);
@@ -236,7 +237,7 @@ export class DraftCommentController {
   @UseGuards(AccountAccessGuard)
   @Delete('/:id')
   deleteDraftComment(
-    @Param('id') id: string,
+    @Param() { id }: FindOneMongoParams,
     @Req() req: AuthorizedRequest,
   ): Promise<DeleteResponse> {
     return this.draftCommentService.delete(id, req.accountId);

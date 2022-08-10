@@ -5,6 +5,7 @@ export * from './DeleteOneParams';
 export * from './EntityQuery';
 export * from './FindAccountParams';
 export * from './FindOneParams';
+export * from './FindOneMongoParams';
 export * from './PagingQuery';
 export * from './SearchQuery';
 export * from './TransactionInfo';

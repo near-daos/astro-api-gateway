@@ -23,6 +23,9 @@ export class ProposalKindSwaggerDto {
   @ApiProperty({ type: PolicyDtoV1 })
   policy: PolicyDtoV1 | string[];
 
+  @ApiProperty()
+  proposalVariant: string;
+
   @ApiProperty({
     description:
       `For type: ${ProposalType.AddMemberToRole}` +
@@ -89,4 +92,9 @@ export class ProposalKindSwaggerDto {
     description: `For type: ${ProposalType.BountyDone}`,
   })
   bountyId: string;
+
+  @ApiProperty({
+    description: `For type: ${ProposalType.Transfer}`,
+  })
+  amount: string;
 }

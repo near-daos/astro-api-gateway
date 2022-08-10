@@ -32,8 +32,5 @@ export class DraftProposalHistory extends BaseEntity {
   type: ProposalType;
 
   @Column()
-  hashtags: string[];
-
-  @Column()
   date: Date;
 }
