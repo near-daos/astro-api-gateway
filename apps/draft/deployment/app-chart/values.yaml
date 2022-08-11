@@ -1,4 +1,4 @@
-# Default values for sputnik-v2-draft.
+# Default values for astro-draft.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
@@ -13,9 +13,6 @@ image:
 imagePullSecrets: [ ]
 nameOverride: ""
 fullnameOverride: ""
-
-draftNameOverride: "sputnik-v2-draft"
-draftFullnameOverride: "sputnik-v2-draft"
 
 container:
   # Specifies the internal container port
@@ -64,7 +61,7 @@ service:
   targetPort: 3000
 
 ingress:
-  host: "sputnik-v2-draft-host"
+  host: "astro-draft-host"
 
 resources:
   limits:
@@ -91,12 +88,5 @@ monitoring:
       port: api
 
 environment:
-  AGGREGATOR_POLLING_INTERVAL: "5000"
-  AGGREGATOR_TOKEN_POLLING_INTERVAL: "10000"
-  AGGREGATOR_TOKEN_PRICES_POLLING_INTERVAL: "100000"
-  # 12 hours
-  AGGREGATOR_DAO_STATUS_POLLING_INTERVAL: "43200000"
-  # Every day at 23:55
-  AGGREGATOR_DAO_STATS_CRON_TIME: "55 23 * * *"
   API_RATE_TTL: "60"
   API_RATE_LIMIT: "5"

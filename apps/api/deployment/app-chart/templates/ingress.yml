@@ -1,11 +1,11 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: sputnik-v2-api-ingress
+  name: astro-api-ingress
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
     cert-manager.io/cluster-issuer: "letsencrypt"
-    nginx.org/websocket-services: {{ include "sputnik-v2-api.fullname" . }}
+    nginx.org/websocket-services: {{ include "astro-api.fullname" . }}
     nginx.ingress.kubernetes.io/affinity: cookie
     nginx.ingress.kubernetes.io/session-cookie-expires: "172800"
     nginx.ingress.kubernetes.io/session-cookie-max-age: "172800"
@@ -16,7 +16,7 @@ spec:
   tls:
   - hosts:
     - api.{{ .Values.ingress.host }}
-    secretName: {{ include "sputnik-v2-api.fullname" . }}-tls-secret
+    secretName: {{ include "astro-api.fullname" . }}-tls-secret
   rules:
   - host: api.{{ .Values.ingress.host }}
     http:
@@ -24,7 +24,7 @@ spec:
         - path: /
           backend:
             service:
-              name: {{ include "sputnik-v2-api.fullname" . }}
+              name: {{ include "astro-api.fullname" . }}
               port:
                 number: 80
           pathType: ImplementationSpecific
