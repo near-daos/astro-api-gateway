@@ -73,9 +73,21 @@ export class NearIndexerService {
     return this.lastBlockRepository.findOne();
   }
 
+  lastAccountChange(): Promise<AccountChange> {
+    return this.accountChangeRepository.findOne({
+      order: { changedInBlockTimestamp: 'DESC' },
+    });
+  }
+
   findBlockByHash(blockHash: string): Promise<Block> {
     return this.blockRepository.findOne({
       blockHash,
+    });
+  }
+
+  findBlockByTimestamp(blockTimestamp): Promise<Block> {
+    return this.blockRepository.findOne({
+      blockTimestamp,
     });
   }
 

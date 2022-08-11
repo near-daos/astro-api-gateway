@@ -247,6 +247,6 @@ export const parseJSON = (s: string) => {
   try {
     return JSON.parse(s);
   } catch (e) {
-    return s;
+    return null;
   }
 };

@@ -16,5 +16,8 @@ export class TransactionHandlerBlocks {
   lastAstroBlock: TransactionHandlerBlock;
 
   @ApiProperty({ type: TransactionHandlerBlock })
-  lastHandledBlock: TransactionHandlerBlock;
+  lastAggregatedBlock: TransactionHandlerBlock;
+
+  @ApiProperty({ type: TransactionHandlerBlock })
+  lastProcessedBlock: TransactionHandlerBlock;
 }
