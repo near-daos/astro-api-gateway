@@ -63,6 +63,10 @@ spec:
               name: indexer-redis-secrets
           - secretRef:
               name: api-rds-secrets
+          - secretRef:
+              name: api-service-secrets
+          - secretRef:
+              name: api-redis-secrets
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
