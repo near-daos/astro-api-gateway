@@ -11,7 +11,6 @@ import {
   AGGREGATOR_HANDLER_STATE_ID,
   INDEXER_PROCESSOR_HANDLER_STATE_ID,
 } from '@sputnik-v2/common';
-import { ConfigService } from '@nestjs/config';
 
 import { TransactionActionMapperService } from './transaction-action-mapper.service';
 import { TransactionActionHandlerService } from './transaction-action-handler.service';
