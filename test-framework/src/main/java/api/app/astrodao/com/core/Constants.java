@@ -90,6 +90,7 @@ public class Constants {
 	@UtilityClass
 	public class DraftServiceEndpoints {
 		public static final String DRAFT_PROPOSALS = "/api/v1/draft-proposals";
+		public static final String DRAFT_PROPOSALS_ID = "/api/v1/draft-proposals/{id}";
 
 	}
 }

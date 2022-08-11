@@ -19,4 +19,9 @@ public class DraftProposalsApiSteps extends BaseSteps {
 	public Response getDraftProposals(Map<String, Object> queryParams) {
 		return draftProposalsApi.getDraftProposals(queryParams);
 	}
+
+	@Step("Get draft-proposal by ID '{draftId}' and accountId '{accountId}'")
+	public Response getDraftProposalById(String draftId, String accountId) {
+		return draftProposalsApi.getDraftProposalById(draftId, accountId);
+	}
 }
