@@ -30,9 +30,6 @@ export class DraftProposalHistoryResponse {
   @ApiProperty({ type: ProposalKindSwaggerDto })
   kind: ProposalKindSwaggerDto;
 
-  @ApiProperty({ type: [String] })
-  hashtags: string[];
-
   @ApiProperty()
   updatedAt: Date;
 }
@@ -49,7 +46,6 @@ export function castDraftProposalHistoryResponse(
     description: draftProposalHistory.description,
     type: draftProposalHistory.type,
     kind: draftProposalHistory.kind as ProposalKindSwaggerDto,
-    hashtags: draftProposalHistory.hashtags,
     updatedAt: draftProposalHistory.date || draftProposalHistory.updatedAt,
   };
 }

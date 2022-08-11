@@ -14,7 +14,6 @@ import { WebsocketGateway, WebsocketModule } from '@sputnik-v2/websocket';
 
 import { DraftProposalModule } from './draft-proposal/draft-proposal.module';
 import { DraftCommentModule } from './draft-comment/draft-comment.module';
-import { DraftHashtagModule } from './draft-hashtag/draft-hashtag.module';
 import { DraftController } from './draft.controller';
 
 @Module({
@@ -53,7 +52,6 @@ import { DraftController } from './draft.controller';
     WebsocketModule,
     DraftProposalModule,
     DraftCommentModule,
-    DraftHashtagModule,
   ],
   controllers: [DraftController],
   providers: [WebsocketGateway],

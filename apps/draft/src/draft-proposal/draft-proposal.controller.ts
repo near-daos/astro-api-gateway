@@ -37,6 +37,7 @@ import {
   AuthorizedRequest,
   BaseResponseDto,
   DeleteResponse,
+  FindOneMongoParams,
 } from '@sputnik-v2/common';
 import { DraftPageResponse } from './dto/draft-page-response.dto';
 
@@ -72,7 +73,7 @@ export class DraftProposalController {
   })
   @Get('/:id')
   getDraftProposal(
-    @Param('id') id: string,
+    @Param() { id }: FindOneMongoParams,
     @Query() query: DraftProposalRequest,
   ): Promise<DraftProposalResponse> {
     return this.draftProposalService.getOneById(id, query);
@@ -122,7 +123,7 @@ export class DraftProposalController {
   @UseGuards(AccountAccessGuard)
   @Patch('/:id')
   updateDraftProposals(
-    @Param('id') id: string,
+    @Param() { id }: FindOneMongoParams,
     @Req() req: AuthorizedRequest,
     @Body() body: UpdateDraftProposal,
   ): Promise<string> {
@@ -152,7 +153,7 @@ export class DraftProposalController {
   @UseGuards(AccountAccessGuard)
   @Delete('/:id')
   deleteDraftProposal(
-    @Param('id') id: string,
+    @Param() { id }: FindOneMongoParams,
     @Req() req: AuthorizedRequest,
   ): Promise<DeleteResponse> {
     return this.draftProposalService.delete(id, req.accountId);
@@ -177,7 +178,10 @@ export class DraftProposalController {
   @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
   @Post('/:id/view')
-  viewDraftProposal(@Param('id') id: string, @Req() req: AuthorizedRequest) {
+  viewDraftProposal(
+    @Param() { id }: FindOneMongoParams,
+    @Req() req: AuthorizedRequest,
+  ) {
     return this.draftProposalService.view(id, req.accountId);
   }
 
@@ -200,7 +204,10 @@ export class DraftProposalController {
   @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
   @Post('/:id/save')
-  saveDraftProposal(@Param('id') id: string, @Req() req: AuthorizedRequest) {
+  saveDraftProposal(
+    @Param() { id }: FindOneMongoParams,
+    @Req() req: AuthorizedRequest,
+  ) {
     return this.draftProposalService.save(id, req.accountId);
   }
 
@@ -224,7 +231,7 @@ export class DraftProposalController {
   @UseGuards(AccountAccessGuard)
   @Delete('/:id/save')
   removeDraftProposalSave(
-    @Param('id') id: string,
+    @Param() { id }: FindOneMongoParams,
     @Req() req: AuthorizedRequest,
   ) {
     return this.draftProposalService.removeSave(id, req.accountId);
@@ -253,7 +260,7 @@ export class DraftProposalController {
   @UseGuards(AccountAccessGuard)
   @Post('/:id/close')
   closeDraftProposal(
-    @Param('id') id: string,
+    @Param() { id }: FindOneMongoParams,
     @Req() req: AuthorizedRequest,
     @Body() body: CloseDraftProposal,
   ) {

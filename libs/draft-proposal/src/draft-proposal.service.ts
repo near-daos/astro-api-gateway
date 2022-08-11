@@ -13,7 +13,6 @@ import {
   Order,
 } from '@sputnik-v2/common';
 import { ProposalKind } from '@sputnik-v2/proposal';
-import { DraftHashtagService } from '@sputnik-v2/draft-hashtag';
 import { DaoApiService } from '@sputnik-v2/dao-api';
 import { getAccountPermissions } from '@sputnik-v2/utils';
 
@@ -38,7 +37,6 @@ export class DraftProposalService {
     private draftProposalRepository: MongoRepository<DraftProposal>,
     @InjectRepository(DraftProposalHistory, DRAFT_DB_CONNECTION)
     private draftProposalHistoryRepository: MongoRepository<DraftProposalHistory>,
-    private draftHashtagService: DraftHashtagService,
     private daoApiService: DaoApiService,
   ) {}
 
@@ -65,7 +63,6 @@ export class DraftProposalService {
       );
     }
 
-    await this.draftHashtagService.createMultiple(draftProposalDto.hashtags);
     const draftProposal = await this.draftProposalRepository.save({
       daoId: draftProposalDto.daoId,
       proposer: accountId,
@@ -73,7 +70,6 @@ export class DraftProposalService {
       description: draftProposalDto.description,
       kind: draftProposalDto.kind as ProposalKind,
       type: draftProposalDto.type,
-      hashtags: draftProposalDto.hashtags,
       state: DraftProposalState.Open,
       replies: 0,
       viewAccounts: [],
@@ -110,7 +106,6 @@ export class DraftProposalService {
       throw new ForbiddenException('Account is not the proposer or council');
     }
 
-    await this.draftHashtagService.createMultiple(draftProposalDto.hashtags);
     await this.draftProposalHistoryRepository.save({
       draftProposalId: draftProposal.id,
       daoId: draftProposal.daoId,
@@ -119,7 +114,6 @@ export class DraftProposalService {
       description: draftProposal.description,
       kind: draftProposal.kind,
       type: draftProposal.type,
-      hashtags: draftProposal.hashtags,
       date: draftProposal.updatedAt,
     });
     await this.draftProposalRepository.save({
@@ -128,7 +122,6 @@ export class DraftProposalService {
       description: draftProposalDto.description,
       kind: draftProposalDto.kind as ProposalKind,
       type: draftProposalDto.type,
-      hashtags: draftProposalDto.hashtags,
     });
 
     return draftProposal.id.toString();
@@ -273,7 +266,6 @@ export class DraftProposalService {
         $or: [
           { title: { $regex: searchRegExp } },
           { description: { $regex: searchRegExp } },
-          { hashtags: { $in: search.split(',') } },
         ],
       });
     }
