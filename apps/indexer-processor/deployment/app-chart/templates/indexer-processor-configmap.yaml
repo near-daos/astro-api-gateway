@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: astro-indexer-processor-configmap
+data:
+  NODE_OPTIONS: ' --max-old-space-size={{ include "node.maxOldSpaceSize" . }} '
+  NEST_APP_TYPE: indexer-processor
+  PORT: "3000"
+{{- range $k, $v := .Values.environment }}
+  {{ $k }}: "{{ $v }}"
+{{- end }}

@@ -11,7 +11,7 @@ on:
         default: latest
       apps:
         required: false
-        default: aggregator api draft notifier
+        default: aggregator api draft notifier indexer-processor
         description: List of application to deploy (space separated).
 
 env:

@@ -12,14 +12,12 @@ export class RedisService {
     const {
       indexerRedisHost,
       indexerRedisPort,
-      indexerRedisUsername,
       indexerRedisPassword,
       indexerRedisDb,
     } = configService.get('indexer-processor');
     this.redis = new Redis({
       host: indexerRedisHost,
       port: indexerRedisPort,
-      username: indexerRedisUsername,
       password: indexerRedisPassword,
       db: indexerRedisDb,
     });

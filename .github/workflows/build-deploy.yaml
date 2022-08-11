@@ -49,7 +49,7 @@ jobs:
           exit 0
         fi
 
-        echo "::set-output name=apps::[\"aggregator\", \"api\", \"notifier\", \"draft\"]"
+        echo "::set-output name=apps::[\"aggregator\", \"api\", \"notifier\", \"draft\", \"indexer-processor\"]"
 
   get-environment:
     name: Get Environment
