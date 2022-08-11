@@ -44,25 +44,6 @@ export class DraftProposalService {
     accountId: string,
     draftProposalDto: CreateDraftProposal,
   ): Promise<string> {
-    const { data: dao } = await this.daoApiService
-      .getDao(draftProposalDto.daoId)
-      .catch(() => {
-        throw new BadRequestException(
-          `Invalid DAO ID ${draftProposalDto.daoId}`,
-        );
-      });
-    const accountPermissions = getAccountPermissions(
-      dao.policy.roles,
-      draftProposalDto.type,
-      accountId,
-    );
-
-    if (!accountPermissions.canAdd) {
-      throw new ForbiddenException(
-        `Account ${accountId} does not have permissions to create this type of proposal`,
-      );
-    }
-
     const draftProposal = await this.draftProposalRepository.save({
       daoId: draftProposalDto.daoId,
       proposer: accountId,
@@ -95,12 +76,6 @@ export class DraftProposalService {
       draftProposalDto.type,
       accountId,
     );
-
-    if (!accountPermissions.canAdd) {
-      throw new ForbiddenException(
-        `Account ${accountId} does not have permissions to create this type of proposal`,
-      );
-    }
 
     if (draftProposal.proposer !== accountId && !accountPermissions.isCouncil) {
       throw new ForbiddenException('Account is not the proposer or council');
