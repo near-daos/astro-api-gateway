@@ -47,6 +47,10 @@ export class TransactionHandlerService {
       const processorBlock = await this.getStateBlock(
         INDEXER_PROCESSOR_HANDLER_STATE_ID,
       );
+      const lastHandledBlock =
+        aggregatorBlock.blockTimestamp > processorBlock.blockTimestamp
+          ? aggregatorBlock
+          : processorBlock;
       const lastAccountChange =
         await this.nearIndexerService.lastAccountChange();
       const lastAstroBlock = await this.nearIndexerService.findBlockByTimestamp(
@@ -62,6 +66,10 @@ export class TransactionHandlerService {
         lastAstroBlock: {
           height: lastAstroBlock.blockHeight,
           timestamp: lastAstroBlock.blockTimestamp,
+        },
+        lastHandledBlock: {
+          height: lastHandledBlock.blockHeight,
+          timestamp: lastHandledBlock.blockTimestamp,
         },
         lastAggregatedBlock: {
           height: aggregatorBlock.blockHeight,
@@ -81,6 +89,10 @@ export class TransactionHandlerService {
           timestamp: 0,
         },
         lastAstroBlock: {
+          height: 0,
+          timestamp: 0,
+        },
+        lastHandledBlock: {
           height: 0,
           timestamp: 0,
         },
