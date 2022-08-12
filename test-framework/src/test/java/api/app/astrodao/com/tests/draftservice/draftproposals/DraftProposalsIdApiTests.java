@@ -15,10 +15,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import static api.app.astrodao.com.core.Constants.Variables.EMPTY_STRING;
-import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
-import static java.net.HttpURLConnection.HTTP_OK;
+import static java.net.HttpURLConnection.*;
 import static org.hamcrest.Matchers.equalTo;
 
 @Tags({@Tag("all"), @Tag("draftProposalsIdApiTests")})
@@ -61,14 +61,14 @@ public class DraftProposalsIdApiTests extends BaseTest {
 		draftProposalsApiSteps.assertDtoHasValue(draftProposalResponse, DraftProposalResponse::getCreatedAt, "createdAt");
 		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, DraftProposalResponse::getIsRead, Boolean.TRUE, "isRead");
 		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, DraftProposalResponse::getIsSaved, Boolean.TRUE, "isSaved");
-
 		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, DraftProposalResponse::getDescription, "<p>Pluto is a planet</p>", "description");
 
 		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, draftProposal -> draftProposal.getKind().getType(), ProposalKindSwaggerDto.TypeEnum.TRANSFER, "type");
-//		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, draftProposalResponse1 -> draftProposalResponse1.getKind().getProposalVariant, , "proposalVariant");
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, draftProposal -> draftProposal.getKind().getProposalVariant(), "ProposeTransfer", "proposalVariant");
 		draftProposalsApiSteps.assertDtoHasValue(draftProposalResponse, draftProposal -> draftProposal.getKind().getTokenId().isEmpty(), "tokenId");
-		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, draftProposalResponse1 -> draftProposalResponse1.getKind().getReceiverId(), account1Id, "receiverId");
-//		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, draftProposalResponse1 -> draftProposalResponse1.getKind().getAmount(), account1Id, "amount");
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, draftProposal -> draftProposal.getKind().getReceiverId(), account1Id, "receiverId");
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, draftProposal -> draftProposal.getKind().getAmount(), "1000000000000000000000000", "amount");
+
 		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getHistory(), DraftProposalHistoryResponse::getId, draftId, "id");
 		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getHistory(), DraftProposalHistoryResponse::getDaoId, daoId, "daoId");
 		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getHistory(), DraftProposalHistoryResponse::getProposer, account2Id, "proposer");
@@ -76,10 +76,10 @@ public class DraftProposalsIdApiTests extends BaseTest {
 		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getHistory(), DraftProposalHistoryResponse::getDescription, "<p>Pluto is a planet</p>", "description");
 		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getHistory(), DraftProposalHistoryResponse::getType, ProposalType.TRANSFER, "type");
 		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getHistory(), draftProposalHistoryResponse -> draftProposalHistoryResponse.getKind().getType(), ProposalKindSwaggerDto.TypeEnum.TRANSFER, "type");
-//		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getHistory(), draftProposalHistoryResponse -> draftProposalHistoryResponse.getKind().getProposalVariant(), , "proposalVariant");
+		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getHistory(), draftProposalHistoryResponse -> draftProposalHistoryResponse.getKind().getProposalVariant(), "ProposeTransfer", "proposalVariant");
 		draftProposalsApiSteps.assertCollectionElementsHasNoValue(draftProposalResponse.getHistory(), draftProposalHistoryResponse -> draftProposalHistoryResponse.getKind().getTokenId().isEmpty(), "tokenId");
 		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getHistory(), draftProposalHistoryResponse -> draftProposalHistoryResponse.getKind().getReceiverId(), account1Id, "receiverId");
-//		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getHistory(), draftProposalHistoryResponse -> draftProposalHistoryResponse.getKind().getAmount(), account1Id, "amount");
+		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getHistory(), draftProposalHistoryResponse -> draftProposalHistoryResponse.getKind().getAmount(), "1000000000000000000000000", "amount");
 		draftProposalsApiSteps.assertCollectionElementsHasValue(draftProposalResponse.getHistory(), draftProposalHistory -> !draftProposalHistory.getUpdatedAt().toString().isEmpty(), "history/updatedAt");
 	}
 
@@ -108,14 +108,14 @@ public class DraftProposalsIdApiTests extends BaseTest {
 		draftProposalsApiSteps.assertDtoHasValue(draftProposalResponse, DraftProposalResponse::getCreatedAt, "createdAt");
 		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, DraftProposalResponse::getIsRead, Boolean.FALSE, "isRead");
 		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, DraftProposalResponse::getIsSaved, Boolean.FALSE, "isSaved");
-
 		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, DraftProposalResponse::getDescription, "<p>Pluto is a planet</p>", "description");
 
 		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, draftProposal -> draftProposal.getKind().getType(), ProposalKindSwaggerDto.TypeEnum.TRANSFER, "type");
-//		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, draftProposalResponse1 -> draftProposalResponse1.getKind().getProposalVariant, , "proposalVariant");
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, draftProposal -> draftProposal.getKind().getProposalVariant(), "ProposeTransfer", "proposalVariant");
 		draftProposalsApiSteps.assertDtoHasValue(draftProposalResponse, draftProposal -> draftProposal.getKind().getTokenId().isEmpty(), "tokenId");
-		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, draftProposalResponse1 -> draftProposalResponse1.getKind().getReceiverId(), account1Id, "receiverId");
-//		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, draftProposalResponse1 -> draftProposalResponse1.getKind().getAmount(), account1Id, "amount");
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, draftProposal -> draftProposal.getKind().getReceiverId(), account1Id, "receiverId");
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, draftProposal -> draftProposal.getKind().getAmount(), "1000000000000000000000000", "amount");
+
 		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getHistory(), DraftProposalHistoryResponse::getId, draftId, "id");
 		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getHistory(), DraftProposalHistoryResponse::getDaoId, daoId, "daoId");
 		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getHistory(), DraftProposalHistoryResponse::getProposer, account2Id, "proposer");
@@ -123,10 +123,10 @@ public class DraftProposalsIdApiTests extends BaseTest {
 		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getHistory(), DraftProposalHistoryResponse::getDescription, "<p>Pluto is a planet</p>", "description");
 		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getHistory(), DraftProposalHistoryResponse::getType, ProposalType.TRANSFER, "type");
 		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getHistory(), draftProposalHistoryResponse -> draftProposalHistoryResponse.getKind().getType(), ProposalKindSwaggerDto.TypeEnum.TRANSFER, "type");
-//		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getHistory(), draftProposalHistoryResponse -> draftProposalHistoryResponse.getKind().getProposalVariant(), , "proposalVariant");
+		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getHistory(), draftProposalHistoryResponse -> draftProposalHistoryResponse.getKind().getProposalVariant(), "ProposeTransfer", "proposalVariant");
 		draftProposalsApiSteps.assertCollectionElementsHasNoValue(draftProposalResponse.getHistory(), draftProposalHistoryResponse -> draftProposalHistoryResponse.getKind().getTokenId().isEmpty(), "tokenId");
 		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getHistory(), draftProposalHistoryResponse -> draftProposalHistoryResponse.getKind().getReceiverId(), account1Id, "receiverId");
-//		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getHistory(), draftProposalHistoryResponse -> draftProposalHistoryResponse.getKind().getAmount(), account1Id, "amount");
+		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getHistory(), draftProposalHistoryResponse -> draftProposalHistoryResponse.getKind().getAmount(), "1000000000000000000000000", "amount");
 		draftProposalsApiSteps.assertCollectionElementsHasValue(draftProposalResponse.getHistory(), draftProposalHistory -> !draftProposalHistory.getUpdatedAt().toString().isEmpty(), "history/updatedAt");
 	}
 
@@ -155,14 +155,14 @@ public class DraftProposalsIdApiTests extends BaseTest {
 		draftProposalsApiSteps.assertDtoHasValue(draftProposalResponse, DraftProposalResponse::getCreatedAt, "createdAt");
 		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, DraftProposalResponse::getIsRead, Boolean.FALSE, "isRead");
 		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, DraftProposalResponse::getIsSaved, Boolean.FALSE, "isSaved");
-
 		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, DraftProposalResponse::getDescription, "<p>Pluto is a planet</p>", "description");
 
 		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, draftProposal -> draftProposal.getKind().getType(), ProposalKindSwaggerDto.TypeEnum.TRANSFER, "type");
-//		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, draftProposalResponse1 -> draftProposalResponse1.getKind().getProposalVariant, , "proposalVariant");
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, draftProposal -> draftProposal.getKind().getProposalVariant(), "ProposeTransfer", "proposalVariant");
 		draftProposalsApiSteps.assertDtoHasValue(draftProposalResponse, draftProposal -> draftProposal.getKind().getTokenId().isEmpty(), "tokenId");
-		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, draftProposalResponse1 -> draftProposalResponse1.getKind().getReceiverId(), account1Id, "receiverId");
-//		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, draftProposalResponse1 -> draftProposalResponse1.getKind().getAmount(), account1Id, "amount");
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, draftProposal -> draftProposal.getKind().getReceiverId(), account1Id, "receiverId");
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, draftProposal -> draftProposal.getKind().getAmount(), "1000000000000000000000000", "amount");
+
 		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getHistory(), DraftProposalHistoryResponse::getId, draftId, "id");
 		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getHistory(), DraftProposalHistoryResponse::getDaoId, daoId, "daoId");
 		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getHistory(), DraftProposalHistoryResponse::getProposer, account2Id, "proposer");
@@ -170,24 +170,37 @@ public class DraftProposalsIdApiTests extends BaseTest {
 		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getHistory(), DraftProposalHistoryResponse::getDescription, "<p>Pluto is a planet</p>", "description");
 		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getHistory(), DraftProposalHistoryResponse::getType, ProposalType.TRANSFER, "type");
 		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getHistory(), draftProposalHistoryResponse -> draftProposalHistoryResponse.getKind().getType(), ProposalKindSwaggerDto.TypeEnum.TRANSFER, "type");
-//		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getHistory(), draftProposalHistoryResponse -> draftProposalHistoryResponse.getKind().getProposalVariant(), , "proposalVariant");
+		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getHistory(), draftProposalHistoryResponse -> draftProposalHistoryResponse.getKind().getProposalVariant(), "ProposeTransfer", "proposalVariant");
 		draftProposalsApiSteps.assertCollectionElementsHasNoValue(draftProposalResponse.getHistory(), draftProposalHistoryResponse -> draftProposalHistoryResponse.getKind().getTokenId().isEmpty(), "tokenId");
 		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getHistory(), draftProposalHistoryResponse -> draftProposalHistoryResponse.getKind().getReceiverId(), account1Id, "receiverId");
-//		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getHistory(), draftProposalHistoryResponse -> draftProposalHistoryResponse.getKind().getAmount(), account1Id, "amount");
+		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getHistory(), draftProposalHistoryResponse -> draftProposalHistoryResponse.getKind().getAmount(), "1000000000000000000000000", "amount");
 		draftProposalsApiSteps.assertCollectionElementsHasValue(draftProposalResponse.getHistory(), draftProposalHistory -> !draftProposalHistory.getUpdatedAt().toString().isEmpty(), "history/updatedAt");
 	}
 
 	@ParameterizedTest
 	@Severity(SeverityLevel.NORMAL)
-	@Story("Get HTTP 404 for draft proposal endpoint with non-existing draft id")
-	@DisplayName("Get HTTP 404 for draft proposal endpoint with non-existing draft id")
+	@Story("Get HTTP 400 for draft proposal endpoint with not valid draft id")
+	@DisplayName("Get HTTP 400 for draft proposal endpoint with not valid draft id")
 	@CsvSource({"invalidId", "2212332141", "-1", "0", "62ed05c6520e2e999999k00k",
 			"*", "null", "autotest-dao-1.sputnikv2.testnet-1", "another-magic.near"})
-	void getHttp404ForDraftProposalEndpointWithNonExistingDraftId(String draftId) {
+	void getHttp400ForDraftProposalEndpointWithNotValidDraftId(String draftId) {
 		draftProposalsApiSteps.getDraftProposalById(draftId, EMPTY_STRING).then()
+				.statusCode(HTTP_BAD_REQUEST)
+				.body("statusCode", equalTo(HTTP_BAD_REQUEST),
+				      "message", equalTo(List.of("id must be a mongodb id")),
+				      "error", equalTo("Bad Request"));
+	}
+
+	@Test
+	@Severity(SeverityLevel.NORMAL)
+	@Story("Get HTTP 404 for draft proposal endpoint with non-existing draft id")
+	@DisplayName("Get HTTP 404 for draft proposal endpoint with non-existing draft id")
+	void getHttp404ForDraftProposalEndpointWithNonExistingDraftId() {
+		String nonExistingDraftId = "00ed00c0000e0e000000f00f";
+		draftProposalsApiSteps.getDraftProposalById(nonExistingDraftId, EMPTY_STRING).then()
 				.statusCode(HTTP_NOT_FOUND)
 				.body("statusCode", equalTo(HTTP_NOT_FOUND),
-				      "message", equalTo("Draft proposal does not exist"),
+				      "message", equalTo("Draft proposal 00ed00c0000e0e000000f00f does not exist"),
 				      "error", equalTo("Not Found"));
 	}
 }
