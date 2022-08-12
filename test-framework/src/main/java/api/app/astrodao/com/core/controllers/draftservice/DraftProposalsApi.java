@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import java.util.Map;
 
 import static api.app.astrodao.com.core.Constants.DraftServiceEndpoints.DRAFT_PROPOSALS;
+import static api.app.astrodao.com.core.Constants.DraftServiceEndpoints.DRAFT_PROPOSALS_ID;
 import static io.restassured.RestAssured.given;
 
 @Component
@@ -22,5 +23,12 @@ public class DraftProposalsApi {
 				.accept(ContentType.JSON)
 				.queryParams(queryParams)
 				.get(DRAFT_PROPOSALS);
+	}
+
+	public Response getDraftProposalById(String draftId, String accountId) {
+		return given().spec(requestSpecForDraftService)
+				.accept(ContentType.JSON)
+				.queryParam("accountId", accountId)
+				.get(DRAFT_PROPOSALS_ID, draftId);
 	}
 }
