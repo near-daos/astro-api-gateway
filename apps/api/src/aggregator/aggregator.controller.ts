@@ -83,6 +83,7 @@ export class AggregatorController {
       lastAstroBlock,
       lastAggregatedBlock,
       lastProcessedBlock,
+      lastHandledBlock,
     } = data;
 
     currentSpan.addTags({
@@ -116,16 +117,6 @@ export class AggregatorController {
     );
 
     this.statsDService.client.gauge(
-      'block.lag.height',
-      lastAstroBlock.height - lastAggregatedBlock.height,
-    );
-    this.statsDService.client.gauge(
-      'block.lag.time',
-      (lastAstroBlock.timestamp as number) -
-        (lastAggregatedBlock.timestamp as number),
-    );
-
-    this.statsDService.client.gauge(
       'block.lastProcessedBlock.height',
       lastProcessedBlock.height,
     );
@@ -136,12 +127,12 @@ export class AggregatorController {
 
     this.statsDService.client.gauge(
       'block.lag.height',
-      lastAstroBlock.height - lastProcessedBlock.height,
+      lastAstroBlock.height - lastHandledBlock.height,
     );
     this.statsDService.client.gauge(
       'block.lag.time',
       (lastAstroBlock.timestamp as number) -
-        (lastProcessedBlock.timestamp as number),
+        (lastHandledBlock.timestamp as number),
     );
 
     this.socketService.emitToAllEvent({
