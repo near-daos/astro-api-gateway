@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: astro-configmap
+  name: sputnik-v2-configmap
 data:
   NEAR_ENV: "{{ .Values.environment.near_env }}"
   NEAR_CONTRACT_NAME: "{{ .Values.environment.near_contract_name }}"

@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "astro-api.fullname" . }}
+  name: {{ include "sputnik-v2-api.fullname" . }}
   labels:
-    {{- include "astro-api.labels" . | nindent 4 }}
+    {{- include "sputnik-v2-api.labels" . | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
   ports:
@@ -11,4 +11,4 @@ spec:
       name: api
       targetPort: {{ .Values.service.targetPort }}
   selector:
-    {{- include "astro-api.selectorLabels" . | nindent 4 }}
+    {{- include "sputnik-v2-api.selectorLabels" . | nindent 4 }}
