@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: astro-aggregator-configmap
+  name: sputnik-v2-aggregator-configmap
 data:
   NODE_OPTIONS: ' --max-old-space-size={{ include "node.maxOldSpaceSize" . }} '
   NEST_APP_TYPE: aggregator

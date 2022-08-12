@@ -1,6 +1,6 @@
 apiVersion: v2
 name: astro-notifier
-description: Helm chart for Astro Notifier
+description: Helm chart for Astro API
 type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.

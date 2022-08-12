@@ -7,5 +7,5 @@ spec:
   minAvailable: 1
   selector:
     matchLabels:
-      app.kubernetes.io/name: astro-api
+      app.kubernetes.io/name: sputnik-v2-api
 {{- end -}}

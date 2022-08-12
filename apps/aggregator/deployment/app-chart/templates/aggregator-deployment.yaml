@@ -1,24 +1,24 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "astro-aggregator.fullname" . }}
+  name: {{ include "sputnik-v2-aggregator.fullname" . }}
   labels:
-    {{- include "astro-aggregator.labels" . | nindent 4 }}
+    {{- include "sputnik-v2-aggregator.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      {{- include "astro-aggregator.selectorLabels" . | nindent 6 }}
+      {{- include "sputnik-v2-aggregator.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        {{- include "astro-aggregator.selectorLabels" . | nindent 8 }}
+        {{- include "sputnik-v2-aggregator.selectorLabels" . | nindent 8 }}
     spec:
     {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
     {{- end }}
-      serviceAccountName: {{ include "astro-aggregator.serviceAccountName" . }}
+      serviceAccountName: {{ include "sputnik-v2-aggregator.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
@@ -54,13 +54,15 @@ spec:
           #   failureThreshold: {{ .Values.container.readinessProbe.failureThreshold }}
           envFrom:
           - configMapRef:
-              name: astro-configmap
+              name: sputnik-v2-configmap
           - configMapRef:
-              name: astro-aggregator-configmap
+              name: sputnik-v2-aggregator-configmap
           - configMapRef:
               name: {{ .Release.Name }}-version
           - secretRef:
               name: api-rds-secrets
+          - secretRef:
+              name: draft-service-secrets
           - secretRef:
               name: api-redis-secrets
           - secretRef:
