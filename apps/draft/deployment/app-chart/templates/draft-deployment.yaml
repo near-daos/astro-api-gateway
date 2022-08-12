@@ -1,24 +1,24 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "sputnik-v2-draft.fullname" . }}
+  name: {{ include "astro-draft.fullname" . }}
   labels:
-    {{- include "sputnik-v2-draft.labels" . | nindent 4 }}
+    {{- include "astro-draft.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      {{- include "sputnik-v2-draft.selectorLabels" . | nindent 6 }}
+      {{- include "astro-draft.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        {{- include "sputnik-v2-draft.selectorLabels" . | nindent 8 }}
+        {{- include "astro-draft.selectorLabels" . | nindent 8 }}
     spec:
     {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
     {{- end }}
-      serviceAccountName: {{ include "sputnik-v2-draft.serviceAccountName" . }}
+      serviceAccountName: {{ include "astro-draft.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
@@ -57,9 +57,9 @@ spec:
           {{- end }}
           envFrom:
           - configMapRef:
-              name: sputnik-v2-configmap
+              name: astro-configmap
           - configMapRef:
-              name: sputnik-v2-draft-configmap
+              name: astro-draft-configmap
           - configMapRef:
               name: {{ .Release.Name }}-version
           - secretRef:

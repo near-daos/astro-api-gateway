@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: sputnik-v2-draft-configmap
+  name: astro-draft-configmap
 data:
   NODE_OPTIONS: ' --max-old-space-size={{ include "node.maxOldSpaceSize" . }} '
   PORT: "3000"

@@ -3,7 +3,7 @@ apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   labels:
-    {{- include "sputnik-v2-draft.labels" . | nindent 4 }}
+    {{- include "astro-draft.labels" . | nindent 4 }}
     release: kube-prometheus-stack
   name: draft
 spec:
@@ -14,5 +14,5 @@ spec:
     - {{ .Release.Namespace }}
   selector:
     matchLabels:
-      {{- include "sputnik-v2-draft.selectorLabels" . | nindent 6 }}
+      {{- include "astro-draft.selectorLabels" . | nindent 6 }}
 {{- end -}}
