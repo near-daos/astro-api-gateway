@@ -68,9 +68,7 @@ export class AggregatorController {
   @ApiBearerAuth()
   @Get('/blocks')
   async getBlocks(): Promise<TransactionHandlerBlocks> {
-    return this.transactionHandlerService.getHandlerBlocks(
-      AGGREGATOR_HANDLER_STATE_ID,
-    );
+    return this.transactionHandlerService.getHandlerBlocks();
   }
 
   @Interval(5000)
@@ -78,11 +76,14 @@ export class AggregatorController {
     const currentSpan = this.traceService.getActiveSpan();
 
     const data: TransactionHandlerBlocks =
-      await this.transactionHandlerService.getHandlerBlocks(
-        AGGREGATOR_HANDLER_STATE_ID,
-      );
+      await this.transactionHandlerService.getHandlerBlocks();
 
-    const { lastBlock, lastAstroBlock, lastHandledBlock } = data;
+    const {
+      lastBlock,
+      lastAstroBlock,
+      lastAggregatedBlock,
+      lastProcessedBlock,
+    } = data;
 
     currentSpan.addTags({
       ...data,
@@ -106,22 +107,41 @@ export class AggregatorController {
     );
 
     this.statsDService.client.gauge(
-      'block.lastHandledBlock.height',
-      lastHandledBlock.height,
+      'block.lastAggregatedBlock.height',
+      lastAggregatedBlock.height,
     );
     this.statsDService.client.gauge(
-      'block.lastHandledBlock.timestamp',
-      lastHandledBlock.timestamp as number,
+      'block.lastAggregatedBlock.timestamp',
+      lastAggregatedBlock.timestamp as number,
     );
 
     this.statsDService.client.gauge(
       'block.lag.height',
-      lastAstroBlock.height - lastHandledBlock.height,
+      lastAstroBlock.height - lastAggregatedBlock.height,
     );
     this.statsDService.client.gauge(
       'block.lag.time',
       (lastAstroBlock.timestamp as number) -
-        (lastHandledBlock.timestamp as number),
+        (lastAggregatedBlock.timestamp as number),
+    );
+
+    this.statsDService.client.gauge(
+      'block.lastProcessedBlock.height',
+      lastProcessedBlock.height,
+    );
+    this.statsDService.client.gauge(
+      'block.lastProcessedBlock.timestamp',
+      lastProcessedBlock.timestamp as number,
+    );
+
+    this.statsDService.client.gauge(
+      'block.lag.height',
+      lastAstroBlock.height - lastProcessedBlock.height,
+    );
+    this.statsDService.client.gauge(
+      'block.lag.time',
+      (lastAstroBlock.timestamp as number) -
+        (lastProcessedBlock.timestamp as number),
     );
 
     this.socketService.emitToAllEvent({

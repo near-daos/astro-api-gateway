@@ -7,6 +7,10 @@ import {
   Receipt,
   Transaction,
 } from '@sputnik-v2/near-indexer';
+import {
+  AGGREGATOR_HANDLER_STATE_ID,
+  INDEXER_PROCESSOR_HANDLER_STATE_ID,
+} from '@sputnik-v2/common';
 
 import { TransactionActionMapperService } from './transaction-action-mapper.service';
 import { TransactionActionHandlerService } from './transaction-action-handler.service';
@@ -30,15 +34,27 @@ export class TransactionHandlerService {
     return this.transactionHandlerStateRepository.findOne(id);
   }
 
-  async getHandlerBlocks(id: string): Promise<TransactionHandlerBlocks> {
+  async getStateBlock(id: string) {
+    const { lastBlockHash } = await this.getState(id);
+    return this.nearIndexerService.findBlockByHash(lastBlockHash);
+  }
+
+  async getHandlerBlocks(): Promise<TransactionHandlerBlocks> {
     try {
-      const state = await this.getState(id);
-      const stateBlock = await this.nearIndexerService.findBlockByHash(
-        state.lastBlockHash,
+      const aggregatorBlock = await this.getStateBlock(
+        AGGREGATOR_HANDLER_STATE_ID,
       );
-      const lastTransaction = await this.nearIndexerService.lastTransaction();
-      const lastAstroBlock = await this.nearIndexerService.findBlockByHash(
-        lastTransaction.includedInBlockHash,
+      const processorBlock = await this.getStateBlock(
+        INDEXER_PROCESSOR_HANDLER_STATE_ID,
+      );
+      const lastHandledBlock =
+        aggregatorBlock.blockTimestamp > processorBlock.blockTimestamp
+          ? aggregatorBlock
+          : processorBlock;
+      const lastAccountChange =
+        await this.nearIndexerService.lastAccountChange();
+      const lastAstroBlock = await this.nearIndexerService.findBlockByTimestamp(
+        lastAccountChange.changedInBlockTimestamp,
       );
       const lastNearLakeBlock =
         await this.nearIndexerService.lastNearLakeBlock();
@@ -52,8 +68,16 @@ export class TransactionHandlerService {
           timestamp: lastAstroBlock.blockTimestamp,
         },
         lastHandledBlock: {
-          height: stateBlock.blockHeight,
-          timestamp: stateBlock.blockTimestamp,
+          height: lastHandledBlock.blockHeight,
+          timestamp: lastHandledBlock.blockTimestamp,
+        },
+        lastAggregatedBlock: {
+          height: aggregatorBlock.blockHeight,
+          timestamp: aggregatorBlock.blockTimestamp,
+        },
+        lastProcessedBlock: {
+          height: processorBlock.blockHeight,
+          timestamp: processorBlock.blockTimestamp,
         },
       };
       // Fallback flow in case of using public indexer database
@@ -69,6 +93,14 @@ export class TransactionHandlerService {
           timestamp: 0,
         },
         lastHandledBlock: {
+          height: 0,
+          timestamp: 0,
+        },
+        lastAggregatedBlock: {
+          height: 0,
+          timestamp: 0,
+        },
+        lastProcessedBlock: {
           height: 0,
           timestamp: 0,
         },
