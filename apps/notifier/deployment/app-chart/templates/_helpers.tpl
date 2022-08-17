@@ -57,7 +57,7 @@ Selector labels
 */}}
 {{- define "sputnik-v2-notifier.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "sputnik-v2-notifier.name" . }}
-app.kubernetes.io/instance: "sputnik-v2-notifier"
+app.kubernetes.io/instance: "sputnik-v2-api"
 {{- end -}}
 
 {{/*

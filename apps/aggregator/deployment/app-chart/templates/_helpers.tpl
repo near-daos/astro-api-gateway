@@ -65,7 +65,7 @@ Metadata labels
 */}}
 {{- define "sputnik-v2-aggregator.metadataLabels" -}}
 app.kubernetes.io/name: {{ include "sputnik-v2-aggregator.name" . }}
-app.kubernetes.io/instance: "sputnik-v2-aggregator"
+app.kubernetes.io/instance: "sputnik-v2-api"
 {{- if eq .Values.environment.DATADOG_APM_ENABLED "true" }}
 tags.datadoghq.com/env: "{{ .Values.environment.DATADOG_ENV }}"
 tags.datadoghq.com/service: astro-aggregator
