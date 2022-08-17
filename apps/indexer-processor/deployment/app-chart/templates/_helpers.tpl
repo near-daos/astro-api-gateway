@@ -41,6 +41,11 @@ helm.sh/chart: {{ include "astro-indexer-processor.chart" . }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- if eq .Values.environment.DATADOG_APM_ENABLED "true" }}
+tags.datadoghq.com/env: "{{ .Values.environment.DATADOG_ENV }}"
+tags.datadoghq.com/service: astro-indexer-processor
+tags.datadoghq.com/version: 0.0.3
+{{- end -}}
 {{- end -}}
 
 {{/*
@@ -49,6 +54,19 @@ Selector labels
 {{- define "astro-indexer-processor.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "astro-indexer-processor.name" . }}
 app.kubernetes.io/instance: "astro-indexer-processor"
+{{- end -}}
+
+{{/*
+Metadata labels
+*/}}
+{{- define "astro-indexer-processor.metadataLabels" -}}
+app.kubernetes.io/name: {{ include "astro-indexer-processor.name" . }}
+app.kubernetes.io/instance: "astro-indexer-processor"
+{{- if eq .Values.environment.DATADOG_APM_ENABLED "true" }}
+tags.datadoghq.com/env: "{{ .Values.environment.DATADOG_ENV }}"
+tags.datadoghq.com/service: astro-indexer-processor
+tags.datadoghq.com/version: 0.0.3
+{{- end -}}
 {{- end -}}
 
 {{/*

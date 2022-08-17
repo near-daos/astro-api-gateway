@@ -39,7 +39,7 @@ export function castDraftProposalHistoryResponse(
 ): DraftProposalHistoryResponse {
   return {
     id: draftProposalHistory.id.toString(),
-    draftProposalId: draftProposalHistory.draftProposalId,
+    draftProposalId: draftProposalHistory.draftProposalId?.toString(),
     daoId: draftProposalHistory.daoId,
     proposer: draftProposalHistory.proposer,
     title: draftProposalHistory.title,
