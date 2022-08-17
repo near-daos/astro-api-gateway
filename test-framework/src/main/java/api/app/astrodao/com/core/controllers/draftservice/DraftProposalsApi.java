@@ -1,5 +1,6 @@
 package api.app.astrodao.com.core.controllers.draftservice;
 
+import api.app.astrodao.com.openapi.models.CreateDraftProposal;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
@@ -11,6 +12,7 @@ import java.util.Map;
 import static api.app.astrodao.com.core.Constants.DraftServiceEndpoints.DRAFT_PROPOSALS;
 import static api.app.astrodao.com.core.Constants.DraftServiceEndpoints.DRAFT_PROPOSALS_ID;
 import static io.restassured.RestAssured.given;
+import static io.restassured.http.ContentType.JSON;
 
 @Component
 @RequiredArgsConstructor
@@ -30,5 +32,31 @@ public class DraftProposalsApi {
 				.accept(ContentType.JSON)
 				.queryParam("accountId", accountId)
 				.get(DRAFT_PROPOSALS_ID, draftId);
+	}
+
+	public Response postDraftProposals(CreateDraftProposal draftProposal, String authToken) {
+		return given().spec(requestSpecForDraftService)
+				.accept(JSON)
+				.header("Authorization", "Bearer " + authToken)
+				.contentType(JSON)
+				.body(draftProposal)
+				.post(DRAFT_PROPOSALS);
+	}
+
+	public Response patchDraftProposal(CreateDraftProposal draftProposal, String draftId, String authToken) {
+		return given().spec(requestSpecForDraftService)
+				.accept(JSON)
+				.header("Authorization", "Bearer " + authToken)
+				.contentType(JSON)
+				.body(draftProposal)
+				.patch(DRAFT_PROPOSALS_ID, draftId);
+	}
+
+	public Response deleteDraftProposal(String draftId, String authToken) {
+		return given().spec(requestSpecForDraftService)
+				.accept(JSON)
+				.header("Authorization", "Bearer " + authToken)
+				.contentType(JSON)
+				.delete(DRAFT_PROPOSALS_ID, draftId);
 	}
 }
