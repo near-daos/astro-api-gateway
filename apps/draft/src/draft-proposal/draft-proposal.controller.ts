@@ -164,7 +164,7 @@ export class DraftProposalController {
     type: String,
   })
   @ApiResponse({
-    status: 200,
+    status: 201,
     description: 'Viewed',
     type: Boolean,
   })
@@ -190,7 +190,7 @@ export class DraftProposalController {
     type: String,
   })
   @ApiResponse({
-    status: 200,
+    status: 201,
     description: 'Saved',
     type: Boolean,
   })
@@ -242,7 +242,7 @@ export class DraftProposalController {
     type: String,
   })
   @ApiResponse({
-    status: 200,
+    status: 201,
     description: 'Saved',
     type: Boolean,
   })
