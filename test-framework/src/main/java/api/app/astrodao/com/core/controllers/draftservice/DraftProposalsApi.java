@@ -9,8 +9,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
-import static api.app.astrodao.com.core.Constants.DraftServiceEndpoints.DRAFT_PROPOSALS;
-import static api.app.astrodao.com.core.Constants.DraftServiceEndpoints.DRAFT_PROPOSALS_ID;
+import static api.app.astrodao.com.core.Constants.DraftServiceEndpoints.*;
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
 
@@ -58,5 +57,37 @@ public class DraftProposalsApi {
 				.header("Authorization", "Bearer " + authToken)
 				.contentType(JSON)
 				.delete(DRAFT_PROPOSALS_ID, draftId);
+	}
+
+	public Response postViewDraftProposal(String draftId, String authToken) {
+		return given().spec(requestSpecForDraftService)
+				.accept(JSON)
+				.header("Authorization", "Bearer " + authToken)
+				.contentType(JSON)
+				.post(DRAFT_PROPOSALS_ID_VIEW, draftId);
+	}
+
+	public Response postSaveDraftProposal(String draftId, String authToken) {
+		return given().spec(requestSpecForDraftService)
+				.accept(JSON)
+				.header("Authorization", "Bearer " + authToken)
+				.contentType(JSON)
+				.post(DRAFT_PROPOSALS_ID_SAVE, draftId);
+	}
+
+	public Response unsaveDraftProposal(String draftId, String authToken) {
+		return given().spec(requestSpecForDraftService)
+				.accept(JSON)
+				.header("Authorization", "Bearer " + authToken)
+				.contentType(JSON)
+				.delete(DRAFT_PROPOSALS_ID_SAVE, draftId);
+	}
+
+	public Response closeDraftProposal(String draftId, String authToken) {
+		return given().spec(requestSpecForDraftService)
+				.accept(JSON)
+				.header("Authorization", "Bearer " + authToken)
+				.contentType(JSON)
+				.post(DRAFT_PROPOSALS_ID_CLOSE, draftId);
 	}
 }

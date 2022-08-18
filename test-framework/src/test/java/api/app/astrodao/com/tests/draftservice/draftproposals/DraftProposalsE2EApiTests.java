@@ -37,7 +37,7 @@ public class DraftProposalsE2EApiTests extends BaseTest {
 	private String testAccountId;
 
 	@Value("${accounts.account1.token}")
-	private String accountToken;
+	private String authToken;
 
 
 	@Test
@@ -52,7 +52,6 @@ public class DraftProposalsE2EApiTests extends BaseTest {
 		String title1 = "Test title. Created " + getLocalDateTime();
 		String description1 = "<p>" + faker.yoda().quote() + "</p>";
 
-
 		CreateDraftProposal createDraftProposal = new CreateDraftProposal();
 		createDraftProposal.setDaoId(testDao);
 		createDraftProposal.setTitle(title1);
@@ -66,41 +65,41 @@ public class DraftProposalsE2EApiTests extends BaseTest {
 		createDraftProposal.setKind(kind);
 
 
-		String createdDraftId = draftProposalsApiSteps.createDraftProposal(createDraftProposal, accountToken).then()
+		String createdDraftId = draftProposalsApiSteps.createDraftProposal(createDraftProposal, authToken).then()
 				.statusCode(HTTP_CREATED)
 				.extract().body().asString();
 
-		DraftProposalResponse draftProposalResponse1 = draftProposalsApiSteps.getDraftProposalById(createdDraftId, testAccountId).then()
+		DraftProposalResponse draftProposalResponse = draftProposalsApiSteps.getDraftProposalById(createdDraftId, testAccountId).then()
 				.statusCode(HTTP_OK)
 				.extract().as(DraftProposalResponse.class);
 
-		draftProposalsApiSteps.assertDtoValue(draftProposalResponse1, DraftProposalResponse::getId, createdDraftId, "id");
-		draftProposalsApiSteps.assertDtoValue(draftProposalResponse1, DraftProposalResponse::getDaoId, testDao, "daoId");
-		draftProposalsApiSteps.assertDtoValue(draftProposalResponse1, DraftProposalResponse::getProposer, testAccountId, "proposer");
-		draftProposalsApiSteps.assertDtoValue(draftProposalResponse1, DraftProposalResponse::getTitle, title1, "title");
-		draftProposalsApiSteps.assertDtoValue(draftProposalResponse1, DraftProposalResponse::getType, ProposalType.VOTE, "type");
-		draftProposalsApiSteps.assertDtoValue(draftProposalResponse1, DraftProposalResponse::getState, DraftProposalState.OPEN, "state");
-		draftProposalsApiSteps.assertDtoValue(draftProposalResponse1, DraftProposalResponse::getReplies, BigDecimal.ZERO, "replies");
-		draftProposalsApiSteps.assertDtoValue(draftProposalResponse1, DraftProposalResponse::getViews, BigDecimal.ZERO, "views");
-		draftProposalsApiSteps.assertDtoValue(draftProposalResponse1, DraftProposalResponse::getSaves, BigDecimal.ZERO, "saves");
-		draftProposalsApiSteps.assertDtoHasValue(draftProposalResponse1, DraftProposalResponse::getUpdatedAt, "updatedAt");
-		draftProposalsApiSteps.assertDtoHasValue(draftProposalResponse1, DraftProposalResponse::getCreatedAt, "createdAt");
-		draftProposalsApiSteps.assertDtoValue(draftProposalResponse1, DraftProposalResponse::getIsRead, Boolean.FALSE, "isRead");
-		draftProposalsApiSteps.assertDtoValue(draftProposalResponse1, DraftProposalResponse::getIsSaved, Boolean.FALSE, "isSaved");
-		draftProposalsApiSteps.assertDtoValue(draftProposalResponse1, DraftProposalResponse::getDescription, description1, "description");
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, DraftProposalResponse::getId, createdDraftId, "id");
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, DraftProposalResponse::getDaoId, testDao, "daoId");
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, DraftProposalResponse::getProposer, testAccountId, "proposer");
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, DraftProposalResponse::getTitle, title1, "title");
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, DraftProposalResponse::getType, ProposalType.VOTE, "type");
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, DraftProposalResponse::getState, DraftProposalState.OPEN, "state");
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, DraftProposalResponse::getReplies, BigDecimal.ZERO, "replies");
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, DraftProposalResponse::getViews, BigDecimal.ZERO, "views");
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, DraftProposalResponse::getSaves, BigDecimal.ZERO, "saves");
+		draftProposalsApiSteps.assertDtoHasValue(draftProposalResponse, DraftProposalResponse::getUpdatedAt, "updatedAt");
+		draftProposalsApiSteps.assertDtoHasValue(draftProposalResponse, DraftProposalResponse::getCreatedAt, "createdAt");
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, DraftProposalResponse::getIsRead, Boolean.FALSE, "isRead");
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, DraftProposalResponse::getIsSaved, Boolean.FALSE, "isSaved");
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, DraftProposalResponse::getDescription, description1, "description");
 
-		draftProposalsApiSteps.assertDtoValue(draftProposalResponse1, draftProposal -> draftProposal.getKind().getType(), ProposalKindSwaggerDto.TypeEnum.VOTE, "type");
-		draftProposalsApiSteps.assertDtoValue(draftProposalResponse1, draftProposal -> draftProposal.getKind().getProposalVariant(), "ProposePoll", "proposalVariant");
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, draftProposal -> draftProposal.getKind().getType(), ProposalKindSwaggerDto.TypeEnum.VOTE, "type");
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, draftProposal -> draftProposal.getKind().getProposalVariant(), "ProposePoll", "proposalVariant");
 
-		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse1.getHistory(), DraftProposalHistoryResponse::getId, createdDraftId, "id");
-		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse1.getHistory(), DraftProposalHistoryResponse::getDaoId, testDao, "daoId");
-		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse1.getHistory(), DraftProposalHistoryResponse::getProposer, testAccountId, "proposer");
-		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse1.getHistory(), DraftProposalHistoryResponse::getTitle, title1, "title");
-		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse1.getHistory(), DraftProposalHistoryResponse::getDescription, description1, "description");
-		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse1.getHistory(), DraftProposalHistoryResponse::getType, ProposalType.VOTE, "type");
-		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse1.getHistory(), draftProposalHistoryResponse -> draftProposalHistoryResponse.getKind().getType(), ProposalKindSwaggerDto.TypeEnum.VOTE, "type");
-		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse1.getHistory(), draftProposalHistoryResponse -> draftProposalHistoryResponse.getKind().getProposalVariant(), "ProposePoll", "proposalVariant");
-		draftProposalsApiSteps.assertCollectionElementsHasValue(draftProposalResponse1.getHistory(), draftProposalHistory -> !draftProposalHistory.getUpdatedAt().toString().isEmpty(), "history/updatedAt");
+		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getHistory(), DraftProposalHistoryResponse::getId, createdDraftId, "id");
+		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getHistory(), DraftProposalHistoryResponse::getDaoId, testDao, "daoId");
+		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getHistory(), DraftProposalHistoryResponse::getProposer, testAccountId, "proposer");
+		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getHistory(), DraftProposalHistoryResponse::getTitle, title1, "title");
+		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getHistory(), DraftProposalHistoryResponse::getDescription, description1, "description");
+		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getHistory(), DraftProposalHistoryResponse::getType, ProposalType.VOTE, "type");
+		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getHistory(), draftProposalHistoryResponse -> draftProposalHistoryResponse.getKind().getType(), ProposalKindSwaggerDto.TypeEnum.VOTE, "type");
+		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getHistory(), draftProposalHistoryResponse -> draftProposalHistoryResponse.getKind().getProposalVariant(), "ProposePoll", "proposalVariant");
+		draftProposalsApiSteps.assertCollectionElementsHasValue(draftProposalResponse.getHistory(), draftProposalHistory -> !draftProposalHistory.getUpdatedAt().toString().isEmpty(), "history/updatedAt");
 
 
 		String title2 = "Test title 2. Created " + getLocalDateTime();
@@ -109,23 +108,130 @@ public class DraftProposalsE2EApiTests extends BaseTest {
 		createDraftProposal.setTitle(title2);
 		createDraftProposal.setDescription(description2);
 
-		String updatedDraftId = draftProposalsApiSteps.updateDraftProposal(createDraftProposal, createdDraftId, accountToken).then()
+		String updatedDraftId = draftProposalsApiSteps.updateDraftProposal(createDraftProposal, createdDraftId, authToken).then()
 				.statusCode(HTTP_OK)
 				.extract().body().asString();
 
-		DraftProposalResponse draftProposalResponse2 = draftProposalsApiSteps.getDraftProposalById(updatedDraftId, testAccountId).then()
+		draftProposalResponse = draftProposalsApiSteps.getDraftProposalById(updatedDraftId, testAccountId).then()
 				.statusCode(HTTP_OK)
 				.extract().as(DraftProposalResponse.class);
 
-		draftProposalsApiSteps.assertDtoValue(draftProposalResponse2, DraftProposalResponse::getId, createdDraftId, "id");
-		draftProposalsApiSteps.assertDtoValue(draftProposalResponse2, DraftProposalResponse::getDaoId, testDao, "daoId");
-		draftProposalsApiSteps.assertDtoValue(draftProposalResponse2, DraftProposalResponse::getProposer, testAccountId, "proposer");
-		draftProposalsApiSteps.assertDtoValue(draftProposalResponse2, DraftProposalResponse::getTitle, title2, "title");
-		draftProposalsApiSteps.assertDtoValue(draftProposalResponse2, DraftProposalResponse::getDescription, description2, "description");
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, DraftProposalResponse::getId, createdDraftId, "id");
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, DraftProposalResponse::getDaoId, testDao, "daoId");
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, DraftProposalResponse::getProposer, testAccountId, "proposer");
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, DraftProposalResponse::getTitle, title2, "title");
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, DraftProposalResponse::getDescription, description2, "description");
 
-		draftProposalsApiSteps.deleteDraftProposal(createdDraftId, accountToken).then()
+		draftProposalsApiSteps.deleteDraftProposal(createdDraftId, authToken).then()
 				.statusCode(HTTP_OK)
 				.body("id", equalTo(updatedDraftId),
 				      "deleted", equalTo(true));
+	}
+
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Create, View, Save, remove Save and Close operations for draft proposal")
+	@DisplayName("Create, View, Save, remove Save and Close operations for draft proposal")
+	@Description("Following 'Draft Proposals' endpoints were triggered: " +
+			"GET|POST /draft-proposals; " +
+			"POST /draft-proposals/{id}/view; " +
+			"POST /draft-proposals/{id}/save; " +
+			"DELETE /draft-proposals/{id}/save; " +
+			"POST /draft-proposals/{id}/close")
+	void createViewSaveRemoveSaveCloseActionsForDraftProposals() {
+		String title = "Test title. Created " + getLocalDateTime();
+		String description = "<p>" + faker.yoda().quote() + "</p>";
+
+		CreateDraftProposal createDraftProposal = new CreateDraftProposal();
+		createDraftProposal.setDaoId(testDao);
+		createDraftProposal.setTitle(title);
+		createDraftProposal.setDescription(description);
+		createDraftProposal.setType(ProposalType.VOTE);
+
+		ProposalKindSwaggerDto kind = new ProposalKindSwaggerDto();
+		kind.setType(ProposalKindSwaggerDto.TypeEnum.VOTE);
+		kind.setProposalVariant("ProposePoll");
+
+		createDraftProposal.setKind(kind);
+
+		String createdDraftId = draftProposalsApiSteps.createDraftProposal(createDraftProposal, authToken).then()
+				.statusCode(HTTP_CREATED)
+				.extract().body().asString();
+
+		DraftProposalResponse draftProposalResponse = draftProposalsApiSteps.getDraftProposalById(createdDraftId, testAccountId).then()
+				.statusCode(HTTP_OK)
+				.extract().as(DraftProposalResponse.class);
+
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, DraftProposalResponse::getId, createdDraftId, "id");
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, DraftProposalResponse::getDaoId, testDao, "daoId");
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, DraftProposalResponse::getProposer, testAccountId, "proposer");
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, DraftProposalResponse::getTitle, title, "title");
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, DraftProposalResponse::getType, ProposalType.VOTE, "type");
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, DraftProposalResponse::getState, DraftProposalState.OPEN, "state");
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, DraftProposalResponse::getReplies, BigDecimal.ZERO, "replies");
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, DraftProposalResponse::getViews, BigDecimal.ZERO, "views");
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, DraftProposalResponse::getSaves, BigDecimal.ZERO, "saves");
+		draftProposalsApiSteps.assertDtoHasValue(draftProposalResponse, DraftProposalResponse::getUpdatedAt, "updatedAt");
+		draftProposalsApiSteps.assertDtoHasValue(draftProposalResponse, DraftProposalResponse::getCreatedAt, "createdAt");
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, DraftProposalResponse::getIsRead, Boolean.FALSE, "isRead");
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, DraftProposalResponse::getIsSaved, Boolean.FALSE, "isSaved");
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, DraftProposalResponse::getDescription, description, "description");
+
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, draftProposal -> draftProposal.getKind().getType(), ProposalKindSwaggerDto.TypeEnum.VOTE, "type");
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, draftProposal -> draftProposal.getKind().getProposalVariant(), "ProposePoll", "proposalVariant");
+
+		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getHistory(), DraftProposalHistoryResponse::getId, createdDraftId, "id");
+		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getHistory(), DraftProposalHistoryResponse::getDaoId, testDao, "daoId");
+		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getHistory(), DraftProposalHistoryResponse::getProposer, testAccountId, "proposer");
+		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getHistory(), DraftProposalHistoryResponse::getTitle, title, "title");
+		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getHistory(), DraftProposalHistoryResponse::getDescription, description, "description");
+		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getHistory(), DraftProposalHistoryResponse::getType, ProposalType.VOTE, "type");
+		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getHistory(), draftProposalHistoryResponse -> draftProposalHistoryResponse.getKind().getType(), ProposalKindSwaggerDto.TypeEnum.VOTE, "type");
+		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getHistory(), draftProposalHistoryResponse -> draftProposalHistoryResponse.getKind().getProposalVariant(), "ProposePoll", "proposalVariant");
+		draftProposalsApiSteps.assertCollectionElementsHasValue(draftProposalResponse.getHistory(), draftProposalHistory -> !draftProposalHistory.getUpdatedAt().toString().isEmpty(), "history/updatedAt");
+
+
+		draftProposalsApiSteps.viewDraftProposal(createdDraftId, authToken).then()
+				.statusCode(HTTP_CREATED)
+				.body(equalTo("true"));
+
+		draftProposalResponse = draftProposalsApiSteps.getDraftProposalById(createdDraftId, testAccountId).then()
+				.statusCode(HTTP_OK)
+				.extract().as(DraftProposalResponse.class);
+
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, DraftProposalResponse::getIsRead, Boolean.TRUE, "isRead");
+
+
+		draftProposalsApiSteps.saveDraftProposal(createdDraftId, authToken).then()
+				.statusCode(HTTP_CREATED)
+				.body(equalTo("true"));
+
+		draftProposalResponse = draftProposalsApiSteps.getDraftProposalById(createdDraftId, testAccountId).then()
+				.statusCode(HTTP_OK)
+				.extract().as(DraftProposalResponse.class);
+
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, DraftProposalResponse::getIsSaved, Boolean.TRUE, "isSaved");
+
+
+		draftProposalsApiSteps.unsaveDraftProposal(createdDraftId, authToken).then()
+				.statusCode(HTTP_OK)
+				.body(equalTo("true"));
+
+		draftProposalResponse = draftProposalsApiSteps.getDraftProposalById(createdDraftId, testAccountId).then()
+				.statusCode(HTTP_OK)
+				.extract().as(DraftProposalResponse.class);
+
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, DraftProposalResponse::getIsSaved, Boolean.FALSE, "isSaved");
+
+
+		draftProposalsApiSteps.closeDraftProposal(createdDraftId, authToken).then()
+				.statusCode(HTTP_OK)
+				.body(equalTo("true"));
+
+		draftProposalResponse = draftProposalsApiSteps.getDraftProposalById(createdDraftId, testAccountId).then()
+				.statusCode(HTTP_OK)
+				.extract().as(DraftProposalResponse.class);
+
+		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, DraftProposalResponse::getState, DraftProposalState.CLOSED, "state");
 	}
 }
