@@ -112,7 +112,7 @@ export class DraftCommentController {
     type: String,
   })
   @ApiResponse({
-    status: 200,
+    status: 201,
     description: 'Liked',
     type: Boolean,
   })
@@ -141,7 +141,7 @@ export class DraftCommentController {
     type: String,
   })
   @ApiResponse({
-    status: 200,
+    status: 201,
     description: 'Unliked',
     type: Boolean,
   })
@@ -167,8 +167,8 @@ export class DraftCommentController {
     type: String,
   })
   @ApiResponse({
-    status: 200,
-    description: 'Liked',
+    status: 201,
+    description: 'Disliked',
     type: Boolean,
   })
   @ApiForbiddenResponse({
@@ -196,8 +196,8 @@ export class DraftCommentController {
     type: String,
   })
   @ApiResponse({
-    status: 200,
-    description: 'Unliked',
+    status: 201,
+    description: 'Dislike Removed',
     type: Boolean,
   })
   @ApiForbiddenResponse({
