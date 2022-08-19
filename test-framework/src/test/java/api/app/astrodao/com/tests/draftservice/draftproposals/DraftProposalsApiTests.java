@@ -31,8 +31,12 @@ import static java.net.HttpURLConnection.HTTP_OK;
 public class DraftProposalsApiTests extends BaseTest {
 	private final DraftProposalsApiSteps draftProposalsApiSteps;
 
+	@Value("${accounts.account1.accountId}")
+	private String account1Id;
+
 	@Value("${accounts.account2.accountId}")
 	private String account2Id;
+
 
 	@Test
 	@Severity(SeverityLevel.CRITICAL)
@@ -238,7 +242,7 @@ public class DraftProposalsApiTests extends BaseTest {
 
 		draftProposalsApiSteps.assertCollectionElementsHasValue(draftProposalResponse.getData(), draftProposal -> !draftProposal.getId().isEmpty(), "id");
 		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getData(), DraftProposalBasicResponse::getDaoId, daoId, "daoId");
-		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getData(), DraftProposalBasicResponse::getProposer, account2Id, "proposer");
+		draftProposalsApiSteps.assertCollectionContainsExactlyInAnyOrder(draftProposalResponse.getData(), DraftProposalBasicResponse::getProposer, account1Id, account2Id);
 		draftProposalsApiSteps.assertCollectionElementsHasValue(draftProposalResponse.getData(), draftProposal -> !draftProposal.getTitle().isEmpty(), "title");
 		draftProposalsApiSteps.assertCollectionElementsHasValue(draftProposalResponse.getData(), draftProposal -> !draftProposal.getType().getValue().isEmpty(), "type");
 		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getData(), DraftProposalBasicResponse::getState, DraftProposalState.OPEN, "state");
