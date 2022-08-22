@@ -1,5 +1,6 @@
 package api.app.astrodao.com.tests.draftservice.draftproposals;
 
+import api.app.astrodao.com.core.utils.Base64Utils;
 import api.app.astrodao.com.openapi.models.*;
 import api.app.astrodao.com.steps.draftservice.DraftProposalsApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.NullSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -43,6 +45,12 @@ public class DraftProposalsIdApiTests extends BaseTest {
 
 	@Value("${accounts.account1.token}")
 	private String authToken;
+
+	@Value("${accounts.account1.publicKey}")
+	private String account1PublicKey;
+
+	@Value("${accounts.account1.signature}")
+	private String account1Signature;
 
 
 	@Test
@@ -239,5 +247,33 @@ public class DraftProposalsIdApiTests extends BaseTest {
 				      "error", equalTo("Not Found"));
 	}
 
+	@ParameterizedTest
+	@Severity(SeverityLevel.NORMAL)
+	@Story("Get HTTP 403 for draft proposal PATCH endpoint with null and invalid 'accountId' parameter")
+	@DisplayName("Get HTTP 403 for draft proposal PATCH endpoint with null and invalid 'accountId' parameter")
+	@NullSource
+	@CsvSource({"astro-automation.testnet", "another-magic.near", "test-dao-1641395769436.sputnikv2.testnet"})
+	void getHttp403ForDraftProposalPatchEndpointWithNullAndInvalidAccountIdParam(String accountId) {
+		String authToken = Base64Utils.encodeAuthToken(accountId, account1PublicKey, account1Signature);
+		String errorMessage = String.format("Account %s identity is invalid - public key", accountId);
+		String draftId = "62fdd6e98c658d00092a012d";
 
+		CreateDraftProposal createDraftProposal = new CreateDraftProposal();
+		createDraftProposal.setDaoId(testDao);
+		createDraftProposal.setTitle("Test title. Created " + getLocalDateTime());
+		createDraftProposal.setDescription("<p>" + faker.harryPotter().quote() + "</p>");
+		createDraftProposal.setType(ProposalType.VOTE);
+
+		ProposalKindSwaggerDto kind = new ProposalKindSwaggerDto();
+		kind.setType(ProposalKindSwaggerDto.TypeEnum.VOTE);
+		kind.setProposalVariant("ProposePoll");
+
+		createDraftProposal.setKind(kind);
+
+		draftProposalsApiSteps.updateDraftProposal(createDraftProposal, draftId, authToken).then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo(errorMessage),
+				      "error", equalTo("Forbidden"));
+	}
 }
