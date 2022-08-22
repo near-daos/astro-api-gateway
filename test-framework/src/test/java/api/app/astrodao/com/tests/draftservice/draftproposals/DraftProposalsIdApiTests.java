@@ -3,6 +3,7 @@ package api.app.astrodao.com.tests.draftservice.draftproposals;
 import api.app.astrodao.com.openapi.models.*;
 import api.app.astrodao.com.steps.draftservice.DraftProposalsApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
+import com.github.javafaker.Faker;
 import io.qameta.allure.*;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.DisplayName;
@@ -18,6 +19,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import static api.app.astrodao.com.core.Constants.Variables.EMPTY_STRING;
+import static api.app.astrodao.com.core.utils.WaitUtils.getLocalDateTime;
 import static java.net.HttpURLConnection.*;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -28,6 +30,7 @@ import static org.hamcrest.Matchers.equalTo;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class DraftProposalsIdApiTests extends BaseTest {
 	private final DraftProposalsApiSteps draftProposalsApiSteps;
+	private final Faker faker;
 
 	@Value("${accounts.account1.accountId}")
 	private String account1Id;
@@ -35,11 +38,17 @@ public class DraftProposalsIdApiTests extends BaseTest {
 	@Value("${accounts.account2.accountId}")
 	private String account2Id;
 
+	@Value("${test.dao1}")
+	private String testDao;
+
+	@Value("${accounts.account1.token}")
+	private String authToken;
+
 
 	@Test
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("Get draft proposal by valid 'id' and proposer 'accountId' params")
-	@DisplayName("Get draft proposal by valid 'id' and proposer 'accountId' params")
+	@Story("GET draft proposal by valid 'id' and proposer 'accountId' params")
+	@DisplayName("GET draft proposal by valid 'id' and proposer 'accountId' params")
 	void getDraftProposalByValidIdAndProposerAccountIdParams() {
 		String draftId = "62ed05c6520e2e000821f54f";
 		String daoId = "test-dao-for-ui-uno.sputnikv2.testnet";
@@ -85,8 +94,8 @@ public class DraftProposalsIdApiTests extends BaseTest {
 
 	@Test
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("Get draft proposal by valid 'id' and 'accountId' who is not a member of current DAO")
-	@DisplayName("Get draft proposal by valid 'id' and 'accountId' who is not a member of current DAO")
+	@Story("GET draft proposal by valid 'id' and 'accountId' who is not a member of current DAO")
+	@DisplayName("GET draft proposal by valid 'id' and 'accountId' who is not a member of current DAO")
 	void getDraftProposalByValidIdAndAccountIdWhoIsNotAMemberOfCurrentDao() {
 		String draftId = "62ed05c6520e2e000821f54f";
 		String daoId = "test-dao-for-ui-uno.sputnikv2.testnet";
@@ -132,8 +141,8 @@ public class DraftProposalsIdApiTests extends BaseTest {
 
 	@Test
 	@Severity(SeverityLevel.CRITICAL)
-	@Story("Get draft proposal by valid 'id' and empty 'accountId' params")
-	@DisplayName("Get draft proposal by valid 'id' and empty 'accountId' params")
+	@Story("GET draft proposal by valid 'id' and empty 'accountId' params")
+	@DisplayName("GET draft proposal by valid 'id' and empty 'accountId' params")
 	void getDraftProposalByValidIdAndEmptyAccountIdParams() {
 		String draftId = "62ed05c6520e2e000821f54f";
 		String daoId = "test-dao-for-ui-uno.sputnikv2.testnet";
@@ -203,4 +212,32 @@ public class DraftProposalsIdApiTests extends BaseTest {
 				      "message", equalTo("Draft proposal 00ed00c0000e0e000000f00f does not exist"),
 				      "error", equalTo("Not Found"));
 	}
+
+	@Test
+	@Severity(SeverityLevel.NORMAL)
+	@Story("Get HTTP 404 for draft proposal PATCH endpoint with non-existing draft id")
+	@DisplayName("Get HTTP 404 for draft proposal PATCH endpoint with non-existing draft id")
+	void getHttp404ForDraftProposalPatchEndpointWithNonExistingDraftId() {
+		String nonExistingDraftId = "00ed00c0000e0e000000f00f";
+
+		CreateDraftProposal createDraftProposal = new CreateDraftProposal();
+		createDraftProposal.setDaoId(testDao);
+		createDraftProposal.setTitle("Test title. Created " + getLocalDateTime());
+		createDraftProposal.setDescription("<p>" + faker.yoda().quote() + "</p>");
+		createDraftProposal.setType(ProposalType.VOTE);
+
+		ProposalKindSwaggerDto kind = new ProposalKindSwaggerDto();
+		kind.setType(ProposalKindSwaggerDto.TypeEnum.VOTE);
+		kind.setProposalVariant("ProposePoll");
+
+		createDraftProposal.setKind(kind);
+
+		draftProposalsApiSteps.updateDraftProposal(createDraftProposal, nonExistingDraftId, authToken).then()
+				.statusCode(HTTP_NOT_FOUND)
+				.body("statusCode", equalTo(HTTP_NOT_FOUND),
+				      "message", equalTo("Draft proposal 00ed00c0000e0e000000f00f does not exist"),
+				      "error", equalTo("Not Found"));
+	}
+
+
 }
