@@ -307,5 +307,31 @@ public class DraftProposalsIdApiTests extends BaseTest {
 				      "error", equalTo("Forbidden"));
 	}
 
+	@Test
+	@Severity(SeverityLevel.NORMAL)
+	@Story("Get HTTP 403 for draft proposal PATCH endpoint with invalid 'signature' parameter")
+	@DisplayName("Get HTTP 403 for draft proposal PATCH endpoint with invalid 'signature' parameter")
+	void getHttp403ForDraftProposalPatchEndpointWithNullAndInvalidPublicKeyParam() {
+		String invalidSignature = account1Signature.substring(10);
+		String authToken = Base64Utils.encodeAuthToken(account1Id, account1PublicKey, invalidSignature);
+		String draftId = "62fdd6e98c658d00092a012d";
 
+		CreateDraftProposal createDraftProposal = new CreateDraftProposal();
+		createDraftProposal.setDaoId(testDao);
+		createDraftProposal.setTitle("Test title. Created " + getLocalDateTime());
+		createDraftProposal.setDescription("<p>" + faker.harryPotter().quote() + "</p>");
+		createDraftProposal.setType(ProposalType.VOTE);
+
+		ProposalKindSwaggerDto kind = new ProposalKindSwaggerDto();
+		kind.setType(ProposalKindSwaggerDto.TypeEnum.VOTE);
+		kind.setProposalVariant("ProposePoll");
+
+		createDraftProposal.setKind(kind);
+
+		draftProposalsApiSteps.updateDraftProposal(createDraftProposal, draftId, authToken).then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo("Invalid signature"),
+				      "error", equalTo("Forbidden"));
+	}
 }
