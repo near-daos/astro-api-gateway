@@ -276,4 +276,36 @@ public class DraftProposalsIdApiTests extends BaseTest {
 				      "message", equalTo(errorMessage),
 				      "error", equalTo("Forbidden"));
 	}
+
+	@ParameterizedTest
+	@Severity(SeverityLevel.NORMAL)
+	@Story("Get HTTP 403 for draft proposal PATCH endpoint with null and invalid 'publicKey' parameter")
+	@DisplayName("Get HTTP 403 for draft proposal PATCH endpoint with null and invalid 'publicKey' parameter")
+	@NullSource
+	@CsvSource({"invalidPublicKey"})
+	void getHttp403ForDraftProposalPatchEndpointWithNullAndInvalidPublicKeyParam(String publicKey) {
+		String authToken = Base64Utils.encodeAuthToken(account1Id, publicKey, account1Signature);
+		String errorMessage = String.format("Account %s identity is invalid - public key", account1Id);
+		String draftId = "62fdd6e98c658d00092a012d";
+
+		CreateDraftProposal createDraftProposal = new CreateDraftProposal();
+		createDraftProposal.setDaoId(testDao);
+		createDraftProposal.setTitle("Test title. Created " + getLocalDateTime());
+		createDraftProposal.setDescription("<p>" + faker.harryPotter().quote() + "</p>");
+		createDraftProposal.setType(ProposalType.VOTE);
+
+		ProposalKindSwaggerDto kind = new ProposalKindSwaggerDto();
+		kind.setType(ProposalKindSwaggerDto.TypeEnum.VOTE);
+		kind.setProposalVariant("ProposePoll");
+
+		createDraftProposal.setKind(kind);
+
+		draftProposalsApiSteps.updateDraftProposal(createDraftProposal, draftId, authToken).then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo(errorMessage),
+				      "error", equalTo("Forbidden"));
+	}
+
+
 }
