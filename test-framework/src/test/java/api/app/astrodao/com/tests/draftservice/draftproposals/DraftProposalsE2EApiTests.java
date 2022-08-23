@@ -225,7 +225,7 @@ public class DraftProposalsE2EApiTests extends BaseTest {
 
 
 		draftProposalsApiSteps.closeDraftProposal(createdDraftId, authToken).then()
-				.statusCode(HTTP_OK)
+				.statusCode(HTTP_CREATED)
 				.body(equalTo("true"));
 
 		draftProposalResponse = draftProposalsApiSteps.getDraftProposalById(createdDraftId, testAccountId).then()
