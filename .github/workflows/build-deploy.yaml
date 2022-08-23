@@ -7,7 +7,7 @@ on:
         description: Specify environment to run on. Valid values are test, production
       apps:
         required: false
-        default: aggregator api draft notifier
+        default: aggregator api draft notifier indexer-processor
         description: List of application to build (space separated).
   push:
     branches:
