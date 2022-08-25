@@ -166,8 +166,7 @@ public class CommentsApiTests extends BaseTest {
         commentsApiSteps.assertCollectionElementsHasNoValue(commentResponse.getData(), r -> r.getProposalId() == null, "proposalId");
         commentsApiSteps.assertCollectionElementsHasNoValue(commentResponse.getData(), r -> r.getContextId() == null, "contextId");
         commentsApiSteps.assertCollectionElementsHasNoValue(commentResponse.getData(), r -> r.getContextType() == null, "contextType");
-        //TODO: Ask a question comment with 229 ID has a report data
-        //commentsApiSteps.assertCollectionElementsValue(commentResponse.getData(), r -> r.getReports().isEmpty(), "reports");
+
         commentsApiSteps.assertCollectionElementsHasNoValue(commentResponse.getData(), r -> r.getAccountId() == null, "accountId");
 
         List<BigDecimal> ids = commentResponse.getData().stream().map(Comment::getId).collect(Collectors.toList());

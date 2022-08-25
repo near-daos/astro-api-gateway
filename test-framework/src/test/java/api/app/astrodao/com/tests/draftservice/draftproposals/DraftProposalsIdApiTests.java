@@ -441,4 +441,156 @@ public class DraftProposalsIdApiTests extends BaseTest {
 				      "message", equalTo("Authorization header payload is invalid"),
 				      "error", equalTo("Forbidden"));
 	}
+
+	@Test
+	@Severity(SeverityLevel.NORMAL)
+	@Story("Get HTTP 400 for draft proposal DELETE endpoint for already closed draft proposal")
+	@DisplayName("Get HTTP 400 for draft proposal DELETE endpoint for already closed draft proposal")
+	void getHttp400ForDraftProposalDeleteEndpointForAlreadyClosedDraftProposal() {
+		String closedDraftId = "6304a2a116e4390008f6b855";
+		draftProposalsApiSteps.deleteDraftProposal(closedDraftId, authToken).then()
+				.statusCode(HTTP_BAD_REQUEST)
+				.body("statusCode", equalTo(HTTP_BAD_REQUEST),
+				      "message", equalTo("Draft proposal is closed"),
+				      "error", equalTo("Bad Request"));
+	}
+
+	@Test
+	@Severity(SeverityLevel.NORMAL)
+	@Story("Get HTTP 404 for draft proposal DELETE endpoint for not existing draft proposal")
+	@DisplayName("Get HTTP 404 for draft proposal DELETE endpoint for not existing draft proposal")
+	void getHttp404ForDraftProposalDeleteEndpointForNotExistingDraftProposal() {
+		String nonExistingDraftId = "00ed00c0000e0e000000f00f";
+		draftProposalsApiSteps.deleteDraftProposal(nonExistingDraftId, authToken).then()
+				.statusCode(HTTP_NOT_FOUND)
+				.body("statusCode", equalTo(HTTP_NOT_FOUND),
+				      "message", equalTo("Draft proposal 00ed00c0000e0e000000f00f does not exist"),
+				      "error", equalTo("Not Found"));
+	}
+
+	@Test
+	@Severity(SeverityLevel.NORMAL)
+	@Story("Get HTTP 403 for draft proposal DELETE endpoint for draft id from another account")
+	@DisplayName("Get HTTP 403 for draft proposal DELETE endpoint for draft id from another account")
+	void getHttp403ForDraftProposalDeleteEndpointForDraftIdFromAnotherAccount() {
+		String draftIdFromAnotherAcc = "630463b7a48bb100080a7cb2";
+		draftProposalsApiSteps.deleteDraftProposal(draftIdFromAnotherAcc, authToken).then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo("Account is not the proposer or council"),
+				      "error", equalTo("Forbidden"));
+	}
+
+	@ParameterizedTest
+	@Severity(SeverityLevel.NORMAL)
+	@Story("Get HTTP 403 for draft proposal DELETE endpoint with null and invalid 'accountId' parameter")
+	@DisplayName("Get HTTP 403 for draft proposal DELETE endpoint with null and invalid 'accountId' parameter")
+	@NullSource
+	@CsvSource({"astro-automation.testnet", "automation-01.testnet", "another-magic.near", "test-dao-1641395769436.sputnikv2.testnet"})
+	void getHttp403ForDraftProposalDeleteEndpointWithNullAndInvalidAccountIdParam(String accountId) {
+		String daoId = "63063c43a050fd00089b1f33";
+		String authToken = Base64Utils.encodeAuthToken(accountId, account1PublicKey, account1Signature);
+		String errorMessage = String.format("Account %s identity is invalid - public key", accountId);
+
+		draftProposalsApiSteps.deleteDraftProposal(daoId, authToken).then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo(errorMessage),
+				      "error", equalTo("Forbidden"));
+	}
+
+	@Test
+	@Severity(SeverityLevel.NORMAL)
+	@Story("Get HTTP 403 for draft proposal DELETE endpoint with empty 'accountId' parameter")
+	@DisplayName("Get HTTP 403 for draft proposal DELETE endpoint with empty 'accountId' parameter")
+	void getHttp403ForDraftProposalDeleteEndpointWithEmptyAccountIdParam() {
+		String daoId = "63063c43a050fd00089b1f33";
+		String authToken = Base64Utils.encodeAuthToken(EMPTY_STRING, account1PublicKey, account1Signature);
+
+		draftProposalsApiSteps.deleteDraftProposal(daoId, authToken).then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo("Authorization header payload is invalid"),
+				      "error", equalTo("Forbidden"));
+	}
+
+	@ParameterizedTest
+	@Severity(SeverityLevel.NORMAL)
+	@Story("Get HTTP 403 for draft proposal DELETE endpoint with null and invalid 'publicKey' parameter")
+	@DisplayName("Get HTTP 403 for draft proposal DELETE endpoint with null and invalid 'publicKey' parameter")
+	@NullSource
+	@CsvSource({"invalidPublicKey"})
+	void getHttp403ForDraftProposalDeleteEndpointWithNullAndInvalidPublicKeyParam(String publicKey) {
+		String authToken = Base64Utils.encodeAuthToken(account1Id, publicKey, account1Signature);
+		String errorMessage = String.format("Account %s identity is invalid - public key", account1Id);
+		String daoId = "63063c43a050fd00089b1f33";
+
+		draftProposalsApiSteps.deleteDraftProposal(daoId, authToken).then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo(errorMessage),
+				      "error", equalTo("Forbidden"));
+	}
+
+	@Test
+	@Severity(SeverityLevel.NORMAL)
+	@Story("Get HTTP 403 for draft proposal DELETE endpoint with empty 'publicKey' parameter")
+	@DisplayName("Get HTTP 403 for draft proposal DELETE endpoint with empty 'publicKey' parameter")
+	void getHttp403ForDraftProposalDeleteEndpointWithEmptyPublicKeyParam() {
+		String authToken = Base64Utils.encodeAuthToken(account1Id, EMPTY_STRING, account1Signature);
+		String daoId = "63063c43a050fd00089b1f33";
+
+		draftProposalsApiSteps.deleteDraftProposal(daoId, authToken).then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo("Authorization header payload is invalid"),
+				      "error", equalTo("Forbidden"));
+	}
+
+	@Test
+	@Severity(SeverityLevel.NORMAL)
+	@Story("Get HTTP 403 for draft proposal DELETE endpoint with invalid 'signature' parameter")
+	@DisplayName("Get HTTP 403 for draft proposal DELETE endpoint with invalid 'signature' parameter")
+	void getHttp403ForDraftProposalDeleteEndpointWithInvalidSignatureParam() {
+		String invalidSignature = account1Signature.substring(10);
+		String authToken = Base64Utils.encodeAuthToken(account1Id, account1PublicKey, invalidSignature);
+		String daoId = "63063c43a050fd00089b1f33";
+
+		draftProposalsApiSteps.deleteDraftProposal(daoId, authToken).then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo("Invalid signature"),
+				      "error", equalTo("Forbidden"));
+	}
+
+	@Test
+	@Severity(SeverityLevel.NORMAL)
+	@Story("Get HTTP 403 for draft proposal DELETE endpoint with null 'signature' parameter")
+	@DisplayName("Get HTTP 403 for draft proposal DELETE endpoint with null 'signature' parameter")
+	void getHttp403ForDraftProposalDeleteEndpointWithNullSignatureParam() {
+		String authToken = Base64Utils.encodeAuthToken(account1Id, account1PublicKey, null);
+		String daoId = "63063c43a050fd00089b1f33";
+
+		draftProposalsApiSteps.deleteDraftProposal(daoId, authToken).then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo("Invalid signature"),
+				      "error", equalTo("Forbidden"));
+	}
+
+	@Test
+	@Severity(SeverityLevel.NORMAL)
+	@Story("Get HTTP 403 for draft proposal DELETE endpoint with empty 'signature' parameter")
+	@DisplayName("Get HTTP 403 for draft proposal DELETE endpoint with empty 'signature' parameter")
+	void getHttp403ForDraftProposalDeleteEndpointWithEmptySignatureParam() {
+		String authToken = Base64Utils.encodeAuthToken(account1Id, account1PublicKey, EMPTY_STRING);
+		String daoId = "63063c43a050fd00089b1f33";
+
+		draftProposalsApiSteps.deleteDraftProposal(daoId, authToken).then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo("Authorization header payload is invalid"),
+				      "error", equalTo("Forbidden"));
+	}
+
 }
