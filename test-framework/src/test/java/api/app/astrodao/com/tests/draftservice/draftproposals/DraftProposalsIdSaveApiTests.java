@@ -15,6 +15,7 @@ import org.junit.jupiter.params.provider.NullSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
+import static api.app.astrodao.com.core.Constants.Variables.EMPTY_STRING;
 import static java.net.HttpURLConnection.HTTP_FORBIDDEN;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static org.hamcrest.Matchers.equalTo;
@@ -68,6 +69,21 @@ public class DraftProposalsIdSaveApiTests extends BaseTest {
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
 				      "message", equalTo(errorMessage),
+				      "error", equalTo("Forbidden"));
+	}
+
+	@Test
+	@Severity(SeverityLevel.NORMAL)
+	@Story("Get HTTP 403 for draft proposal save endpoint with empty 'accountId' parameter")
+	@DisplayName("Get HTTP 403 for draft proposal save endpoint with empty 'accountId' parameter")
+	void getHttp403ForDraftProposalSaveEndpointWithEmptyAccountIdParam() {
+		String daoId = "63063c43a050fd00089b1f33";
+		String authToken = Base64Utils.encodeAuthToken(EMPTY_STRING, account1PublicKey, account1Signature);
+
+		draftProposalsApiSteps.saveDraftProposal(daoId, authToken).then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo("Authorization header payload is invalid"),
 				      "error", equalTo("Forbidden"));
 	}
 }
