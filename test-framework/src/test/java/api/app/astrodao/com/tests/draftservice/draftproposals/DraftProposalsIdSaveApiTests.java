@@ -104,4 +104,19 @@ public class DraftProposalsIdSaveApiTests extends BaseTest {
 				      "message", equalTo(errorMessage),
 				      "error", equalTo("Forbidden"));
 	}
+
+	@Test
+	@Severity(SeverityLevel.NORMAL)
+	@Story("Get HTTP 403 for draft proposal save endpoint with empty 'publicKey' parameter")
+	@DisplayName("Get HTTP 403 for draft proposal save endpoint with empty 'publicKey' parameter")
+	void getHttp403ForDraftProposalSaveEndpointWithEmptyPublicKeyParam() {
+		String authToken = Base64Utils.encodeAuthToken(account1Id, EMPTY_STRING, account1Signature);
+		String daoId = "63063c43a050fd00089b1f33";
+
+		draftProposalsApiSteps.saveDraftProposal(daoId, authToken).then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo("Authorization header payload is invalid"),
+				      "error", equalTo("Forbidden"));
+	}
 }
