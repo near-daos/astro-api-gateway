@@ -196,4 +196,19 @@ public class DraftProposalsIdSaveApiTests extends BaseTest {
 				      "message", equalTo(errorMessage),
 				      "error", equalTo("Forbidden"));
 	}
+
+	@Test
+	@Severity(SeverityLevel.NORMAL)
+	@Story("Get HTTP 403 for DELETE draft proposal save endpoint with empty 'accountId' parameter")
+	@DisplayName("Get HTTP 403 for DELETE draft proposal save endpoint with empty 'accountId' parameter")
+	void getHttp403ForDeleteDraftProposalSaveEndpointWithEmptyAccountIdParam() {
+		String daoId = "63063c43a050fd00089b1f33";
+		String authToken = Base64Utils.encodeAuthToken(EMPTY_STRING, account1PublicKey, account1Signature);
+
+		draftProposalsApiSteps.unsaveDraftProposal(daoId, authToken).then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo("Authorization header payload is invalid"),
+				      "error", equalTo("Forbidden"));
+	}
 }
