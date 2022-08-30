@@ -179,5 +179,21 @@ public class DraftProposalsIdSaveApiTests extends BaseTest {
 				      "error", equalTo("Not Found"));
 	}
 
+	@ParameterizedTest
+	@Severity(SeverityLevel.NORMAL)
+	@Story("Get HTTP 403 for DELETE draft proposal save endpoint with null and invalid 'accountId' parameter")
+	@DisplayName("Get HTTP 403 for DELETE draft proposal save endpoint with null and invalid 'accountId' parameter")
+	@NullSource
+	@CsvSource({"astro-automation.testnet", "automation-01.testnet", "another-magic.near", "test-dao-1641395769436.sputnikv2.testnet"})
+	void getHttp403ForDeleteDraftProposalSaveEndpointWithNullAndInvalidAccountIdParam(String accountId) {
+		String daoId = "63063c43a050fd00089b1f33";
+		String authToken = Base64Utils.encodeAuthToken(accountId, account1PublicKey, account1Signature);
+		String errorMessage = String.format("Account %s identity is invalid - public key", accountId);
 
+		draftProposalsApiSteps.unsaveDraftProposal(daoId, authToken).then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo(errorMessage),
+				      "error", equalTo("Forbidden"));
+	}
 }
