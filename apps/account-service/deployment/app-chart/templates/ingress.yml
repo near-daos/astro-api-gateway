@@ -1,0 +1,30 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sputnik-v2-draft-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    cert-manager.io/cluster-issuer: "letsencrypt"
+    nginx.org/websocket-services: {{ include "sputnik-v2-draft.fullname" . }}
+    nginx.ingress.kubernetes.io/affinity: cookie
+    nginx.ingress.kubernetes.io/session-cookie-expires: "172800"
+    nginx.ingress.kubernetes.io/session-cookie-max-age: "172800"
+    nginx.ingress.kubernetes.io/session-cookie-name: route
+    nginx.ingress.kubernetes.io/session-cookie-samesite: None
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - draft.{{ .Values.ingress.host }}
+    secretName: {{ include "sputnik-v2-draft.fullname" . }}-tls-secret
+  rules:
+  - host: draft.{{ .Values.ingress.host }}
+    http:
+      paths:
+        - path: /
+          backend:
+            service:
+              name: {{ include "sputnik-v2-draft.fullname" . }}
+              port:
+                number: 80
+          pathType: ImplementationSpecific

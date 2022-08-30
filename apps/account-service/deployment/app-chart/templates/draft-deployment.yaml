@@ -1,0 +1,120 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "sputnik-v2-draft.fullname" . }}
+  labels:
+    {{- include "sputnik-v2-draft.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "sputnik-v2-draft.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "sputnik-v2-draft.metadataLabels" . | nindent 8 }}
+    spec:
+    {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      serviceAccountName: {{ include "sputnik-v2-draft.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}/{{ .Values.image.name }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.container.internalPort }}
+              protocol: TCP
+          {{- with .Values.container.livenessProbe }}
+          livenessProbe:
+            httpGet:
+              path: "{{ .path }}"
+              port: {{ .port }}
+              scheme: HTTP
+            initialDelaySeconds: {{ .initialDelaySeconds }}
+            periodSeconds: {{ .periodSeconds }}
+            timeoutSeconds: {{ .timeoutSeconds }}
+            successThreshold: {{ .successThreshold }}
+            failureThreshold: {{ .failureThreshold }}
+          {{- end }}
+          {{- with .Values.container.readinessProbe }}
+          readinessProbe:
+            httpGet:
+              path: "{{ .path }}"
+              port: {{ .port }}
+              scheme: HTTP
+            initialDelaySeconds: {{ .initialDelaySeconds }}
+            periodSeconds: {{ .periodSeconds }}
+            timeoutSeconds: {{ .timeoutSeconds }}
+            successThreshold: {{ .successThreshold }}
+            failureThreshold: {{ .failureThreshold }}
+          {{- end }}
+          env:
+            {{- if eq .Values.environment.DATADOG_APM_ENABLED "true" }}
+            - name: DD_AGENT_HOST
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: DD_ENV
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['tags.datadoghq.com/env']
+            - name: DD_SERVICE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['tags.datadoghq.com/service']
+            - name: DD_VERSION
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['tags.datadoghq.com/version']
+            - name: DD_LOGS_INJECTION
+              value: "true"
+            - name: DD_TRACE_SAMPLE_RATE
+              value: "1"
+            - name: DD_PROFILING_ENABLED
+              value: "true"
+            {{- end }}
+          envFrom:
+          - configMapRef:
+              name: sputnik-v2-configmap
+          - configMapRef:
+              name: sputnik-v2-draft-configmap
+          - configMapRef:
+              name: {{ .Release.Name }}-version
+          - secretRef:
+              name: api-rds-secrets
+          - secretRef:
+              name: draft-service-secrets
+          - secretRef:
+              name: api-redis-secrets
+          - secretRef:
+              name: draft-documentdb-secrets
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+          - mountPath: /rds-ca/rds-combined-ca-bundle.pem
+            name: documentdb-ca
+            subPath: RDS_CA_BUNDLE
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      volumes:
+      - name: documentdb-ca
+        secret:
+          defaultMode: 420
+          secretName: draft-documentdb-secrets

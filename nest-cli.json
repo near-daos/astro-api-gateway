@@ -51,6 +51,15 @@
         "tsConfigPath": "apps/indexer-processor/tsconfig.app.json"
       }
     },
+    "account-service": {
+      "type": "application",
+      "root": "apps/account-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/account-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/account-service/tsconfig.app.json"
+      }
+    },
     "config": {
       "type": "library",
       "root": "libs/config",

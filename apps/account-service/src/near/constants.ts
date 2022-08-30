@@ -1,0 +1,2 @@
+export const NEAR_PROVIDER = 'NEAR_PROVIDER';
+export const NEAR_RPC_PROVIDER = 'NEAR_RPC_PROVIDER';
