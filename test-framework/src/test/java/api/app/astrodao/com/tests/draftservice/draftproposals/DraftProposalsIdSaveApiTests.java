@@ -165,4 +165,19 @@ public class DraftProposalsIdSaveApiTests extends BaseTest {
 				      "message", equalTo("Authorization header payload is invalid"),
 				      "error", equalTo("Forbidden"));
 	}
+
+	@Test
+	@Severity(SeverityLevel.NORMAL)
+	@Story("Get HTTP 404 for DELETE draft proposal save endpoint for non existing draft proposal")
+	@DisplayName("Get HTTP 404 for DELETE draft proposal save endpoint for non existing draft proposal")
+	void getHttp404ForDeleteDraftProposalSaveEndpointForNonExistingDraftProposal() {
+		String nonExistingDraftId = "00ed00c0000e0e000000f00f";
+		draftProposalsApiSteps.unsaveDraftProposal(nonExistingDraftId, authToken).then()
+				.statusCode(HTTP_NOT_FOUND)
+				.body("statusCode", equalTo(HTTP_NOT_FOUND),
+				      "message", equalTo("Draft proposal 00ed00c0000e0e000000f00f does not exist"),
+				      "error", equalTo("Not Found"));
+	}
+
+
 }
