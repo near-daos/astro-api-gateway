@@ -13,7 +13,11 @@ import {
 } from '@sputnik-v2/notification';
 import { SubscriptionService } from '@sputnik-v2/subscription';
 import { DaoService } from '@sputnik-v2/dao';
-import { filterProposalDesc, getBlockTimestamp } from '@sputnik-v2/utils';
+import {
+  filterProposalDesc,
+  getAccountPermissions,
+  getBlockTimestamp,
+} from '@sputnik-v2/utils';
 import { EventService } from '@sputnik-v2/event';
 import { AccountService } from '@sputnik-v2/account';
 
@@ -120,17 +124,18 @@ export class AccountNotifierService {
     isPhone: boolean;
     isEmail: boolean;
   } {
+    const isActionRequired = this.checkActionRequired(accountId, notification);
     const accountNotificationSettings = notificationSettings.filter(
       (ns) =>
         ns.accountId === accountId &&
         (!ns.daoId || ns.daoId === notification.daoId),
     );
 
-    // If no settings, notify by default
+    // If no settings, notify by default if action required
     if (accountNotificationSettings.length === 0) {
       return {
         isDisabled: false,
-        shouldNotify: true,
+        shouldNotify: isActionRequired,
         isPhone: false,
         isEmail: false,
       };
@@ -143,9 +148,14 @@ export class AccountNotifierService {
           ans.mutedUntilTimestamp > currentTimestamp) ||
         ans.isAllMuted,
     );
-    const shouldNotify = accountNotificationSettings.some((ans) =>
-      ans.types.includes(notification.type),
+    const isActionRequiredOnly = accountNotificationSettings.some(
+      (ans) => ans.actionRequiredOnly,
     );
+    const shouldNotify =
+      (!isActionRequiredOnly || isActionRequired) &&
+      accountNotificationSettings.some((ans) =>
+        ans.types.includes(notification.type),
+      );
     const isPhone = accountNotificationSettings.some((ans) => ans.enableSms);
     const isEmail = accountNotificationSettings.some((ans) => ans.enableEmail);
 
@@ -253,5 +263,22 @@ export class AccountNotifierService {
           },
         };
     }
+  }
+
+  checkActionRequired(accountId: string, notification: Notification): boolean {
+    if (
+      notification.metadata.proposal &&
+      notification.status === NotificationStatus.Created
+    ) {
+      const accountPermissions = getAccountPermissions(
+        notification.dao?.policy?.roles,
+        notification.metadata.proposal?.kind?.type,
+        accountId,
+      );
+
+      return accountPermissions.canApprove || accountPermissions.canReject;
+    }
+
+    return false;
   }
 }
