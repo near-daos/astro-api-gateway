@@ -121,32 +121,33 @@ export class TransactionController {
   ): Promise<any> {
     const { walletCallbackUrl } = this.configService.get('api');
     const { transactionHashes, errorCode, noRedirect } = callbackParams;
-    const queryString = querystring.stringify(
-      callbackParams as any as ParsedUrlQueryInput,
-    );
+    const query = {
+      ...callbackParams,
+    } as any as ParsedUrlQueryInput;
 
     if (!noRedirect && errorCode) {
-      res.redirect(`${walletCallbackUrl}?${queryString}`);
+      res.redirect(`${walletCallbackUrl}?${querystring.stringify(query)}`);
 
       return;
     }
 
     if (transactionHashes && transactionHashes.length) {
       try {
-        await Promise.all(
+        const results = await Promise.all(
           transactionHashes
             .split(',')
             .map((hash) =>
               this.transactionService.walletCallback(hash, accountId),
             ),
         );
+        query.results = JSON.stringify(results.flat());
       } catch (e) {
         this.logger.error(e);
       }
     }
 
     if (!noRedirect && walletCallbackUrl) {
-      res.redirect(`${walletCallbackUrl}?${queryString}`);
+      res.redirect(`${walletCallbackUrl}?${querystring.stringify(query)}`);
 
       return;
     }

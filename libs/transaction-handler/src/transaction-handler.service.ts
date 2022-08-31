@@ -15,8 +15,8 @@ import {
 import { TransactionActionMapperService } from './transaction-action-mapper.service';
 import { TransactionActionHandlerService } from './transaction-action-handler.service';
 import { TransactionHandlerState } from './entities';
-import { TransactionHandlerStatus } from '@sputnik-v2/transaction-handler/types';
-import { TransactionHandlerBlocks } from '@sputnik-v2/transaction-handler/dto';
+import { ContractHandlerResult, TransactionHandlerStatus } from './types';
+import { TransactionHandlerBlocks } from './dto';
 
 @Injectable()
 export class TransactionHandlerService {
@@ -123,13 +123,16 @@ export class TransactionHandlerService {
     });
   }
 
-  async handleNearTransaction(transactionHash: string, accountId: string) {
+  async handleNearTransaction(
+    transactionHash: string,
+    accountId: string,
+  ): Promise<ContractHandlerResult[]> {
     const actions =
       await this.transactionActionMapperService.getActionsByNearTransaction(
         transactionHash,
         accountId,
       );
-    const { success } =
+    const { results, success } =
       await this.transactionActionHandlerService.handleTransactionActions(
         actions,
       );
@@ -139,6 +142,8 @@ export class TransactionHandlerService {
         `Failed to handle actions of transaction ${transactionHash}`,
       );
     }
+
+    return results;
   }
 
   async handleNearReceipts(

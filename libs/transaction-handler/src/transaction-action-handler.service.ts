@@ -34,6 +34,8 @@ import {
   castCreateProposal,
   castDoneBounty,
   ContractHandler,
+  ContractHandlerResult,
+  ContractHandlerResultType,
   TransactionAction,
   VoteAction,
 } from './types';
@@ -112,14 +114,19 @@ export class TransactionActionHandlerService {
     ];
   }
 
-  async handleTransactionActions(
-    actions: TransactionAction[],
-  ): Promise<{ handledTxHashes: string[]; success: boolean }> {
+  async handleTransactionActions(actions: TransactionAction[]): Promise<{
+    handledTxHashes: string[];
+    results: ContractHandlerResult[];
+    success: boolean;
+  }> {
     const handledTxHashes = [];
+    let results = [];
+
     // Actions are handled one by one to keep order of transactions
     for (const action of actions) {
       try {
-        await this.handleTransactionAction(action);
+        const actionResults = await this.handleTransactionAction(action);
+        results = results.concat(actionResults.filter((result) => result));
         handledTxHashes.push(action.transactionHash);
       } catch (error) {
         this.logger.error(
@@ -131,19 +138,22 @@ export class TransactionActionHandlerService {
           handledTxHashes: handledTxHashes.filter(
             (transactionHash) => action.transactionHash !== transactionHash,
           ),
+          results,
           success: false,
         };
       }
     }
 
-    return { handledTxHashes, success: true };
+    return { handledTxHashes, results, success: true };
   }
 
-  async handleTransactionAction(action: TransactionAction) {
+  async handleTransactionAction(
+    action: TransactionAction,
+  ): Promise<ContractHandlerResult[]> {
     this.logger.log(`Handling transaction: ${action.transactionHash}`);
     const contractHandlers = this.getContractHandlers(action.receiverId);
 
-    const { errors } = await PromisePool.for(contractHandlers).process(
+    const { results, errors } = await PromisePool.for(contractHandlers).process(
       async (contractHandler) => {
         const handler =
           contractHandler.methodHandlers[action.methodName] ||
@@ -165,9 +175,13 @@ export class TransactionActionHandlerService {
         `Transaction successfully handled: ${action.transactionHash}`,
       );
     }
+
+    return results;
   }
 
-  async handleCreateDao(txAction: TransactionAction) {
+  async handleCreateDao(
+    txAction: TransactionAction,
+  ): Promise<ContractHandlerResult> {
     const { signerId, transactionHash, args, timestamp } = txAction;
     const { contractName } = this.configService.get('near');
     const daoId = `${args.name}.${contractName}`;
@@ -189,9 +203,16 @@ export class TransactionActionHandlerService {
     this.logger.log(`Successfully stored new DAO: ${daoId}`);
 
     await this.eventService.sendDaoUpdateNotificationEvent(dao, txAction);
+
+    return {
+      type: ContractHandlerResultType.DaoCreate,
+      metadata: { daoId: dao.id },
+    };
   }
 
-  async handleAddProposal(txAction: TransactionAction) {
+  async handleAddProposal(
+    txAction: TransactionAction,
+  ): Promise<ContractHandlerResult> {
     const { receiverId, signerId, transactionHash, timestamp } = txAction;
 
     const txStatus = await this.nearApiService.getTxStatus(
@@ -206,7 +227,7 @@ export class TransactionActionHandlerService {
       this.logger.warn(
         `Error getting Proposal ID from transaction: ${transactionHash}`,
       );
-      return;
+      return { type: ContractHandlerResultType.Unknown };
     }
 
     const daoEntity = await this.daoService.findOne(receiverId);
@@ -219,7 +240,7 @@ export class TransactionActionHandlerService {
       this.logger.warn(
         `Error proposal ${lastProposalId} not found for DAO ${receiverId}. Skip transaction ${transactionHash}`,
       );
-      return;
+      return { type: ContractHandlerResultType.Unknown };
     }
 
     const proposal = castCreateProposal({
@@ -269,9 +290,16 @@ export class TransactionActionHandlerService {
       proposal,
       txAction,
     );
+
+    return {
+      type: ContractHandlerResultType.ProposalCreate,
+      metadata: { daoId: receiverId, proposalId: proposal.id },
+    };
   }
 
-  async handleActProposal(txAction: TransactionAction) {
+  async handleActProposal(
+    txAction: TransactionAction,
+  ): Promise<ContractHandlerResult> {
     const { receiverId, signerId, transactionHash, args, timestamp, status } =
       txAction;
     const dao = await this.daoService.findOne(receiverId);
@@ -344,6 +372,15 @@ export class TransactionActionHandlerService {
       proposal || proposalEntity,
       txAction,
     );
+
+    return {
+      type: ContractHandlerResultType.ProposalVote,
+      metadata: {
+        daoId: receiverId,
+        proposalId: proposal.id,
+        action: args.action,
+      },
+    };
   }
 
   async handleApproveProposal({
@@ -658,7 +695,7 @@ export class TransactionActionHandlerService {
     methodName,
     args,
     timestamp,
-  }: TransactionAction) {
+  }: TransactionAction): Promise<ContractHandlerResult> {
     const daoContract = this.nearApiService.getContract(
       'sputnikDao',
       receiverId,
@@ -705,6 +742,8 @@ export class TransactionActionHandlerService {
       }),
     );
     this.logger.log(`Bounty successfully updated: ${bounty.id}`);
+
+    return { type: ContractHandlerResultType.BountyClaim };
   }
 
   async handleUnknownDaoTransaction({ receiverId }: TransactionAction) {
@@ -716,9 +755,13 @@ export class TransactionActionHandlerService {
     this.logger.log(`Updating DAO: ${receiverId} due to transaction`);
     await this.daoService.saveWithFunds({ ...dao });
     this.logger.log(`DAO successfully updated: ${receiverId}`);
+
+    return { type: ContractHandlerResultType.Unknown };
   }
 
-  async handleDelegate(txAction: TransactionAction) {
+  async handleDelegate(
+    txAction: TransactionAction,
+  ): Promise<ContractHandlerResult> {
     const { txSignerId, receiverId: daoId, args } = txAction;
     const { account_id: accountId } = args;
 
@@ -794,9 +837,13 @@ export class TransactionActionHandlerService {
     }
 
     await this.daoService.updateDaoMembers(daoId);
+
+    return { type: ContractHandlerResultType.Delegate };
   }
 
-  async handleTokenMint(txAction: TransactionAction) {
+  async handleTokenMint(
+    txAction: TransactionAction,
+  ): Promise<ContractHandlerResult> {
     this.logger.log(
       `Handling "mint" method of ${txAction.receiverId} due to transaction: ${txAction.transactionHash}`,
     );
@@ -830,9 +877,13 @@ export class TransactionActionHandlerService {
     this.logger.warn(
       `Called "mint" method on unknown contract ${txAction.receiverId}. Skip transaction ${txAction.transactionHash}`,
     );
+
+    return { type: ContractHandlerResultType.TokenUpdate };
   }
 
-  async handleTokenMethods(txAction: TransactionAction) {
+  async handleTokenMethods(
+    txAction: TransactionAction,
+  ): Promise<ContractHandlerResult> {
     const daoIds = [
       ...new Set([
         txAction.txSignerId,
@@ -842,9 +893,12 @@ export class TransactionActionHandlerService {
       ]),
     ].filter((accountId) => accountId && this.isDaoContract(accountId));
     await this.handleTokenUpdate(txAction, daoIds);
+    return { type: ContractHandlerResultType.TokenUpdate };
   }
 
-  async handleNftMethods(txAction: TransactionAction) {
+  async handleNftMethods(
+    txAction: TransactionAction,
+  ): Promise<ContractHandlerResult> {
     const daoIds = [
       ...new Set([
         txAction.txSignerId,
@@ -857,6 +911,7 @@ export class TransactionActionHandlerService {
       ]),
     ].filter((accountId) => accountId && this.isDaoContract(accountId));
     await this.handleNftUpdate(txAction, daoIds);
+    return { type: ContractHandlerResultType.NftUpdate };
   }
 
   async handleTokenUpdate(txAction: TransactionAction, accountIds: string[]) {
