@@ -242,7 +242,7 @@ public class NotificationSettingsApiTests extends BaseTest {
 		List<String> types = List.of("CustomDao", "AddMemberToRole", "FunctionCall", "Transfer", "AddBounty", "Vote");
 
 		AccountNotificationSettings accountNotificationSettings =
-				notificationsApiSteps.setNotificationSettings(accountToken, daoId, types, "0", false, false, false).then()
+				notificationsApiSteps.setNotificationSettings(accountToken, daoId, types, "0", false, false, false, false).then()
 						.statusCode(HTTP_CREATED)
 						.extract().as(AccountNotificationSettings.class);
 
@@ -269,7 +269,7 @@ public class NotificationSettingsApiTests extends BaseTest {
 		List<String> types = List.of("ClubDao", "RemoveMemberFromRole", "FunctionCall", "Transfer", "ChangePolicy", "ChangeConfig");
 
 		notificationsApiSteps.setNotificationSettings(
-						authToken, "test-dao-1653656794681.sputnikv2.testnet", types, "0", false, false, false).then()
+						authToken, "test-dao-1653656794681.sputnikv2.testnet", types, "0", false, false, false, false).then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
 				      "message", equalTo("Account testdao2.testnet identity is invalid - public key"),
@@ -285,7 +285,7 @@ public class NotificationSettingsApiTests extends BaseTest {
 		List<String> types = List.of("ClubDao", "RemoveMemberFromRole", "FunctionCall", "Transfer", "ChangePolicy", "ChangeConfig");
 
 		notificationsApiSteps.setNotificationSettings(
-						authToken, "test-dao-1653656794681.sputnikv2.testnet", types, "0", false, false, false).then()
+						authToken, "test-dao-1653656794681.sputnikv2.testnet", types, "0", false, false, false, false).then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
 				      "message", equalTo("Authorization header payload is invalid"),
@@ -304,7 +304,7 @@ public class NotificationSettingsApiTests extends BaseTest {
 		String errorMessage = String.format("Account %s identity is invalid - public key", accountId);
 
 		notificationsApiSteps.setNotificationSettings(
-						authToken, "test-dao-1653656794681.sputnikv2.testnet", types, "0", false, false, false).then()
+						authToken, "test-dao-1653656794681.sputnikv2.testnet", types, "0", false, false, false, false).then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
 				      "message", equalTo(errorMessage),
@@ -321,7 +321,7 @@ public class NotificationSettingsApiTests extends BaseTest {
 				"ClubDao", "RemoveMemberFromRole", "FunctionCall", "Transfer", "ChangePolicy", "ChangeConfig");
 
 		notificationsApiSteps.setNotificationSettings(
-						authToken, "test-dao-1653656794681.sputnikv2.testnet", types, "0", false, false, false).then()
+						authToken, "test-dao-1653656794681.sputnikv2.testnet", types, "0", false, false, false, false).then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
 				      "message", equalTo("Authorization header payload is invalid"),
@@ -338,7 +338,7 @@ public class NotificationSettingsApiTests extends BaseTest {
 		List<String> types = List.of("ClubDao", "RemoveMemberFromRole", "FunctionCall", "Transfer", "ChangePolicy", "ChangeConfig");
 
 		notificationsApiSteps.setNotificationSettings(
-						authToken, "test-dao-1653656794681.sputnikv2.testnet", types, "0", false, false, false).then()
+						authToken, "test-dao-1653656794681.sputnikv2.testnet", types, "0", false, false, false, false).then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
 				      "message", equalTo("Invalid signature"),
@@ -354,7 +354,7 @@ public class NotificationSettingsApiTests extends BaseTest {
 		List<String> types = List.of("ClubDao", "RemoveMemberFromRole", "FunctionCall", "Transfer", "ChangePolicy", "ChangeConfig");
 
 		notificationsApiSteps.setNotificationSettings(
-						authToken, "test-dao-1653656794681.sputnikv2.testnet", types, "0", false, false, false).then()
+						authToken, "test-dao-1653656794681.sputnikv2.testnet", types, "0", false, false, false, false).then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
 				      "message", equalTo("Invalid signature"),
@@ -370,7 +370,7 @@ public class NotificationSettingsApiTests extends BaseTest {
 		List<String> types = List.of("ClubDao", "RemoveMemberFromRole", "FunctionCall", "Transfer", "ChangePolicy", "ChangeConfig");
 
 		notificationsApiSteps.setNotificationSettings(
-						authToken, "test-dao-1653656794681.sputnikv2.testnet", types, "0", false, false, false).then()
+						authToken, "test-dao-1653656794681.sputnikv2.testnet", types, "0", false, false, false, false).then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
 				      "message", equalTo("Authorization header payload is invalid"),
@@ -390,7 +390,7 @@ public class NotificationSettingsApiTests extends BaseTest {
 		String daoId = accountDaos.get(accountRandomDao).getId();
 
 		AccountNotificationSettings accountNotificationSettings = notificationsApiSteps.setNotificationSettings(
-				accountToken, daoId, Collections.emptyList(), "0", false, false, false).then()
+				accountToken, daoId, Collections.emptyList(), "0", false, false, false, false).then()
 				.statusCode(HTTP_CREATED)
 				.extract().as(AccountNotificationSettings.class);
 
@@ -412,9 +412,11 @@ public class NotificationSettingsApiTests extends BaseTest {
 	@DisplayName("Get HTTP 400 for account notification settings with null 'mutedUntilTimestamp' param")
 	void getHttp400ForAccountNotificationSettingsWithNullMutedUntilTimestampParam() {
 		String daoId = "test-dao-1653994172816.sputnikv2.testnet";
-		List<String> errorMessage = List.of("mutedUntilTimestamp must be a string", "mutedUntilTimestamp must be a timestamp or empty");
+		List<String> errorMessage = List.of(
+				"mutedUntilTimestamp must be a string",
+				"mutedUntilTimestamp must be a timestamp or empty");
 
-		notificationsApiSteps.setNotificationSettings(accountToken, daoId, Collections.emptyList(), null, false, false, false).then()
+		notificationsApiSteps.setNotificationSettings(accountToken, daoId, Collections.emptyList(), null, false, false, false, false).then()
 				.statusCode(HTTP_BAD_REQUEST)
 				.body("statusCode", equalTo(HTTP_BAD_REQUEST),
 				      "message", equalTo(errorMessage),
@@ -430,7 +432,7 @@ public class NotificationSettingsApiTests extends BaseTest {
 		String daoId = "test-dao-1653994172816.sputnikv2.testnet";
 
 		notificationsApiSteps.setNotificationSettings(
-				accountToken, daoId, Collections.emptyList(), mutedUntilTimestamp, false, false, false).then()
+				accountToken, daoId, Collections.emptyList(), mutedUntilTimestamp, false, false, false, false).then()
 				.statusCode(HTTP_BAD_REQUEST)
 				.body("statusCode", equalTo(HTTP_BAD_REQUEST),
 				      "message", equalTo(List.of("mutedUntilTimestamp must be a timestamp or empty")),
@@ -447,7 +449,7 @@ public class NotificationSettingsApiTests extends BaseTest {
 		String daoId = "test-dao-1653994172816.sputnikv2.testnet";
 
 		notificationsApiSteps.setNotificationSettings(
-						accountToken, daoId, List.of(type), EMPTY_STRING, false, false, false).then()
+						accountToken, daoId, List.of(type), EMPTY_STRING, false, false, false, false).then()
 				.statusCode(HTTP_BAD_REQUEST)
 				.body("statusCode", equalTo(HTTP_BAD_REQUEST),
 				      "message", equalTo(List.of("each value in types must be a valid enum value")),
@@ -458,8 +460,9 @@ public class NotificationSettingsApiTests extends BaseTest {
 	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 400 for account notification settings with null and invalid 'enableSms', 'enableEmail', 'isAllMuted' params")
 	@DisplayName("Get HTTP 400 for account notification settings with null and invalid 'enableSms', 'enableEmail', 'isAllMuted' params")
-	@CsvSource({"null, null, null", "0, 0, 0", "1, 1, 1"})
-	void getHttp400ForAccountNotificationSettingsWithNullAndInvalidBooleanParams(String enableSms, String enableEmail, String isAllMuted) {
+	@CsvSource({"null, null, null, null", "0, 0, 0, 0", "1, 1, 1, 1"})
+	void getHttp400ForAccountNotificationSettingsWithNullAndInvalidBooleanParams(String enableSms, String enableEmail,
+	                                                                             String isAllMuted, String actionRequiredOnly) {
 		String body =
 				"{\n" +
 				"  \"daoId\": \"test-dao-1653994172816.sputnikv2.testnet\",\n" +
@@ -467,7 +470,8 @@ public class NotificationSettingsApiTests extends BaseTest {
 				"  \"mutedUntilTimestamp\": \"\",\n" +
 				"  \"enableSms\": " + enableSms + ",\n" +
 				"  \"enableEmail\": " + enableEmail + ",\n" +
-				"  \"isAllMuted\": " + isAllMuted + "\n" +
+				"  \"isAllMuted\": " + isAllMuted + ",\n" +
+				"  \"isAllMuted\": " + actionRequiredOnly + "\n" +
 				"}";
 
 		notificationsApiSteps.setNotificationSettings(accountToken, body).then()
@@ -476,7 +480,8 @@ public class NotificationSettingsApiTests extends BaseTest {
 				      "message", equalTo(List.of(
 								"enableSms must be a boolean value",
 								"enableEmail must be a boolean value",
-								"isAllMuted must be a boolean value")),
+								"isAllMuted must be a boolean value",
+								"actionRequiredOnly must be a boolean value")),
 				      "error", equalTo("Bad Request"));
 	}
 
@@ -492,7 +497,8 @@ public class NotificationSettingsApiTests extends BaseTest {
 						"  \"mutedUntilTimestamp\": \"\",\n" +
 						"  \"enableSms\": " + "\"" + faker.rickAndMorty().location() + "\"" + ",\n" +
 						"  \"enableEmail\": " + "\"" + faker.harryPotter().spell() + "\"" + ",\n" +
-						"  \"isAllMuted\": " + "\"" + faker.chuckNorris().fact() + "\"" +
+						"  \"isAllMuted\": " + "\"" + faker.chuckNorris().fact() + "\"" + ",\n" +
+						"  \"actionRequiredOnly\": " + "\"" + faker.yoda().quote() + "\"" +
 						"}";
 
 		notificationsApiSteps.setNotificationSettings(accountToken, body).then()
@@ -501,7 +507,8 @@ public class NotificationSettingsApiTests extends BaseTest {
 				      "message", equalTo(List.of(
 								"enableSms must be a boolean value",
 								"enableEmail must be a boolean value",
-								"isAllMuted must be a boolean value")),
+								"isAllMuted must be a boolean value",
+								"actionRequiredOnly must be a boolean value")),
 				      "error", equalTo("Bad Request"));
 	}
 
@@ -515,7 +522,7 @@ public class NotificationSettingsApiTests extends BaseTest {
 		String errorMessage = "Invalid DAO id " + daoId;
 
 		notificationsApiSteps.setNotificationSettings(
-						accountToken, daoId, Collections.emptyList(), EMPTY_STRING, false, false, false).then()
+						accountToken, daoId, Collections.emptyList(), EMPTY_STRING, false, false, false, false).then()
 				.statusCode(HTTP_BAD_REQUEST)
 				.body("statusCode", equalTo(HTTP_BAD_REQUEST),
 				      "message", equalTo(errorMessage),

@@ -47,14 +47,15 @@ public class NotificationsApi {
 	}
 
 	public Response postNotificationSettings(String authToken, String daoId, List<String> types, String mutedUntilTimestamp,
-	                                         boolean isEnableSms, boolean isEnableEmail, boolean isAllMuted) {
+	                                         boolean isEnableSms, boolean isEnableEmail, boolean isAllMuted, boolean isActionRequiredOnly) {
 		CreateAccountNotificationSettingsDto createAccountNotificationSettings = new CreateAccountNotificationSettingsDto();
 		createAccountNotificationSettings.setDaoId(daoId);
 		createAccountNotificationSettings.setTypes(types);
 		createAccountNotificationSettings.setMutedUntilTimestamp(mutedUntilTimestamp);
 		createAccountNotificationSettings.setEnableSms(isEnableSms);
 		createAccountNotificationSettings.setEnableEmail(isEnableEmail);
-		createAccountNotificationSettings.isAllMuted(isAllMuted);
+		createAccountNotificationSettings.setIsAllMuted(isAllMuted);
+		createAccountNotificationSettings.setActionRequiredOnly(isActionRequiredOnly);
 
 		return given().spec(requestSpecForApiService)
 				.accept(ContentType.JSON)
