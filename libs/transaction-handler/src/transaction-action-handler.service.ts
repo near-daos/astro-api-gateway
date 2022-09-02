@@ -227,7 +227,10 @@ export class TransactionActionHandlerService {
       this.logger.warn(
         `Error getting Proposal ID from transaction: ${transactionHash}`,
       );
-      return { type: ContractHandlerResultType.Unknown };
+      return {
+        type: ContractHandlerResultType.Unknown,
+        metadata: { daoId: receiverId },
+      };
     }
 
     const daoEntity = await this.daoService.findOne(receiverId);
@@ -240,7 +243,10 @@ export class TransactionActionHandlerService {
       this.logger.warn(
         `Error proposal ${lastProposalId} not found for DAO ${receiverId}. Skip transaction ${transactionHash}`,
       );
-      return { type: ContractHandlerResultType.Unknown };
+      return {
+        type: ContractHandlerResultType.Unknown,
+        metadata: { daoId: receiverId },
+      };
     }
 
     const proposal = castCreateProposal({
@@ -756,7 +762,10 @@ export class TransactionActionHandlerService {
     await this.daoService.saveWithFunds({ ...dao });
     this.logger.log(`DAO successfully updated: ${receiverId}`);
 
-    return { type: ContractHandlerResultType.Unknown };
+    return {
+      type: ContractHandlerResultType.Unknown,
+      metadata: { daoId: receiverId },
+    };
   }
 
   async handleDelegate(
