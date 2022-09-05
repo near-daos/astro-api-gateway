@@ -1,5 +1,6 @@
 package api.app.astrodao.com.tests.draftservice.draftproposals;
 
+import api.app.astrodao.com.core.utils.Base64Utils;
 import api.app.astrodao.com.steps.draftservice.DraftProposalsApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import io.qameta.allure.*;
@@ -8,9 +9,13 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.NullSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
+import static java.net.HttpURLConnection.HTTP_FORBIDDEN;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -46,6 +51,24 @@ public class DraftProposalsIdViewApiTests extends BaseTest {
 				.body("statusCode", equalTo(HTTP_NOT_FOUND),
 				      "message", equalTo("Draft proposal 00ed00c0000e0e000000f00f does not exist"),
 				      "error", equalTo("Not Found"));
+	}
+
+	@ParameterizedTest
+	@Severity(SeverityLevel.NORMAL)
+	@Story("Get HTTP 403 for draft proposal view endpoint with null and invalid 'accountId' parameter")
+	@DisplayName("Get HTTP 403 for draft proposal view endpoint with null and invalid 'accountId' parameter")
+	@NullSource
+	@CsvSource({"astro-automation.testnet", "automation-01.testnet", "another-magic.near", "test-dao-1641395769436.sputnikv2.testnet"})
+	void getHttp403ForDraftProposalViewEndpointWithNullAndInvalidAccountIdParam(String accountId) {
+		String daoId = "63063c43a050fd00089b1f33";
+		String authToken = Base64Utils.encodeAuthToken(accountId, account1PublicKey, account1Signature);
+		String errorMessage = String.format("Account %s identity is invalid - public key", accountId);
+
+		draftProposalsApiSteps.viewDraftProposal(daoId, authToken).then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo(errorMessage),
+				      "error", equalTo("Forbidden"));
 	}
 
 
