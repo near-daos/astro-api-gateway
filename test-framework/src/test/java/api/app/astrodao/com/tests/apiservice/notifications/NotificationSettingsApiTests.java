@@ -263,7 +263,7 @@ public class NotificationSettingsApiTests extends BaseTest {
 	@Story("Get HTTP 403 for account notification settings with null and invalid 'publicKey' parameter")
 	@DisplayName("Get HTTP 403 for account notification settings with null and invalid 'publicKey' parameter")
 	@NullSource
-	@CsvSource({"invalidPublicKey"})
+	@CsvSource({"invalidPublicKey", "ed25519:5FwoV3MFB94ExfgycBvUQaTbTfgSMPAcfX62bgLBqEPR"})
 	void getHttp403ForAccountNotificationSettingsWithNullAndInvalidPublicKeyParam(String publicKey) {
 		String authToken = Base64Utils.encodeAuthToken(accountId, publicKey, accountSignature);
 		List<String> types = List.of("ClubDao", "RemoveMemberFromRole", "FunctionCall", "Transfer", "ChangePolicy", "ChangeConfig");

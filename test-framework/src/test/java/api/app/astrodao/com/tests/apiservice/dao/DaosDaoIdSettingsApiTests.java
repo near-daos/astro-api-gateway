@@ -102,7 +102,7 @@ public class DaosDaoIdSettingsApiTests extends BaseTest {
 	@Story("Get HTTP 403 for DAO settings with null and invalid 'publicKey' parameter")
 	@DisplayName("Get HTTP 403 for DAO settings with null and invalid 'publicKey' parameter")
 	@NullSource
-	@CsvSource({"invalidPublicKey"})
+	@CsvSource({"invalidPublicKey", "ed25519:5FwoV3MFB94ExfgycBvUQaTbTfgSMPAcfX62bgLBqEPR"})
 	void getHttp403ForDaoSettingsWithNullAndInvalidPublicKeyParam(String publicKey) {
 		String authToken = Base64Utils.encodeAuthToken(accountId, publicKey, accountSignature);
 		Map<String, String> fakeJson = Map.of("rickAndMortyQuote", faker.rickAndMorty().quote());

@@ -336,7 +336,7 @@ public class DraftProposalsApiTests extends BaseTest {
 	@Story("Get HTTP 403 for draft-proposals POST endpoint with null and invalid 'publicKey' parameter")
 	@DisplayName("Get HTTP 403 for draft-proposals POST endpoint with null and invalid 'publicKey' parameter")
 	@NullSource
-	@CsvSource({"invalidPublicKey"})
+	@CsvSource({"invalidPublicKey", "ed25519:5FwoV3MFB94ExfgycBvUQaTbTfgSMPAcfX62bgLBqEPR"})
 	void getHttp403ForDraftProposalsPostEndpointWithNullAndInvalidPublicKeyParam(String publicKey) {
 		String authToken = Base64Utils.encodeAuthToken(account1Id, publicKey, account1Signature);
 		String errorMessage = String.format("Account %s identity is invalid - public key", account1Id);

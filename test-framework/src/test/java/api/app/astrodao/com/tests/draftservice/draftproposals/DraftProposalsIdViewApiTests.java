@@ -86,4 +86,24 @@ public class DraftProposalsIdViewApiTests extends BaseTest {
 				      "message", equalTo("Authorization header payload is invalid"),
 				      "error", equalTo("Forbidden"));
 	}
+
+	@ParameterizedTest
+	@Severity(SeverityLevel.NORMAL)
+	@Story("Get HTTP 403 for draft proposal view endpoint with null and invalid 'publicKey' parameter")
+	@DisplayName("Get HTTP 403 for draft proposal view endpoint with null and invalid 'publicKey' parameter")
+	@NullSource
+	@CsvSource({"invalidPublicKey", "ed25519:5FwoV3MFB94ExfgycBvUQaTbTfgSMPAcfX62bgLBqEPR"})
+	void getHttp403ForDraftProposalViewEndpointWithNullAndInvalidPublicKeyParam(String publicKey) {
+		String authToken = Base64Utils.encodeAuthToken(account1Id, publicKey, account1Signature);
+		String errorMessage = String.format("Account %s identity is invalid - public key", account1Id);
+		String daoId = "63063c43a050fd00089b1f33";
+
+		draftProposalsApiSteps.viewDraftProposal(daoId, authToken).then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo(errorMessage),
+				      "error", equalTo("Forbidden"));
+	}
+
+
 }

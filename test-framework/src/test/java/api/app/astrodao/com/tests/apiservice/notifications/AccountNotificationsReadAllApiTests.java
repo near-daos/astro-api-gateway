@@ -122,7 +122,7 @@ public class AccountNotificationsReadAllApiTests extends BaseTest {
 	@Story("Get HTTP 403 for read all account notifications endpoint with null and invalid 'publicKey' parameter")
 	@DisplayName("Get HTTP 403 for read all account notifications endpoint with null and invalid 'publicKey' parameter")
 	@NullSource
-	@CsvSource({"invalidPublicKey"})
+	@CsvSource({"invalidPublicKey", "ed25519:5FwoV3MFB94ExfgycBvUQaTbTfgSMPAcfX62bgLBqEPR"})
 	void getHttp403ForReadAllAccountNotificationsEndpointWithNullAndInvalidPublicKeyParam(String publicKey) {
 		String authToken = Base64Utils.encodeAuthToken(account2Id, publicKey, accountSignature);
 
