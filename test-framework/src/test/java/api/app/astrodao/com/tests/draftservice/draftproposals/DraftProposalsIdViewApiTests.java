@@ -135,4 +135,19 @@ public class DraftProposalsIdViewApiTests extends BaseTest {
 				      "message", equalTo("Invalid signature"),
 				      "error", equalTo("Forbidden"));
 	}
+
+	@Test
+	@Severity(SeverityLevel.NORMAL)
+	@Story("Get HTTP 403 for draft proposal view endpoint with null 'signature' parameter")
+	@DisplayName("Get HTTP 403 for draft proposal view endpoint with null 'signature' parameter")
+	void getHttp403ForDraftProposalViewEndpointWithNullSignatureParam() {
+		String authToken = Base64Utils.encodeAuthToken(account1Id, account1PublicKey, null);
+		String daoId = "63063c43a050fd00089b1f33";
+
+		draftProposalsApiSteps.viewDraftProposal(daoId, authToken).then()
+				.statusCode(HTTP_FORBIDDEN)
+				.body("statusCode", equalTo(HTTP_FORBIDDEN),
+				      "message", equalTo("Invalid signature"),
+				      "error", equalTo("Forbidden"));
+	}
 }
