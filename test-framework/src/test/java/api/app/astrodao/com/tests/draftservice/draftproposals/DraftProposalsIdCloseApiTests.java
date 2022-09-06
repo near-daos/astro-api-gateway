@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
+import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static org.hamcrest.Matchers.equalTo;
 
 @Tags({@Tag("all"), @Tag("draftProposalsIdCloseApiTests")})
@@ -46,6 +47,19 @@ public class DraftProposalsIdCloseApiTests extends BaseTest {
 				.body("statusCode", equalTo(HTTP_BAD_REQUEST),
 				      "message", equalTo("Draft proposal is closed"),
 				      "error", equalTo("Bad Request"));
+	}
+
+	@Test
+	@Severity(SeverityLevel.NORMAL)
+	@Story("Get HTTP 404 for draft proposal close endpoint for non existing draft proposal")
+	@DisplayName("Get HTTP 404 for draft proposal close endpoint for non existing draft proposal")
+	void getHttp404ForDraftProposalCloseEndpointForNonExistingDraftProposal() {
+		String nonExistingDraftId = "00ed00c0000e0e000000f00f";
+		draftProposalsApiSteps.closeDraftProposal(nonExistingDraftId, authToken).then()
+				.statusCode(HTTP_NOT_FOUND)
+				.body("statusCode", equalTo(HTTP_NOT_FOUND),
+				      "message", equalTo("Draft proposal 00ed00c0000e0e000000f00f does not exist"),
+				      "error", equalTo("Not Found"));
 	}
 
 
