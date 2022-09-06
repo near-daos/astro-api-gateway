@@ -14,6 +14,7 @@ import {
   EVENT_DRAFT_DELETE_COMMENT,
   EVENT_DRAFT_SERVICE,
   EVENT_DRAFT_UPDATE_COMMENT,
+  EVENT_DRAFT_PROPOSAL_CLOSE,
 } from '@sputnik-v2/common';
 import { DaoDto } from '@sputnik-v2/dao';
 import { Proposal, ProposalDto } from '@sputnik-v2/proposal';
@@ -116,6 +117,17 @@ export class EventService {
     comment: DraftCommentResponse,
   ): Promise<void> {
     const message = new BaseMessage(EVENT_DRAFT_DELETE_COMMENT, { comment });
+    return this.sendEvent(this.draftEventClient, message);
+  }
+
+  public async sendCloseDraftProposalEvent(
+    draftId: string,
+    proposalId: string,
+  ): Promise<void> {
+    const message = new BaseMessage(EVENT_DRAFT_PROPOSAL_CLOSE, {
+      draftId,
+      proposalId,
+    });
     return this.sendEvent(this.draftEventClient, message);
   }
 

@@ -213,7 +213,7 @@ export class TransactionActionHandlerService {
   async handleAddProposal(
     txAction: TransactionAction,
   ): Promise<ContractHandlerResult> {
-    const { receiverId, signerId, transactionHash, timestamp } = txAction;
+    const { receiverId, signerId, transactionHash, timestamp, args } = txAction;
 
     const txStatus = await this.nearApiService.getTxStatus(
       transactionHash,
@@ -296,6 +296,13 @@ export class TransactionActionHandlerService {
       proposal,
       txAction,
     );
+
+    if (args.draftId) {
+      await this.eventService.sendCloseDraftProposalEvent(
+        args.draftId,
+        proposal.id,
+      );
+    }
 
     return {
       type: ContractHandlerResultType.ProposalCreate,

@@ -3,20 +3,28 @@ import { EventPattern, Transport } from '@nestjs/microservices';
 import { ApiExcludeEndpoint } from '@nestjs/swagger';
 import { Span } from 'nestjs-ddtrace';
 
-import { DraftCommentUpdateDto } from '@sputnik-v2/event';
+import {
+  DraftCommentUpdateDto,
+  DraftProposalCloseDto,
+} from '@sputnik-v2/event';
 import {
   EVENT_DRAFT_DELETE_COMMENT,
   EVENT_DRAFT_NEW_COMMENT,
+  EVENT_DRAFT_PROPOSAL_CLOSE,
   EVENT_DRAFT_UPDATE_COMMENT,
 } from '@sputnik-v2/common';
 import { SocketService } from '@sputnik-v2/websocket';
+import { DraftProposalService } from '@sputnik-v2/draft-proposal';
 
 @Span()
 @Controller()
 export class DraftController {
   private readonly logger = new Logger(DraftController.name);
 
-  constructor(private readonly socketService: SocketService) {}
+  constructor(
+    private readonly socketService: SocketService,
+    private readonly draftProposalService: DraftProposalService,
+  ) {}
 
   @ApiExcludeEndpoint()
   @Get()
@@ -55,5 +63,16 @@ export class DraftController {
       event: 'draft-comment-removed',
       data: data.comment,
     });
+  }
+
+  @EventPattern(EVENT_DRAFT_PROPOSAL_CLOSE, Transport.REDIS)
+  async onCloseDraftProposal(data: DraftProposalCloseDto) {
+    this.logger.log(
+      `Closing draft ${data.draftId} due to proposal creation: ${data.proposalId}`,
+    );
+    await this.draftProposalService.closeInternal(
+      data.draftId,
+      data.proposalId,
+    );
   }
 }
