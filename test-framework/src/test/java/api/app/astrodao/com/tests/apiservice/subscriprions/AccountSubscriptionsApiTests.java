@@ -66,19 +66,4 @@ public class AccountSubscriptionsApiTests extends BaseTest {
 		subscriptionsApiSteps.assertDtoValue(createdSubscription, p -> p.getDao().getId(), dao, "daoId");
 	}
 
-	@ParameterizedTest
-	@Severity(SeverityLevel.NORMAL)
-	@Story("Get HTTP 404 for account-subscriptions with invalid accountId")
-	@DisplayName("Get HTTP 404 for account-subscriptions with invalid accountId")
-	@CsvSource({"invalidAccountId", "2212332141", "-1", "0", "testdao3132498.testnet",
-			"*", "autotest-dao-1.sputnikv2.testnet-1", "another-magic.near"})
-	void getHttp404ForAccountSubscriptionsWithInvalidAccountId(String accountIdParam) {
-		String errorMessage = String.format("Account does not exist: %s", accountIdParam);
-
-		subscriptionsApiSteps.accountSubscriptions(accountIdParam).then()
-				.statusCode(HTTP_NOT_FOUND)
-				.body("statusCode", equalTo(HTTP_NOT_FOUND),
-				      "message", equalTo(errorMessage),
-				      "error", equalTo("Not Found"));
-	}
 }
