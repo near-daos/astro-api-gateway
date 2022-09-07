@@ -92,8 +92,14 @@ export class TransactionActionHandlerService {
           ft_mint: this.handleTokenMethods.bind(this),
           ft_transfer_call: this.handleTokenMethods.bind(this),
           ft_transfer: this.handleTokenMethods.bind(this),
+          deposit: this.handleTokenMethods.bind(this),
           storage_deposit: this.handleTokenMethods.bind(this),
+          deposit_and_stake: this.handleTokenMethods.bind(this),
+          withdraw: this.handleTokenMethods.bind(this),
           storage_withdraw: this.handleTokenMethods.bind(this),
+          withdraw_all: this.handleTokenMethods.bind(this),
+          withdraw_unstaked: this.handleTokenMethods.bind(this),
+          withdraw_from_available: this.handleTokenMethods.bind(this),
 
           // NFT
           nft_transfer: this.handleNftMethods.bind(this),
