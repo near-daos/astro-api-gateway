@@ -220,6 +220,17 @@ export class DraftProposalService {
     return true;
   }
 
+  async closeInternal(id: string, proposalId: string) {
+    const draftProposal = await this.draftProposalRepository.findOne(id);
+
+    if (draftProposal) {
+      await this.draftProposalRepository.update(draftProposal.id, {
+        state: DraftProposalState.Closed,
+        proposalId,
+      });
+    }
+  }
+
   async updateReplies(id: string, replies: number): Promise<void> {
     await this.draftProposalRepository.update(id, {
       replies,
