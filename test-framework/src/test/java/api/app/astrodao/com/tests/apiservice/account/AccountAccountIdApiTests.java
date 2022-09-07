@@ -20,10 +20,10 @@ import static org.hamcrest.Matchers.equalTo;
 
 @Tags({@Tag("all"), @Tag("accountIdApiTests")})
 @Epic("Account")
-@Feature("/account/{id} API tests")
-@DisplayName("/account/{id} API tests")
+@Feature("/account/{accountId} API tests")
+@DisplayName("/account/{accountId} API tests")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-public class AccountIdApiTests extends BaseTest {
+public class AccountAccountIdApiTests extends BaseTest {
 	private final AccountApiSteps accountApiSteps;
 
 	@Value("${accounts.account1.accountId}")
@@ -172,19 +172,4 @@ public class AccountIdApiTests extends BaseTest {
 		accountApiSteps.assertDtoValueIsNull(accountResponse, AccountResponse::getIsPhoneVerified, "isPhoneVerified");
 	}
 
-	@ParameterizedTest
-	@Severity(SeverityLevel.NORMAL)
-	@Story("Get HTTP 404 for account settings with invalid accountId")
-	@DisplayName("Get HTTP 404 for account settings with invalid accountId")
-	@CsvSource({"invalidAccountId", "2212332141", "-1", "0", "testdao3132498.testnet",
-			"*", "autotest-dao-1.sputnikv2.testnet-1", "another-magic.near"})
-	void getHttp404ForAccountSettingsWithInvalidAccountId(String accountIdParam) {
-		String errorMessage = String.format("Account does not exist: %s", accountIdParam);
-
-		accountApiSteps.getAccountSettingsById(accountIdParam).then()
-				.statusCode(HTTP_NOT_FOUND)
-				.body("statusCode", equalTo(HTTP_NOT_FOUND),
-				      "message", equalTo(errorMessage),
-				      "error", equalTo("Not Found"));
-	}
 }

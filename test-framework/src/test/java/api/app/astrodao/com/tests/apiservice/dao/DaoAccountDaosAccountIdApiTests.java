@@ -58,22 +58,6 @@ public class DaoAccountDaosAccountIdApiTests extends BaseTest {
 		daoApiSteps.assertCollectionContainsExactlyInAnyOrder(accountDaos, Dao::getStatus, "Inactive");
 	}
 
-	@ParameterizedTest
-	@Severity(SeverityLevel.NORMAL)
-	@Story("Get HTTP 404 for account-daos with invalid DAO accountId")
-	@DisplayName("Get HTTP 404 for account-daos with invalid DAO accountId")
-	@CsvSource({"invalidAccountId", "2212332141", "-1", "0",
-			"*", "autotest-dao-1.sputnikv2.testnet-1", "another-magic.near"})
-	void getHttp404ForAccountDaosWithInvalidDaoId(String accountIdParam) {
-		String errorMessage = String.format("Account does not exist: %s", accountIdParam);
-
-		daoApiSteps.getAccountDaos(accountIdParam).then()
-				.statusCode(HTTP_NOT_FOUND)
-				.body("statusCode", equalTo(HTTP_NOT_FOUND),
-				      "message", equalTo(errorMessage),
-				      "error", equalTo("Not Found"));
-	}
-
 	@Test
 	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 400 for account-daos")

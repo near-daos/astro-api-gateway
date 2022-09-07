@@ -79,18 +79,4 @@ public class AccountAccountIdPhoneVerificationStatusApiTests extends BaseTest {
 				      "error", equalTo("Bad Request"));
 	}
 
-	@ParameterizedTest
-	@Severity(SeverityLevel.NORMAL)
-	@Story("Get HTTP 404 for phone verification status endpoint for non-existing account")
-	@DisplayName("Get HTTP 404 for phone verification status endpoint for non-existing account")
-	@CsvSource({"astro-automation.testnet", "another-magic.near"})
-	void getHttp404ForPhoneVerificationStatusEndpointForNonExistingAccount(String accountId) {
-		String errorMessage = String.format("Account does not exist: %s", accountId);
-
-		accountApiSteps.getAccountPhoneVerificationStatus(accountId).then()
-				.statusCode(HTTP_NOT_FOUND)
-				.body("statusCode", equalTo(HTTP_NOT_FOUND),
-				      "message", equalTo(errorMessage),
-				      "error", equalTo("Not Found"));
-	}
 }
