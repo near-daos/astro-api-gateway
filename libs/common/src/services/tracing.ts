@@ -4,6 +4,7 @@ import tracer from 'dd-trace';
 tracer.init({
   // https://docs.datadoghq.com/tracing/connect_logs_and_traces/nodejs/
   logInjection: true,
+  profiling: true,
 });
 
 export default tracer;
