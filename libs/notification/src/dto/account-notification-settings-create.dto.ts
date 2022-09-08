@@ -40,5 +40,5 @@ export class CreateAccountNotificationSettingsDto {
   @ApiProperty()
   @IsOptional()
   @IsBoolean()
-  actionRequiredOnly: boolean;
+  actionRequiredOnly?: boolean;
 }
