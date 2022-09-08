@@ -16,6 +16,7 @@ import {
 import { Role, RoleKindType, Delegation } from '@sputnik-v2/dao/entities';
 import { SearchQuery } from '@sputnik-v2/common';
 import { buildDelegationId, getAccountPermissions } from '@sputnik-v2/utils';
+import { BaseTypeOrmCrudService } from '@sputnik-v2/common/services/type-orm-crud.service';
 
 import {
   AccountProposalQuery,
@@ -27,7 +28,7 @@ import { Proposal } from './entities';
 import { ProposalStatus, ProposalVoteStatus } from './types';
 
 @Injectable()
-export class ProposalService extends TypeOrmCrudService<Proposal> {
+export class ProposalService extends BaseTypeOrmCrudService<Proposal> {
   private readonly logger = new Logger(ProposalService.name);
 
   constructor(
