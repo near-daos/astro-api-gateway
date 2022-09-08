@@ -208,14 +208,12 @@ export class DraftProposalService {
       );
     }
 
-    if (draftProposal.state === DraftProposalState.Closed) {
-      throw new BadRequestException(`Draft proposal is closed`);
+    if (draftProposal.state !== DraftProposalState.Closed) {
+      await this.draftProposalRepository.update(draftProposal.id, {
+        state: DraftProposalState.Closed,
+        proposalId: closeDraftProposalDto.proposalId,
+      });
     }
-
-    await this.draftProposalRepository.update(draftProposal.id, {
-      state: DraftProposalState.Closed,
-      proposalId: closeDraftProposalDto.proposalId,
-    });
 
     return true;
   }
