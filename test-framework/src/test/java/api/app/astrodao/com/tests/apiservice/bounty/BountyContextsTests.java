@@ -59,23 +59,17 @@ public class BountyContextsTests extends BaseTest {
 				errorMessage,
 				"isCouncil");
 
-		bountiesApiSteps.assertCollectionElementsHasBooleanValueAndSize(
+		bountiesApiSteps.assertCollectionContainsExactlyInAnyOrder(
 				bountyContextResponse.getData(),
-				bountyContext -> !bountyContext.getProposal().getPermissions().getCanApprove(),
-				errorMessage,
-				"canApprove");
+				bountyContext -> bountyContext.getProposal().getPermissions().getCanApprove(), true, false);
 
-		bountiesApiSteps.assertCollectionElementsHasBooleanValueAndSize(
+		bountiesApiSteps.assertCollectionContainsExactlyInAnyOrder(
 				bountyContextResponse.getData(),
-				bountyContext -> !bountyContext.getProposal().getPermissions().getCanReject(),
-				errorMessage,
-				"canReject");
+				bountyContext -> bountyContext.getProposal().getPermissions().getCanReject(), true, false);
 
-		bountiesApiSteps.assertCollectionElementsHasBooleanValueAndSize(
+		bountiesApiSteps.assertCollectionContainsExactlyInAnyOrder(
 				bountyContextResponse.getData(),
-				bountyContext -> !bountyContext.getProposal().getPermissions().getCanDelete(),
-				errorMessage,
-				"canDelete");
+				bountyContext -> bountyContext.getProposal().getPermissions().getCanDelete(), true, false);
 	}
 
 	@Test

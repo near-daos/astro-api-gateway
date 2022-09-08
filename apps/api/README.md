@@ -3,12 +3,16 @@
 Astro API App is responsible for exposing all API endpoints used on Astro DAO application.
 
 ## Modules
-- **account** - create/remove user account API endpoints.
+- **account** - create/remove/configure user account API endpoints.
 - **bounty** - get bounties, bounty by id API endpoints.
+- **comment** - API endpoints to manage proposal comments.
 - **dao** - get list of DAOs, DAOs feed, account DAOs API endpoints.
+- **dao-settings** - get/set DAO settings API endpoints.
 - **near** - simple module with near providers.
 - **proposal** - get proposals, proposal by id, proposals by account API endpoints.
+- **proposal-template** - get/create/update/remove DAO proposal templates API endpoints.
 - **search** - universal API endpoint to search by all DAOs and Proposals.
+- **stats** - get DAO historical statistics API endpoints.
 - **subscription** - API endpoints to create/remove subscriptions for DAO updates notifications.
 - **token** - get DAO NEAR/Tokens/NFTs balance API endpoints.
 - **transaction** - get transactions, transfers and receipts API endpoints.
