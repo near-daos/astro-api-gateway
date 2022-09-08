@@ -9,6 +9,7 @@ import { ProposalModule } from '@sputnik-v2/proposal';
 import { NearIndexerModule, Transaction } from '@sputnik-v2/near-indexer';
 import { EventModule } from '@sputnik-v2/event';
 import { TokenModule } from '@sputnik-v2/token';
+import { HttpCacheModule } from '@sputnik-v2/cache';
 
 import { TransactionHandlerService } from './transaction-handler.service';
 import { TransactionActionHandlerService } from './transaction-action-handler.service';
@@ -26,6 +27,7 @@ import { TransactionHandlerState } from './entities';
     ProposalModule,
     EventModule,
     TokenModule,
+    HttpCacheModule,
   ],
   providers: [
     TransactionHandlerService,
