@@ -762,7 +762,13 @@ export class TransactionActionHandlerService {
     );
     this.logger.log(`Bounty successfully updated: ${bounty.id}`);
 
-    return { type: ContractHandlerResultType.BountyClaim };
+    return {
+      type: ContractHandlerResultType.BountyClaim,
+      metadata: {
+        daoId: receiverId,
+        bountyContextId: bounty.bountyContext?.id,
+      },
+    };
   }
 
   async handleUnknownDaoTransaction({ receiverId }: TransactionAction) {
