@@ -1,25 +1,25 @@
 import { Cache } from 'cache-manager';
 
-import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
+import { CACHE_MANAGER, Inject, Injectable, Logger } from '@nestjs/common';
 
 import { TransactionAction } from '@sputnik-v2/transaction-handler';
 import { ProposalDto } from '@sputnik-v2/proposal';
 
-// List of API endpoints that are cached separately
-const CACHE_API_WHITELIST = ['/api/v1/proposals'];
+// Cache invalidation is managed separately for the list of API endpoints below
+const CACHE_API_WHITELIST = ['/api/v1/proposals', '/api/v1/tokens'];
 
 @Injectable()
 export class CacheService {
-  constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {}
+  private readonly logger = new Logger(CacheService.name);
 
-  async clearCacheSelectively(actions: TransactionAction[]): Promise<any> {
-    return this.cacheManager.reset();
-  }
+  constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {}
 
   async handleProposalCache(
     proposal: ProposalDto,
     action?: TransactionAction,
   ): Promise<any> {
+    this.logger.log('Clearing Proposals Cache...');
+
     const { id } = proposal;
 
     const keys: string[] = await this.cacheManager.store.keys(
@@ -57,38 +57,65 @@ export class CacheService {
       }
     }
 
-    await this.cacheManager.store.del([
+    const keysToClear = [
       ...templateKeys,
       ...baseKeys,
       ...accountProposalsKeys,
       ...proposalIdKeys,
-    ]);
+    ];
+
+    await this.cacheManager.store.del(keysToClear);
+
+    this.logger.log(
+      `Cleared Proposals Cache. Total Keys: ${keysToClear.length}`,
+    );
   }
 
-  async handleTokenMint(action: TransactionAction): Promise<any> {
-    // TODO
+  async handleTokenCache(): Promise<any> {
+    this.logger.log('Clearing FT Cache...');
+
+    const keys: string[] = await this.cacheManager.store.keys(
+      '/api/v1/tokens*',
+    );
+
+    const keysToClear = keys.filter(
+      (key) => !key.startsWith('/api/v1/tokens/nfts'),
+    );
+
+    await this.clearKeysChunked(keysToClear);
+
+    this.logger.log(`Cleared FT Cache. Total Keys: ${keysToClear.length}`);
   }
 
-  async handleTokenMethods(action: TransactionAction): Promise<any> {
-    // TODO
-  }
+  async handleNFTCache(): Promise<any> {
+    this.logger.log('Clearing NFT Cache...');
 
-  async handleTokenUpdate(action: TransactionAction): Promise<any> {
-    // TODO: handle FT related cache only
-  }
+    const keysToClear: string[] = await this.cacheManager.store.keys(
+      '/api/v1/tokens/nfts*',
+    );
 
-  async handleNftUpdate(action: TransactionAction): Promise<any> {
-    // TODO: Clear NFT related cache only
+    await this.clearKeysChunked(keysToClear);
+
+    this.logger.log(`Cleared NFT Cache. Total Keys: ${keysToClear.length}`);
   }
 
   async clearCache(): Promise<any> {
+    this.logger.log('Clearing Cache...');
+
     const keys: string[] = await this.cacheManager.store.keys();
 
-    // TODO: integrate with CACHE_API_WHITELIST
     const keysToClear = keys.filter(
-      (key) => !key.startsWith('/api/v1/proposals'),
+      (key) => !CACHE_API_WHITELIST.some((path) => key.startsWith(path)),
     );
 
-    await this.cacheManager.store.del(keysToClear);
+    await this.clearKeysChunked(keysToClear);
+
+    this.logger.log(`Cleared Cache. Total Keys: ${keysToClear.length}`);
+  }
+
+  private async clearKeysChunked(keys: string[], chunkSize: number = 20) {
+    for (let i = 0; i < keys.length; i += chunkSize) {
+      await this.cacheManager.store.del(keys.slice(i, i + chunkSize));
+    }
   }
 }

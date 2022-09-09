@@ -848,6 +848,8 @@ export class TransactionActionHandlerService {
       ]),
     ].filter((accountId) => accountId && this.isDaoContract(accountId));
     await this.handleTokenUpdate(txAction, daoIds);
+
+    await this.cacheService.handleTokenCache();
   }
 
   async handleNftMethods(txAction: TransactionAction) {
@@ -863,6 +865,8 @@ export class TransactionActionHandlerService {
       ]),
     ].filter((accountId) => accountId && this.isDaoContract(accountId));
     await this.handleNftUpdate(txAction, daoIds);
+
+    await this.cacheService.handleNFTCache();
   }
 
   async handleTokenUpdate(txAction: TransactionAction, accountIds: string[]) {
