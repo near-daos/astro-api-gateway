@@ -195,20 +195,38 @@ export class DraftProposalService {
       throw new NotFoundException(`Draft proposal ${id} does not exist`);
     }
 
-    if (draftProposal.proposer !== accountId) {
-      throw new ForbiddenException('Account is not the proposer');
+    const { data: dao } = await this.daoApiService.getDao(draftProposal.daoId);
+    const accountPermissions = getAccountPermissions(
+      dao.policy.roles,
+      draftProposal.type,
+      accountId,
+    );
+
+    if (!accountPermissions.canAdd) {
+      throw new ForbiddenException(
+        `Account does not have permissions to add ${draftProposal.type} proposals`,
+      );
     }
 
-    if (draftProposal.state === DraftProposalState.Closed) {
-      throw new BadRequestException(`Draft proposal is closed`);
+    if (draftProposal.state !== DraftProposalState.Closed) {
+      await this.draftProposalRepository.update(draftProposal.id, {
+        state: DraftProposalState.Closed,
+        proposalId: closeDraftProposalDto.proposalId,
+      });
     }
-
-    await this.draftProposalRepository.update(draftProposal.id, {
-      state: DraftProposalState.Closed,
-      proposalId: closeDraftProposalDto.proposalId,
-    });
 
     return true;
+  }
+
+  async closeInternal(id: string, proposalId: string) {
+    const draftProposal = await this.draftProposalRepository.findOne(id);
+
+    if (draftProposal) {
+      await this.draftProposalRepository.update(draftProposal.id, {
+        state: DraftProposalState.Closed,
+        proposalId,
+      });
+    }
   }
 
   async updateReplies(id: string, replies: number): Promise<void> {

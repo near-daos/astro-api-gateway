@@ -110,7 +110,7 @@ public class AccountEmailVerifyApiTests extends BaseTest {
 	@Story("Get HTTP 403 for account email verify with null and invalid 'publicKey' parameter")
 	@DisplayName("Get HTTP 403 for account email verify with null and invalid 'publicKey' parameter")
 	@NullSource
-	@CsvSource({"invalidPublicKey"})
+	@CsvSource({"invalidPublicKey", "ed25519:5FwoV3MFB94ExfgycBvUQaTbTfgSMPAcfX62bgLBqEPR"})
 	void getHttp403ForAccountEmailVerifyWithNullAndInvalidPublicKeyParam(String publicKey) {
 		String code = String.valueOf(faker.number().randomNumber(6, false));
 		String authToken = Base64Utils.encodeAuthToken(account3Id, publicKey, account3Signature);

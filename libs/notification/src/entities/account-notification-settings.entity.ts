@@ -37,4 +37,8 @@ export class AccountNotificationSettings extends BaseEntity {
   @ApiProperty()
   @Column({ nullable: true })
   enableEmail: boolean;
+
+  @ApiProperty()
+  @Column({ nullable: true })
+  actionRequiredOnly: boolean;
 }

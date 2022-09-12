@@ -11,6 +11,7 @@ import configuration, {
 import { DraftValidationSchema } from '@sputnik-v2/config/validation';
 import { DRAFT_DB_CONNECTION } from '@sputnik-v2/common';
 import { WebsocketGateway, WebsocketModule } from '@sputnik-v2/websocket';
+import { DraftProposalModule as DraftProposalModuleLib } from '@sputnik-v2/draft-proposal';
 
 import { DraftProposalModule } from './draft-proposal/draft-proposal.module';
 import { DraftCommentModule } from './draft-comment/draft-comment.module';
@@ -52,6 +53,7 @@ import { DraftController } from './draft.controller';
     WebsocketModule,
     DraftProposalModule,
     DraftCommentModule,
+    DraftProposalModuleLib,
   ],
   controllers: [DraftController],
   providers: [WebsocketGateway],

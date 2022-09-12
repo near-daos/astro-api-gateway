@@ -365,17 +365,23 @@ public class ProposalsAccountProposalsAccountIdApiTests extends BaseTest {
 
 	@ParameterizedTest
 	@Severity(SeverityLevel.NORMAL)
-	@Story("Get HTTP 404 for account proposals with invalid 'accountId' param")
-	@DisplayName("Get HTTP 404 for account proposals with invalid 'accountId' param")
+	@Story("Get empty data array list for account proposals with invalid 'accountId' param")
+	@DisplayName("Get empty data array list for account proposals with invalid 'accountId' param")
 	@CsvSource({"invalidAccountId", "2212332141", "-1", "0", "testdao3132498.testnet",
 			"*", "autotest-dao-1.sputnikv2.testnet-1", "another-magic.near"})
-	void getHttp404ForAccountProposalsWithInvalidAccountId(String accountIdParam) {
-		String errorMessage = String.format("Account does not exist: %s", accountIdParam);
+	void getEmptyDataArrayForAccountProposalsWithInvalidAccountId(String accountIdParam) {
+		Map<String, Object> query = Map.of(
+				"sort","createdAt,DESC"
+		);
 
-		proposalsApiSteps.getAccountProposalsByAccountId(accountIdParam).then()
-				.statusCode(HTTP_NOT_FOUND)
-				.body("statusCode", equalTo(HTTP_NOT_FOUND),
-				      "message", equalTo(errorMessage),
-				      "error", equalTo("Not Found"));
+		ProposalResponse proposalResponse = proposalsApiSteps.getAccountProposals(query, accountIdParam).then()
+				.statusCode(HTTP_OK)
+				.extract().as(ProposalResponse.class);
+
+		proposalsApiSteps.assertCollectionHasCorrectSize(proposalResponse.getData(), 0);
+		proposalsApiSteps.assertDtoValue(proposalResponse, r -> r.getCount().intValue(), 0, "count");
+		proposalsApiSteps.assertDtoValue(proposalResponse, r -> r.getTotal().intValue(), 0, "total");
+		proposalsApiSteps.assertDtoValue(proposalResponse, r -> r.getPage().intValue(), 1, "page");
+		proposalsApiSteps.assertDtoValue(proposalResponse, r -> r.getPageCount().intValue(), 1, "pageCount");
 	}
 }
