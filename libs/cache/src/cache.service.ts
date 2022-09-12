@@ -64,7 +64,7 @@ export class CacheService {
       ...proposalIdKeys,
     ];
 
-    await this.cacheManager.store.del(keysToClear);
+    await this.clearKeysChunked(keysToClear);
 
     this.logger.log(
       `Cleared Proposals Cache. Total Keys: ${keysToClear.length}`,
@@ -113,7 +113,7 @@ export class CacheService {
     this.logger.log(`Cleared Cache. Total Keys: ${keysToClear.length}`);
   }
 
-  private async clearKeysChunked(keys: string[], chunkSize: number = 20) {
+  private async clearKeysChunked(keys: string[], chunkSize: number = 10) {
     for (let i = 0; i < keys.length; i += chunkSize) {
       await this.cacheManager.store.del(keys.slice(i, i + chunkSize));
     }
