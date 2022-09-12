@@ -6,8 +6,6 @@ data:
   NODE_OPTIONS: ' --max-old-space-size={{ include "node.maxOldSpaceSize" . }} '
   NEST_APP_TYPE: api
   PORT: "3000"
-  # 6 hours
-  REDIS_HTTP_CACHE_TTL: "21600" 
 {{- range $k, $v := .Values.environment }}
   {{ $k }}: "{{ $v }}"
 {{- end }}
