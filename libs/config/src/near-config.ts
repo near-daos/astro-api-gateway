@@ -19,6 +19,7 @@ export type NEAR_CONFIG = {
   nftWhitelistContracts: string[];
   tokenApiUrl: string;
   pagodaRpcApiKey: string;
+  rpcApiProviderUrl?: string;
 };
 
 export type NearConfig = {
@@ -49,6 +50,7 @@ export const getNearConfig = (nearConfig: NEAR_CONFIG): NearConfig => {
     nftWhitelistContracts,
     tokenApiUrl,
     pagodaRpcApiKey,
+    rpcApiProviderUrl,
   } = nearConfig;
 
   switch (env) {
@@ -67,7 +69,8 @@ export const getNearConfig = (nearConfig: NEAR_CONFIG): NearConfig => {
         walletUrl: 'https://wallet.near.org',
         helperUrl: 'https://helper.mainnet.near.org',
         explorerUrl: 'https://explorer.mainnet.near.org',
-        providerUrl: 'https://archival-rpc.mainnet.near.org',
+        providerUrl:
+          rpcApiProviderUrl || 'https://archival-rpc.mainnet.near.org',
       };
     case 'development':
     case 'testnet':
@@ -84,7 +87,7 @@ export const getNearConfig = (nearConfig: NEAR_CONFIG): NearConfig => {
         walletUrl: 'https://wallet.testnet.near.org',
         helperUrl: 'https://helper.testnet.near.org',
         explorerUrl: 'https://explorer.testnet.near.org',
-        providerUrl: 'https://rpc.testnet.pagoda.co',
+        providerUrl: rpcApiProviderUrl || 'https://rpc.testnet.pagoda.co',
         providerHeaders: { 'x-api-key': pagodaRpcApiKey },
       };
     case 'betanet':
@@ -101,7 +104,8 @@ export const getNearConfig = (nearConfig: NEAR_CONFIG): NearConfig => {
         walletUrl: 'https://wallet.betanet.near.org',
         helperUrl: 'https://helper.betanet.near.org',
         explorerUrl: 'https://explorer.betanet.near.org',
-        providerUrl: 'https://archival-rpc.betanet.near.org',
+        providerUrl:
+          rpcApiProviderUrl || 'https://archival-rpc.betanet.near.org',
       };
     case 'local':
       return {
@@ -161,5 +165,6 @@ export default registerAs('near', () =>
       process.env.NEAR_NFT_WHITELIST_CONTRACTS?.split(',') || [],
     tokenApiUrl: process.env.NEAR_TOKEN_API_URL,
     pagodaRpcApiKey: process.env.PAGODA_RPC_API_KEY,
+    rpcApiProviderUrl: process.env.RPC_API_PROVIDER_URL,
   } as NEAR_CONFIG),
 );
