@@ -17,8 +17,8 @@ import org.springframework.beans.factory.annotation.Value;
 
 import static api.app.astrodao.com.core.Constants.Variables.EMPTY_STRING;
 import static java.net.HttpURLConnection.*;
-import static java.net.HttpURLConnection.HTTP_FORBIDDEN;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasToString;
 
 @Tags({@Tag("all"), @Tag("draftProposalsIdCloseApiTests")})
 @Epic("Draft Proposals")
@@ -43,15 +43,13 @@ public class DraftProposalsIdCloseApiTests extends BaseTest {
 
 	@Test
 	@Severity(SeverityLevel.NORMAL)
-	@Story("Get HTTP 400 for draft proposal close endpoint for already closed draft proposal")
-	@DisplayName("Get HTTP 400 for draft proposal close endpoint for already closed draft proposal")
-	void getHttp400ForDraftProposalCloseEndpointForAlreadyClosedDraftProposal() {
+	@Story("User should be able to close an already closed draft proposal")
+	@DisplayName("User should be able to close an already closed draft proposal")
+	void closeAlreadyClosedDraftProposal() {
 		String closedDraftId = "6304a2a116e4390008f6b855";
 		draftProposalsApiSteps.closeDraftProposal(closedDraftId, authToken).then()
-				.statusCode(HTTP_BAD_REQUEST)
-				.body("statusCode", equalTo(HTTP_BAD_REQUEST),
-				      "message", equalTo("Draft proposal is closed"),
-				      "error", equalTo("Bad Request"));
+				.statusCode(HTTP_CREATED)
+				.body("", hasToString("true"));
 	}
 
 	@Test

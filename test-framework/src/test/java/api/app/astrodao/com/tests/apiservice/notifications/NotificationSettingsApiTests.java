@@ -458,10 +458,10 @@ public class NotificationSettingsApiTests extends BaseTest {
 
 	@ParameterizedTest
 	@Severity(SeverityLevel.NORMAL)
-	@Story("Get HTTP 400 for account notification settings with null and invalid 'enableSms', 'enableEmail', 'isAllMuted' params")
-	@DisplayName("Get HTTP 400 for account notification settings with null and invalid 'enableSms', 'enableEmail', 'isAllMuted' params")
-	@CsvSource({"null, null, null, null", "0, 0, 0, 0", "1, 1, 1, 1"})
-	void getHttp400ForAccountNotificationSettingsWithNullAndInvalidBooleanParams(String enableSms, String enableEmail,
+	@Story("Get HTTP 400 for account notification settings with invalid 'enableSms', 'enableEmail', 'isAllMuted', 'actionRequiredOnly' params")
+	@DisplayName("Get HTTP 400 for account notification settings with invalid 'enableSms', 'enableEmail', 'isAllMuted', 'actionRequiredOnly' params")
+	@CsvSource({"0, 0, 0, 0", "1, 1, 1, 1"})
+	void getHttp400ForAccountNotificationSettingsWithInvalidBooleanParams(String enableSms, String enableEmail,
 	                                                                             String isAllMuted, String actionRequiredOnly) {
 		String body =
 				"{\n" +
@@ -471,7 +471,7 @@ public class NotificationSettingsApiTests extends BaseTest {
 				"  \"enableSms\": " + enableSms + ",\n" +
 				"  \"enableEmail\": " + enableEmail + ",\n" +
 				"  \"isAllMuted\": " + isAllMuted + ",\n" +
-				"  \"isAllMuted\": " + actionRequiredOnly + "\n" +
+				"  \"actionRequiredOnly\": " + actionRequiredOnly + "\n" +
 				"}";
 
 		notificationsApiSteps.setNotificationSettings(accountToken, body).then()
@@ -482,6 +482,32 @@ public class NotificationSettingsApiTests extends BaseTest {
 								"enableEmail must be a boolean value",
 								"isAllMuted must be a boolean value",
 								"actionRequiredOnly must be a boolean value")),
+				      "error", equalTo("Bad Request"));
+	}
+
+	@Test
+	@Severity(SeverityLevel.NORMAL)
+	@Story("Get HTTP 400 for account notification settings with null 'enableSms', 'enableEmail', 'isAllMuted', 'actionRequiredOnly' params")
+	@DisplayName("Get HTTP 400 for account notification settings with null 'enableSms', 'enableEmail', 'isAllMuted', 'actionRequiredOnly' params")
+	void getHttp400ForAccountNotificationSettingsWithNullBooleanParams() {
+		String body =
+				"{\n" +
+				"  \"daoId\": \"test-dao-1653994172816.sputnikv2.testnet\",\n" +
+				"  \"types\": [],\n" +
+				"  \"mutedUntilTimestamp\": \"\",\n" +
+				"  \"enableSms\": " + null + ",\n" +
+				"  \"enableEmail\": " + null + ",\n" +
+				"  \"isAllMuted\": " + null + ",\n" +
+				"  \"actionRequiredOnly\": " + null + "\n" +
+				"}";
+
+		notificationsApiSteps.setNotificationSettings(accountToken, body).then()
+				.statusCode(HTTP_BAD_REQUEST)
+				.body("statusCode", equalTo(HTTP_BAD_REQUEST),
+				      "message", equalTo(List.of(
+								"enableSms must be a boolean value",
+								"enableEmail must be a boolean value",
+								"isAllMuted must be a boolean value")),
 				      "error", equalTo("Bad Request"));
 	}
 

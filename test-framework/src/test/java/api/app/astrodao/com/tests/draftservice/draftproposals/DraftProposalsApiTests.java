@@ -261,7 +261,7 @@ public class DraftProposalsApiTests extends BaseTest {
 		draftProposalsApiSteps.assertCollectionContainsExactlyInAnyOrder(draftProposalResponse.getData(), DraftProposalBasicResponse::getProposer, account1Id, account2Id);
 		draftProposalsApiSteps.assertCollectionElementsHasValue(draftProposalResponse.getData(), draftProposal -> !draftProposal.getTitle().isEmpty(), "title");
 		draftProposalsApiSteps.assertCollectionElementsHasValue(draftProposalResponse.getData(), draftProposal -> !draftProposal.getType().getValue().isEmpty(), "type");
-		draftProposalsApiSteps.assertCollectionContainsOnly(draftProposalResponse.getData(), DraftProposalBasicResponse::getState, DraftProposalState.OPEN, "state");
+		draftProposalsApiSteps.assertCollectionContainsExactlyInAnyOrder(draftProposalResponse.getData(), DraftProposalBasicResponse::getState, DraftProposalState.OPEN, DraftProposalState.CLOSED);
 		draftProposalsApiSteps.assertCollectionElementsHasValue(draftProposalResponse.getData(), draftProposal -> draftProposal.getReplies().intValue() >= 0, "replies");
 		draftProposalsApiSteps.assertCollectionElementsHasValue(draftProposalResponse.getData(), draftProposal -> draftProposal.getViews().intValue() >= 0, "views");
 		draftProposalsApiSteps.assertCollectionElementsHasValue(draftProposalResponse.getData(), draftProposal -> draftProposal.getSaves().intValue() >= 0, "saves");

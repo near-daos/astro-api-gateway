@@ -61,15 +61,15 @@ public class BountyContextsTests extends BaseTest {
 
 		bountiesApiSteps.assertCollectionContainsExactlyInAnyOrder(
 				bountyContextResponse.getData(),
-				bountyContext -> bountyContext.getProposal().getPermissions().getCanApprove(), true, false);
+				bountyContext -> bountyContext.getProposal().getPermissions().getCanApprove(), false);
 
 		bountiesApiSteps.assertCollectionContainsExactlyInAnyOrder(
 				bountyContextResponse.getData(),
-				bountyContext -> bountyContext.getProposal().getPermissions().getCanReject(), true, false);
+				bountyContext -> bountyContext.getProposal().getPermissions().getCanReject(), false);
 
 		bountiesApiSteps.assertCollectionContainsExactlyInAnyOrder(
 				bountyContextResponse.getData(),
-				bountyContext -> bountyContext.getProposal().getPermissions().getCanDelete(), true, false);
+				bountyContext -> bountyContext.getProposal().getPermissions().getCanDelete(), false);
 	}
 
 	@Test

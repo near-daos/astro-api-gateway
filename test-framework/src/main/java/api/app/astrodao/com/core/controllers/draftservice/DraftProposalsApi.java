@@ -1,5 +1,6 @@
 package api.app.astrodao.com.core.controllers.draftservice;
 
+import api.app.astrodao.com.openapi.models.CloseDraftProposal;
 import api.app.astrodao.com.openapi.models.CreateDraftProposal;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
@@ -84,10 +85,14 @@ public class DraftProposalsApi {
 	}
 
 	public Response closeDraftProposal(String draftId, String authToken) {
+		CloseDraftProposal closeDraftProposal = new CloseDraftProposal();
+		closeDraftProposal.setProposalId(draftId);
+
 		return given().spec(requestSpecForDraftService)
 				.accept(JSON)
 				.header("Authorization", "Bearer " + authToken)
 				.contentType(JSON)
+				.body(closeDraftProposal)
 				.post(DRAFT_PROPOSALS_ID_CLOSE, draftId);
 	}
 }

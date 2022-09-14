@@ -55,7 +55,7 @@ public class DaoAccountDaosAccountIdApiTests extends BaseTest {
 
 		daoApiSteps.assertCollectionHasCorrectSize(accountDaos, 9);
 		daoApiSteps.assertCollectionHasSameElementsAs(accountDaos, Dao::getId, expectedDaoIds, "id");
-		daoApiSteps.assertCollectionContainsExactlyInAnyOrder(accountDaos, Dao::getStatus, "Inactive");
+		daoApiSteps.assertCollectionContainsExactlyInAnyOrder(accountDaos, Dao::getStatus, "Inactive", "Active");
 	}
 
 	@Test
