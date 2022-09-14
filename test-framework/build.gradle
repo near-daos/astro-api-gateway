@@ -10,7 +10,7 @@ buildscript {
         assertjVersion = '3.19.0'
         snakeyamlVersion = '1.28'
         jacksonVersion = '2.12.3'
-        restAssuredVersion = '4.5.1'
+        restAssuredVersion = '5.2.0'
         swaggerCoverageVersion = '1.5.0'
     }
 }
