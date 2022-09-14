@@ -23,6 +23,7 @@ import {
   buildDelegationId,
   buildProposalId,
 } from '@sputnik-v2/utils';
+import { CacheService } from '@sputnik-v2/cache';
 
 import {
   castActProposal,
@@ -59,6 +60,7 @@ export class TransactionActionHandlerService {
     private readonly eventService: EventService,
     private readonly tokenService: TokenService,
     private readonly nftTokenService: NFTTokenService,
+    private readonly cacheService: CacheService,
   ) {
     const { contractName } = this.configService.get('near');
     // TODO: Split on multiple handlers
@@ -298,6 +300,8 @@ export class TransactionActionHandlerService {
     await this.daoService.saveWithProposalCount(dao);
     this.logger.log(`DAO successfully updated: ${receiverId}`);
 
+    await this.cacheService.handleProposalCache(proposal);
+
     await this.eventService.sendProposalUpdateNotificationEvent(
       proposal,
       txAction,
@@ -386,6 +390,8 @@ export class TransactionActionHandlerService {
         await this.proposalService.create(proposal);
         break;
     }
+
+    await this.cacheService.handleProposalCache(proposal);
 
     await this.eventService.sendProposalUpdateNotificationEvent(
       proposal || proposalEntity,
@@ -921,6 +927,8 @@ export class TransactionActionHandlerService {
       ]),
     ].filter((accountId) => accountId && this.isDaoContract(accountId));
     await this.handleTokenUpdate(txAction, daoIds);
+
+    await this.cacheService.handleTokenCache();
     return { type: ContractHandlerResultType.TokenUpdate };
   }
 
@@ -939,6 +947,8 @@ export class TransactionActionHandlerService {
       ]),
     ].filter((accountId) => accountId && this.isDaoContract(accountId));
     await this.handleNftUpdate(txAction, daoIds);
+
+    await this.cacheService.handleNFTCache();
     return { type: ContractHandlerResultType.NftUpdate };
   }
 
