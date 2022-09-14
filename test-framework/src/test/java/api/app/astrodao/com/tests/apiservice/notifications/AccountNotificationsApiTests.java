@@ -33,8 +33,8 @@ import static org.hamcrest.Matchers.equalTo;
 public class AccountNotificationsApiTests extends BaseTest {
 	private final NotificationsApiSteps notificationsApiSteps;
 
-	@Value("${accounts.account1.accountId}")
-	private String accountId;
+	@Value("${accounts.account2.accountId}")
+	private String account2Id;
 
 
 	@Test
@@ -188,10 +188,10 @@ public class AccountNotificationsApiTests extends BaseTest {
 	@Story("User should be able to get list of account notifications with query param: [filter, or]")
 	@DisplayName("User should be able to get list of account notifications with query param: [filter, or]")
 	void getListOfAccountNotificationsWithFilterAndOrParameters() {
-		String account2Id = "extg.testnet";
+		String account1Id = "extg.testnet";
 		Map<String, Object> queryParams = Map.of(
-				"filter", "accountId||$eq||" + account2Id,
-				"or", "accountId||$eq||" + accountId
+				"filter", "accountId||$eq||" + account1Id,
+				"or", "accountId||$eq||" + account2Id
 		);
 
 		AccountNotificationResponse accountNotificationResponse = notificationsApiSteps.getAccountNotifications(queryParams).then()
@@ -199,7 +199,7 @@ public class AccountNotificationsApiTests extends BaseTest {
 				.extract()
 				.as(AccountNotificationResponse.class);
 
-		notificationsApiSteps.assertCollectionContainsExactlyInAnyOrder(accountNotificationResponse.getData(), AccountNotification::getAccountId, account2Id, accountId);
+		notificationsApiSteps.assertCollectionContainsExactlyInAnyOrder(accountNotificationResponse.getData(), AccountNotification::getAccountId, account2Id, account1Id);
 		notificationsApiSteps.assertCollectionElementsHasValue(accountNotificationResponse.getData(), accountNotification -> accountNotification.getIsArchived() != null, "data/isArchived");
 		notificationsApiSteps.assertCollectionElementsHasValue(accountNotificationResponse.getData(), accountNotification -> accountNotification.getCreatedAt() != null, "data/createdAt");
 		notificationsApiSteps.assertCollectionElementsHasValue(accountNotificationResponse.getData(), accountNotification -> accountNotification.getUpdatedAt() != null, "data/updatedAt");
