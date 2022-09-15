@@ -10,6 +10,7 @@ import { DaoGroupFieldsMigration } from './dao-goup-fields.migration';
 import { ProposalClaimIdMigration } from './proposal-claim-id.migration';
 import { DaoVersionsMigration } from './dao-version.migration';
 import { SharedProposalTemplateMigration } from './shared-proposal-template.migration';
+import { OpensearchIndexMigration } from './opensearch-index.migration';
 
 export default [
   ProposalActionsMigration,
@@ -24,4 +25,5 @@ export default [
   ProposalClaimIdMigration,
   DaoVersionsMigration,
   SharedProposalTemplateMigration,
+  OpensearchIndexMigration,
 ];

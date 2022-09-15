@@ -15,6 +15,7 @@ import {
 import { ProposalKind } from '@sputnik-v2/proposal';
 import { DaoApiService } from '@sputnik-v2/dao-api';
 import { getAccountPermissions } from '@sputnik-v2/utils';
+import { OpensearchService } from '@sputnik-v2/opensearch';
 
 import { DraftProposal, DraftProposalHistory } from './entities';
 import {
@@ -38,6 +39,7 @@ export class DraftProposalService {
     @InjectRepository(DraftProposalHistory, DRAFT_DB_CONNECTION)
     private draftProposalHistoryRepository: MongoRepository<DraftProposalHistory>,
     private daoApiService: DaoApiService,
+    private opensearchService: OpensearchService,
   ) {}
 
   async create(
@@ -56,6 +58,12 @@ export class DraftProposalService {
       viewAccounts: [],
       saveAccounts: [],
     });
+
+    await this.opensearchService.indexDraftProposal(
+      draftProposal.id,
+      draftProposal,
+    );
+
     return draftProposal.id.toString();
   }
 
@@ -99,6 +107,11 @@ export class DraftProposalService {
       type: draftProposalDto.type,
     });
 
+    await this.opensearchService.indexDraftProposal(
+      draftProposal.id,
+      draftProposal,
+    );
+
     return draftProposal.id.toString();
   }
 
@@ -128,6 +141,12 @@ export class DraftProposalService {
       draftProposalId: { $eq: draftProposal.id },
     });
     await this.draftProposalRepository.delete(draftProposal);
+
+    await this.opensearchService.indexDraftProposal(
+      draftProposal.id,
+      draftProposal,
+    );
+
     return {
       id,
       deleted: true,

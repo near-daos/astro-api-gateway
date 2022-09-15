@@ -250,3 +250,7 @@ export const parseJSON = (s: string) => {
     return null;
   }
 };
+
+export const getChunkCount = (total: BigInt, chunkSize: number): number => {
+  return (Number(total) - (Number(total) % chunkSize)) / chunkSize + 1;
+};
