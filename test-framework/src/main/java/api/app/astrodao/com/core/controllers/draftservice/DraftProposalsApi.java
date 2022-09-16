@@ -95,4 +95,12 @@ public class DraftProposalsApi {
 				.body(closeDraftProposal)
 				.post(DRAFT_PROPOSALS_ID_CLOSE, draftId);
 	}
+
+	public Response closeDraftProposalWithEmptyBody(String draftId, String authToken) {
+		return given().spec(requestSpecForDraftService)
+				.accept(JSON)
+				.header("Authorization", "Bearer " + authToken)
+				.contentType(JSON)
+				.post(DRAFT_PROPOSALS_ID_CLOSE, draftId);
+	}
 }
