@@ -243,7 +243,7 @@ export class DraftProposalController {
   })
   @ApiResponse({
     status: 201,
-    description: 'Saved',
+    description: 'Closed',
     type: Boolean,
   })
   @ApiForbiddenResponse({
@@ -254,7 +254,7 @@ export class DraftProposalController {
     description: 'Draft proposal <id> does not exist',
   })
   @ApiBadRequestResponse({
-    description: 'Draft proposal <id> is closed',
+    description: 'Proposal ID should not be empty',
   })
   @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
