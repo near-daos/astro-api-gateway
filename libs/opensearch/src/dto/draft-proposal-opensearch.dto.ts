@@ -37,7 +37,7 @@ export function mapDraftProposalToOpensearchDto(
     accounts: proposer,
     title,
     daoId,
-    proposalId,
+    proposalId: typeof proposalId === 'number' ? `${proposalId}` : proposalId,
     type,
     state,
     proposer,

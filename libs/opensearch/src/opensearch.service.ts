@@ -72,10 +72,19 @@ export class OpensearchService {
   async index(index: string, dto: BaseOpensearchDto): Promise<ApiResponse> {
     const { id, name, description, accounts } = dto;
 
-    const { body } = await this.client.get({
-      index: index.toLowerCase(),
-      id,
-    });
+    let body = null;
+    try {
+      let res = await this.client.get({
+        index: index.toLowerCase(),
+        id,
+      });
+
+      body = res.body;
+    } catch (e) {
+      this.logger.error(e);
+
+      body = { found: false };
+    }
 
     if (body?.found) {
       this.logger.log(`[OpenSearch] Index: ${index} | Updating: ${id}`);
@@ -132,6 +141,24 @@ export class OpensearchService {
     } catch (e) {
       this.logger.error(e);
     }
+  }
+
+  async createIndex(index: string): Promise<ApiResponse> {
+    this.logger.log(`[Opensearch] Index: ${index} | Creating`);
+
+    const { body: exists } = await this.client.indices.exists({
+      index: index.toLowerCase(),
+    });
+
+    if (exists) {
+      this.logger.log(
+        `[Opensearch] Index: ${index} | Creation skipped | Index already exists`,
+      );
+
+      return;
+    }
+
+    return this.client.indices.create({ index: index.toLowerCase() });
   }
 
   async deleteIndexIfExists(index: string): Promise<ApiResponse> {

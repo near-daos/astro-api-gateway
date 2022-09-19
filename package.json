@@ -24,7 +24,7 @@
     "start-indexer-processor:dev": "nest start indexer-processor --watch",
     "start": "concurrently \"yarn start-aggregator\" \"yarn start-api\" \"yarn start-notifier\"",
     "start:dev": "concurrently \"yarn start-aggregator:dev\" \"yarn start-api:dev\" \"yarn start-notifier:dev\"",
-    "start-migrations": "nest start migrations --watch",
+    "start-migrations": "nest start migrations",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
     "test:watch": "jest --watch",
