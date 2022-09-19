@@ -61,6 +61,7 @@ export class OpensearchIndexMigration implements Migration {
     for await (const proposal of this.migrateEntity<Proposal>(
       Proposal.name,
       this.proposalRepository,
+      { relations: ['dao'] },
     )) {
       await this.opensearchService.indexProposal(proposal.id, proposal);
     }
@@ -98,20 +99,24 @@ export class OpensearchIndexMigration implements Migration {
 
     await this.opensearchService.createIndex(entity);
 
+    const totalCount = await repo.count();
+
     let count = 0;
     for await (const entities of this.getEntities(repo, findParams)) {
       count += entities.length;
 
-      for (const entity of entities) {
-        const { id } = entity;
+      this.logger.log(`Indexing ${entity}: chunk ${count}/${totalCount}`);
+
+      for (const item of entities) {
+        const { id } = item;
 
         this.logger.log(`Indexing ${entity}: ${id}`);
 
-        yield entity;
+        yield item;
       }
     }
 
-    this.logger.log(`Indexed ${entity}: ${count}`);
+    this.logger.log(`Indexed ${entity}: ${count}. Finished.`);
   }
 
   private async *getEntities<E>(

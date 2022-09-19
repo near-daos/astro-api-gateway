@@ -22,11 +22,13 @@ import { ActionCall } from '@sputnik-v2/sputnikdao';
 
 import { BountyOpensearchDto } from './bounty-opensearch.dto';
 import { BaseOpensearchDto } from './base-opensearch.dto';
+import { DaoOpensearchDto, mapDaoToOpensearchDto } from './dao-opensearch.dto';
 
 export class ProposalOpensearchDto extends BaseOpensearchDto {
   id: string;
   proposalId: number;
   daoId: string;
+  dao: DaoOpensearchDto;
   proposer: string;
   description: string;
   status: ProposalStatus;
@@ -68,6 +70,7 @@ export function mapProposalToOpensearchDto(
     id,
     proposalId,
     daoId,
+    dao,
     proposer,
     description,
     status,
@@ -93,6 +96,7 @@ export function mapProposalToOpensearchDto(
     accounts: [proposer, ...Object.keys(votes)].join(' '),
     proposalId,
     daoId,
+    dao: mapDaoToOpensearchDto(dao),
     proposer,
     description,
     status,
