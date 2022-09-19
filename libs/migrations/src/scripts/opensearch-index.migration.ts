@@ -96,6 +96,8 @@ export class OpensearchIndexMigration implements Migration {
   ): AsyncGenerator<E> {
     this.logger.log(`Indexing ${entity}...`);
 
+    await this.opensearchService.createIndex(entity);
+
     let count = 0;
     for await (const entities of this.getEntities(repo, findParams)) {
       count += entities.length;
