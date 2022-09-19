@@ -30,6 +30,7 @@ import { StatsModule } from './stats/stats.module';
 import { ApiDaoSettingsModule } from './dao-settings/dao-settings.module';
 import { AccountModule } from './account/account.module';
 import { ProposalTemplateModule } from './proposal-template/proposal-template.module';
+import { SearchModule } from './search/search.module';
 
 @Module({
   imports: [
@@ -84,6 +85,7 @@ import { ProposalTemplateModule } from './proposal-template/proposal-template.mo
     MetricsModule,
     StatsModule,
     AccountModule,
+    SearchModule,
   ],
   controllers: [AppController],
   providers: [WebsocketGateway],
