@@ -10,6 +10,7 @@ import { DaoService } from '@sputnik-v2/dao';
 import { ProposalService } from '@sputnik-v2/proposal';
 import { EventService } from '@sputnik-v2/event';
 import { BountyContextService } from '@sputnik-v2/bounty';
+import { OpensearchService } from '@sputnik-v2/opensearch';
 
 import { Comment } from './entities';
 import { CommentDto } from './dto';
@@ -24,6 +25,7 @@ export class CommentService extends TypeOrmCrudService<Comment> {
     private readonly bountyContextService: BountyContextService,
     private readonly daoService: DaoService,
     private readonly eventService: EventService,
+    private readonly opensearchService: OpensearchService,
   ) {
     super(commentRepository);
   }
@@ -56,24 +58,17 @@ export class CommentService extends TypeOrmCrudService<Comment> {
     }
   }
 
-  private async createDaoComment(
-    accountId: string,
-    daoId: string,
-    commentDto: CommentDto,
-  ): Promise<Comment> {
-    const comment = await this.commentRepository.save({
-      ...commentDto,
-      accountId,
-      daoId,
-    });
-
-    await this.eventService.sendNewCommentEvent(comment);
-
-    return comment;
-  }
-
   async updateMultiple(comments: Partial<Comment>[]): Promise<Comment[]> {
-    return this.commentRepository.save(comments);
+    const savedComments = await this.commentRepository.save(comments);
+
+    for (const comment of comments) {
+      await this.opensearchService.indexComment(
+        `${comment.id}`,
+        comment as Comment,
+      );
+    }
+
+    return savedComments;
   }
 
   async delete(comment: Comment): Promise<Comment> {
@@ -85,6 +80,13 @@ export class CommentService extends TypeOrmCrudService<Comment> {
       ...comment,
       isArchived: true,
     });
+
+    await this.opensearchService.indexComment(
+      `${comment.id}`,
+      await this.commentRepository.findOne(comment.id, {
+        loadEagerRelations: false,
+      }),
+    );
 
     await this.eventService.sendDeleteCommentEvent(deletedComment);
 
@@ -121,5 +123,23 @@ export class CommentService extends TypeOrmCrudService<Comment> {
     }
 
     return this.delete(comment);
+  }
+
+  private async createDaoComment(
+    accountId: string,
+    daoId: string,
+    commentDto: CommentDto,
+  ): Promise<Comment> {
+    const comment = await this.commentRepository.save({
+      ...commentDto,
+      accountId,
+      daoId,
+    });
+
+    await this.opensearchService.indexComment(`${comment.id}`, comment);
+
+    await this.eventService.sendNewCommentEvent(comment);
+
+    return comment;
   }
 }

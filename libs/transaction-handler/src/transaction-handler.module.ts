@@ -10,6 +10,7 @@ import { NearIndexerModule, Transaction } from '@sputnik-v2/near-indexer';
 import { EventModule } from '@sputnik-v2/event';
 import { TokenModule } from '@sputnik-v2/token';
 import { HttpCacheModule } from '@sputnik-v2/cache';
+import { OpenSearchModule } from '@sputnik-v2/opensearch';
 
 import { TransactionHandlerService } from './transaction-handler.service';
 import { TransactionActionHandlerService } from './transaction-action-handler.service';
@@ -28,6 +29,7 @@ import { TransactionHandlerState } from './entities';
     EventModule,
     TokenModule,
     HttpCacheModule,
+    OpenSearchModule,
   ],
   providers: [
     TransactionHandlerService,
