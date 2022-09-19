@@ -9,9 +9,17 @@ import { OpensearchService } from './opensearch.service';
   imports: [
     OpensearchModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: (configService) => ({
-        node: configService.get('opensearch').node,
-      }),
+      useFactory: (configService) => {
+        const { node, username, password } = configService.get('opensearch');
+
+        return {
+          node,
+          auth: {
+            username,
+            password,
+          },
+        };
+      },
     }),
   ],
   controllers: [],
