@@ -39,7 +39,7 @@ public class DraftCommentsApiTests extends BaseTest {
 		Map<String, Object> query = Map.of(
 				"limit", limit,
 				"offset", offset,
-				"order","DESC",
+				"order", "DESC",
 				"contextType", "DraftProposal"
 		);
 
@@ -152,5 +152,38 @@ public class DraftCommentsApiTests extends BaseTest {
 		draftCommentsApiSteps.assertCollectionElementsHasValue(draftCommentPageResponse.getData(), draftCommentResponse -> draftCommentResponse.getLikeAccounts().isEmpty(), "likeAccounts");
 		draftCommentsApiSteps.assertCollectionElementsHasValue(draftCommentPageResponse.getData(), draftCommentResponse -> !draftCommentResponse.getCreatedAt().toString().isEmpty(), "createdAt");
 		draftCommentsApiSteps.assertCollectionElementsHasValue(draftCommentPageResponse.getData(), draftCommentResponse -> !draftCommentResponse.getUpdatedAt().toString().isEmpty(), "updatedAt");
+	}
+
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get list of draft comments with query param: [orderBy, order, isReply]")
+	@DisplayName("Get list of draft comments with query param: [orderBy, order, isReply]")
+	void getListOfDraftCommentsWithQueryParamsOrderByOrderIsReply() {
+		Map<String, Object> query = Map.of(
+				"orderBy", "updatedAt",
+				"order", "ASC",
+				"isReply", "true"
+		);
+
+		DraftCommentPageResponse draftCommentPageResponse = draftCommentsApiSteps.getDraftComments(query).then()
+				.statusCode(HTTP_OK)
+				.extract().as(DraftCommentPageResponse.class);
+
+		draftCommentsApiSteps.assertCollectionElementsHasValue(draftCommentPageResponse.getData(), draftCommentResponse -> !draftCommentResponse.getId().isEmpty(), "id");
+		draftCommentsApiSteps.assertCollectionElementsHasValue(draftCommentPageResponse.getData(), draftCommentResponse -> !draftCommentResponse.getContextId().isEmpty(), "contextId");
+		draftCommentsApiSteps.assertCollectionContainsOnly(draftCommentPageResponse.getData(), DraftCommentResponse::getContextType, DraftCommentResponse.ContextTypeEnum.DRAFTPROPOSAL, "contextType");
+		draftCommentsApiSteps.assertCollectionElementsHasValue(draftCommentPageResponse.getData(), draftCommentResponse -> !draftCommentResponse.getAuthor().isEmpty(), "author");
+		draftCommentsApiSteps.assertCollectionElementsHasValue(draftCommentPageResponse.getData(), draftCommentResponse -> !draftCommentResponse.getMessage().isEmpty(), "message");
+
+		draftCommentsApiSteps.assertCollectionElementsHasValue(draftCommentPageResponse.getData(), draftCommentResponse -> draftCommentResponse.getReplies().isEmpty(), "replies");
+		draftCommentsApiSteps.assertCollectionElementsHasValue(draftCommentPageResponse.getData(), draftCommentResponse -> draftCommentResponse.getLikeAccounts().isEmpty(), "likeAccounts");
+		draftCommentsApiSteps.assertCollectionElementsHasValue(draftCommentPageResponse.getData(), draftCommentResponse -> draftCommentResponse.getDislikeAccounts().isEmpty(), "dislikeAccounts");
+
+		draftCommentsApiSteps.assertCollectionElementsHasValue(draftCommentPageResponse.getData(), draftCommentResponse -> !draftCommentResponse.getCreatedAt().toString().isEmpty(), "createdAt");
+		draftCommentsApiSteps.assertCollectionElementsHasValue(draftCommentPageResponse.getData(), draftCommentResponse -> !draftCommentResponse.getUpdatedAt().toString().isEmpty(), "updatedAt");
+
+		List<OffsetDateTime> createdAtList = draftCommentPageResponse.getData().stream().map(DraftCommentResponse::getCreatedAt).collect(Collectors.toList());
+		draftCommentsApiSteps.assertOffsetDateTimesAreSortedCorrectly(createdAtList, Comparator.naturalOrder(),
+		                                                              "Draft comments should be sorted by 'updatedAt' field in ASC order");
 	}
 }
