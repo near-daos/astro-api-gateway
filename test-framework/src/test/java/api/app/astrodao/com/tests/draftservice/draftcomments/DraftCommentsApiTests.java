@@ -33,7 +33,7 @@ public class DraftCommentsApiTests extends BaseTest {
 	@Severity(SeverityLevel.CRITICAL)
 	@Story("Get list of draft comments with query param: [limit, offset, order, contextType]")
 	@DisplayName("Get list of draft comments with query param: [limit, offset, order, contextType]")
-	void getListOfDraftCommentsWithQueryParams() {
+	void getListOfDraftCommentsWithQueryParamsLimitOffsetOrderContextType() {
 		int limit = 5;
 		int offset = 5;
 		Map<String, Object> query = Map.of(
@@ -69,5 +69,88 @@ public class DraftCommentsApiTests extends BaseTest {
 		                                                               "Draft comments should be sorted by 'createdAt' field in DESC order");
 	}
 
+	@Test
+	@Severity(SeverityLevel.CRITICAL)
+	@Story("Get list of draft comments with query param: [search, contextId]")
+	@DisplayName("Get list of draft comments with query param: [search, contextId]")
+	void getListOfDraftCommentsWithQueryParamsSearchContextId() {
+		String contextId = "62c5b1cef8fdd40008211ccc";
+		String message = "SDFG SDFG SDFGSFD";
+		Map<String, Object> query = Map.of(
+				"search", message,
+				"contextId", contextId
+		);
 
+		DraftCommentPageResponse draftCommentPageResponse = draftCommentsApiSteps.getDraftComments(query).then()
+				.statusCode(HTTP_OK)
+				.extract().as(DraftCommentPageResponse.class);
+
+		draftCommentsApiSteps.assertDtoValue(draftCommentPageResponse, draftCommentResponse -> draftCommentResponse.getLimit().intValue(), 10, "limit");
+		draftCommentsApiSteps.assertDtoValue(draftCommentPageResponse, draftCommentResponse -> draftCommentResponse.getOffset().intValue(), 0, "offset");
+		draftCommentsApiSteps.assertDtoValue(draftCommentPageResponse, draftCommentResponse -> draftCommentResponse.getTotal().intValue(), 1, "total");
+
+		draftCommentsApiSteps.assertCollectionContainsOnly(draftCommentPageResponse.getData(), DraftCommentResponse::getId, "62c5b26ff8fdd40008211cd1", "id");
+		draftCommentsApiSteps.assertCollectionContainsOnly(draftCommentPageResponse.getData(), DraftCommentResponse::getContextId, contextId, "contextId");
+		draftCommentsApiSteps.assertCollectionContainsOnly(draftCommentPageResponse.getData(), DraftCommentResponse::getContextType, DraftCommentResponse.ContextTypeEnum.DRAFTPROPOSAL, "contextType");
+		draftCommentsApiSteps.assertCollectionContainsOnly(draftCommentPageResponse.getData(), DraftCommentResponse::getAuthor, "jdnear001.testnet", "author");
+		draftCommentsApiSteps.assertCollectionElementsHasValue(draftCommentPageResponse.getData(), draftCommentResponse -> draftCommentResponse.getMessage().contains(message), "message");
+
+		draftCommentsApiSteps.assertCollectionElementsHasValue(draftCommentPageResponse.getData(), draftComment ->
+				draftComment.getReplies().stream().noneMatch(
+						draftCommentReply ->
+								draftCommentReply.getId().isEmpty()), "replies/id");
+
+
+		draftCommentsApiSteps.assertCollectionElementsHasValue(draftCommentPageResponse.getData(), draftComment ->
+				draftComment.getReplies().stream().allMatch(
+						draftCommentReply ->
+								draftCommentReply.getContextId().equals(contextId)), "replies/contextId");
+
+
+		draftCommentsApiSteps.assertCollectionElementsHasValue(draftCommentPageResponse.getData(), draftComment ->
+				draftComment.getReplies().stream().allMatch(
+						draftCommentReply ->
+								draftCommentReply.getContextType().equals(DraftCommentResponse.ContextTypeEnum.DRAFTPROPOSAL)), "replies/contextType");
+
+
+		draftCommentsApiSteps.assertCollectionElementsHasValue(draftCommentPageResponse.getData(), draftComment ->
+				draftComment.getReplies().stream().allMatch(
+						draftCommentReply ->
+								draftCommentReply.getAuthor().equals("jdnear002.testnet")), "replies/author");
+
+
+		draftCommentsApiSteps.assertCollectionElementsHasValue(draftCommentPageResponse.getData(), draftComment ->
+				draftComment.getReplies().stream().noneMatch(
+						draftCommentReply ->
+								draftCommentReply.getMessage().isEmpty()), "replies/message");
+
+
+		draftCommentsApiSteps.assertCollectionElementsHasValue(draftCommentPageResponse.getData(), draftComment ->
+				draftComment.getReplies().stream().allMatch(
+						draftCommentReply ->
+								draftCommentReply.getReplyTo().equals("62c5b26ff8fdd40008211cd1")), "replies/replyTo");
+
+
+		draftCommentsApiSteps.assertCollectionElementsHasValue(draftCommentPageResponse.getData(), draftComment ->
+				draftComment.getReplies().stream().allMatch(
+						draftCommentReply ->
+								draftCommentReply.getLikeAccounts().isEmpty()), "replies/likeAccounts");
+
+
+		draftCommentsApiSteps.assertCollectionElementsHasValue(draftCommentPageResponse.getData(), draftComment ->
+				draftComment.getReplies().stream().noneMatch(
+						draftCommentReply ->
+								draftCommentReply.getCreatedAt().toString().isEmpty()), "replies/createdAt");
+
+
+		draftCommentsApiSteps.assertCollectionElementsHasValue(draftCommentPageResponse.getData(), draftComment ->
+				draftComment.getReplies().stream().noneMatch(
+						draftCommentReply ->
+								draftCommentReply.getUpdatedAt().toString().isEmpty()), "replies/updatedAt");
+
+
+		draftCommentsApiSteps.assertCollectionElementsHasValue(draftCommentPageResponse.getData(), draftCommentResponse -> draftCommentResponse.getLikeAccounts().isEmpty(), "likeAccounts");
+		draftCommentsApiSteps.assertCollectionElementsHasValue(draftCommentPageResponse.getData(), draftCommentResponse -> !draftCommentResponse.getCreatedAt().toString().isEmpty(), "createdAt");
+		draftCommentsApiSteps.assertCollectionElementsHasValue(draftCommentPageResponse.getData(), draftCommentResponse -> !draftCommentResponse.getUpdatedAt().toString().isEmpty(), "updatedAt");
+	}
 }
