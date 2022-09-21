@@ -95,5 +95,7 @@ public class Constants {
 		public static final String DRAFT_PROPOSALS_ID_SAVE = "/api/v1/draft-proposals/{id}/save";
 		public static final String DRAFT_PROPOSALS_ID_CLOSE = "/api/v1/draft-proposals/{id}/close";
 
+		public static final String DRAFT_COMMENTS = "/api/v1/draft-comments";
+
 	}
 }

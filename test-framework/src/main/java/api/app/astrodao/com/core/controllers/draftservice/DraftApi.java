@@ -16,7 +16,7 @@ import static io.restassured.http.ContentType.JSON;
 
 @Component
 @RequiredArgsConstructor
-public class DraftProposalsApi {
+public class DraftApi {
 	private final RequestSpecification requestSpecForDraftService;
 
 
@@ -102,5 +102,12 @@ public class DraftProposalsApi {
 				.header("Authorization", "Bearer " + authToken)
 				.contentType(JSON)
 				.post(DRAFT_PROPOSALS_ID_CLOSE, draftId);
+	}
+
+	public Response getDraftComments(Map<String, Object> queryParams) {
+		return given().spec(requestSpecForDraftService)
+				.accept(ContentType.JSON)
+				.queryParams(queryParams)
+				.get(DRAFT_COMMENTS);
 	}
 }
