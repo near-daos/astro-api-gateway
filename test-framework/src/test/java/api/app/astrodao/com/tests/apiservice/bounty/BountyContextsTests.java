@@ -59,17 +59,25 @@ public class BountyContextsTests extends BaseTest {
 				errorMessage,
 				"isCouncil");
 
-		bountiesApiSteps.assertCollectionContainsExactlyInAnyOrder(
+		bountiesApiSteps.assertCollectionElementsHasBooleanValueAndSize(
 				bountyContextResponse.getData(),
-				bountyContext -> bountyContext.getProposal().getPermissions().getCanApprove(), false);
+				bountyContext -> !bountyContext.getProposal().getPermissions().getCanApprove().toString().isEmpty(),
+				"No boolean value for field:", "proposal/permission/canApprove");
 
-		bountiesApiSteps.assertCollectionContainsExactlyInAnyOrder(
+		bountiesApiSteps.assertCollectionElementsHasBooleanValueAndSize(
 				bountyContextResponse.getData(),
-				bountyContext -> bountyContext.getProposal().getPermissions().getCanReject(), false);
+				bountyContext -> !bountyContext.getProposal().getPermissions().getCanReject().toString().isEmpty(),
+				"No boolean value for field:", "proposal/permission/canReject");
 
-		bountiesApiSteps.assertCollectionContainsExactlyInAnyOrder(
+		bountiesApiSteps.assertCollectionElementsHasBooleanValueAndSize(
 				bountyContextResponse.getData(),
-				bountyContext -> bountyContext.getProposal().getPermissions().getCanDelete(), false);
+				bountyContext -> !bountyContext.getProposal().getPermissions().getCanDelete().toString().isEmpty(),
+				"No boolean value for field:", "proposal/permission/canDelete");
+
+		bountiesApiSteps.assertCollectionElementsHasBooleanValueAndSize(
+				bountyContextResponse.getData(),
+				bountyContext -> !bountyContext.getProposal().getPermissions().getCanAdd().toString().isEmpty(),
+				"No boolean value for field:", "proposal/permission/canAdd");
 	}
 
 	@Test
