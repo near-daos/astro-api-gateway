@@ -81,8 +81,6 @@ export class OpensearchService {
 
       body = res.body;
     } catch (e) {
-      this.logger.error(e);
-
       body = { found: false };
     }
 
