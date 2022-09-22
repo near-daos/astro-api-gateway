@@ -25,9 +25,7 @@ export class OpensearchService {
 
   async indexDao(id: string, dao: Dao): Promise<ApiResponse> {
     if (!dao) {
-      await this.remove(Dao.name, id);
-
-      return;
+      return this.remove(Dao.name, id);
     }
 
     return this.index(Dao.name, mapDaoToOpensearchDto(dao));
@@ -35,9 +33,7 @@ export class OpensearchService {
 
   async indexProposal(id: string, proposal: Proposal): Promise<ApiResponse> {
     if (!proposal) {
-      await this.remove(Proposal.name, id);
-
-      return;
+      return this.remove(Proposal.name, id);
     }
 
     return this.index(Proposal.name, mapProposalToOpensearchDto(proposal));
@@ -45,9 +41,7 @@ export class OpensearchService {
 
   async indexComment(id: string, comment: Comment): Promise<ApiResponse> {
     if (!comment) {
-      await this.remove(Comment.name, id);
-
-      return;
+      return this.remove(Comment.name, id);
     }
 
     return this.index(Comment.name, mapCommentToOpensearchDto(comment));
@@ -58,9 +52,7 @@ export class OpensearchService {
     draftProposal: DraftProposal,
   ): Promise<ApiResponse> {
     if (!draftProposal) {
-      await this.remove(DraftProposal.name, id);
-
-      return;
+      return this.remove(DraftProposal.name, id);
     }
 
     return this.index(
