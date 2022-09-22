@@ -311,6 +311,7 @@ export class TransactionActionHandlerService {
       proposal.id,
       await this.proposalService.findOne(proposal.id, {
         loadEagerRelations: false,
+        relations: ['dao'],
       }),
     );
     await this.opensearchService.indexDao(
@@ -415,6 +416,7 @@ export class TransactionActionHandlerService {
       proposal.id,
       await this.proposalService.findOne(proposal.id, {
         loadEagerRelations: false,
+        relations: ['dao'],
       }),
     );
     await this.opensearchService.indexDao(
