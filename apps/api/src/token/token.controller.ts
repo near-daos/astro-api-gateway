@@ -75,7 +75,7 @@ export class TokenController {
   @ApiResponse({
     status: 200,
     description: 'List of Fungible Tokens by Account',
-    type: Token,
+    type: [Token],
   })
   @ApiNotFoundResponse({
     description: 'Account does not exist',
