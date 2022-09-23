@@ -80,7 +80,7 @@ export class OpensearchService {
       this.logger.log(`[OpenSearch] Index: ${index} | Updating: ${id}`);
 
       try {
-        return this.client.update({
+        const res = this.client.update({
           index: index.toLowerCase(),
           id,
           body: {
@@ -92,6 +92,8 @@ export class OpensearchService {
             },
           },
         });
+
+        return res;
       } catch (e) {
         this.logger.error(e);
       }
@@ -100,7 +102,7 @@ export class OpensearchService {
     this.logger.log(`[Opensearch] Index: ${index} | Adding: ${id} |`);
 
     try {
-      return this.client.index({
+      const res = await this.client.index({
         index: index.toLowerCase(),
         id,
         body: {
@@ -110,6 +112,8 @@ export class OpensearchService {
           ...dto,
         },
       });
+
+      return res;
     } catch (e) {
       this.logger.error(e);
     }
@@ -124,10 +128,12 @@ export class OpensearchService {
     this.logger.log(`[Opensearch] Index: ${index} | Removing: ${id}`);
 
     try {
-      return this.client.delete({
+      const res = this.client.delete({
         index: index.toLowerCase(),
         id,
       });
+
+      return res;
     } catch (e) {
       this.logger.error(e);
     }
