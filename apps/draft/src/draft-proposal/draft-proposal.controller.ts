@@ -19,6 +19,9 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { ThrottlerGuard } from '@nestjs/throttler';
+import { Span } from 'nestjs-ddtrace';
+
 import {
   CloseDraftProposal,
   CreateDraftProposal,
@@ -29,14 +32,16 @@ import {
   DraftProposalsRequest,
   UpdateDraftProposal,
 } from '@sputnik-v2/draft-proposal';
-import { ThrottlerGuard } from '@nestjs/throttler';
 import {
   AccountAccessGuard,
   AuthorizedRequest,
   BaseResponseDto,
+  DeleteResponse,
+  FindOneMongoParams,
 } from '@sputnik-v2/common';
-import { DeleteResult } from 'typeorm';
+import { DraftPageResponse } from './dto/draft-page-response.dto';
 
+@Span()
 @ApiTags('Draft Proposals')
 @Controller('/draft-proposals')
 export class DraftProposalController {
@@ -45,7 +50,7 @@ export class DraftProposalController {
   @ApiResponse({
     status: 200,
     description: 'List of Draft Proposals',
-    type: DraftProposalBasicResponse,
+    type: DraftPageResponse,
   })
   @Get('/')
   getDraftProposals(
@@ -68,7 +73,7 @@ export class DraftProposalController {
   })
   @Get('/:id')
   getDraftProposal(
-    @Param('id') id: string,
+    @Param() { id }: FindOneMongoParams,
     @Query() query: DraftProposalRequest,
   ): Promise<DraftProposalResponse> {
     return this.draftProposalService.getOneById(id, query);
@@ -82,6 +87,9 @@ export class DraftProposalController {
   @ApiForbiddenResponse({
     description:
       'Account <accountId> identity is invalid - public key / invalid signature / invalid accountId / no permissions',
+  })
+  @ApiForbiddenResponse({
+    description: 'Invalid DAO ID',
   })
   @ApiBearerAuth()
   @UseGuards(ThrottlerGuard)
@@ -108,14 +116,14 @@ export class DraftProposalController {
   })
   @ApiForbiddenResponse({
     description:
-      'Account <accountId> identity is invalid - public key / invalid signature / invalid accountId / no permissions / not proposer',
+      'Account <accountId> identity is invalid - public key / invalid signature / invalid accountId / no permissions / not proposer or council',
   })
   @ApiBearerAuth()
   @UseGuards(ThrottlerGuard)
   @UseGuards(AccountAccessGuard)
   @Patch('/:id')
   updateDraftProposals(
-    @Param('id') id: string,
+    @Param() { id }: FindOneMongoParams,
     @Req() req: AuthorizedRequest,
     @Body() body: UpdateDraftProposal,
   ): Promise<string> {
@@ -145,9 +153,9 @@ export class DraftProposalController {
   @UseGuards(AccountAccessGuard)
   @Delete('/:id')
   deleteDraftProposal(
-    @Param('id') id: string,
+    @Param() { id }: FindOneMongoParams,
     @Req() req: AuthorizedRequest,
-  ): Promise<DeleteResult> {
+  ): Promise<DeleteResponse> {
     return this.draftProposalService.delete(id, req.accountId);
   }
 
@@ -156,7 +164,7 @@ export class DraftProposalController {
     type: String,
   })
   @ApiResponse({
-    status: 200,
+    status: 201,
     description: 'Viewed',
     type: Boolean,
   })
@@ -170,7 +178,10 @@ export class DraftProposalController {
   @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
   @Post('/:id/view')
-  viewDraftProposal(@Param('id') id: string, @Req() req: AuthorizedRequest) {
+  viewDraftProposal(
+    @Param() { id }: FindOneMongoParams,
+    @Req() req: AuthorizedRequest,
+  ) {
     return this.draftProposalService.view(id, req.accountId);
   }
 
@@ -179,7 +190,7 @@ export class DraftProposalController {
     type: String,
   })
   @ApiResponse({
-    status: 200,
+    status: 201,
     description: 'Saved',
     type: Boolean,
   })
@@ -193,7 +204,10 @@ export class DraftProposalController {
   @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
   @Post('/:id/save')
-  saveDraftProposal(@Param('id') id: string, @Req() req: AuthorizedRequest) {
+  saveDraftProposal(
+    @Param() { id }: FindOneMongoParams,
+    @Req() req: AuthorizedRequest,
+  ) {
     return this.draftProposalService.save(id, req.accountId);
   }
 
@@ -203,6 +217,32 @@ export class DraftProposalController {
   })
   @ApiResponse({
     status: 200,
+    description: 'Save Removed',
+    type: Boolean,
+  })
+  @ApiForbiddenResponse({
+    description:
+      'Account <accountId> identity is invalid - public key / invalid signature / invalid accountId',
+  })
+  @ApiNotFoundResponse({
+    description: 'Draft proposal <id> does not exist',
+  })
+  @ApiBearerAuth()
+  @UseGuards(AccountAccessGuard)
+  @Delete('/:id/save')
+  removeDraftProposalSave(
+    @Param() { id }: FindOneMongoParams,
+    @Req() req: AuthorizedRequest,
+  ) {
+    return this.draftProposalService.removeSave(id, req.accountId);
+  }
+
+  @ApiParam({
+    name: 'id',
+    type: String,
+  })
+  @ApiResponse({
+    status: 201,
     description: 'Saved',
     type: Boolean,
   })
@@ -220,7 +260,7 @@ export class DraftProposalController {
   @UseGuards(AccountAccessGuard)
   @Post('/:id/close')
   closeDraftProposal(
-    @Param('id') id: string,
+    @Param() { id }: FindOneMongoParams,
     @Req() req: AuthorizedRequest,
     @Body() body: CloseDraftProposal,
   ) {

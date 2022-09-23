@@ -12,6 +12,7 @@ export class CacheConfigService implements CacheOptionsFactory {
       store: redisStore,
       url: process.env.REDIS_CACHE_URL,
       ttl: parseInt(process.env.REDIS_HTTP_CACHE_TTL),
+      max: parseInt(process.env.REDIS_HTTP_CACHE_MAX),
     };
   }
 }

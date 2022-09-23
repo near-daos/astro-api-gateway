@@ -39,7 +39,11 @@ export class BountyService extends TypeOrmCrudService<Bounty> {
     const bounty = await this.bountyRepository.findOne(bountyId, {
       relations: ['bountyClaims'],
     });
-    return this.findLastClaim(bounty.bountyClaims, accountId, untilTimestamp);
+    return this.findLastClaim(
+      bounty?.bountyClaims || [],
+      accountId,
+      untilTimestamp,
+    );
   }
 
   findLastClaim(

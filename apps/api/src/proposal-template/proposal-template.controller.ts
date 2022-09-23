@@ -17,15 +17,19 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { Span } from 'nestjs-ddtrace';
+
 import {
   ProposalTemplate,
   ProposalTemplateService,
 } from '@sputnik-v2/proposal-template';
 import { AccountAccessGuard, AuthorizedRequest } from '@sputnik-v2/common';
-import { CouncilMemberGuard } from '../guards/council-member.guard';
-import { ProposalTemplateBodyDto } from './dto/proposal-template-body.dto';
 import { SharedProposalTemplateService } from '@sputnik-v2/proposal-template/shared-proposal-template.service';
 
+import { CouncilMemberGuard } from '../guards/council-member.guard';
+import { ProposalTemplateBodyDto } from './dto/proposal-template-body.dto';
+
+@Span()
 @ApiTags('DAO')
 @Controller('/daos')
 export class ProposalTemplateController {

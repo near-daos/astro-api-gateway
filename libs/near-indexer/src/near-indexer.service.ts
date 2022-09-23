@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
-import PromisePool from '@supercharge/promise-pool';
 import { NEAR_INDEXER_DB_CONNECTION } from '@sputnik-v2/common';
 import { TokenUpdateDto } from '@sputnik-v2/token';
 import {
@@ -19,6 +18,8 @@ import {
   ActionReceiptAction,
   Receipt,
   AssetsNftEvent,
+  LastBlock,
+  Block,
 } from './entities';
 import { buildLikeContractName } from '@sputnik-v2/utils';
 import { ExecutionOutcomeStatus } from './types';
@@ -46,6 +47,12 @@ export class NearIndexerService {
     @InjectRepository(AssetsNftEvent, NEAR_INDEXER_DB_CONNECTION)
     private readonly assetsNftEventRepository: Repository<AssetsNftEvent>,
 
+    @InjectRepository(Block, NEAR_INDEXER_DB_CONNECTION)
+    private readonly blockRepository: Repository<Block>,
+
+    @InjectRepository(LastBlock, NEAR_INDEXER_DB_CONNECTION)
+    private readonly lastBlockRepository: Repository<LastBlock>,
+
     @InjectConnection(NEAR_INDEXER_DB_CONNECTION)
     private connection: Connection,
   ) {}
@@ -59,6 +66,28 @@ export class NearIndexerService {
   lastTransaction(): Promise<Transaction> {
     return this.transactionRepository.findOne({
       order: { blockTimestamp: 'DESC' },
+    });
+  }
+
+  lastNearLakeBlock(): Promise<LastBlock> {
+    return this.lastBlockRepository.findOne();
+  }
+
+  lastAccountChange(): Promise<AccountChange> {
+    return this.accountChangeRepository.findOne({
+      order: { changedInBlockTimestamp: 'DESC' },
+    });
+  }
+
+  findBlockByHash(blockHash: string): Promise<Block> {
+    return this.blockRepository.findOne({
+      blockHash,
+    });
+  }
+
+  findBlockByTimestamp(blockTimestamp): Promise<Block> {
+    return this.blockRepository.findOne({
+      blockTimestamp,
     });
   }
 
@@ -100,16 +129,6 @@ export class NearIndexerService {
     ).getOne();
   }
 
-  async findAccountChangesByContractName(
-    contractName: string,
-    fromBlockTimestamp?: number,
-  ): Promise<AccountChange[]> {
-    return this.buildAccountChangeQuery(
-      contractName,
-      fromBlockTimestamp,
-    ).getMany();
-  }
-
   /** Pass either single accountId or array of accountIds */
   async findLastTransactionByAccountIds(
     accountIds: string | string[],
@@ -134,99 +153,6 @@ export class NearIndexerService {
     )
       .orderBy('transaction.block_timestamp', 'ASC')
       .getMany();
-  }
-
-  async findNFTActionReceiptsByReceiverAccountIds(
-    receiverAccountIds: string[],
-    fromBlockTimestamp?: number,
-  ): Promise<ActionReceiptAction[]> {
-    const { results: actionReceipts } = await PromisePool.withConcurrency(5)
-      .for(receiverAccountIds)
-      .process(async (id) => {
-        let queryBuilder = this.actionReceiptActionRepository
-          .createQueryBuilder('action_receipt_action')
-          .leftJoinAndSelect(
-            'action_receipt_action.transaction',
-            'transactions',
-          )
-          .where("action_kind = 'FUNCTION_CALL'")
-          .andWhere("action_receipt_action.args->>'args_json' is not null")
-          .andWhere(
-            "action_receipt_action.args->'args_json'->>'receiver_id' = :id",
-            {
-              id,
-            },
-          )
-          .andWhere("args->>'method_name' like 'nft_%'");
-
-        queryBuilder = fromBlockTimestamp
-          ? queryBuilder.andWhere('transaction.block_timestamp >= :from', {
-              from: fromBlockTimestamp,
-            })
-          : queryBuilder;
-
-        return await queryBuilder.getMany();
-      });
-
-    return actionReceipts.reduce((acc, prop) => acc.concat(prop), []);
-  }
-
-  async findTransaction(transactionHash: string): Promise<Transaction> {
-    return this.transactionRepository.findOne(transactionHash);
-  }
-
-  async findReceiptByTransactionHashAndPredecessor(
-    transactionHash: string,
-    predecessorContractName: string,
-  ): Promise<Receipt> {
-    //TODO: Revise a possibility of multiple receipts with the query below
-    return this.receiptRepository
-      .createQueryBuilder('receipt')
-      .leftJoinAndSelect('receipt.originatedFromTransaction', 'transactions')
-      .where('receipt.originated_from_transaction_hash = :transactionHash', {
-        transactionHash,
-      })
-      .andWhere('receipt.predecessor_account_id like :id', {
-        id: buildLikeContractName(predecessorContractName),
-      })
-      .getOne();
-  }
-
-  async findAccountByReceiptId(receiptId: string): Promise<Account> {
-    return this.accountRepository
-      .createQueryBuilder('account')
-      .where('account.created_by_receipt_id = :receiptId', { receiptId })
-      .getOne();
-  }
-
-  async findReceiptsByReceiverAccountIds(
-    receiverAccountIds: string[],
-    fromBlockTimestamp?: number,
-  ): Promise<Receipt[]> {
-    let queryBuilder = this.receiptRepository
-      .createQueryBuilder('receipt')
-      .leftJoinAndSelect('receipt.receiptActions', 'action_receipt_actions')
-      .where('receipt.receiver_account_id IN (:...ids)', {
-        ids: receiverAccountIds,
-      });
-
-    queryBuilder = fromBlockTimestamp
-      ? queryBuilder.andWhere('receipt.included_in_block_timestamp >= :from', {
-          from: fromBlockTimestamp,
-        })
-      : queryBuilder;
-
-    return queryBuilder.getMany();
-  }
-
-  async findAccountChangeActionsByContractName(
-    contractName: string,
-    fromBlockTimestamp?: number,
-  ): Promise<AccountChange[]> {
-    return this.buildAccountChangeActionQuery(
-      contractName,
-      fromBlockTimestamp,
-    ).getMany();
   }
 
   // Account Likely Tokens - taken from NEAR Helper Indexer middleware
@@ -536,6 +462,16 @@ export class NearIndexerService {
     return queryBuilder;
   }
 
+  async findAccountChangeActionsByContractName(
+    contractName: string,
+    fromBlockTimestamp?: number,
+  ): Promise<AccountChange[]> {
+    return this.buildAccountChangeActionQuery(
+      contractName,
+      fromBlockTimestamp,
+    ).getMany();
+  }
+
   private buildAccountChangeActionQuery(
     contractName: string,
     fromBlockTimestamp?: number,
@@ -554,14 +490,20 @@ export class NearIndexerService {
         'execution_outcomes',
         'execution_outcomes.receipt_id = receipts.receipt_id',
       )
-      .where('account_change.affected_account_id like :id', {
-        // Need to find all DAOs + factory contract changes
-        id: `%${contractName}`,
-      })
+      .where(
+        new Brackets((qb) => {
+          qb.where(`account_change.affected_account_id = :contractName`, {
+            contractName,
+          });
+          qb.orWhere('account_change.affected_account_id like :id', {
+            id: `%.${contractName}`,
+          });
+        }),
+      )
       .andWhere('execution_outcomes.status != :failStatus', {
         failStatus: ExecutionOutcomeStatus.Failure,
       })
-      .andWhere('account_change.changed_in_block_timestamp > :from', {
+      .andWhere('transactions.block_timestamp > :from', {
         from: fromBlockTimestamp,
       })
       .orderBy('transactions.block_timestamp', 'ASC');

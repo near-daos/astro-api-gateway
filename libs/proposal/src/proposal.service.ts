@@ -13,8 +13,10 @@ import {
   SelectQueryBuilder,
   UpdateResult,
 } from 'typeorm';
-import { Role, RoleKindType } from '@sputnik-v2/dao/entities';
+import { Role, RoleKindType, Delegation } from '@sputnik-v2/dao/entities';
 import { SearchQuery } from '@sputnik-v2/common';
+import { buildDelegationId, getAccountPermissions } from '@sputnik-v2/utils';
+import { BaseTypeOrmCrudService } from '@sputnik-v2/common/services/type-orm-crud.service';
 
 import {
   AccountProposalQuery,
@@ -23,16 +25,10 @@ import {
   ProposalResponse,
 } from './dto';
 import { Proposal } from './entities';
-import {
-  ProposalPermissions,
-  ProposalStatus,
-  ProposalType,
-  ProposalTypeToPolicyLabel,
-  ProposalVoteStatus,
-} from './types';
+import { ProposalStatus, ProposalVoteStatus } from './types';
 
 @Injectable()
-export class ProposalService extends TypeOrmCrudService<Proposal> {
+export class ProposalService extends BaseTypeOrmCrudService<Proposal> {
   private readonly logger = new Logger(ProposalService.name);
 
   constructor(
@@ -40,6 +36,8 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
     private readonly proposalRepository: Repository<Proposal>,
     @InjectRepository(Role)
     private readonly roleRepository: Repository<Role>,
+    @InjectRepository(Delegation)
+    private readonly delegationRepository: Repository<Delegation>,
     @InjectConnection()
     private connection: Connection,
   ) {
@@ -82,10 +80,15 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
       throw new BadRequestException('Invalid Proposal ID');
     }
 
+    const accountDelegation = await this.delegationRepository.findOne(
+      buildDelegationId(proposal.daoId, permissionsAccountId),
+    );
+
     return this.populateProposalPermissions(
       proposal,
       proposal.dao.policy.roles,
       permissionsAccountId,
+      accountDelegation?.balance,
     );
   }
 
@@ -329,14 +332,29 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
         .getMany();
     }
 
+    let accountDelegations = [];
+    if (permissionsAccountId) {
+      accountDelegations = await this.delegationRepository.find({
+        select: ['daoId', 'balance'],
+        where: {
+          accountId: permissionsAccountId,
+          daoId: In(daoIds),
+        },
+      });
+    }
+
     proposals = proposals.map((proposal) => {
       const roles = daoRoles.filter(
         (role) => role.policy.daoId === proposal.daoId,
+      );
+      const accountDelegation = accountDelegations.find(
+        ({ daoId }) => daoId === proposal.daoId,
       );
       return this.populateProposalPermissions(
         proposal,
         roles,
         permissionsAccountId,
+        accountDelegation?.balance,
       );
     });
 
@@ -347,73 +365,20 @@ export class ProposalService extends TypeOrmCrudService<Proposal> {
     }
   }
 
-  public async getAccountPermissionByDao(
-    daoId: string,
-    accountId: string,
-    type?: ProposalType,
-  ): Promise<ProposalPermissions> {
-    const daoRoles = await this.roleRepository
-      .createQueryBuilder('role')
-      .leftJoinAndSelect('role.policy', 'policy')
-      .where('policy_dao_id = :daoId', { daoId })
-      .getMany();
-    return this.getAccountPermissions(type, daoRoles, accountId);
-  }
-
   private populateProposalPermissions(
     proposal: Proposal,
     roles: Role[],
     accountId?: string,
+    accountBalance = '0',
   ): Proposal {
     return {
       ...proposal,
-      permissions: this.getAccountPermissions(
-        proposal.kind?.type,
+      permissions: getAccountPermissions(
         roles,
+        proposal.kind?.type,
         accountId,
+        BigInt(accountBalance),
       ),
     } as Proposal;
-  }
-
-  private getAccountPermissions(
-    type: ProposalType,
-    roles: Role[],
-    accountId?: string,
-    accountBalance?: bigint,
-  ): ProposalPermissions {
-    const council = roles.find((role) => role.name.toLowerCase() === 'council');
-    const permissions = roles.reduce((roles, role) => {
-      if (
-        (role.kind === RoleKindType.Group &&
-          role.accountIds.includes(accountId)) ||
-        (role.kind === RoleKindType.Member && accountBalance >= role.balance)
-      ) {
-        return [...roles, ...role.permissions];
-      }
-      return roles;
-    }, []);
-
-    return {
-      isCouncil: council?.accountIds
-        ? council.accountIds.includes(accountId)
-        : false,
-      canApprove: this.checkPermissions(type, 'VoteApprove', permissions),
-      canReject: this.checkPermissions(type, 'VoteReject', permissions),
-      canDelete: this.checkPermissions(type, 'VoteRemove', permissions),
-      canAdd: this.checkPermissions(type, 'AddProposal', permissions),
-    };
-  }
-
-  private checkPermissions(
-    type: ProposalType,
-    permission: string,
-    permissions: string[],
-  ): boolean {
-    const policyLabel = ProposalTypeToPolicyLabel[type];
-    return (
-      permissions.includes('*:*') ||
-      permissions.includes(`*:${permission}`) ||
-      permissions.includes(`${policyLabel}:${permission}`)
-    );
   }
 }

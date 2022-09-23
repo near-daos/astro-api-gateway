@@ -1,7 +1,7 @@
 import { TransactionInfo } from '@sputnik-v2/common';
 
 import { DaoConfig, DaoStatus } from '../types';
-import { PolicyDto } from './policy.dto';
+import { PolicyDtoV1 } from './policy.dto';
 
 export interface DaoDto extends TransactionInfo {
   id: string;
@@ -10,7 +10,7 @@ export interface DaoDto extends TransactionInfo {
   totalSupply: string;
   stakingContract: string;
   council: string[];
-  policy: PolicyDto;
+  policy: PolicyDtoV1;
   link: string;
   description: string;
   createdBy: string;

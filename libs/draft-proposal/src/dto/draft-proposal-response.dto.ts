@@ -30,6 +30,6 @@ export function castDraftProposalResponse(
     ...castDraftProposalBasicResponse(draftProposal, accountId),
     description: draftProposal.description,
     kind: draftProposal.kind as ProposalKindSwaggerDto,
-    history: history.map(castDraftProposalHistoryResponse),
+    history: [draftProposal, ...history].map(castDraftProposalHistoryResponse),
   };
 }

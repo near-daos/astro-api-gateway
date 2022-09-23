@@ -7,3 +7,5 @@ export * from './transaction-action';
 export * from './transaction-actions-response';
 export * from './vote-action';
 export * from './vote-policy';
+export * from './transaction-handler-status';
+export * from './contract-handler-result';

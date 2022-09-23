@@ -3,31 +3,36 @@ import { ConfigService } from '@nestjs/config';
 import {
   ClassSerializerInterceptor,
   Logger,
-  LogLevel,
   ValidationPipe,
 } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { Transport } from '@nestjs/microservices';
-import { EVENT_API_QUEUE_NAME } from '@sputnik-v2/common';
+import { Logger as PinoLogger } from 'nestjs-pino';
+
+import { EVENT_DRAFT_QUEUE_NAME } from '@sputnik-v2/common';
 
 import { DraftModule } from './draft.module';
+import { initAdapters } from './adapters.init';
 
 export default class Draft {
   private readonly logger = new Logger(Draft.name);
 
   async bootstrap(): Promise<void> {
-    const logger = [...(process.env.LOG_LEVELS.split(',') as LogLevel[])];
     const app = await NestFactory.create(DraftModule, {
-      logger,
+      bufferLogs: true,
     });
     app.enableCors();
     app.setGlobalPrefix('/api/v1');
+
+    app.useLogger(app.get(PinoLogger));
+
+    initAdapters(app);
 
     app.connectMicroservice({
       transport: Transport.REDIS,
       options: {
         url: process.env.REDIS_EVENT_URL,
-        queue: EVENT_API_QUEUE_NAME,
+        queue: EVENT_DRAFT_QUEUE_NAME,
         queueOptions: {
           durable: true,
         },

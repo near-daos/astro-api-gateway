@@ -1,22 +1,25 @@
-import { RoleKindType } from '@sputnik-v2/dao/entities/role.entity';
-import { VotePolicy } from '@sputnik-v2/sputnikdao';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
 import { BaseEntity } from '@sputnik-v2/common';
+
+import { RoleKindType } from '../entities';
+import { VotePolicy } from '../types';
+import {
+  RoleKind,
+  RoleKindMember,
+  RoleKindGroup,
+} from '@sputnik-v2/sputnikdao';
 
 class RoleKindDto {
   @ApiProperty()
   group: string[];
 }
 
-export class RoleDto extends BaseEntity {
+class RoleBaseDto extends BaseEntity {
   @ApiProperty()
   id: string;
 
   @ApiProperty()
   name: string;
-
-  @ApiProperty({ type: RoleKindDto })
-  kind: RoleKindType;
 
   @ApiProperty()
   balance: number;
@@ -29,4 +32,40 @@ export class RoleDto extends BaseEntity {
 
   @ApiProperty()
   votePolicy: { [key: string]: VotePolicy };
+}
+
+export class RoleDtoV1 extends RoleBaseDto {
+  @ApiProperty({ type: RoleKindDto })
+  kind: RoleKindType;
+}
+
+export class RoleDtoV2 extends RoleBaseDto {
+  @ApiProperty({
+    type: [
+      { type: RoleKindType.Everyone },
+      { $ref: getSchemaPath(RoleKindMember) },
+      { $ref: getSchemaPath(RoleKindGroup) },
+    ],
+  })
+  kind: RoleKind;
+}
+
+export function castRoleDtoV2(role: RoleDtoV1): RoleDtoV2 {
+  switch (role.kind) {
+    case RoleKindType.Group:
+      return {
+        ...role,
+        kind: { [RoleKindType.Group]: role.accountIds },
+      };
+    case RoleKindType.Member:
+      return {
+        ...role,
+        kind: { [RoleKindType.Member]: role.balance },
+      };
+    case RoleKindType.Everyone:
+      return {
+        ...role,
+        kind: RoleKindType.Everyone,
+      };
+  }
 }

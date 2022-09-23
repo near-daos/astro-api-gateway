@@ -3,11 +3,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 import { DeleteResult, In, IsNull, Not, Repository } from 'typeorm';
 import { CrudRequest } from '@nestjsx/crud';
+import { NearApiService } from '@sputnik-v2/near-api';
 
 import { AssetsNftEvent, NearIndexerService } from '@sputnik-v2/near-indexer';
 
 import { NFTToken } from './entities';
 import { NFTTokenDto, NFTTokenResponse } from './dto';
+import { castNFT } from './types';
 
 @Injectable()
 export class NFTTokenService extends TypeOrmCrudService<NFTToken> {
@@ -15,6 +17,7 @@ export class NFTTokenService extends TypeOrmCrudService<NFTToken> {
     @InjectRepository(NFTToken)
     private readonly nftTokenRepository: Repository<NFTToken>,
     private readonly nearIndexerService: NearIndexerService,
+    private readonly nearApiService: NearApiService,
   ) {
     super(nftTokenRepository);
   }
@@ -66,5 +69,44 @@ export class NFTTokenService extends TypeOrmCrudService<NFTToken> {
       nftToken.contractId,
       nftToken.tokenId || '0',
     );
+  }
+
+  async loadNFT(nftContractId: string, accountId: string, timestamp?: number) {
+    const contract = this.nearApiService.getContract('nft', nftContractId);
+    const metadata = await contract.nft_metadata();
+    const nfts = await this.getNfts(nftContractId, accountId);
+    const tokenDtos = nfts.map((nft) =>
+      castNFT(nftContractId, accountId, metadata, nft, timestamp),
+    );
+    const tokenIds = tokenDtos.map(({ id }) => id);
+    await this.createMultiple(tokenDtos);
+    await this.purge(accountId, nftContractId, tokenIds);
+  }
+
+  private async getNfts(
+    nftContractId: string,
+    accountId: string,
+  ): Promise<Array<any>> {
+    const contract = this.nearApiService.getContract('nft', nftContractId);
+    const chunkSize = 50;
+    let nfts = [];
+    let chunk = [];
+    let fromIndex = 0;
+
+    do {
+      try {
+        chunk = await contract.nft_tokens_for_owner({
+          account_id: accountId,
+          from_index: fromIndex.toString(),
+          limit: chunkSize,
+        });
+        fromIndex += chunkSize;
+        nfts = nfts.concat(chunk);
+      } catch (err) {
+        break;
+      }
+    } while (chunk.length === chunkSize);
+
+    return nfts;
   }
 }

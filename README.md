@@ -21,21 +21,24 @@ Main features:
 - Package manager: **[Yarn](https://yarnpkg.com/)**
 - Core programming language: **[TypeScript](https://www.typescriptlang.org/)**
 - Application framework: **[NestJS](https://nestjs.com/)**
-- Database: **PostgreSQL [PostgreSQL](https://www.postgresql.org/), [TypeORM](https://typeorm.io/)**
+- Database: **[PostgreSQL](https://www.postgresql.org/), [MongoDB](https://www.mongodb.com/), [TypeORM](https://typeorm.io/)**
 - Near API: **[near-api-js](https://docs.near.org/docs/api/naj-quick-reference)**
-- Indexer: **[NEAR Indexer for Explorer](https://github.com/near/near-indexer-for-explorer)**
-- Caching/Events: **[Redis](https://redis.io/)**
-- Notifications: **[Firebase Cloud Messaging](https://firebase.google.com/docs/cloud-messaging)**
+- Indexer: **[Astro Lake Framework](https://github.com/near-daos/astro-lake-indexer)**
+- Caching/Events/Streams: **[Redis](https://redis.io/)**
+- Notifications: **[Notifi](https://notifi.network/)**
+- Monitoring: **[Datadog](https://www.datadoghq.com/)**
 - Code quality: **[Eslint](https://eslint.org/), [Prettier](https://prettier.io/)**
-- Build: **[Docker](https://www.docker.com/))**
+- Build: **[Docker](https://www.docker.com/)**
 
 ## Services
 
-- [Aggregator](./apps/aggregator) - sync blockchain with the Database.
+- [Aggregator](./apps/aggregator) - sync blockchain historical data with the Database.
+- [Indexer Processor](./apps/indexer-processor) - sync blockchain real-time data with the Database.
 - [API](./apps/api) - provides a set of API endpoints to view, filter, search, sync etc.
+- [Draft](./apps/draft) - provides a set of API endpoints to manage draft proposals and comments.
 - [Notifier](./apps/notifier) - simple notification service for sending / subscribing on service events.
 
-![Services](./docs/Astro_Basic_Services.png)
+![Services](./docs/Astro_Architechure.png)
 
 
 ## Project Structure
@@ -50,6 +53,8 @@ All reusable modules separated on libs by domains and could be shared between di
 /apps
   /aggregator
   /api
+  /draft
+  /indexer-processor
   /notifier
 ```
 
@@ -59,20 +64,33 @@ All reusable modules separated on libs by domains and could be shared between di
   /account
   /bounty
   /cache
+  /comment
   /common
   /config
   /dao
+  /dao-api
+  /dao-settings
+  /draft-comment
+  /draft-proposal
+  /error-tracker
   /event
+  /migrations
   /near-api
   /near-indexer
+  /notifi-client
+  /notification
+  /orm-migrations
+  /otp
   /proposal
+  /proposal-template
   /sputnikdao
+  /stats
   /subscription
   /token
   /transaction
   /transaction-handler
   /utils
-  /migrations
+  /websocket
 ```
 
 ## Config
@@ -83,18 +101,22 @@ All the configs are managed by [config lib](./libs/config/src) and shared betwee
 ```
 /libs/config/src
   /aggregator-config.ts
-  /aggregator-dao-config.ts
   /api-config.ts
   /cache.ts
   /configuration.ts
+  /dao-api.ts
   /database.ts
+  /database-draft.ts
   /database-near-indexer.ts
-  /firebase.ts
+  /draft-config.ts
+  /indexer-processor-config.ts
   /near.ts
   /near-api.ts
   /near-config.ts
   /near-token-factory.ts
+  /notifi.ts
   /notifier-config.ts
+  /redis.ts
   /typeorm-config.service.ts
 ```
 

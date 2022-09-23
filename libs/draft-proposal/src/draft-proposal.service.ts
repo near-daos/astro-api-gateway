@@ -4,15 +4,17 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { DeleteResult, MongoRepository } from 'typeorm';
+import { MongoRepository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   BaseResponseDto,
+  DeleteResponse,
   DRAFT_DB_CONNECTION,
   Order,
 } from '@sputnik-v2/common';
-import { ProposalKind, ProposalService } from '@sputnik-v2/proposal';
-import { DraftHashtagService } from '@sputnik-v2/draft-hashtag';
+import { ProposalKind } from '@sputnik-v2/proposal';
+import { DaoApiService } from '@sputnik-v2/dao-api';
+import { getAccountPermissions } from '@sputnik-v2/utils';
 
 import { DraftProposal, DraftProposalHistory } from './entities';
 import {
@@ -35,28 +37,13 @@ export class DraftProposalService {
     private draftProposalRepository: MongoRepository<DraftProposal>,
     @InjectRepository(DraftProposalHistory, DRAFT_DB_CONNECTION)
     private draftProposalHistoryRepository: MongoRepository<DraftProposalHistory>,
-    private draftHashtagService: DraftHashtagService,
-    private proposalService: ProposalService,
+    private daoApiService: DaoApiService,
   ) {}
 
   async create(
     accountId: string,
     draftProposalDto: CreateDraftProposal,
   ): Promise<string> {
-    const accountPermissions =
-      await this.proposalService.getAccountPermissionByDao(
-        draftProposalDto.daoId,
-        accountId,
-        draftProposalDto.type,
-      );
-
-    if (!accountPermissions.canAdd) {
-      throw new ForbiddenException(
-        `Account ${accountId} does not have permissions to create this type of proposal`,
-      );
-    }
-
-    await this.draftHashtagService.createMultiple(draftProposalDto.hashtags);
     const draftProposal = await this.draftProposalRepository.save({
       daoId: draftProposalDto.daoId,
       proposer: accountId,
@@ -64,7 +51,6 @@ export class DraftProposalService {
       description: draftProposalDto.description,
       kind: draftProposalDto.kind as ProposalKind,
       type: draftProposalDto.type,
-      hashtags: draftProposalDto.hashtags,
       state: DraftProposalState.Open,
       replies: 0,
       viewAccounts: [],
@@ -84,24 +70,17 @@ export class DraftProposalService {
       throw new NotFoundException(`Draft proposal ${id} does not exist`);
     }
 
-    if (draftProposal.proposer !== accountId) {
-      throw new ForbiddenException('Account is not the proposer');
+    const { data: dao } = await this.daoApiService.getDao(draftProposal.daoId);
+    const accountPermissions = getAccountPermissions(
+      dao.policy.roles,
+      draftProposalDto.type,
+      accountId,
+    );
+
+    if (draftProposal.proposer !== accountId && !accountPermissions.isCouncil) {
+      throw new ForbiddenException('Account is not the proposer or council');
     }
 
-    const accountPermissions =
-      await this.proposalService.getAccountPermissionByDao(
-        draftProposal.daoId,
-        accountId,
-        draftProposalDto.type,
-      );
-
-    if (!accountPermissions.canAdd) {
-      throw new ForbiddenException(
-        `Account ${accountId} does not have permissions to create this type of proposal`,
-      );
-    }
-
-    await this.draftHashtagService.createMultiple(draftProposalDto.hashtags);
     await this.draftProposalHistoryRepository.save({
       draftProposalId: draftProposal.id,
       daoId: draftProposal.daoId,
@@ -110,7 +89,6 @@ export class DraftProposalService {
       description: draftProposal.description,
       kind: draftProposal.kind,
       type: draftProposal.type,
-      hashtags: draftProposal.hashtags,
       date: draftProposal.updatedAt,
     });
     await this.draftProposalRepository.save({
@@ -119,25 +97,24 @@ export class DraftProposalService {
       description: draftProposalDto.description,
       kind: draftProposalDto.kind as ProposalKind,
       type: draftProposalDto.type,
-      hashtags: draftProposalDto.hashtags,
     });
 
     return draftProposal.id.toString();
   }
 
-  async delete(id: string, accountId: string): Promise<DeleteResult> {
+  async delete(id: string, accountId: string): Promise<DeleteResponse> {
     const draftProposal = await this.draftProposalRepository.findOne(id);
 
     if (!draftProposal) {
       throw new NotFoundException(`Draft proposal ${id} does not exist`);
     }
 
-    const accountPermissions =
-      await this.proposalService.getAccountPermissionByDao(
-        draftProposal.daoId,
-        accountId,
-        draftProposal.type,
-      );
+    const { data: dao } = await this.daoApiService.getDao(draftProposal.daoId);
+    const accountPermissions = getAccountPermissions(
+      dao.policy.roles,
+      draftProposal.type,
+      accountId,
+    );
 
     if (draftProposal.proposer !== accountId && !accountPermissions.isCouncil) {
       throw new ForbiddenException('Account is not the proposer or council');
@@ -150,7 +127,11 @@ export class DraftProposalService {
     await this.draftProposalHistoryRepository.deleteMany({
       draftProposalId: { $eq: draftProposal.id },
     });
-    return this.draftProposalRepository.delete(draftProposal);
+    await this.draftProposalRepository.delete(draftProposal);
+    return {
+      id,
+      deleted: true,
+    };
   }
 
   async view(id: string, accountId: string): Promise<boolean> {
@@ -185,6 +166,24 @@ export class DraftProposalService {
     return true;
   }
 
+  async removeSave(id: string, accountId: string): Promise<boolean> {
+    const draftProposal = await this.draftProposalRepository.findOne(id);
+
+    if (!draftProposal) {
+      throw new NotFoundException(`Draft proposal ${id} does not exist`);
+    }
+
+    if (draftProposal.saveAccounts.includes(accountId)) {
+      await this.draftProposalRepository.update(draftProposal.id, {
+        saveAccounts: draftProposal.saveAccounts.filter(
+          (item) => item !== accountId,
+        ),
+      });
+    }
+
+    return true;
+  }
+
   async close(
     id: string,
     accountId: string,
@@ -196,20 +195,38 @@ export class DraftProposalService {
       throw new NotFoundException(`Draft proposal ${id} does not exist`);
     }
 
-    if (draftProposal.proposer !== accountId) {
-      throw new ForbiddenException('Account is not the proposer');
+    const { data: dao } = await this.daoApiService.getDao(draftProposal.daoId);
+    const accountPermissions = getAccountPermissions(
+      dao.policy.roles,
+      draftProposal.type,
+      accountId,
+    );
+
+    if (!accountPermissions.canAdd) {
+      throw new ForbiddenException(
+        `Account does not have permissions to add ${draftProposal.type} proposals`,
+      );
     }
 
-    if (draftProposal.state === DraftProposalState.Closed) {
-      throw new BadRequestException(`Draft proposal is closed`);
+    if (draftProposal.state !== DraftProposalState.Closed) {
+      await this.draftProposalRepository.update(draftProposal.id, {
+        state: DraftProposalState.Closed,
+        proposalId: closeDraftProposalDto.proposalId,
+      });
     }
-
-    await this.draftProposalRepository.update(draftProposal.id, {
-      state: DraftProposalState.Closed,
-      proposalId: closeDraftProposalDto.proposalId,
-    });
 
     return true;
+  }
+
+  async closeInternal(id: string, proposalId: string) {
+    const draftProposal = await this.draftProposalRepository.findOne(id);
+
+    if (draftProposal) {
+      await this.draftProposalRepository.update(draftProposal.id, {
+        state: DraftProposalState.Closed,
+        proposalId,
+      });
+    }
   }
 
   async updateReplies(id: string, replies: number): Promise<void> {
@@ -242,7 +259,6 @@ export class DraftProposalService {
         $or: [
           { title: { $regex: searchRegExp } },
           { description: { $regex: searchRegExp } },
-          { hashtags: { $in: search.split(',') } },
         ],
       });
     }
@@ -297,6 +313,7 @@ export class DraftProposalService {
 
     const history = await this.draftProposalHistoryRepository.find({
       where: { draftProposalId: { $eq: draftProposal.id } },
+      order: { createdAt: 'DESC' },
     });
 
     return castDraftProposalResponse(draftProposal, history, params.accountId);

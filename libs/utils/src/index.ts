@@ -1,7 +1,14 @@
 import Decimal from 'decimal.js';
 
-import { DaoDto, Dao } from '@sputnik-v2/dao';
-import { ProposalDto, Proposal } from '@sputnik-v2/proposal';
+import { DaoDto } from '@sputnik-v2/dao/dto';
+import { Dao, Role, RoleKindType } from '@sputnik-v2/dao/entities';
+import {
+  ProposalType,
+  ProposalPermissions,
+  ProposalTypeToPolicyLabel,
+} from '@sputnik-v2/proposal/types';
+import { Proposal } from '@sputnik-v2/proposal/entities';
+import { ProposalDto } from '@sputnik-v2/proposal/dto';
 import { BaseResponse, PROPOSAL_DESC_SEPARATOR } from '@sputnik-v2/common';
 
 export const formatTimestamp = (timestamp: number): string => {
@@ -113,6 +120,10 @@ export const buildTemplateId = (daoId: string): string => {
   return `${daoId}-${Date.now()}`;
 };
 
+export const buildDelegationId = (daoId: string, accountId: string): string => {
+  return `${daoId}-${accountId}`;
+};
+
 export const decodeBase64 = (b: string) => {
   return Buffer.from(b, 'base64').toString('utf-8');
 };
@@ -187,4 +198,55 @@ export const filterProposalDesc = (description = '') => {
   return separationIndex !== -1
     ? description.slice(0, separationIndex)
     : description;
+};
+
+export const getAccountPermissions = (
+  roles: Role[],
+  type?: ProposalType,
+  accountId?: string,
+  accountBalance?: bigint,
+): ProposalPermissions => {
+  const council = roles.find((role) => role.name.toLowerCase() === 'council');
+  const permissions = roles.reduce((roles, role) => {
+    if (
+      role.kind === RoleKindType.Everyone ||
+      (role.kind === RoleKindType.Group &&
+        role.accountIds.includes(accountId)) ||
+      (role.kind === RoleKindType.Member && accountBalance >= role.balance)
+    ) {
+      return [...roles, ...role.permissions];
+    }
+    return roles;
+  }, []);
+
+  return {
+    isCouncil: council?.accountIds
+      ? council.accountIds.includes(accountId)
+      : false,
+    canApprove: checkPermissions(type, 'VoteApprove', permissions),
+    canReject: checkPermissions(type, 'VoteReject', permissions),
+    canDelete: checkPermissions(type, 'VoteRemove', permissions),
+    canAdd: checkPermissions(type, 'AddProposal', permissions),
+  };
+};
+
+export const checkPermissions = (
+  type: ProposalType,
+  permission: string,
+  permissions: string[],
+): boolean => {
+  const policyLabel = ProposalTypeToPolicyLabel[type];
+  return (
+    permissions.includes('*:*') ||
+    permissions.includes(`*:${permission}`) ||
+    permissions.includes(`${policyLabel}:${permission}`)
+  );
+};
+
+export const parseJSON = (s: string) => {
+  try {
+    return JSON.parse(s);
+  } catch (e) {
+    return null;
+  }
 };

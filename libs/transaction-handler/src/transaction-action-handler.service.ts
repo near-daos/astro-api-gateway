@@ -17,8 +17,13 @@ import {
 import { Transaction } from '@sputnik-v2/near-indexer';
 import { BountyContextService, BountyService } from '@sputnik-v2/bounty';
 import { EventService } from '@sputnik-v2/event';
-import { TokenService } from '@sputnik-v2/token';
-import { buildBountyId, buildProposalId } from '@sputnik-v2/utils';
+import { NFTTokenService, TokenService } from '@sputnik-v2/token';
+import {
+  buildBountyId,
+  buildDelegationId,
+  buildProposalId,
+} from '@sputnik-v2/utils';
+import { CacheService } from '@sputnik-v2/cache';
 
 import {
   castActProposal,
@@ -30,6 +35,8 @@ import {
   castCreateProposal,
   castDoneBounty,
   ContractHandler,
+  ContractHandlerResult,
+  ContractHandlerResultType,
   TransactionAction,
   VoteAction,
 } from './types';
@@ -52,8 +59,11 @@ export class TransactionActionHandlerService {
     private readonly bountyContextService: BountyContextService,
     private readonly eventService: EventService,
     private readonly tokenService: TokenService,
+    private readonly nftTokenService: NFTTokenService,
+    private readonly cacheService: CacheService,
   ) {
     const { contractName } = this.configService.get('near');
+    // TODO: Split on multiple handlers
     this.contractHandlers = [
       {
         contractId: contractName,
@@ -68,52 +78,90 @@ export class TransactionActionHandlerService {
           act_proposal: this.handleActProposal.bind(this),
           bounty_claim: this.handleClaimUnclaimBounty.bind(this),
           bounty_giveup: this.handleClaimUnclaimBounty.bind(this),
+          delegate: this.handleDelegate.bind(this),
+          undelegate: this.handleDelegate.bind(this),
         },
         defaultHandler: this.handleUnknownDaoTransaction.bind(this),
+      },
+      {
+        // Any contract id to handle ft and nft transactions
+        contractIdSuffix: '',
+        methodHandlers: {
+          // Common
+          mint: this.handleTokenMint.bind(this),
+
+          // FT
+          ft_mint: this.handleTokenMethods.bind(this),
+          ft_transfer_call: this.handleTokenMethods.bind(this),
+          ft_transfer: this.handleTokenMethods.bind(this),
+          deposit: this.handleTokenMethods.bind(this),
+          storage_deposit: this.handleTokenMethods.bind(this),
+          deposit_and_stake: this.handleTokenMethods.bind(this),
+          withdraw: this.handleTokenMethods.bind(this),
+          storage_withdraw: this.handleTokenMethods.bind(this),
+          withdraw_all: this.handleTokenMethods.bind(this),
+          withdraw_unstaked: this.handleTokenMethods.bind(this),
+          withdraw_from_available: this.handleTokenMethods.bind(this),
+
+          // NFT
+          nft_transfer: this.handleNftMethods.bind(this),
+          nft_batch_transfer: this.handleNftMethods.bind(this),
+          nft_transfer_call: this.handleNftMethods.bind(this),
+          nft_approve: this.handleNftMethods.bind(this),
+          nft_revoke: this.handleNftMethods.bind(this),
+          nft_transfer_payout: this.handleNftMethods.bind(this),
+          nft_on_approve: this.handleNftMethods.bind(this),
+          nft_mint: this.handleNftMethods.bind(this),
+          nft_batch_mint: this.handleNftMethods.bind(this),
+          nft_burn: this.handleNftMethods.bind(this),
+          nft_batch_burn: this.handleNftMethods.bind(this),
+          nft_create_series: this.handleNftMethods.bind(this),
+          nft_buy: this.handleNftMethods.bind(this),
+        },
       },
     ];
   }
 
-  async handleTransactionActions(
-    actions: TransactionAction[],
-  ): Promise<string[]> {
+  async handleTransactionActions(actions: TransactionAction[]): Promise<{
+    handledTxHashes: string[];
+    results: ContractHandlerResult[];
+    success: boolean;
+  }> {
     const handledTxHashes = [];
+    let results = [];
 
     // Actions are handled one by one to keep order of transactions
     for (const action of actions) {
       try {
-        await this.handleTransactionAction(action);
+        const actionResults = await this.handleTransactionAction(action);
+        results = results.concat(actionResults.filter((result) => result));
         handledTxHashes.push(action.transactionHash);
       } catch (error) {
         this.logger.error(
           `Failed to handle transaction ${action.transactionHash} with error: ${error}`,
         );
 
-        // If some action failed stop handling
-        return handledTxHashes;
+        // If some action failed stop handling and remove failed transaction hash
+        return {
+          handledTxHashes: handledTxHashes.filter(
+            (transactionHash) => action.transactionHash !== transactionHash,
+          ),
+          results,
+          success: false,
+        };
       }
     }
 
-    return handledTxHashes;
+    return { handledTxHashes, results, success: true };
   }
 
-  async handleTransactionAction(action: TransactionAction) {
+  async handleTransactionAction(
+    action: TransactionAction,
+  ): Promise<ContractHandlerResult[]> {
     this.logger.log(`Handling transaction: ${action.transactionHash}`);
-
-    const tx = await this.transactionRepository.findOne({
-      transactionHash: action.transactionHash,
-    });
-
-    if (tx) {
-      this.logger.log(
-        `Skip transaction ${action.transactionHash}. Already handled`,
-      );
-      return;
-    }
-
     const contractHandlers = this.getContractHandlers(action.receiverId);
 
-    const { errors } = await PromisePool.for(contractHandlers).process(
+    const { results, errors } = await PromisePool.for(contractHandlers).process(
       async (contractHandler) => {
         const handler =
           contractHandler.methodHandlers[action.methodName] ||
@@ -125,49 +173,60 @@ export class TransactionActionHandlerService {
     );
 
     if (errors.length > 0) {
-      errors.forEach((error) => {
-        this.logger.error(
-          `Handling transaction ${action.transactionHash} failed with error: ${error}`,
-        );
-      });
-      throw new Error(`Handling transaction ${action.transactionHash} failed`);
+      const errorMessages = errors.map((error) => error.toString()).join('; ');
+      this.logger.error(
+        `Handling transaction ${action.transactionHash} failed with errors: ${errorMessages}`,
+      );
+      throw new Error(errorMessages);
     } else {
       this.logger.log(
         `Transaction successfully handled: ${action.transactionHash}`,
       );
     }
+
+    return results;
   }
 
-  async handleCreateDao(txAction: TransactionAction) {
+  async handleCreateDao(
+    txAction: TransactionAction,
+  ): Promise<ContractHandlerResult> {
     const { signerId, transactionHash, args, timestamp } = txAction;
     const { contractName } = this.configService.get('near');
     const daoId = `${args.name}.${contractName}`;
     const daoInfo = await this.sputnikService.getDaoInfo(daoId);
+    const delegationAccounts =
+      await this.daoService.getDelegationAccountsByDaoId(daoId);
     const dao = castCreateDao({
       signerId,
       transactionHash,
       daoId,
       daoInfo,
+      delegationAccounts,
       timestamp,
     });
 
     this.logger.log(`Storing new DAO: ${daoId} due to transaction`);
     await this.daoService.saveWithFunds(dao);
-    // TODO: Disabled to next release
-    // await this.daoService.setDaoVersion(daoId);
+    await this.daoService.setDaoVersion(daoId);
     this.logger.log(`Successfully stored new DAO: ${daoId}`);
 
     await this.eventService.sendDaoUpdateNotificationEvent(dao, txAction);
+
+    return {
+      type: ContractHandlerResultType.DaoCreate,
+      metadata: { daoId: dao.id },
+    };
   }
 
-  async handleAddProposal(txAction: TransactionAction) {
-    const { receiverId, signerId, transactionHash, timestamp } = txAction;
+  async handleAddProposal(
+    txAction: TransactionAction,
+  ): Promise<ContractHandlerResult> {
+    const { receiverId, signerId, transactionHash, timestamp, args } = txAction;
 
     const txStatus = await this.nearApiService.getTxStatus(
       transactionHash,
       receiverId,
     );
-
     const lastProposalId = parseInt(
       (txStatus.status as FinalExecutionStatus)?.SuccessValue,
     );
@@ -176,7 +235,10 @@ export class TransactionActionHandlerService {
       this.logger.warn(
         `Error getting Proposal ID from transaction: ${transactionHash}`,
       );
-      return;
+      return {
+        type: ContractHandlerResultType.Unknown,
+        metadata: { daoId: receiverId },
+      };
     }
 
     const daoEntity = await this.daoService.findOne(receiverId);
@@ -184,6 +246,16 @@ export class TransactionActionHandlerService {
       receiverId,
       lastProposalId,
     );
+
+    if (!daoProposal) {
+      this.logger.warn(
+        `Error proposal ${lastProposalId} not found for DAO ${receiverId}. Skip transaction ${transactionHash}`,
+      );
+      return {
+        type: ContractHandlerResultType.Unknown,
+        metadata: { daoId: receiverId },
+      };
+    }
 
     const proposal = castCreateProposal({
       transactionHash,
@@ -206,7 +278,7 @@ export class TransactionActionHandlerService {
         proposalKind.receiverId,
         timestamp,
       );
-      proposal.bountyClaimId = bountyClaim.id;
+      proposal.bountyClaimId = bountyClaim?.id;
     }
 
     this.logger.log(`Storing Proposal: ${proposal.id} due to transaction`);
@@ -228,13 +300,29 @@ export class TransactionActionHandlerService {
     await this.daoService.saveWithProposalCount(dao);
     this.logger.log(`DAO successfully updated: ${receiverId}`);
 
+    await this.cacheService.handleProposalCache(proposal);
+
     await this.eventService.sendProposalUpdateNotificationEvent(
       proposal,
       txAction,
     );
+
+    if (args.draftId) {
+      await this.eventService.sendCloseDraftProposalEvent(
+        args.draftId,
+        proposal.id,
+      );
+    }
+
+    return {
+      type: ContractHandlerResultType.ProposalCreate,
+      metadata: { daoId: receiverId, proposalId: proposal.id },
+    };
   }
 
-  async handleActProposal(txAction: TransactionAction) {
+  async handleActProposal(
+    txAction: TransactionAction,
+  ): Promise<ContractHandlerResult> {
     const { receiverId, signerId, transactionHash, args, timestamp, status } =
       txAction;
     const dao = await this.daoService.findOne(receiverId);
@@ -303,10 +391,21 @@ export class TransactionActionHandlerService {
         break;
     }
 
+    await this.cacheService.handleProposalCache(proposal);
+
     await this.eventService.sendProposalUpdateNotificationEvent(
       proposal || proposalEntity,
       txAction,
     );
+
+    return {
+      type: ContractHandlerResultType.ProposalVote,
+      metadata: {
+        daoId: receiverId,
+        proposalId: proposal.id,
+        action: args.action,
+      },
+    };
   }
 
   async handleApproveProposal({
@@ -318,10 +417,14 @@ export class TransactionActionHandlerService {
     timestamp,
     status,
   }) {
+    const txStatus =
+      status ||
+      (await this.nearApiService.getTxStatus(transactionHash, receiverId));
     const state = await this.nearApiService.getAccountState(receiverId);
     const proposalKindType = proposal.kind?.kind.type;
     let config;
     let policy;
+    let delegationAccounts;
     let stakingContract;
     let lastBountyId;
 
@@ -356,6 +459,9 @@ export class TransactionActionHandlerService {
         ].includes(proposalKindType)
       ) {
         policy = await daoContract.get_policy();
+        delegationAccounts = await this.daoService.getDelegationAccountsByDaoId(
+          dao.id,
+        );
       }
 
       if (proposalKindType === ProposalType.SetStakingContract) {
@@ -399,7 +505,7 @@ export class TransactionActionHandlerService {
         }, 30000);
       }
 
-      proposal.failure = status?.Failure;
+      proposal.failure = txStatus?.Failure;
     }
 
     this.logger.log(`Updating Proposal: ${proposal.id} due to transaction`);
@@ -413,6 +519,7 @@ export class TransactionActionHandlerService {
         amount: state.amount,
         config,
         policy,
+        delegationAccounts,
         lastBountyId,
         stakingContract,
         transactionHash,
@@ -488,8 +595,15 @@ export class TransactionActionHandlerService {
         });
       }
 
+      if (proposalKindType === ProposalType.AddBounty) {
+        this.logger.log(
+          `Removing Bounty Context: ${proposalEntity?.id} due to transaction`,
+        );
+        await this.bountyContextService.remove(proposalEntity?.id);
+      }
+
       this.logger.log(`Removing Proposal: ${args.id} due to transaction`);
-      await this.proposalService.remove(proposalEntity.id);
+      await this.proposalService.remove(proposalEntity?.id);
     } else {
       this.logger.log(`Updating Proposal: ${proposal.id} due to transaction`);
       await this.proposalService.create(proposal);
@@ -521,7 +635,15 @@ export class TransactionActionHandlerService {
       lastBountyId,
       bountyData,
     );
-    const bountyId = daoBounty?.id;
+
+    if (!daoBounty) {
+      this.logger.warn(
+        `Bounty ${lastBountyId} not found for DAO ${dao.id}. Skip transaction ${transactionHash}`,
+      );
+      return;
+    }
+
+    const bountyId = daoBounty.id;
     const bounty = await this.bountyService.findOne({
       id: buildBountyId(dao.id, bountyId),
     });
@@ -558,6 +680,13 @@ export class TransactionActionHandlerService {
       { relations: ['bountyClaims'] },
     );
 
+    if (!bounty) {
+      this.logger.warn(
+        `Bounty ${bountyId} not found for DAO ${dao.id}. Skip transaction ${transactionHash}`,
+      );
+      return;
+    }
+
     const bountyData = await daoContract.get_bounty({
       id: bountyId,
     });
@@ -591,7 +720,7 @@ export class TransactionActionHandlerService {
     methodName,
     args,
     timestamp,
-  }: TransactionAction) {
+  }: TransactionAction): Promise<ContractHandlerResult> {
     const daoContract = this.nearApiService.getContract(
       'sputnikDao',
       receiverId,
@@ -601,6 +730,13 @@ export class TransactionActionHandlerService {
       buildBountyId(receiverId, id),
       { relations: ['bountyClaims'] },
     );
+
+    if (!bounty) {
+      this.logger.warn(
+        `Bounty ${id} not found for DAO ${receiverId}. Skip transaction ${transactionHash}`,
+      );
+      return;
+    }
 
     const bountyClaims = await daoContract.get_bounty_claims({
       account_id: signerId,
@@ -631,6 +767,14 @@ export class TransactionActionHandlerService {
       }),
     );
     this.logger.log(`Bounty successfully updated: ${bounty.id}`);
+
+    return {
+      type: ContractHandlerResultType.BountyClaim,
+      metadata: {
+        daoId: receiverId,
+        bountyContextId: bounty.bountyContext?.id,
+      },
+    };
   }
 
   async handleUnknownDaoTransaction({ receiverId }: TransactionAction) {
@@ -642,6 +786,226 @@ export class TransactionActionHandlerService {
     this.logger.log(`Updating DAO: ${receiverId} due to transaction`);
     await this.daoService.saveWithFunds({ ...dao });
     this.logger.log(`DAO successfully updated: ${receiverId}`);
+
+    return {
+      type: ContractHandlerResultType.Unknown,
+      metadata: { daoId: receiverId },
+    };
+  }
+
+  async handleDelegate(
+    txAction: TransactionAction,
+  ): Promise<ContractHandlerResult> {
+    const { txSignerId, receiverId: daoId, args } = txAction;
+    const { account_id: accountId } = args;
+
+    const daoContract = this.nearApiService.getContract('sputnikDao', daoId);
+
+    const balance = await daoContract.delegation_balance_of({
+      account_id: accountId,
+    });
+
+    await this.daoService.saveDelegation({
+      daoId,
+      accountId,
+      balance,
+    });
+
+    const existingDelegations = await this.daoService.getDelegationsByDaoId(
+      daoId,
+    );
+
+    const dao = await this.daoService.findOne(daoId);
+    if (!dao.stakingContract) {
+      this.logger.warn(
+        `Inconsistent state - no staking contract registered for DAO ${daoId}.`,
+      );
+
+      return;
+    }
+
+    const stakingContract = await this.nearApiService.getStakingContract(
+      dao.stakingContract,
+    );
+
+    const user = await stakingContract.get_user({ account_id: txSignerId });
+    const { delegated_amounts } = user || {};
+    if (!delegated_amounts?.length) {
+      return;
+    }
+
+    const delegatedAmounts = delegated_amounts?.reduce(
+      (acc, value) => ({
+        ...acc,
+        [value[0]]: (BigInt(acc[value[0]] || 0) + BigInt(value[1])).toString(),
+      }),
+      {},
+    );
+
+    for (const delegationAccountId in delegatedAmounts) {
+      const delegation = {
+        daoId,
+        accountId: delegationAccountId,
+        delegators: {
+          ...existingDelegations.find(
+            ({ id }) => id === buildDelegationId(daoId, delegationAccountId),
+          )?.delegators,
+          [txSignerId]: delegatedAmounts[delegationAccountId],
+        },
+      };
+
+      if (accountId === delegationAccountId) {
+        await this.daoService.saveDelegation(delegation);
+
+        continue;
+      }
+
+      const accountBalance = await daoContract.delegation_balance_of({
+        account_id: delegationAccountId,
+      });
+
+      await this.daoService.saveDelegation({
+        ...delegation,
+        balance: accountBalance,
+      });
+    }
+
+    await this.daoService.updateDaoMembers(daoId);
+
+    return { type: ContractHandlerResultType.Delegate };
+  }
+
+  async handleTokenMint(
+    txAction: TransactionAction,
+  ): Promise<ContractHandlerResult> {
+    this.logger.log(
+      `Handling "mint" method of ${txAction.receiverId} due to transaction: ${txAction.transactionHash}`,
+    );
+
+    try {
+      this.logger.log(`Checking if ${txAction.receiverId} is Fungible Token`);
+      const ftContract = this.nearApiService.getContract(
+        'fToken',
+        txAction.receiverId,
+      );
+      await ftContract.ft_total_supply();
+      await this.handleTokenMethods(txAction);
+      return;
+    } catch (err) {
+      this.logger.warn(`Contract ${txAction.receiverId} is not Fungible Token`);
+    }
+
+    try {
+      const nftContract = this.nearApiService.getContract(
+        'nft',
+        txAction.receiverId,
+      );
+      this.logger.log(`Checking if ${txAction.receiverId} is NFT`);
+      await nftContract.nft_total_supply();
+      await this.handleNftMethods(txAction);
+      return;
+    } catch (err) {
+      this.logger.warn(`Contract ${txAction.receiverId} is not NFT`);
+    }
+
+    this.logger.warn(
+      `Called "mint" method on unknown contract ${txAction.receiverId}. Skip transaction ${txAction.transactionHash}`,
+    );
+
+    return { type: ContractHandlerResultType.TokenUpdate };
+  }
+
+  async handleTokenMethods(
+    txAction: TransactionAction,
+  ): Promise<ContractHandlerResult> {
+    const daoIds = [
+      ...new Set([
+        txAction.txSignerId,
+        txAction.predecessorId,
+        txAction.args?.receiver_id,
+        txAction.args?.account_id,
+      ]),
+    ].filter((accountId) => accountId && this.isDaoContract(accountId));
+    await this.handleTokenUpdate(txAction, daoIds);
+
+    await this.cacheService.handleTokenCache();
+    return { type: ContractHandlerResultType.TokenUpdate };
+  }
+
+  async handleNftMethods(
+    txAction: TransactionAction,
+  ): Promise<ContractHandlerResult> {
+    const daoIds = [
+      ...new Set([
+        txAction.txSignerId,
+        txAction.predecessorId,
+        txAction.args?.receiver_id,
+        txAction.args?.account_id,
+        txAction.args?.creator_id,
+        txAction.args?.owner_id,
+        ...(txAction.args?.token_ids?.map((arr) => arr[1]) || []),
+      ]),
+    ].filter((accountId) => accountId && this.isDaoContract(accountId));
+    await this.handleNftUpdate(txAction, daoIds);
+
+    await this.cacheService.handleNFTCache();
+    return { type: ContractHandlerResultType.NftUpdate };
+  }
+
+  async handleTokenUpdate(txAction: TransactionAction, accountIds: string[]) {
+    try {
+      this.logger.log(
+        `Storing Token: ${txAction.receiverId} due to transaction: ${txAction.transactionHash}`,
+      );
+      await this.tokenService.loadTokenById(
+        txAction.receiverId,
+        txAction.timestamp,
+      );
+      this.logger.log(`Token successfully stored: ${txAction.receiverId}`);
+    } catch (err) {
+      this.logger.warn(
+        `Failed to load token: ${txAction.receiverId}. Skip transaction ${txAction.transactionHash}. Error: ${err}`,
+      );
+      return;
+    }
+
+    for (const accountId of accountIds) {
+      try {
+        this.logger.log(
+          `Updating Token ${txAction.receiverId} balance for ${accountId} due to transaction: ${txAction.transactionHash}`,
+        );
+        await this.tokenService.loadBalanceById(txAction.receiverId, accountId);
+        this.logger.log(
+          `Token ${txAction.receiverId} balance for ${accountId} successfully updated`,
+        );
+      } catch (err) {
+        this.logger.warn(
+          `Failed to load token  ${txAction.receiverId} balance for ${accountId}. Transaction: ${txAction.transactionHash}. Error: ${err}`,
+        );
+      }
+    }
+  }
+
+  async handleNftUpdate(txAction: TransactionAction, accountIds: string[]) {
+    for (const accountId of accountIds) {
+      try {
+        this.logger.log(
+          `Updating NFT ${txAction.receiverId} for ${accountId} due to transaction: ${txAction.transactionHash}`,
+        );
+        await this.nftTokenService.loadNFT(
+          txAction.receiverId,
+          accountId,
+          txAction.timestamp,
+        );
+        this.logger.log(
+          `NFT ${txAction.receiverId} for ${accountId} successfully updated`,
+        );
+      } catch (err) {
+        this.logger.warn(
+          `Failed to load NFT ${txAction.receiverId} for ${accountId}. Transaction: ${txAction.transactionHash}. Error: ${err}`,
+        );
+      }
+    }
   }
 
   private getContractHandlers(receiverId: string): ContractHandler[] {
@@ -651,5 +1015,10 @@ export class TransactionActionHandlerService {
         receiverId.endsWith(contractHandler.contractIdSuffix)
       );
     });
+  }
+
+  private isDaoContract(receiverId: string): boolean {
+    const { contractName } = this.configService.get('near');
+    return receiverId.endsWith(contractName);
   }
 }

@@ -1,7 +1,6 @@
 import { Entity, ObjectIdColumn, Column } from 'typeorm';
 import { BaseEntity } from '@sputnik-v2/common';
 import { ProposalKind, ProposalType } from '@sputnik-v2/proposal';
-import { ApiProperty } from '@nestjs/swagger';
 
 @Entity()
 export class DraftProposalHistory extends BaseEntity {
@@ -33,8 +32,5 @@ export class DraftProposalHistory extends BaseEntity {
   type: ProposalType;
 
   @Column()
-  hashtags: string[];
-
-  @ApiProperty()
   date: Date;
 }

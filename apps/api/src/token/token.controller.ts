@@ -19,6 +19,8 @@ import {
   CrudRequest,
   CrudRequestInterceptor,
 } from '@nestjsx/crud';
+import { Span } from 'nestjs-ddtrace';
+
 import {
   HttpCacheInterceptor,
   EntityQuery,
@@ -39,6 +41,7 @@ import { AssetsNftEvent } from '@sputnik-v2/near-indexer';
 
 import { NFTTokenCrudRequestInterceptor } from './interceptors/nft-token-crud.interceptor';
 
+@Span()
 @ApiTags('Token')
 @Controller('/tokens')
 export class TokenController {

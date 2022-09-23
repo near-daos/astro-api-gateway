@@ -1,3 +1,5 @@
+export * from './dto';
+export * from './entities';
 export * from './types';
 export * from './transaction-handler.module';
 export * from './transaction-handler.service';

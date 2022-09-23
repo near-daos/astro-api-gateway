@@ -37,9 +37,6 @@ export class DraftProposal extends BaseEntity {
   state: DraftProposalState;
 
   @Column()
-  hashtags: string[];
-
-  @Column()
   viewAccounts: string[];
 
   @Column()

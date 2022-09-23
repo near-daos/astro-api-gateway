@@ -2,19 +2,34 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ThrottlerModule, ThrottlerModuleOptions } from '@nestjs/throttler';
+import { LoggerModule, Params } from 'nestjs-pino';
+
 import configuration, {
   TypeOrmConfigService,
   validate,
 } from '@sputnik-v2/config/draft-config';
 import { DraftValidationSchema } from '@sputnik-v2/config/validation';
 import { DRAFT_DB_CONNECTION } from '@sputnik-v2/common';
+import { WebsocketGateway, WebsocketModule } from '@sputnik-v2/websocket';
+import { DraftProposalModule as DraftProposalModuleLib } from '@sputnik-v2/draft-proposal';
 
 import { DraftProposalModule } from './draft-proposal/draft-proposal.module';
 import { DraftCommentModule } from './draft-comment/draft-comment.module';
-import { DraftHashtagModule } from './draft-hashtag/draft-hashtag.module';
+import { DraftController } from './draft.controller';
 
 @Module({
   imports: [
+    LoggerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService): Params => {
+        return {
+          pinoHttp: {
+            level: configService.get('logLevel'),
+          },
+        };
+      },
+    }),
     ConfigModule.forRoot({
       isGlobal: true,
       load: configuration,
@@ -23,9 +38,6 @@ import { DraftHashtagModule } from './draft-hashtag/draft-hashtag.module';
     }),
     TypeOrmModule.forRootAsync({
       name: DRAFT_DB_CONNECTION,
-      useClass: TypeOrmConfigService,
-    }),
-    TypeOrmModule.forRootAsync({
       useClass: TypeOrmConfigService,
     }),
     ThrottlerModule.forRootAsync({
@@ -38,11 +50,12 @@ import { DraftHashtagModule } from './draft-hashtag/draft-hashtag.module';
         };
       },
     }),
+    WebsocketModule,
     DraftProposalModule,
     DraftCommentModule,
-    DraftHashtagModule,
+    DraftProposalModuleLib,
   ],
-  controllers: [],
-  providers: [],
+  controllers: [DraftController],
+  providers: [WebsocketGateway],
 })
 export class DraftModule {}

@@ -29,8 +29,14 @@ export class DraftCommentResponse {
   @ApiProperty({ type: [String] })
   likeAccounts: string[];
 
+  @ApiProperty({ type: [String] })
+  dislikeAccounts: string[];
+
   @ApiProperty()
   createdAt: Date;
+
+  @ApiProperty()
+  updatedAt: Date;
 }
 
 export function castDraftCommentResponse(
@@ -49,6 +55,8 @@ export function castDraftCommentResponse(
       ?.filter((comment) => comment.replyTo === id)
       .map((comment) => castDraftCommentResponse(comment)),
     likeAccounts: draftComment.likeAccounts,
+    dislikeAccounts: draftComment.dislikeAccounts,
     createdAt: draftComment.createdAt,
+    updatedAt: draftComment.updatedAt,
   };
 }

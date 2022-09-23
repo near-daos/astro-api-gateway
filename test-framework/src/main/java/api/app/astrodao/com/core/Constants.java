@@ -31,16 +31,18 @@ public class Constants {
 	}
 
 	@UtilityClass
-	public class Endpoints {
+	public class ApiServiceEndpoints {
 		public static final String DAOS = "/api/v1/daos";
 		public static final String DAOS_ID = "/api/v1/daos/{id}";
 		public static final String ACCOUNT_DAOS = "/api/v1/daos/account-daos/{accountId}";
 		public static final String DAOS_DAO_ID_SETTINGS = "/api/v1/daos/{daoId}/settings";
 		public static final String DAOS_DAO_ID_SETTINGS_KEY = "/api/v1/daos/{daoId}/settings/{key}";
+		public static final String DAOS_DAO_ID_MEMBERS = "/api/v1/daos/{id}/members";
 
 		public static final String PROPOSALS = "/api/v1/proposals";
 		public static final String PROPOSALS_ID = "/api/v1/proposals/{id}";
 		public static final String PROPOSALS_ACCOUNT_PROPOSALS_ACCOUNT_ID = "/api/v1/proposals/account-proposals/{accountId}";
+		public static final String PROPOSALS_TEMPLATES = "/api/v1/proposals/templates";
 
 		public static final String COMMENTS = "/api/v1/comments";
 		public static final String COMMENTS_ID = "/api/v1/comments/{id}";
@@ -59,11 +61,16 @@ public class Constants {
 		public static final String NOTIFICATIONS_ID = "/api/v1/notifications/{id}";
 		public static final String NOTIFICATIONS_SETTINGS = "/api/v1/notification-settings";
 		public static final String ACCOUNT_NOTIFICATION_STATUS_ACCOUNT_ID = "/api/v1/account-notification-status/{accountId}";
+		public static final String ACCOUNT_NOTIFICATIONS_READ_ALL = "/api/v1/account-notifications/read-all";
+		public static final String ACCOUNT_NOTIFICATIONS_ID = "/api/v1/account-notifications/{id}";
+		public static final String ACCOUNT_NOTIFICATIONS = "/api/v1/account-notifications";
 
 		public static final String ACCOUNT_ID = "/api/v1/account/{id}";
 		public static final String ACCOUNT_EMAIL = "/api/v1/account/email";
 		public static final String ACCOUNT_EMAIL_SEND_VERIFICATION = "/api/v1/account/email/send-verification";
 		public static final String ACCOUNT_EMAIL_VERIFY = "/api/v1/account/email/verify";
+		public static final String ACCOUNT_ACCOUNT_ID_PHONE_VERIFICATION_STATUS = "/api/v1/account/{accountId}/phone/verification-status";
+		public static final String ACCOUNT_ACCOUNT_ID_EMAIL_VERIFICATION_STATUS = "/api/v1/account/{accountId}/email/verification-status";
 
 		public static final String SEARCH = "/api/v1/search";
 
@@ -78,5 +85,15 @@ public class Constants {
 		public static final String ACCOUNT_SUBSCRIPTIONS = "/api/v1/subscriptions/account-subscriptions/{accountId}";
 
 		public static final String TRANSACTIONS_CALLBACK = "/api/v1/transactions/wallet/callback/{accountId}";
+	}
+
+	@UtilityClass
+	public class DraftServiceEndpoints {
+		public static final String DRAFT_PROPOSALS = "/api/v1/draft-proposals";
+		public static final String DRAFT_PROPOSALS_ID = "/api/v1/draft-proposals/{id}";
+		public static final String DRAFT_PROPOSALS_ID_VIEW = "/api/v1/draft-proposals/{id}/view";
+		public static final String DRAFT_PROPOSALS_ID_SAVE = "/api/v1/draft-proposals/{id}/save";
+		public static final String DRAFT_PROPOSALS_ID_CLOSE = "/api/v1/draft-proposals/{id}/close";
+
 	}
 }

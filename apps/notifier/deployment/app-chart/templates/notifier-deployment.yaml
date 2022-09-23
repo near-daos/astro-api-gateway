@@ -12,7 +12,7 @@ spec:
   template:
     metadata:
       labels:
-        {{- include "sputnik-v2-notifier.selectorLabels" . | nindent 8 }}
+        {{- include "sputnik-v2-notifier.metadataLabels" . | nindent 8 }}
     spec:
     {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -31,6 +31,31 @@ spec:
             - name: http
               containerPort: {{ .Values.container.internalPort }}
               protocol: TCP
+          env:
+            {{- if eq .Values.environment.DATADOG_APM_ENABLED "true" }}
+            - name: DD_AGENT_HOST
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: DD_ENV
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['tags.datadoghq.com/env']
+            - name: DD_SERVICE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['tags.datadoghq.com/service']
+            - name: DD_VERSION
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['tags.datadoghq.com/version']
+            - name: DD_LOGS_INJECTION
+              value: "true"
+            - name: DD_TRACE_SAMPLE_RATE
+              value: "1"
+            - name: DD_PROFILING_ENABLED
+              value: "true"
+            {{- end }}
           envFrom:
           - configMapRef:
               name: sputnik-v2-configmap
@@ -39,13 +64,11 @@ spec:
           - configMapRef:
               name: {{ .Release.Name }}-version
           - secretRef:
-              name: db-secret
+              name: api-rds-secrets
           - secretRef:
-              name: firebase-secret
+              name: api-redis-secrets
           - secretRef:
-              name: redis-secret
-          - secretRef:
-              name: near-indexer-db-secret
+              name: api-service-secrets
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}

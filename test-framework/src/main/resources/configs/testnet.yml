@@ -1,3 +1,4 @@
 framework:
-  api.base.uri: https://api.testnet.app.astrodao.com
+  api.service.uri: https://api.testnet.app.astrodao.com
+  draft.service.uri: https://draft.testnet.app.astrodao.com
   webmail.provider.uri: https://www.1secmail.com/api/v1/

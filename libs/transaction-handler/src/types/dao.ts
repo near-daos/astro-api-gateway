@@ -1,37 +1,33 @@
 import camelcaseKeys from 'camelcase-keys';
 import { RoleKindType } from '@sputnik-v2/dao/entities';
 import { SputnikDaoDto } from '@sputnik-v2/dao/dto';
-import {
-  buildRoleId,
-  decodeBase64,
-  getBlockTimestamp,
-} from '@sputnik-v2/utils';
+import { btoaJSON, buildRoleId, getBlockTimestamp } from '@sputnik-v2/utils';
 
 import { castRolePermission } from './role';
 import { castVotePolicy } from './vote-policy';
 import { DaoStatus } from '@sputnik-v2/dao';
 
-export function castDaoPolicy({ daoId, daoPolicy }) {
+export function castDaoPolicy({ daoId, daoPolicy, delegationAccounts = [] }) {
   const policy = camelcaseKeys(daoPolicy, { deep: true });
   const roles = daoPolicy.roles.map((role) => ({
     ...castRolePermission(camelcaseKeys(role)),
     id: buildRoleId(daoId, role.name),
     policy: { daoId },
   }));
-  const council = roles
-    .filter(
-      ({ name, kind }) =>
-        'council' === name.toLowerCase() && RoleKindType.Group === kind,
-    )
-    .map(({ accountIds }) => accountIds)
-    .reduce((acc, val) => acc.concat(val), []);
-  const accountIds = [
-    ...new Set(roles.map((role) => role.accountIds).flat()),
-  ].filter((accountId) => accountId);
   const groups = roles.filter((role) => role.kind === RoleKindType.Group);
-  const numberOfMembers = [
-    ...new Set(groups.map((group) => group.accountIds).flat()),
-  ].length;
+  const council = groups
+    .filter(({ name }) => 'council' === name.toLowerCase())
+    .map(({ accountIds }) => accountIds)
+    .flat();
+  const accountIds = [
+    ...new Set(
+      groups
+        .map((role) => role.accountIds)
+        .flat()
+        .concat(delegationAccounts),
+    ),
+  ].filter((accountId) => accountId);
+  const numberOfMembers = accountIds.length;
   const numberOfGroups = groups.length;
 
   return {
@@ -54,18 +50,14 @@ export function castCreateDao({
   transactionHash,
   daoId,
   daoInfo,
+  delegationAccounts,
   timestamp = getBlockTimestamp(),
 }): SputnikDaoDto {
-  let metadata;
-  try {
-    metadata = JSON.parse(decodeBase64(daoInfo.config.metadata));
-  } catch (err) {}
-
   return {
     id: daoId,
     config: daoInfo.config,
-    ...castDaoPolicy({ daoId, daoPolicy: daoInfo.policy }),
-    metadata,
+    ...castDaoPolicy({ daoId, daoPolicy: daoInfo.policy, delegationAccounts }),
+    metadata: btoaJSON(daoInfo.config.metadata),
     amount: Number(daoInfo.amount),
     status: DaoStatus.Active,
     totalSupply: daoInfo.totalSupply,
@@ -105,17 +97,17 @@ export function castActProposalDao({
   policy,
   lastBountyId,
   stakingContract,
+  delegationAccounts,
   timestamp = getBlockTimestamp(),
 }: any): SputnikDaoDto {
   const daoPolicy = policy
-    ? castDaoPolicy({ daoId: dao.id, daoPolicy: policy })
+    ? castDaoPolicy({ daoId: dao.id, daoPolicy: policy, delegationAccounts })
     : {};
-
   return {
     ...dao,
     ...daoPolicy,
     config,
-    metadata: config?.metadata ? decodeBase64(config.metadata) : undefined,
+    metadata: btoaJSON(config?.metadata),
     lastBountyId,
     stakingContract,
     amount: amount && Number(amount),

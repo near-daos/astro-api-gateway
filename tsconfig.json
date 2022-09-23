@@ -171,6 +171,24 @@
       ],
       "@sputnik-v2/draft-hashtag/*": [
         "libs/draft-hashtag/src/*"
+      ],
+      "@sputnik-v2/websocket": [
+        "libs/websocket/src"
+      ],
+      "@sputnik-v2/websocket/*": [
+        "libs/websocket/src/*"
+      ],
+      "@sputnik-v2/dao-api": [
+        "libs/dao-api/src"
+      ],
+      "@sputnik-v2/dao-api/*": [
+        "libs/dao-api/src/*"
+      ],
+      "@sputnik-v2/error-tracker": [
+        "libs/error-tracker/src"
+      ],
+      "@sputnik-v2/error-tracker/*": [
+        "libs/error-tracker/src/*"
       ]
     }
   }

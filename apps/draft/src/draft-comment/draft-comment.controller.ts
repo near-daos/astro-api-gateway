@@ -14,15 +14,20 @@ import {
   ApiBearerAuth,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
+  ApiBadRequestResponse,
   ApiParam,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { ThrottlerGuard } from '@nestjs/throttler';
+import { Span } from 'nestjs-ddtrace';
+
 import {
   AccountAccessGuard,
   AuthorizedRequest,
   BaseResponseDto,
+  DeleteResponse,
+  FindOneMongoParams,
 } from '@sputnik-v2/common';
 import {
   CreateDraftComment,
@@ -31,8 +36,9 @@ import {
   DraftCommentsRequest,
   UpdateDraftComment,
 } from '@sputnik-v2/draft-comment';
-import { DeleteResult } from 'typeorm';
+import { DraftCommentPageResponse } from './dto/draft-comment-page-response.dto';
 
+@Span()
 @ApiTags('Draft Comments')
 @Controller('/draft-comments')
 export class DraftCommentController {
@@ -41,7 +47,7 @@ export class DraftCommentController {
   @ApiResponse({
     status: 200,
     description: 'List of Draft Comments',
-    type: DraftCommentResponse,
+    type: DraftCommentPageResponse,
   })
   @Get('/')
   getDraftComments(
@@ -94,7 +100,7 @@ export class DraftCommentController {
   @UseGuards(AccountAccessGuard)
   @Patch('/:id')
   updateDraftComment(
-    @Param('id') id: string,
+    @Param() { id }: FindOneMongoParams,
     @Req() req: AuthorizedRequest,
     @Body() body: UpdateDraftComment,
   ): Promise<string> {
@@ -106,7 +112,7 @@ export class DraftCommentController {
     type: String,
   })
   @ApiResponse({
-    status: 200,
+    status: 201,
     description: 'Liked',
     type: Boolean,
   })
@@ -117,11 +123,14 @@ export class DraftCommentController {
   @ApiNotFoundResponse({
     description: 'Draft comment <id> does not exist',
   })
+  @ApiBadRequestResponse({
+    description: 'Draft comment <id> is disliked by <accountId>',
+  })
   @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
   @Post('/:id/like')
   likeDraftComment(
-    @Param('id') id: string,
+    @Param() { id }: FindOneMongoParams,
     @Req() req: AuthorizedRequest,
   ): Promise<boolean> {
     return this.draftCommentService.like(id, req.accountId);
@@ -132,7 +141,7 @@ export class DraftCommentController {
     type: String,
   })
   @ApiResponse({
-    status: 200,
+    status: 201,
     description: 'Unliked',
     type: Boolean,
   })
@@ -145,12 +154,67 @@ export class DraftCommentController {
   })
   @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
-  @Post('/:id/unlike')
-  unlikeDraftComment(
-    @Param('id') id: string,
+  @Post('/:id/remove-like')
+  removeLikeFromDraftComment(
+    @Param() { id }: FindOneMongoParams,
     @Req() req: AuthorizedRequest,
   ): Promise<boolean> {
-    return this.draftCommentService.unlike(id, req.accountId);
+    return this.draftCommentService.removeLike(id, req.accountId);
+  }
+
+  @ApiParam({
+    name: 'id',
+    type: String,
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Disliked',
+    type: Boolean,
+  })
+  @ApiForbiddenResponse({
+    description:
+      'Account <accountId> identity is invalid - public key / invalid signature / invalid accountId',
+  })
+  @ApiNotFoundResponse({
+    description: 'Draft comment <id> does not exist',
+  })
+  @ApiBadRequestResponse({
+    description: 'Draft comment <id> is liked by <accountId>',
+  })
+  @ApiBearerAuth()
+  @UseGuards(AccountAccessGuard)
+  @Post('/:id/dislike')
+  dislikeDraftComment(
+    @Param() { id }: FindOneMongoParams,
+    @Req() req: AuthorizedRequest,
+  ): Promise<boolean> {
+    return this.draftCommentService.dislike(id, req.accountId);
+  }
+
+  @ApiParam({
+    name: 'id',
+    type: String,
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Dislike Removed',
+    type: Boolean,
+  })
+  @ApiForbiddenResponse({
+    description:
+      'Account <accountId> identity is invalid - public key / invalid signature / invalid accountId',
+  })
+  @ApiNotFoundResponse({
+    description: 'Draft comment <id> does not exist',
+  })
+  @ApiBearerAuth()
+  @UseGuards(AccountAccessGuard)
+  @Post('/:id/remove-dislike')
+  removeDislikeFromDraftComment(
+    @Param() { id }: FindOneMongoParams,
+    @Req() req: AuthorizedRequest,
+  ): Promise<boolean> {
+    return this.draftCommentService.removeDislike(id, req.accountId);
   }
 
   @ApiParam({
@@ -173,9 +237,9 @@ export class DraftCommentController {
   @UseGuards(AccountAccessGuard)
   @Delete('/:id')
   deleteDraftComment(
-    @Param('id') id: string,
+    @Param() { id }: FindOneMongoParams,
     @Req() req: AuthorizedRequest,
-  ): Promise<DeleteResult> {
+  ): Promise<DeleteResponse> {
     return this.draftCommentService.delete(id, req.accountId);
   }
 }

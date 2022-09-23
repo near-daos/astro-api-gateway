@@ -1,6 +1,8 @@
 import { Controller, Get, Logger } from '@nestjs/common';
 import { EventPattern, Transport } from '@nestjs/microservices';
 import { ApiExcludeEndpoint } from '@nestjs/swagger';
+import { Span } from 'nestjs-ddtrace';
+
 import { CacheService } from '@sputnik-v2/cache';
 import { NewNotificationDto, NewCommentDto } from '@sputnik-v2/event';
 import {
@@ -8,9 +10,9 @@ import {
   EVENT_NEW_COMMENT,
   EVENT_NEW_NOTIFICATION,
 } from '@sputnik-v2/common';
+import { SocketService } from '@sputnik-v2/websocket';
 
-import { SocketService } from './websocket/socket/socket.service';
-
+@Span()
 @Controller()
 export class AppController {
   private readonly logger = new Logger(AppController.name);

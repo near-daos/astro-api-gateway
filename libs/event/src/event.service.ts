@@ -10,6 +10,11 @@ import {
   EVENT_DELETE_COMMENT,
   EVENT_AGGREGATOR_SERVICE,
   EVENT_TRIGGER_DAO_AGGREGATION,
+  EVENT_DRAFT_NEW_COMMENT,
+  EVENT_DRAFT_DELETE_COMMENT,
+  EVENT_DRAFT_SERVICE,
+  EVENT_DRAFT_UPDATE_COMMENT,
+  EVENT_DRAFT_PROPOSAL_CLOSE,
 } from '@sputnik-v2/common';
 import { DaoDto } from '@sputnik-v2/dao';
 import { Proposal, ProposalDto } from '@sputnik-v2/proposal';
@@ -18,6 +23,7 @@ import { AccountNotification, Notification } from '@sputnik-v2/notification';
 import { Comment } from '@sputnik-v2/comment';
 
 import { BaseMessage } from './messages/base.event';
+import { DraftCommentResponse } from '@sputnik-v2/draft-comment';
 
 @Injectable()
 export class EventService {
@@ -28,6 +34,8 @@ export class EventService {
     private readonly notificationEventClient: ClientProxy,
     @Inject(EVENT_API_SERVICE)
     private readonly apiEventClient: ClientProxy,
+    @Inject(EVENT_DRAFT_SERVICE)
+    private readonly draftEventClient: ClientProxy,
     @Inject(EVENT_AGGREGATOR_SERVICE)
     private readonly aggregatorEventClient: ClientProxy,
   ) {}
@@ -89,6 +97,38 @@ export class EventService {
       accountId,
     });
     return this.sendEvent(this.aggregatorEventClient, message);
+  }
+
+  public async sendNewDraftCommentEvent(
+    comment: DraftCommentResponse,
+  ): Promise<void> {
+    const message = new BaseMessage(EVENT_DRAFT_NEW_COMMENT, { comment });
+    return this.sendEvent(this.draftEventClient, message);
+  }
+
+  public async sendUpdateDraftCommentEvent(
+    comment: DraftCommentResponse,
+  ): Promise<void> {
+    const message = new BaseMessage(EVENT_DRAFT_UPDATE_COMMENT, { comment });
+    return this.sendEvent(this.draftEventClient, message);
+  }
+
+  public async sendDeleteDraftCommentEvent(
+    comment: DraftCommentResponse,
+  ): Promise<void> {
+    const message = new BaseMessage(EVENT_DRAFT_DELETE_COMMENT, { comment });
+    return this.sendEvent(this.draftEventClient, message);
+  }
+
+  public async sendCloseDraftProposalEvent(
+    draftId: string,
+    proposalId: string,
+  ): Promise<void> {
+    const message = new BaseMessage(EVENT_DRAFT_PROPOSAL_CLOSE, {
+      draftId,
+      proposalId,
+    });
+    return this.sendEvent(this.draftEventClient, message);
   }
 
   private async sendEvent(

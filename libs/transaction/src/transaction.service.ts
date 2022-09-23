@@ -4,7 +4,10 @@ import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 import { Repository } from 'typeorm';
 import { Transaction } from '@sputnik-v2/near-indexer';
 import { CacheService } from '@sputnik-v2/cache';
-import { TransactionHandlerService } from '@sputnik-v2/transaction-handler';
+import {
+  ContractHandlerResult,
+  TransactionHandlerService,
+} from '@sputnik-v2/transaction-handler';
 
 import { castEmptyTransaction } from './types';
 
@@ -51,12 +54,17 @@ export class TransactionService extends TypeOrmCrudService<Transaction> {
     return queryBuilder.getMany();
   }
 
-  public async walletCallback(transactionHash: string, accountId: string) {
-    await this.transactionHandler.handleNearTransaction(
+  public async walletCallback(
+    transactionHash: string,
+    accountId: string,
+  ): Promise<ContractHandlerResult[]> {
+    const results = await this.transactionHandler.handleNearTransaction(
       transactionHash,
       accountId,
     );
     await this.cacheService.clearCache();
     await this.create(castEmptyTransaction(transactionHash, accountId));
+
+    return results;
   }
 }

@@ -4,5 +4,6 @@ export * from './guards';
 export * from './interceptors';
 export * from './types';
 export * from './constants';
+export * from './services';
 export * from './base.entity';
 export * from './transaction.entity';

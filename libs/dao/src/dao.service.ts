@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 import { CrudRequest } from '@nestjsx/crud';
@@ -10,22 +10,29 @@ import {
   ProposalStatus,
   ProposalVoteStatus,
 } from '@sputnik-v2/proposal';
-import { calculateFunds, getBlockTimestamp, paginate } from '@sputnik-v2/utils';
+import {
+  buildDelegationId,
+  calculateFunds,
+  getBlockTimestamp,
+  paginate,
+} from '@sputnik-v2/utils';
 import { TokenService } from '@sputnik-v2/token';
-import { DaoStatus, DaoVariant } from '@sputnik-v2/dao/types';
+import { SearchQuery } from '@sputnik-v2/common';
+import { NearApiService } from '@sputnik-v2/near-api';
 
 import {
   AccountDaoResponse,
   DaoDto,
   DaoMemberVote,
-  DaoResponse,
+  DaoPageResponse,
   SearchMemberDto,
   SearchMemberResponse,
+  DelegationDto,
+  DaoResponseV2,
+  castDaoResponseV2,
 } from './dto';
-import { Dao, DaoVersion, RoleKindType } from './entities';
-import { WeightKind } from '@sputnik-v2/sputnikdao';
-import { SearchQuery } from '@sputnik-v2/common';
-import { NearApiService } from '@sputnik-v2/near-api';
+import { Dao, DaoVersion, Delegation, RoleKindType } from './entities';
+import { DaoStatus, DaoVariant, WeightKind } from './types';
 
 @Injectable()
 export class DaoService extends TypeOrmCrudService<Dao> {
@@ -34,6 +41,8 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     private readonly daoRepository: Repository<Dao>,
     @InjectRepository(DaoVersion)
     private readonly daoVersionRepository: Repository<DaoVersion>,
+    @InjectRepository(Delegation)
+    private readonly delegationRepository: Repository<Delegation>,
     @InjectConnection()
     private connection: Connection,
     private readonly proposalService: ProposalService,
@@ -67,6 +76,19 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     return this.daoRepository.findOne({ id, status: Not(DaoStatus.Disabled) });
   }
 
+  async findByIdV2(id: string): Promise<DaoResponseV2> {
+    const dao = await this.daoRepository.findOne({
+      id,
+      status: Not(DaoStatus.Disabled),
+    });
+
+    if (!dao) {
+      throw new BadRequestException(`Invalid DAO ID ${id}`);
+    }
+
+    return castDaoResponseV2(dao);
+  }
+
   async findByIds(daoIds?: string[]): Promise<Dao[]> {
     return daoIds
       ? await this.daoRepository.find({ id: In(daoIds) })
@@ -86,8 +108,7 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     const dao = await this.daoRepository.findOne(daoDto.id);
 
     if (!dao.daoVersionHash) {
-      // TODO: Disabled to next release
-      // await this.setDaoVersion(dao.id);
+      await this.setDaoVersion(dao.id);
     }
 
     return dao;
@@ -96,7 +117,7 @@ export class DaoService extends TypeOrmCrudService<Dao> {
   async search(
     req: CrudRequest,
     params: SearchQuery,
-  ): Promise<Dao[] | DaoResponse> {
+  ): Promise<Dao[] | DaoPageResponse> {
     const likeQuery = `%${params.query.toLowerCase()}%`;
     const { limit, offset, fields } = req.parsed;
     const [data, total] = await this.daoRepository
@@ -190,10 +211,12 @@ export class DaoService extends TypeOrmCrudService<Dao> {
 
   async getDaoMembers(daoId: string): Promise<string[]> {
     const dao = await this.daoRepository.findOne(daoId);
-    const allMembers = dao?.policy?.roles.reduce((members, role) => {
-      return members.concat(role.accountIds);
-    }, []);
-    return [...new Set(allMembers)].filter((accountId) => accountId);
+
+    if (!dao) {
+      throw new BadRequestException(`Invalid DAO ID ${daoId}`);
+    }
+
+    return dao.accountIds;
   }
 
   public async getCouncil(daoId: string): Promise<string[]> {
@@ -280,6 +303,19 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     }
 
     return dao;
+  }
+
+  public async updateDaoMembers(daoId: string): Promise<Dao> {
+    const dao = await this.findOne(daoId);
+    const delegationAccounts = await this.getDelegationAccountsByDaoId(daoId);
+    const accountIds = [
+      ...new Set(dao.accountIds.concat(delegationAccounts)),
+    ].filter((accountId) => accountId);
+    return this.daoRepository.save({
+      ...dao,
+      accountIds,
+      numberOfMembers: accountIds.length,
+    });
   }
 
   public async getDaoStatus(dao: Dao): Promise<DaoStatus> {
@@ -374,5 +410,29 @@ export class DaoService extends TypeOrmCrudService<Dao> {
       daoVersionHash: version?.hash,
     });
     return version?.hash;
+  }
+
+  async saveDelegation(
+    delegationDto: Partial<DelegationDto>,
+  ): Promise<Delegation> {
+    const { daoId, accountId } = delegationDto;
+
+    return this.delegationRepository.save({
+      ...delegationDto,
+      id: buildDelegationId(daoId, accountId),
+    });
+  }
+
+  async getDelegationsByDaoId(daoId: string): Promise<Delegation[]> {
+    return this.delegationRepository.find({ where: { daoId } });
+  }
+
+  async getDelegationAccountsByDaoId(daoId: string): Promise<string[]> {
+    return (
+      await this.delegationRepository.find({
+        where: { daoId },
+        select: ['accountId'],
+      })
+    ).map(({ accountId }) => accountId);
   }
 }

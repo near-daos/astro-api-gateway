@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
-import { Repository } from 'typeorm';
+import { DeleteResult, Repository } from 'typeorm';
 import { CrudRequest } from '@nestjsx/crud';
 import { ProposalService } from '@sputnik-v2/proposal';
 
@@ -22,6 +22,10 @@ export class BountyContextService extends TypeOrmCrudService<BountyContext> {
 
   async create(bountyContextDto: BountyContextDto): Promise<BountyContext> {
     return this.bountyContextRepository.save(bountyContextDto);
+  }
+
+  async remove(id: string): Promise<DeleteResult> {
+    return await this.bountyContextRepository.delete({ id });
   }
 
   async createMultiple(

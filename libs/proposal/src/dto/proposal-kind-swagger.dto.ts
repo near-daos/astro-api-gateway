@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjsx/crud/lib/crud';
 import { Bounty } from '@sputnik-v2/bounty/entities';
-import { PolicyDto } from '@sputnik-v2/dao/dto';
+import { PolicyDtoV1 } from '@sputnik-v2/dao/dto';
 import { DaoConfig } from '@sputnik-v2/dao/types';
 import { ActionCall } from '@sputnik-v2/sputnikdao/types';
 
@@ -20,8 +20,11 @@ export class ProposalKindSwaggerDto {
   })
   config: DaoConfig;
 
-  @ApiProperty({ type: PolicyDto })
-  policy: PolicyDto | string[];
+  @ApiProperty({ type: PolicyDtoV1 })
+  policy: PolicyDtoV1 | string[];
+
+  @ApiProperty()
+  proposalVariant: string;
 
   @ApiProperty({
     description:
@@ -89,4 +92,9 @@ export class ProposalKindSwaggerDto {
     description: `For type: ${ProposalType.BountyDone}`,
   })
   bountyId: string;
+
+  @ApiProperty({
+    description: `For type: ${ProposalType.Transfer}`,
+  })
+  amount: string;
 }

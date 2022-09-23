@@ -1,6 +1,9 @@
 import { CacheModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { LoggerModule, Params } from 'nestjs-pino';
+import { DatadogTraceModule } from 'nestjs-ddtrace';
+
 import { ApiValidationSchema } from '@sputnik-v2/config/validation/api.schema';
 import configuration, {
   TypeOrmConfigService,
@@ -10,6 +13,7 @@ import { CacheConfigService } from '@sputnik-v2/config/api-config';
 import { HttpCacheModule } from '@sputnik-v2/cache';
 import { ThrottlerModule, ThrottlerModuleOptions } from '@nestjs/throttler';
 import { EventModule } from '@sputnik-v2/event';
+import { WebsocketModule, WebsocketGateway } from '@sputnik-v2/websocket';
 
 import { BountyModule } from './bounty/bounty.module';
 import { DaoModule } from './dao/dao.module';
@@ -19,8 +23,6 @@ import { SubscriptionModule } from './subscription/subscription.module';
 import { TokenModule } from './token/token.module';
 import { TransactionModule } from './transaction/transaction.module';
 import { AppController } from './api.controller';
-import { WebsocketModule } from './websocket/websocket.module';
-import { WebsocketGateway } from './websocket/websocket.gateway';
 import { NotificationModule } from './notification/notification.module';
 import { CommentModule } from './comment/comment.module';
 import { AggregatorModule } from './aggregator/aggregator.module';
@@ -32,6 +34,18 @@ import { ProposalTemplateModule } from './proposal-template/proposal-template.mo
 
 @Module({
   imports: [
+    LoggerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService): Params => {
+        return {
+          pinoHttp: {
+            level: configService.get('logLevel'),
+          },
+        };
+      },
+    }),
+    DatadogTraceModule.forRoot(),
     CacheModule.registerAsync({
       useClass: CacheConfigService,
     }),

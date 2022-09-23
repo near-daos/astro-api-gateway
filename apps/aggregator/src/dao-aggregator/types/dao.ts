@@ -2,7 +2,7 @@ import { DaoInfo } from '@sputnik-v2/sputnikdao';
 import { castDaoPolicy } from '@sputnik-v2/transaction-handler';
 import { SputnikDaoDto } from '@sputnik-v2/dao';
 import { Account, Transaction } from '@sputnik-v2/near-indexer';
-import { decodeBase64 } from '@sputnik-v2/utils';
+import { btoaJSON } from '@sputnik-v2/utils';
 
 export function castDao(
   daoAccount: Account,
@@ -16,20 +16,18 @@ export function castDao(
     lastBountyId,
     amount,
   }: DaoInfo,
+  delegationAccounts?: string[],
 ): SputnikDaoDto {
   const txUpdate = txs[txs.length - 1];
-  let metadata;
-  try {
-    metadata = JSON.parse(decodeBase64(config.metadata));
-  } catch (err) {}
   return {
     id: daoAccount.accountId,
     ...castDaoPolicy({
       daoId: daoAccount.accountId,
       daoPolicy: policy,
+      delegationAccounts,
     }),
     config,
-    metadata,
+    metadata: btoaJSON(config.metadata),
     stakingContract,
     totalSupply,
     lastProposalId,
@@ -60,19 +58,17 @@ export function castDaoById(
     lastBountyId,
     amount,
   }: DaoInfo,
+  delegationAccounts?: string[],
 ): Partial<SputnikDaoDto> {
-  let metadata;
-  try {
-    metadata = JSON.parse(decodeBase64(config.metadata));
-  } catch (err) {}
   return {
     id: daoId,
     ...castDaoPolicy({
       daoId: daoId,
       daoPolicy: policy,
+      delegationAccounts,
     }),
     config,
-    metadata,
+    metadata: btoaJSON(config.metadata),
     stakingContract,
     totalSupply,
     lastProposalId,

@@ -78,13 +78,15 @@ export function castActProposal({
   timestamp = getBlockTimestamp(),
   action,
 }): ProposalDto {
+  const kind = castProposalKind(proposal.kind);
   const proposalDto = {
     ...camelcaseKeys(proposal),
     id: buildProposalId(contractId, proposal.id),
     proposalId: proposal.id,
     daoId: contractId,
     dao: { id: contractId },
-    kind: castProposalKind(proposal.kind),
+    type: kind.kind.type,
+    kind,
     updateTransactionHash: transactionHash,
     updateTimestamp: timestamp,
   };

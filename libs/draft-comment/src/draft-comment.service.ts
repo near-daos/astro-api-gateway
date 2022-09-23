@@ -1,13 +1,15 @@
-import { MongoRepository, DeleteResult } from 'typeorm';
+import { MongoRepository } from 'typeorm';
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DraftProposalService } from '@sputnik-v2/draft-proposal';
-import { DRAFT_DB_CONNECTION, Order } from '@sputnik-v2/common';
-import { ProposalService } from '@sputnik-v2/proposal';
+import { DeleteResponse, DRAFT_DB_CONNECTION, Order } from '@sputnik-v2/common';
+import { EventService } from '@sputnik-v2/event';
+import { DaoApiService } from '@sputnik-v2/dao-api';
 import { DraftComment } from './entities';
 import {
   castDraftCommentResponse,
@@ -16,6 +18,7 @@ import {
   UpdateDraftComment,
 } from './dto';
 import { DraftCommentContextType } from './types';
+import { getAccountPermissions } from '@sputnik-v2/utils';
 
 @Injectable()
 export class DraftCommentService {
@@ -23,7 +26,8 @@ export class DraftCommentService {
     @InjectRepository(DraftComment, DRAFT_DB_CONNECTION)
     private draftCommentRepository: MongoRepository<DraftComment>,
     private draftProposalService: DraftProposalService,
-    private proposalService: ProposalService,
+    private daoApiService: DaoApiService,
+    private eventService: EventService,
   ) {}
 
   private async createDraftProposalComment(
@@ -47,6 +51,7 @@ export class DraftCommentService {
       author: accountId,
       message: draftCommentDto.message,
       likeAccounts: [],
+      dislikeAccounts: [],
     });
     await this.draftProposalService.updateReplies(
       draftProposal.id,
@@ -54,6 +59,10 @@ export class DraftCommentService {
         contextId: { $eq: draftComment.contextId },
         contextType: { $eq: draftComment.contextType },
       }),
+    );
+
+    await this.eventService.sendNewDraftCommentEvent(
+      castDraftCommentResponse(draftComment),
     );
 
     return draftComment.id.toString();
@@ -81,6 +90,7 @@ export class DraftCommentService {
       message: draftCommentDto.message,
       replyTo: draftCommentDto.replyTo,
       likeAccounts: [],
+      dislikeAccounts: [],
     });
 
     if (draftComment.contextType === DraftCommentContextType.DraftProposal) {
@@ -92,6 +102,10 @@ export class DraftCommentService {
         }),
       );
     }
+
+    await this.eventService.sendNewDraftCommentEvent(
+      castDraftCommentResponse(draftComment),
+    );
 
     return draftComment.id.toString();
   }
@@ -124,10 +138,13 @@ export class DraftCommentService {
       throw new ForbiddenException('Account is not the author');
     }
 
-    await this.draftCommentRepository.save({
+    const updatedComment = await this.draftCommentRepository.save({
       ...draftComment,
       message: draftCommentDto.message,
     });
+    await this.eventService.sendUpdateDraftCommentEvent(
+      castDraftCommentResponse(updatedComment),
+    );
 
     return draftComment.id.toString();
   }
@@ -139,16 +156,26 @@ export class DraftCommentService {
       throw new NotFoundException(`Draft comment ${id} does not exist`);
     }
 
+    if (draftComment.dislikeAccounts?.includes(accountId)) {
+      throw new BadRequestException(
+        `Draft comment ${id} is disliked by ${accountId}`,
+      );
+    }
+
     if (!draftComment.likeAccounts.includes(accountId)) {
+      const likeAccounts = [...draftComment.likeAccounts, accountId];
       await this.draftCommentRepository.update(draftComment.id, {
-        likeAccounts: [...draftComment.likeAccounts, accountId],
+        likeAccounts,
       });
+      await this.eventService.sendUpdateDraftCommentEvent(
+        castDraftCommentResponse({ ...draftComment, likeAccounts }),
+      );
     }
 
     return true;
   }
 
-  async unlike(id: string, accountId: string): Promise<boolean> {
+  async removeLike(id: string, accountId: string): Promise<boolean> {
     const draftComment = await this.draftCommentRepository.findOne(id);
 
     if (!draftComment) {
@@ -156,34 +183,112 @@ export class DraftCommentService {
     }
 
     if (draftComment.likeAccounts.includes(accountId)) {
+      const likeAccounts = draftComment.likeAccounts.filter(
+        (item) => item !== accountId,
+      );
       await this.draftCommentRepository.update(draftComment.id, {
-        likeAccounts: draftComment.likeAccounts.filter(
-          (item) => item !== accountId,
-        ),
+        likeAccounts,
       });
+      await this.eventService.sendUpdateDraftCommentEvent(
+        castDraftCommentResponse({ ...draftComment, likeAccounts }),
+      );
     }
 
     return true;
   }
 
-  async delete(id: string, accountId: string): Promise<DeleteResult> {
+  async dislike(id: string, accountId: string): Promise<boolean> {
     const draftComment = await this.draftCommentRepository.findOne(id);
 
     if (!draftComment) {
       throw new NotFoundException(`Draft comment ${id} does not exist`);
     }
 
-    const accountPermissions =
-      await this.proposalService.getAccountPermissionByDao(
-        draftComment.daoId,
-        accountId,
+    if (draftComment.likeAccounts.includes(accountId)) {
+      throw new BadRequestException(
+        `Draft comment ${id} is liked by ${accountId}`,
       );
+    }
+
+    if (!draftComment.dislikeAccounts?.includes(accountId)) {
+      const dislikeAccounts = [...draftComment.dislikeAccounts, accountId];
+      await this.draftCommentRepository.update(draftComment.id, {
+        dislikeAccounts,
+      });
+      await this.eventService.sendUpdateDraftCommentEvent(
+        castDraftCommentResponse({ ...draftComment, dislikeAccounts }),
+      );
+    }
+
+    return true;
+  }
+
+  async removeDislike(id: string, accountId: string): Promise<boolean> {
+    const draftComment = await this.draftCommentRepository.findOne(id);
+
+    if (!draftComment) {
+      throw new NotFoundException(`Draft comment ${id} does not exist`);
+    }
+
+    if (draftComment.dislikeAccounts?.includes(accountId)) {
+      const dislikeAccounts = draftComment.dislikeAccounts.filter(
+        (item) => item !== accountId,
+      );
+      await this.draftCommentRepository.update(draftComment.id, {
+        dislikeAccounts,
+      });
+      await this.eventService.sendUpdateDraftCommentEvent(
+        castDraftCommentResponse({ ...draftComment, dislikeAccounts }),
+      );
+    }
+
+    return true;
+  }
+
+  async delete(id: string, accountId: string): Promise<DeleteResponse> {
+    const draftComment = await this.draftCommentRepository.findOne(id);
+
+    if (!draftComment) {
+      throw new NotFoundException(`Draft comment ${id} does not exist`);
+    }
+
+    const { data: dao } = await this.daoApiService.getDao(draftComment.daoId);
+    const accountPermissions = getAccountPermissions(
+      dao.policy.roles,
+      undefined,
+      accountId,
+    );
 
     if (draftComment.author !== accountId && !accountPermissions.isCouncil) {
       throw new ForbiddenException('Account is not the author or council');
     }
 
-    return this.draftCommentRepository.delete(draftComment);
+    const replies = await this.draftCommentRepository.find({
+      where: { replyTo: id },
+      select: ['id'],
+    });
+
+    // Remove comment and all the replies
+    await this.draftCommentRepository.delete([
+      draftComment.id,
+      ...replies.map(({ id }) => id),
+    ]);
+
+    if (draftComment.contextType === DraftCommentContextType.DraftProposal) {
+      await this.draftProposalService.updateReplies(
+        draftComment.contextId,
+        await this.draftCommentRepository.count({
+          contextId: { $eq: draftComment.contextId },
+          contextType: { $eq: draftComment.contextType },
+        }),
+      );
+    }
+
+    await this.eventService.sendDeleteDraftCommentEvent(
+      castDraftCommentResponse(draftComment),
+    );
+
+    return { id, deleted: true };
   }
 
   async getAll(params: DraftCommentsRequest) {

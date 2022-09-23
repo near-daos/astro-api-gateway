@@ -11,6 +11,8 @@ import {
   ActionReceiptAction,
   AssetsNftEvent,
   ExecutionOutcome,
+  Block,
+  LastBlock,
 } from '@sputnik-v2/near-indexer/entities';
 
 export default registerAs(`db_${NEAR_INDEXER_DB_CONNECTION}`, () => ({
@@ -30,6 +32,8 @@ export default registerAs(`db_${NEAR_INDEXER_DB_CONNECTION}`, () => ({
     AccountChange,
     AssetsNftEvent,
     ExecutionOutcome,
+    Block,
+    LastBlock,
   ],
   synchronize: false,
   namingStrategy: new SnakeNamingStrategy(),

@@ -36,4 +36,9 @@ export class CreateAccountNotificationSettingsDto {
   @ApiProperty()
   @IsBoolean()
   isAllMuted: boolean;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsBoolean()
+  actionRequiredOnly?: boolean;
 }
