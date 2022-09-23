@@ -215,6 +215,10 @@ export class DaoService extends TypeOrmCrudService<Dao> {
       select: ['accountIds'],
     });
 
+    if (!dao) {
+      throw new BadRequestException(`Invalid DAO ID ${daoId}`);
+    }
+
     return dao?.accountIds;
   }
 
