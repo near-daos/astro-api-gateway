@@ -44,7 +44,7 @@ export class BaseCrudRequestInterceptor extends CrudRequestInterceptor {
     }
 
     crudRequest.parsed.offset = offset || 0;
-    crudRequest.parsed.limit = limit || 50;
+    crudRequest.parsed.limit = Math.min(limit || 50, 50);
 
     return crudRequest;
   }

@@ -210,22 +210,26 @@ export class DaoService extends TypeOrmCrudService<Dao> {
   }
 
   async getDaoMembers(daoId: string): Promise<string[]> {
-    const dao = await this.daoRepository
-      .createQueryBuilder('dao')
-      .select(['dao.accountIds'])
-      .where(`dao.id = :daoId`, { daoId })
-      .getOne();
+    const dao = await this.daoRepository.findOne(daoId, {
+      loadEagerRelations: false,
+      select: ['accountIds'],
+    });
 
     if (!dao) {
       throw new BadRequestException(`Invalid DAO ID ${daoId}`);
     }
 
-    return dao.accountIds;
+    return dao?.accountIds;
   }
 
   public async getCouncil(daoId: string): Promise<string[]> {
-    const dao = await this.daoRepository.findOne(daoId);
-    const councilRole = dao.policy.roles.find(
+    const dao = await this.daoRepository.findOne(daoId, {
+      loadEagerRelations: false,
+      relations: ['policy'],
+      select: ['policy'],
+    });
+
+    const councilRole = dao?.policy.roles.find(
       ({ name, kind }) =>
         String(name).toLowerCase() === 'council' && kind === RoleKindType.Group,
     );
