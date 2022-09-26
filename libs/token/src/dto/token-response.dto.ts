@@ -1,9 +1,47 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { BaseResponse } from '@sputnik-v2/common';
+import { Token } from '../entities';
 
-import { Token } from '../entities/token.entity';
+export class TokenResponse {
+  @ApiProperty()
+  id: string;
 
-export class TokenResponse extends BaseResponse<Token> {
-  @ApiProperty({ type: [Token] })
-  data: Token[];
+  @ApiProperty()
+  totalSupply: string;
+
+  @ApiProperty()
+  decimals: number;
+
+  @ApiProperty()
+  icon: string;
+
+  @ApiProperty()
+  symbol: string;
+
+  @ApiProperty()
+  price: string;
+
+  @ApiProperty({ required: false })
+  balance?: string;
+
+  @ApiProperty()
+  tokenId?: string;
+}
+
+export function castTokenResponse({
+  id,
+  totalSupply,
+  decimals,
+  icon,
+  symbol,
+  price,
+}: Token) {
+  return {
+    id,
+    tokenId: id,
+    totalSupply,
+    decimals,
+    icon,
+    symbol,
+    price,
+  };
 }

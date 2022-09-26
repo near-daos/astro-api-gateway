@@ -206,6 +206,15 @@ export const getAccountPermissions = (
   accountId?: string,
   accountBalance?: bigint,
 ): ProposalPermissions => {
+  if (!accountId) {
+    return {
+      isCouncil: false,
+      canApprove: false,
+      canReject: false,
+      canDelete: false,
+      canAdd: false,
+    };
+  }
   const council = roles.find((role) => role.name.toLowerCase() === 'council');
   const permissions = roles.reduce((roles, role) => {
     if (
@@ -253,4 +262,8 @@ export const parseJSON = (s: string) => {
 
 export const getChunkCount = (total: BigInt, chunkSize: number): number => {
   return (Number(total) - (Number(total) % chunkSize)) / chunkSize + 1;
+};
+
+export const stringToBoolean = (value?: string): boolean | undefined => {
+  return typeof value === 'string' ? value === 'true' : undefined;
 };

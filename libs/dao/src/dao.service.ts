@@ -210,7 +210,11 @@ export class DaoService extends TypeOrmCrudService<Dao> {
   }
 
   async getDaoMembers(daoId: string): Promise<string[]> {
-    const dao = await this.daoRepository.findOne(daoId);
+    const dao = await this.daoRepository
+      .createQueryBuilder('dao')
+      .select(['dao.accountIds'])
+      .where(`dao.id = :daoId`, { daoId })
+      .getOne();
 
     if (!dao) {
       throw new BadRequestException(`Invalid DAO ID ${daoId}`);

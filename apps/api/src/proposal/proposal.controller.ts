@@ -31,6 +31,8 @@ import {
   ProposalService,
   AccountProposalQuery,
   ProposalQuery,
+  ProposalsResponse,
+  ProposalsRequest,
 } from '@sputnik-v2/proposal';
 
 import { ProposalCrudRequestInterceptor } from './interceptors/proposal-crud.interceptor';
@@ -44,19 +46,18 @@ export class ProposalController {
   @ApiResponse({
     status: 200,
     description: 'List of aggregated Sputnik DAO Proposals',
-    type: ProposalResponse,
+    type: ProposalsResponse,
   })
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(HttpCacheInterceptor, ProposalCrudRequestInterceptor)
+  @UseInterceptors(HttpCacheInterceptor)
   @UseFilters(new QueryFailedErrorFilter())
   @Get('/proposals')
   async proposals(
-    @ParsedRequest() query: CrudRequest,
-    @Query() params: AccountProposalQuery,
-  ): Promise<Proposal[] | ProposalResponse> {
-    return await this.proposalService.getFeed(query, params);
+    @Query() params: ProposalsRequest,
+  ): Promise<ProposalsResponse> {
+    return await this.proposalService.getFeed(params);
   }
 
   @ApiParam({

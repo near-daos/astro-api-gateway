@@ -97,7 +97,7 @@ export class TokenAggregatorService {
 
   public async aggregateTokenPrices(): Promise<Token[]> {
     const { tokenApiUrl } = this.configService.get('near');
-    const tokens = await this.tokenService.find();
+    const tokens = await this.tokenService.getAllTokens();
     const tokenPrices = tokenApiUrl
       ? await lastValueFrom(
           this.httpService
