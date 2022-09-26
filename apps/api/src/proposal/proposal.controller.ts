@@ -29,7 +29,6 @@ import {
   ProposalResponse,
   Proposal,
   ProposalService,
-  AccountProposalQuery,
   ProposalQuery,
   ProposalsResponse,
   ProposalsRequest,

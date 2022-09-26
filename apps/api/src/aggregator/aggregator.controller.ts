@@ -14,7 +14,6 @@ import { Interval } from '@nestjs/schedule';
 import {
   AccountAccessGuard,
   AdminGuard,
-  AGGREGATOR_HANDLER_STATE_ID,
   AuthorizedRequest,
   FindOneParams,
   StatsDService,

@@ -1,9 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 import { SearchDto } from '@sputnik-v2/common';
 import { stringToBoolean } from '@sputnik-v2/utils';
-import { ProposalStatus } from '../types';
 
 export class ProposalsRequest extends SearchDto {
   @ApiProperty({
