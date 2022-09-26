@@ -39,6 +39,7 @@ import {
 import { AssetsNftEvent } from '@sputnik-v2/near-indexer';
 
 import { NFTTokenCrudRequestInterceptor } from './interceptors/nft-token-crud.interceptor';
+import { TokensPageResponseDto } from './dto/tokens-page-response.dto';
 
 @Span()
 @ApiTags('Token')
@@ -52,7 +53,7 @@ export class TokenController {
   @ApiResponse({
     status: 200,
     description: 'List of aggregated Fungible Tokens',
-    type: TokenResponse,
+    type: TokensPageResponseDto,
   })
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
