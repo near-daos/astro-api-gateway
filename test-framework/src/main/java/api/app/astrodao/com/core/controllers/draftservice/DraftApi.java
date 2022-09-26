@@ -1,6 +1,7 @@
 package api.app.astrodao.com.core.controllers.draftservice;
 
 import api.app.astrodao.com.openapi.models.CloseDraftProposal;
+import api.app.astrodao.com.openapi.models.CreateDraftComment;
 import api.app.astrodao.com.openapi.models.CreateDraftProposal;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
@@ -109,5 +110,19 @@ public class DraftApi {
 				.accept(ContentType.JSON)
 				.queryParams(queryParams)
 				.get(DRAFT_COMMENTS);
+	}
+
+	public Response createDraftComment(String contextId, String comment, String authToken) {
+		CreateDraftComment createDraftComment = new CreateDraftComment();
+		createDraftComment.setContextId(contextId);
+		createDraftComment.setContextType(CreateDraftComment.ContextTypeEnum.DRAFTPROPOSAL);
+		createDraftComment.setMessage(comment);
+
+		return given().spec(requestSpecForDraftService)
+				.accept(JSON)
+				.header("Authorization", "Bearer " + authToken)
+				.contentType(JSON)
+				.body(createDraftComment)
+				.post(DRAFT_COMMENTS);
 	}
 }

@@ -19,4 +19,9 @@ public class DraftCommentsApiSteps extends BaseSteps {
 	public Response getDraftComments(Map<String, Object> queryParams) {
 		return draftApi.getDraftComments(queryParams);
 	}
+
+	@Step("Create draft comment")
+	public Response createDraftComment(String contextId, String comment, String authToken) {
+		return draftApi.createDraftComment(contextId, comment, authToken);
+	}
 }
