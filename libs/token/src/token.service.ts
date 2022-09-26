@@ -1,25 +1,31 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
-import { IsNull, Not, Repository } from 'typeorm';
-import { CrudRequest } from '@nestjsx/crud';
+import { IsNull, ILike, Not, Repository } from 'typeorm';
 import { NearApiService } from '@sputnik-v2/near-api';
+import { BaseResponseDto, Order } from '@sputnik-v2/common';
+import { Dao } from '@sputnik-v2/dao/entities';
 
 import { Token, TokenBalance } from './entities';
-import { TokenDto, TokenBalanceDto, TokenResponse } from './dto';
-import { castToken, castTokenBalance } from '@sputnik-v2/token/types';
+import {
+  TokenDto,
+  TokenBalanceDto,
+  TokenResponse,
+  TokensRequest,
+  castTokenResponse,
+} from './dto';
+import { castToken, castTokenBalance } from './types';
 
 @Injectable()
-export class TokenService extends TypeOrmCrudService<Token> {
+export class TokenService {
   constructor(
     @InjectRepository(Token)
     private readonly tokenRepository: Repository<Token>,
     @InjectRepository(TokenBalance)
     private readonly tokenBalanceRepository: Repository<TokenBalance>,
+    @InjectRepository(Dao)
+    private readonly daoRepository: Repository<Dao>,
     private readonly nearApiService: NearApiService,
-  ) {
-    super(tokenRepository);
-  }
+  ) {}
 
   async create(tokenDto: TokenDto): Promise<Token> {
     return this.tokenRepository.save(tokenDto);
@@ -53,22 +59,59 @@ export class TokenService extends TypeOrmCrudService<Token> {
     });
   }
 
-  async getMany(req: CrudRequest): Promise<TokenResponse | Token[]> {
-    const tokenResponse = await super.getMany(req);
-
-    const tokens =
-      tokenResponse instanceof Array ? tokenResponse : tokenResponse.data;
-
-    (tokenResponse as TokenResponse).data = tokens.map((token) => ({
-      ...token,
-      tokenId: token.id,
-    }));
-
-    return tokenResponse;
+  async getAll(): Promise<Token[]> {
+    return this.tokenRepository.find();
   }
 
-  async getNearToken(): Promise<Token> {
-    return this.tokenRepository.findOne({ id: 'NEAR' });
+  async getMany(
+    params: TokensRequest,
+  ): Promise<BaseResponseDto<TokenResponse>> {
+    const {
+      limit = 10,
+      offset = 0,
+      search,
+      orderBy,
+      order = Order.DESC,
+    } = params;
+    const where = [];
+
+    if (search) {
+      const searchQuery = ILike(`%${search}%`);
+      where.push({ symbol: searchQuery });
+      where.push({ name: searchQuery });
+    }
+
+    const [data, total] = await this.tokenRepository.findAndCount({
+      select: ['id', 'totalSupply', 'decimals', 'icon', 'symbol', 'price'],
+      where,
+      order: orderBy ? { [orderBy]: order } : {},
+      take: limit,
+      skip: offset,
+    });
+
+    return {
+      limit,
+      offset,
+      total,
+      data: data.map(castTokenResponse),
+    };
+  }
+
+  async getNearToken(): Promise<TokenResponse> {
+    return this.tokenRepository.findOne(
+      { id: 'NEAR' },
+      { select: ['id', 'totalSupply', 'decimals', 'icon', 'symbol', 'price'] },
+    );
+  }
+
+  async getNearBalance(daoId: string): Promise<string | undefined> {
+    return (
+      await this.daoRepository
+        .createQueryBuilder('dao')
+        .select(['dao.amount'])
+        .where(`dao.id = :daoId`, { daoId })
+        .getOne()
+    )?.amount.toString();
   }
 
   async tokenBalancesByAccount(accountId: string): Promise<TokenBalance[]> {
@@ -78,10 +121,19 @@ export class TokenService extends TypeOrmCrudService<Token> {
     });
   }
 
-  async tokensByAccount(accountId: string): Promise<Token[]> {
+  async tokensByAccount(accountId: string): Promise<TokenResponse[]> {
     const tokenBalances = await this.tokenBalanceRepository
       .createQueryBuilder('tokenBalance')
       .leftJoinAndSelect('tokenBalance.token', 'token')
+      .select([
+        'token.id',
+        'token.totalSupply',
+        'token.decimals',
+        'token.icon',
+        'token.symbol',
+        'token.price',
+        'tokenBalance.balance',
+      ])
       .where(`tokenBalance.accountId = :accountId`, { accountId })
       .getMany();
     const tokens = tokenBalances.map(({ balance, token }) => ({
@@ -89,13 +141,8 @@ export class TokenService extends TypeOrmCrudService<Token> {
       tokenId: token.id,
       balance: balance,
     }));
-
     const nearToken = await this.getNearToken();
-    nearToken.balance = await this.nearApiService
-      .getAccountAmount(accountId)
-      .catch(() => {
-        throw new BadRequestException(`Account ${accountId} does not exist`);
-      });
+    nearToken.balance = await this.getNearBalance(accountId);
     nearToken.tokenId = '';
 
     return [nearToken, ...tokens];

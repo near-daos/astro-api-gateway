@@ -50,6 +50,20 @@ export class BountyContextService extends TypeOrmCrudService<BountyContext> {
       .execute();
   }
 
+  async updateCommentsCount(
+    id: string,
+    commentsCount: number,
+  ): Promise<UpdateResult> {
+    return this.bountyContextRepository
+      .createQueryBuilder()
+      .update(BountyContext)
+      .where('id = :id', {
+        id,
+      })
+      .set({ commentsCount })
+      .execute();
+  }
+
   async getMany(
     req: CrudRequest,
     permissionsAccountId?: string,

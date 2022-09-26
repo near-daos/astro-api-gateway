@@ -344,7 +344,6 @@ export class NearIndexerService {
           accountId,
         },
       )
-      .orderBy('included_in_block_timestamp', 'ASC')
       .getMany();
   }
 

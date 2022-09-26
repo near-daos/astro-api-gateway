@@ -88,6 +88,7 @@ export class CommentService extends TypeOrmCrudService<Comment> {
       }),
     );
 
+    await this.updateCommentsCount(deletedComment);
     await this.eventService.sendDeleteCommentEvent(deletedComment);
 
     return deletedComment;
@@ -137,9 +138,31 @@ export class CommentService extends TypeOrmCrudService<Comment> {
     });
 
     await this.opensearchService.indexComment(`${comment.id}`, comment);
+    await this.updateCommentsCount(comment);
 
     await this.eventService.sendNewCommentEvent(comment);
 
     return comment;
+  }
+  async updateCommentsCount(comment: Comment) {
+    const commentsCount = await this.commentRepository.count({
+      contextId: comment.contextId,
+      contextType: comment.contextType,
+      isArchived: false,
+    });
+
+    if (comment.contextType === CommentContextType.Proposal) {
+      await this.proposalService.updateCommentsCount(
+        comment.contextId,
+        commentsCount,
+      );
+    }
+
+    if (comment.contextType === CommentContextType.BountyContext) {
+      await this.bountyContextService.updateCommentsCount(
+        comment.contextId,
+        commentsCount,
+      );
+    }
   }
 }

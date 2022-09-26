@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Param,
+  Query,
   UseFilters,
   UseGuards,
   UseInterceptors,
@@ -14,11 +15,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import {
-  ParsedRequest,
-  CrudRequest,
-  CrudRequestInterceptor,
-} from '@nestjsx/crud';
+import { ParsedRequest, CrudRequest } from '@nestjsx/crud';
 import { Span } from 'nestjs-ddtrace';
 
 import {
@@ -28,6 +25,7 @@ import {
   FindAccountParams,
   FindOneParams,
   ValidAccountGuard,
+  BaseResponseDto,
 } from '@sputnik-v2/common';
 import {
   TokenService,
@@ -36,6 +34,7 @@ import {
   NFTToken,
   NFTTokenResponse,
   NFTTokenService,
+  TokensRequest,
 } from '@sputnik-v2/token';
 import { AssetsNftEvent } from '@sputnik-v2/near-indexer';
 
@@ -58,13 +57,12 @@ export class TokenController {
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
   })
-  @UseInterceptors(HttpCacheInterceptor, CrudRequestInterceptor)
+  @UseInterceptors(HttpCacheInterceptor)
   @UseFilters(new QueryFailedErrorFilter())
-  @ApiQuery({ type: EntityQuery })
   @Get('/')
   async tokens(
-    @ParsedRequest() query: CrudRequest,
-  ): Promise<Token[] | TokenResponse> {
+    @Query() query: TokensRequest,
+  ): Promise<BaseResponseDto<TokenResponse>> {
     return await this.tokenService.getMany(query);
   }
 
@@ -84,7 +82,7 @@ export class TokenController {
   @Get('/account-tokens/:accountId')
   async tokensByDao(
     @Param() { accountId }: FindAccountParams,
-  ): Promise<Token[]> {
+  ): Promise<TokenResponse[]> {
     return await this.tokenService.tokensByAccount(accountId);
   }
 

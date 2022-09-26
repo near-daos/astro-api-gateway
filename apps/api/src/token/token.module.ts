@@ -9,6 +9,7 @@ import {
   TokenFactoryService,
   TokenBalance,
 } from '@sputnik-v2/token';
+import { Dao } from '@sputnik-v2/dao/entities';
 import { NearIndexerModule } from '@sputnik-v2/near-indexer';
 import { NearApiModule } from '@sputnik-v2/near-api';
 import { CacheConfigService } from '@sputnik-v2/config/api-config';
@@ -20,7 +21,13 @@ import { TokenController } from './token.controller';
     CacheModule.registerAsync({
       useClass: CacheConfigService,
     }),
-    TypeOrmModule.forFeature([Token, TokenBalance, NFTToken, NFTTokenMetadata]),
+    TypeOrmModule.forFeature([
+      Token,
+      TokenBalance,
+      NFTToken,
+      NFTTokenMetadata,
+      Dao,
+    ]),
     HttpModule,
     NearIndexerModule,
     NearApiModule,
