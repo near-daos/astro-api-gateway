@@ -156,12 +156,10 @@ export class ProposalService extends BaseTypeOrmCrudService<Proposal> {
     }
 
     if (status) {
-      console.log(status.split(','));
       this.buildInArrayQuery(query, 'proposal.status', status.split(','));
     }
 
     if (type) {
-      console.log(type.split(','));
       this.buildInArrayQuery(query, 'proposal.type', type.split(','));
     }
 
