@@ -156,10 +156,12 @@ export class ProposalService extends BaseTypeOrmCrudService<Proposal> {
     }
 
     if (status) {
+      console.log(status.split(','));
       this.buildInArrayQuery(query, 'proposal.status', status.split(','));
     }
 
     if (type) {
+      console.log(type.split(','));
       this.buildInArrayQuery(query, 'proposal.type', type.split(','));
     }
 
@@ -342,12 +344,12 @@ export class ProposalService extends BaseTypeOrmCrudService<Proposal> {
     arr: string[],
   ): SelectQueryBuilder<Proposal> {
     if (arr.length > 1) {
-      query.andWhere(`${field} IN (:...arr)`, {
-        arr,
+      query.andWhere(`${field} IN (:...${field})`, {
+        [field]: arr,
       });
     } else if (arr.length === 1) {
-      query.andWhere(`${field} = :item`, {
-        item: arr[0],
+      query.andWhere(`${field} = :${field}`, {
+        [field]: arr[0],
       });
     }
 
