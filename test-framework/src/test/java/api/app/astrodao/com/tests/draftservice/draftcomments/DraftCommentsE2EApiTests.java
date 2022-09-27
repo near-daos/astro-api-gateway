@@ -15,10 +15,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
+import java.util.List;
 import java.util.Map;
 
 import static java.net.HttpURLConnection.HTTP_CREATED;
 import static java.net.HttpURLConnection.HTTP_OK;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasToString;
 
 @Tags({@Tag("all"), @Tag("draftCommentsE2EApiTests")})
 @Epic("Draft Comments")
@@ -29,14 +32,18 @@ public class DraftCommentsE2EApiTests extends BaseTest {
 	public final DraftCommentsApiSteps draftCommentsApiSteps;
 	private final Faker faker;
 
-	@Value("${test.dao1}")
-	private String testDao;
 
 	@Value("${accounts.account1.accountId}")
-	private String testAccountId;
+	private String testAccount1Id;
+
+	@Value("${accounts.account2.accountId}")
+	private String testAccount2Id;
 
 	@Value("${accounts.account1.token}")
-	private String authToken;
+	private String authToken1;
+
+	@Value("${accounts.account2.token}")
+	private String authToken2;
 
 
 	@Test
@@ -51,30 +58,33 @@ public class DraftCommentsE2EApiTests extends BaseTest {
 			"DELETE /api/v1/draft-comments/{id}")
 	void crudOperationWithLikeRemoveLikeActionsForDraftCommentsEndpoints() {
 		//create comment
-		String contextId = "632b322d5176bb0008d7d997";
-		String comment1 = faker.backToTheFuture().quote();
+		String contextId = "6332ae623b5f700008b15b62";
+		String comment1 = faker.yoda().quote();
+		DraftCommentPageResponse draftCommentPageResponse;
+		Map<String, Object> query;
 
-		String commentId1 = draftCommentsApiSteps.createDraftComment(contextId, comment1, authToken).then()
+		//comment by user2
+		String commentId = draftCommentsApiSteps.createDraftComment(contextId, comment1, authToken2).then()
 				.statusCode(HTTP_CREATED)
 				.extract().body().asString();
 
 
 		//get created comment
-		Map<String, Object> query = Map.of(
+		query = Map.of(
 				"contextType", "DraftProposal",
 				"search", comment1,
 				"contextId", contextId
 		);
 
-		DraftCommentPageResponse draftCommentPageResponse = draftCommentsApiSteps.getDraftComments(query).then()
+		draftCommentPageResponse = draftCommentsApiSteps.getDraftComments(query).then()
 				.statusCode(HTTP_OK)
 				.extract().as(DraftCommentPageResponse.class);
 
-		draftCommentsApiSteps.assertDtoValueGreaterThan(draftCommentPageResponse, draftCommentResponse -> draftCommentResponse.getTotal().intValue(), 1, "total");
-		draftCommentsApiSteps.assertCollectionContainsOnly(draftCommentPageResponse.getData(), DraftCommentResponse::getId, commentId1, "id");
+		draftCommentsApiSteps.assertDtoValue(draftCommentPageResponse, draftCommentResponse -> draftCommentResponse.getTotal().intValue(), 1, "total");
+		draftCommentsApiSteps.assertCollectionContainsOnly(draftCommentPageResponse.getData(), DraftCommentResponse::getId, commentId, "id");
 		draftCommentsApiSteps.assertCollectionContainsOnly(draftCommentPageResponse.getData(), DraftCommentResponse::getContextId, contextId, "contextId");
 		draftCommentsApiSteps.assertCollectionContainsOnly(draftCommentPageResponse.getData(), DraftCommentResponse::getContextType, DraftCommentResponse.ContextTypeEnum.DRAFTPROPOSAL, "contextType");
-		draftCommentsApiSteps.assertCollectionContainsOnly(draftCommentPageResponse.getData(), DraftCommentResponse::getAuthor, testAccountId, "author");
+		draftCommentsApiSteps.assertCollectionContainsOnly(draftCommentPageResponse.getData(), DraftCommentResponse::getAuthor, testAccount2Id, "author");
 		draftCommentsApiSteps.assertCollectionElementsHasValue(draftCommentPageResponse.getData(), draftCommentResponse -> draftCommentResponse.getMessage().equals(comment1), "message");
 
 		draftCommentsApiSteps.assertCollectionElementsHasValue(draftCommentPageResponse.getData(), draftCommentResponse -> draftCommentResponse.getReplies().isEmpty(), "replies");
@@ -84,7 +94,69 @@ public class DraftCommentsE2EApiTests extends BaseTest {
 		draftCommentsApiSteps.assertCollectionElementsHasValue(draftCommentPageResponse.getData(), draftCommentResponse -> !draftCommentResponse.getCreatedAt().toString().isEmpty(), "createdAt");
 		draftCommentsApiSteps.assertCollectionElementsHasValue(draftCommentPageResponse.getData(), draftCommentResponse -> !draftCommentResponse.getUpdatedAt().toString().isEmpty(), "updatedAt");
 
-		//update created comment PATCH
+		//update created comment
+		String comment2 = "Updated message is: " + faker.chuckNorris().fact();
+		draftCommentsApiSteps.updateDraftComment(commentId, comment2, authToken2).then()
+				.statusCode(HTTP_OK)
+				.body("", hasToString(commentId));
 
+
+		// like draft comment
+		draftCommentsApiSteps.likeDraftComment(commentId, authToken1).then()
+				.statusCode(HTTP_CREATED)
+				.body("", hasToString("true"));
+
+
+		//get updated comment with like
+		query = Map.of(
+				"contextType", "DraftProposal",
+				"search", comment2,
+				"contextId", contextId
+		);
+
+		draftCommentPageResponse = draftCommentsApiSteps.getDraftComments(query).then()
+				.statusCode(HTTP_OK)
+				.extract().as(DraftCommentPageResponse.class);
+
+		draftCommentsApiSteps.assertDtoValue(draftCommentPageResponse, draftCommentResponse -> draftCommentResponse.getTotal().intValue(), 1, "total");
+		draftCommentsApiSteps.assertCollectionContainsOnly(draftCommentPageResponse.getData(), DraftCommentResponse::getId, commentId, "id");
+		draftCommentsApiSteps.assertCollectionContainsOnly(draftCommentPageResponse.getData(), DraftCommentResponse::getContextId, contextId, "contextId");
+		draftCommentsApiSteps.assertCollectionContainsOnly(draftCommentPageResponse.getData(), DraftCommentResponse::getContextType, DraftCommentResponse.ContextTypeEnum.DRAFTPROPOSAL, "contextType");
+		draftCommentsApiSteps.assertCollectionContainsOnly(draftCommentPageResponse.getData(), DraftCommentResponse::getAuthor, testAccount2Id, "author");
+		draftCommentsApiSteps.assertCollectionElementsHasValue(draftCommentPageResponse.getData(), draftCommentResponse -> draftCommentResponse.getMessage().equals(comment2), "message");
+
+		draftCommentsApiSteps.assertCollectionElementsHasValue(draftCommentPageResponse.getData(), draftCommentResponse -> draftCommentResponse.getReplies().isEmpty(), "replies");
+		draftCommentsApiSteps.assertCollectionContainsOnly(draftCommentPageResponse.getData(), DraftCommentResponse::getLikeAccounts, List.of(testAccount1Id), "likeAccounts");
+		draftCommentsApiSteps.assertCollectionElementsHasValue(draftCommentPageResponse.getData(), draftCommentResponse -> draftCommentResponse.getDislikeAccounts().isEmpty(), "dislikeAccounts");
+
+
+		// remove like from draft comment
+		draftCommentsApiSteps.removeLikeFromDraftComment(commentId, authToken1).then()
+				.statusCode(HTTP_CREATED)
+				.body("", hasToString("true"));
+
+
+		//get updated comment with removed like
+		draftCommentPageResponse = draftCommentsApiSteps.getDraftComments(query).then()
+				.statusCode(HTTP_OK)
+				.extract().as(DraftCommentPageResponse.class);
+
+		draftCommentsApiSteps.assertDtoValue(draftCommentPageResponse, draftCommentResponse -> draftCommentResponse.getTotal().intValue(), 1, "total");
+		draftCommentsApiSteps.assertCollectionContainsOnly(draftCommentPageResponse.getData(), DraftCommentResponse::getId, commentId, "id");
+		draftCommentsApiSteps.assertCollectionContainsOnly(draftCommentPageResponse.getData(), DraftCommentResponse::getContextId, contextId, "contextId");
+		draftCommentsApiSteps.assertCollectionContainsOnly(draftCommentPageResponse.getData(), DraftCommentResponse::getContextType, DraftCommentResponse.ContextTypeEnum.DRAFTPROPOSAL, "contextType");
+		draftCommentsApiSteps.assertCollectionContainsOnly(draftCommentPageResponse.getData(), DraftCommentResponse::getAuthor, testAccount2Id, "author");
+		draftCommentsApiSteps.assertCollectionElementsHasValue(draftCommentPageResponse.getData(), draftCommentResponse -> draftCommentResponse.getMessage().equals(comment2), "message");
+
+		draftCommentsApiSteps.assertCollectionElementsHasValue(draftCommentPageResponse.getData(), draftCommentResponse -> draftCommentResponse.getReplies().isEmpty(), "replies");
+		draftCommentsApiSteps.assertCollectionElementsHasValue(draftCommentPageResponse.getData(), draftCommentResponse -> draftCommentResponse.getLikeAccounts().isEmpty(), "likeAccounts");
+		draftCommentsApiSteps.assertCollectionElementsHasValue(draftCommentPageResponse.getData(), draftCommentResponse -> draftCommentResponse.getDislikeAccounts().isEmpty(), "dislikeAccounts");
+
+
+		//delete draft comment
+		draftCommentsApiSteps.deleteDraftComment(commentId, authToken1).then()
+				.statusCode(HTTP_OK)
+				.body("id", equalTo(commentId),
+				      "deleted", equalTo(true));
 	}
 }
