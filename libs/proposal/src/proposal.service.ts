@@ -204,7 +204,7 @@ export class ProposalService extends BaseTypeOrmCrudService<Proposal> {
     this.buildVotedQuery(query, params);
 
     if (orderBy) {
-      query.orderBy(orderBy, order);
+      query.orderBy(`proposal.${orderBy}`, order);
     }
 
     const [proposals, total] = await query.getManyAndCount();
