@@ -10,9 +10,8 @@ export { TypeOrmConfigService } from './typeorm-config.service';
 export { CacheConfigService } from './cache';
 
 const aggregator = registerAs('aggregator', () => ({
-  pollingInterval: parseInt(process.env.AGGREGATOR_POLLING_INTERVAL, 10),
-  tokenPollingInterval: parseInt(
-    process.env.AGGREGATOR_TOKEN_POLLING_INTERVAL,
+  expiredProposalsPollingInterval: parseInt(
+    process.env.AGGREGATOR_EXPIRED_PROPOSALS_POLLING_INTERVAL,
     10,
   ),
   tokenPricesPollingInterval: parseInt(

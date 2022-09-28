@@ -6,7 +6,6 @@ import { Logger as PinoLogger } from 'nestjs-pino';
 import { EVENT_AGGREGATOR_QUEUE_NAME } from '@sputnik-v2/common';
 
 import { AggregatorModule } from './aggregator.module';
-import { AggregatorService } from './aggregator.service';
 
 export default class Aggregator {
   private readonly logger = new Logger(Aggregator.name);
@@ -33,8 +32,5 @@ export default class Aggregator {
     await app.listen();
 
     this.logger.log('Aggregator Microservice is listening...');
-
-    // Run initial aggregation
-    app.get(AggregatorService).aggregateAllDaos();
   }
 }
