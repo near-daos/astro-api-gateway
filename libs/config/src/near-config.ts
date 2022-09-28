@@ -159,7 +159,8 @@ export default registerAs('near', () =>
     tokenFactoryContractName: process.env.NEAR_TOKEN_FACTORY_CONTRACT_NAME,
     bridgeTokenFactoryContractName:
       process.env.NEAR_BRIDGE_TOKEN_FACTORY_CONTRACT_NAME,
-    pollingInterval: process.env.AGGREGATOR_POLLING_INTERVAL,
+    expiredProposalsPollingInterval:
+      process.env.AGGREGATOR_EXPIRED_PROPOSALS_POLLING_INTERVAL,
     daoPollingInterval: process.env.DAO_POLLING_INTERVAL,
     nftWhitelistContracts:
       process.env.NEAR_NFT_WHITELIST_CONTRACTS?.split(',') || [],

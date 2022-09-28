@@ -3,10 +3,9 @@ import PromisePool from '@supercharge/promise-pool';
 import { ReturnValue } from '@supercharge/promise-pool/dist/return-value';
 
 import { SputnikService } from '@sputnik-v2/sputnikdao';
-import { Account, Transaction } from '@sputnik-v2/near-indexer';
 import { Dao, DaoService } from '@sputnik-v2/dao';
 
-import { castDao, castDaoById } from './types/dao';
+import { castDaoById } from './types/dao';
 
 @Injectable()
 export class DaoAggregatorService {
@@ -14,18 +13,6 @@ export class DaoAggregatorService {
     private readonly sputnikService: SputnikService,
     private readonly daoService: DaoService,
   ) {}
-
-  public async aggregateByAccount(
-    daoAccount: Account,
-    txs: Transaction[],
-  ): Promise<Dao> {
-    const daoInfo = await this.sputnikService.getDaoInfo(daoAccount.accountId);
-    const delegationAccounts =
-      await this.daoService.getDelegationAccountsByDaoId(daoAccount.accountId);
-    return this.daoService.create(
-      castDao(daoAccount, txs, daoInfo, delegationAccounts),
-    );
-  }
 
   public async aggregateDaoById(daoId: string): Promise<Dao> {
     const daoInfo = await this.sputnikService.getDaoInfo(daoId);
@@ -39,7 +26,7 @@ export class DaoAggregatorService {
   public async aggregateDaoStatuses(): Promise<ReturnValue<Dao, Dao>> {
     const daos = await this.daoService.find();
 
-    return PromisePool.withConcurrency(10)
+    return PromisePool.withConcurrency(1)
       .for(daos)
       .process((dao) => this.daoService.updateDaoStatus(dao));
   }
