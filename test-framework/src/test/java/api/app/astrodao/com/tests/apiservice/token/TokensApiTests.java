@@ -1,8 +1,7 @@
 package api.app.astrodao.com.tests.apiservice.token;
 
-import api.app.astrodao.com.core.dto.api.tokens.TokensList;
-import api.app.astrodao.com.openapi.models.Token;
 import api.app.astrodao.com.openapi.models.TokenResponse;
+import api.app.astrodao.com.openapi.models.TokensPageResponseDto;
 import api.app.astrodao.com.steps.apiservice.TokenApiSteps;
 import api.app.astrodao.com.tests.BaseTest;
 import io.qameta.allure.*;
@@ -12,7 +11,10 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_OK;
@@ -28,111 +30,78 @@ public class TokensApiTests extends BaseTest {
 
     @Test
     @Severity(SeverityLevel.CRITICAL)
-    @Story("Get list of tokens with query param: [sort, limit, offset]")
-    @DisplayName("Get list of tokens with query param: [sort, limit, offset]")
-    void getListOfTokensWithSortLimitOffsetParams() {
+    @Story("Get list of tokens with query param: [limit, offset]")
+    @DisplayName("Get list of tokens with query param: [limit, offset]")
+    void getListOfTokensWithLimitOffsetParams() {
         Map<String, Object> query = Map.of(
-                "sort", "createdAt,DESC",
                 "limit", 10,
                 "offset", 0
         );
         int limit = 10;
-        int page = 1;
 
-        TokenResponse tokenResponse = tokenApiSteps.getTokens(query).then()
+        TokensPageResponseDto tokenResponse = tokenApiSteps.getTokens(query).then()
                 .statusCode(HTTP_OK)
-                .extract().as(TokenResponse.class);
+                .extract().as(TokensPageResponseDto.class);
 
-        tokenApiSteps.assertDtoValueGreaterThan(tokenResponse, r -> r.getTotal().intValue(), limit, "total");
-        tokenApiSteps.assertDtoValueGreaterThan(tokenResponse, r -> r.getPageCount().intValue(), 1, "pageCount");
-        tokenApiSteps.assertDtoValue(tokenResponse, r -> r.getPage().intValue(), page, "page");
-        tokenApiSteps.assertDtoValue(tokenResponse, r -> r.getCount().intValue(), limit, "limit");
+        tokenApiSteps.assertDtoValue(tokenResponse, r -> r.getLimit().intValue(), limit, "limit");
+        tokenApiSteps.assertDtoValue(tokenResponse, r -> r.getOffset().intValue(), 0, "offset");
+        tokenApiSteps.assertDtoValueGreaterThan(tokenResponse, r -> r.getTotal().intValue(), 135, "total");
+
         tokenApiSteps.assertCollectionHasCorrectSize(tokenResponse.getData(), limit);
         tokenApiSteps.assertCollectionElementsHasValue(tokenResponse.getData(), r -> !r.getId().isBlank(), "id");
+        tokenApiSteps.assertCollectionElementsHasValue(tokenResponse.getData(), r -> !r.getTotalSupply().isBlank(), "totalSupply");
         tokenApiSteps.assertCollectionElementsHasValue(tokenResponse.getData(), r -> !r.getSymbol().isBlank(), "symbol");
     }
 
     @Test
     @Severity(SeverityLevel.CRITICAL)
-    @Story("Get list of DAOs with query param: [sort, page]")
-    @DisplayName("Get list of DAOs with query param: [sort, page]")
-    void getListOfTokensWithSortPageParams() {
-        //TODO: Need to clarify this case
-        int page = 1;
+    @Story("Get list of tokens with query param: [orderBy, order]")
+    @DisplayName("Get list of tokens with query param: [orderBy, order]")
+    void getListOfTokensWithOrderByOrderParams() {
         Map<String, Object> query = Map.of(
-                "sort", "createdAt,DESC",
-                "page", page
+                "orderBy", "id",
+                "order", "ASC"
         );
 
-        TokensList tokensList = tokenApiSteps.getTokens(query).then()
+        TokensPageResponseDto tokensList = tokenApiSteps.getTokens(query).then()
                 .statusCode(HTTP_OK)
-                .extract().as(TokensList.class);
+                .extract().as(TokensPageResponseDto.class);
 
-        tokenApiSteps.assertCollectionHasSizeGreaterThanOrEqualTo(tokensList, 20);
-        tokenApiSteps.assertCollectionElementsHasValue(tokensList, r -> !r.getId().isBlank(), "id");
-        tokenApiSteps.assertCollectionElementsHasValue(tokensList, r -> !r.getSymbol().isBlank(), "symbol");
+        tokenApiSteps.assertDtoValue(tokensList, r -> r.getLimit().intValue(), 10, "limit");
+        tokenApiSteps.assertCollectionElementsHasValue(tokensList.getData(), r -> !r.getId().isBlank(), "id");
+        tokenApiSteps.assertCollectionElementsHasValue(tokensList.getData(), r -> !r.getTotalSupply().isBlank(), "totalSupply");
+        tokenApiSteps.assertCollectionElementsHasValue(tokensList.getData(), r -> !r.getSymbol().isBlank(), "symbol");
+        tokenApiSteps.assertCollectionElementsHasValue(tokensList.getData(), r -> r.getDecimals().intValue() > 0, "decimals");
+
+        List<String> id = tokensList.getData().stream().map(TokenResponse::getId).collect(Collectors.toList());
+        tokenApiSteps.assertStringsAreSortedCorrectly(id, Comparator.naturalOrder(),
+                                                                      "List of tokens should be sorted by 'id' field in ASC order");
     }
 
     @Test
     @Severity(SeverityLevel.CRITICAL)
-    @Story("Get list of tokens with query param: [sort, fields]")
-    @DisplayName("Get list of tokens with query param: [sort, fields]")
-    void getListOfTokensWithSortFieldsParams() {
+    @Story("Get list of tokens with query param: [search, orderBy, order]")
+    @DisplayName("Get list of tokens with query param: [search, orderBy, order]")
+    void getListOfTokensWithSearchOrderByOrderFieldsParams() {
         Map<String, Object> query = Map.of(
-                "sort", "id,DESC",
-                "fields", "id,symbol"
+                "search", "FT",
+                "orderBy", "decimals",
+                "order", "DESC"
         );
 
-        TokensList tokensList = tokenApiSteps.getTokens(query).then()
+        TokensPageResponseDto tokensList = tokenApiSteps.getTokens(query).then()
                 .statusCode(HTTP_OK)
-                .extract().as(TokensList.class);
+                .extract().as(TokensPageResponseDto.class);
 
-        tokenApiSteps.assertCollectionHasSizeGreaterThanOrEqualTo(tokensList, 20);
-        tokenApiSteps.assertCollectionElementsHasValue(tokensList, r -> !r.getId().isBlank(), "id");
-        tokenApiSteps.assertCollectionElementsHasValue(tokensList, r -> !r.getSymbol().isBlank(), "symbol");
-        //TODO: add verification that other fields are null
-    }
+        tokenApiSteps.assertDtoValue(tokensList, r -> r.getLimit().intValue(), 10, "limit");
+        tokenApiSteps.assertCollectionElementsHasValue(tokensList.getData(), r -> !r.getId().isBlank(), "id");
+        tokenApiSteps.assertCollectionElementsHasValue(tokensList.getData(), r -> !r.getTotalSupply().isBlank(), "totalSupply");
+        tokenApiSteps.assertCollectionElementsHasValue(tokensList.getData(), r -> !r.getSymbol().isBlank(), "symbol");
+        tokenApiSteps.assertCollectionElementsHasValue(tokensList.getData(), r -> r.getDecimals().intValue() > 0, "decimals");
 
-    @Test
-    @Severity(SeverityLevel.CRITICAL)
-    @Story("Get list of tokens with query param: [sort, s]")
-    @DisplayName("Get list of tokens with query param: [sort, s]")
-    void getListOfTokensWithSortAndSParams() {
-        int decimals = 18;
-        Map<String, Object> query = Map.of(
-                "sort", "createdAt,DESC",
-                "s", String.format("{\"decimals\": %s}", decimals)
-        );
-
-        TokensList tokensList = tokenApiSteps.getTokens(query).then()
-                .statusCode(HTTP_OK)
-                .extract().as(TokensList.class);
-
-        tokenApiSteps.assertCollectionHasSizeGreaterThanOrEqualTo(tokensList, 20);
-        tokenApiSteps.assertCollectionElementsHasValue(tokensList, r -> !r.getId().isBlank(), "id");
-        tokenApiSteps.assertCollectionElementsHasValue(tokensList, r -> !r.getSymbol().isBlank(), "symbol");
-        tokenApiSteps.assertCollectionContainsOnly(tokensList, Token::getDecimals, BigDecimal.valueOf(decimals), "decimals");
-    }
-
-    @Test
-    @Severity(SeverityLevel.CRITICAL)
-    @Story("Get list of tokens with query param: [filter, or]")
-    @DisplayName("Get list of tokens with query param: [filter, or]")
-    void getListOfTokensWithFilterAndOrParameters() {
-        String symbol1 = "DAI";
-        String symbol2 = "PARAS";
-        Map<String, Object> query = Map.of(
-                "filter", "symbol||$eq||" + symbol1,
-                "or", "symbol||$eq||" + symbol2
-        );
-
-        TokensList tokensList = tokenApiSteps.getTokens(query).then()
-                .statusCode(HTTP_OK)
-                .extract().as(TokensList.class);
-
-        tokenApiSteps.assertCollectionHasSizeGreaterThanOrEqualTo(tokensList, 2);
-        tokenApiSteps.assertCollectionElementsHasValue(tokensList, r -> !r.getId().isBlank(), "id");
-        tokenApiSteps.assertCollectionContainsExactlyInAnyOrder(tokensList, Token::getSymbol, symbol1, symbol2);
+        List<BigDecimal> decimals = tokensList.getData().stream().map(TokenResponse::getDecimals).collect(Collectors.toList());
+        tokenApiSteps.assertBigDecimalCollectionIsSortedCorrectly(decimals, Comparator.reverseOrder(),
+                                                                  "List of tokens should be sorted by 'decimals' field in DESC order");
     }
 
     @Test

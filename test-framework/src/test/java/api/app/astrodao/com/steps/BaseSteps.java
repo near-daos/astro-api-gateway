@@ -209,6 +209,18 @@ public abstract class BaseSteps {
                 .containsExactlyElementsOf(sorted);
     }
 
+    @Step("Collection is sorted correctly")
+    public void assertBigDecimalCollectionIsSortedCorrectly(Collection<BigDecimal> original,
+                                                            Comparator<? super BigDecimal> comparator,
+                                                            String assertMsg) {
+        ArrayList<BigDecimal> sorted = new ArrayList<>(original);
+        sorted.sort(comparator);
+
+        assertThat(original)
+                .as(assertMsg)
+                .containsExactlyElementsOf(sorted);
+    }
+
     @Step("User sees collection is sorted correctly")
     public void assertBigDecimalsAreSortedCorrectly(Collection<BigDecimal> original,
                                                   Comparator<? super BigDecimal> comparator,
