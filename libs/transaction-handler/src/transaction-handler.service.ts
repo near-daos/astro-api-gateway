@@ -2,7 +2,11 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { NearIndexerService, Transaction } from '@sputnik-v2/near-indexer';
+import {
+  NearIndexerService,
+  Receipt,
+  Transaction,
+} from '@sputnik-v2/near-indexer';
 import { INDEXER_PROCESSOR_HANDLER_STATE_ID } from '@sputnik-v2/common';
 
 import { TransactionActionMapperService } from './transaction-action-mapper.service';
@@ -124,5 +128,23 @@ export class TransactionHandlerService {
     }
 
     return results;
+  }
+
+  async handleNearReceipts(
+    receipts: Receipt[],
+  ): Promise<{ transactions: Transaction[]; success: boolean }> {
+    const { actions, transactions } =
+      await this.transactionActionMapperService.getActionsByReceipts(receipts);
+    const { handledTxHashes, success } =
+      await this.transactionActionHandlerService.handleTransactionActions(
+        actions,
+      );
+
+    return {
+      transactions: transactions.filter((tx) =>
+        handledTxHashes.includes(tx.transactionHash),
+      ),
+      success,
+    };
   }
 }
