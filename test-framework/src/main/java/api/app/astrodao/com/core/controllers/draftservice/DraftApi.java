@@ -1,7 +1,9 @@
 package api.app.astrodao.com.core.controllers.draftservice;
 
 import api.app.astrodao.com.openapi.models.CloseDraftProposal;
+import api.app.astrodao.com.openapi.models.CreateDraftComment;
 import api.app.astrodao.com.openapi.models.CreateDraftProposal;
+import api.app.astrodao.com.openapi.models.UpdateDraftComment;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
@@ -109,5 +111,55 @@ public class DraftApi {
 				.accept(ContentType.JSON)
 				.queryParams(queryParams)
 				.get(DRAFT_COMMENTS);
+	}
+
+	public Response createDraftComment(String contextId, String comment, String authToken) {
+		CreateDraftComment createDraftComment = new CreateDraftComment();
+		createDraftComment.setContextId(contextId);
+		createDraftComment.setContextType(CreateDraftComment.ContextTypeEnum.DRAFTPROPOSAL);
+		createDraftComment.setMessage(comment);
+
+		return given().spec(requestSpecForDraftService)
+				.accept(JSON)
+				.header("Authorization", "Bearer " + authToken)
+				.contentType(JSON)
+				.body(createDraftComment)
+				.post(DRAFT_COMMENTS);
+	}
+
+	public Response patchDraftComment(String commentId, String comment, String authToken) {
+		UpdateDraftComment updateDraftComment = new UpdateDraftComment();
+		updateDraftComment.setMessage(comment);
+
+		return given().spec(requestSpecForDraftService)
+				.accept(JSON)
+				.header("Authorization", "Bearer " + authToken)
+				.contentType(JSON)
+				.body(updateDraftComment)
+				.patch(DRAFT_COMMENTS_ID, commentId);
+	}
+
+	public Response likeDraftComment(String commentId, String authToken) {
+		return given().spec(requestSpecForDraftService)
+				.accept(JSON)
+				.header("Authorization", "Bearer " + authToken)
+				.contentType(JSON)
+				.post(DRAFT_COMMENTS_ID_LIKE, commentId);
+	}
+
+	public Response removeLikeFromDraftComment(String commentId, String authToken) {
+		return given().spec(requestSpecForDraftService)
+				.accept(JSON)
+				.header("Authorization", "Bearer " + authToken)
+				.contentType(JSON)
+				.post(DRAFT_COMMENTS_ID_REMOVE_LIKE, commentId);
+	}
+
+	public Response deleteDraftComment(String commentId, String authToken) {
+		return given().spec(requestSpecForDraftService)
+				.accept(JSON)
+				.header("Authorization", "Bearer " + authToken)
+				.contentType(JSON)
+				.delete(DRAFT_COMMENTS_ID, commentId);
 	}
 }
