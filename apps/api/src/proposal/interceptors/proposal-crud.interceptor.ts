@@ -17,6 +17,7 @@ export class ProposalCrudRequestInterceptor extends BaseCrudRequestInterceptor {
     'voteStatus',
     'proposer',
     'votePeriodEnd',
+    'commentsCount',
     'transactionHash',
     'createdAt',
     'updatedAt',
