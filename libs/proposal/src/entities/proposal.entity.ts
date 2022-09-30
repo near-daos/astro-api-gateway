@@ -76,7 +76,8 @@ export class Proposal extends TransactionEntity {
   kind: ProposalKind;
 
   @ApiProperty({
-    type: ProposalType,
+    type: 'enum',
+    enum: ProposalType,
   })
   @Column({
     type: 'enum',
