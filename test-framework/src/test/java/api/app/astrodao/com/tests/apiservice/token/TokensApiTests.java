@@ -100,7 +100,7 @@ public class TokensApiTests extends BaseTest {
         tokenApiSteps.assertCollectionElementsHasValue(tokensList.getData(), r -> r.getDecimals().intValue() > 0, "decimals");
 
         List<BigDecimal> decimals = tokensList.getData().stream().map(TokenResponse::getDecimals).collect(Collectors.toList());
-        tokenApiSteps.assertBigDecimalCollectionIsSortedCorrectly(decimals, Comparator.reverseOrder(),
+        tokenApiSteps.assertBigDecimalsAreSortedCorrectly(decimals, Comparator.reverseOrder(),
                                                                   "List of tokens should be sorted by 'decimals' field in DESC order");
     }
 
