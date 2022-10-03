@@ -3,6 +3,7 @@ import { FindManyOptions, MongoRepository, Repository } from 'typeorm';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
+import { Bounty } from '@sputnik-v2/bounty';
 import { Dao } from '@sputnik-v2/dao';
 import { Proposal } from '@sputnik-v2/proposal';
 import { getChunkCount } from '@sputnik-v2/utils';
@@ -30,6 +31,9 @@ export class OpensearchIndexMigration implements Migration {
     @InjectRepository(DraftProposal, DRAFT_DB_CONNECTION)
     private draftProposalRepository: MongoRepository<DraftProposal>,
 
+    @InjectRepository(Bounty)
+    private readonly bountyRepository: Repository<Bounty>,
+
     private readonly opensearchService: OpensearchService,
   ) {}
 
@@ -43,6 +47,8 @@ export class OpensearchIndexMigration implements Migration {
     await this.migrateComments();
 
     await this.migrateDraftProposals();
+
+    await this.migrateBounties();
 
     this.logger.log('Finished Opensearch Index migration.');
   }
@@ -88,8 +94,26 @@ export class OpensearchIndexMigration implements Migration {
     }
   }
 
+  private async migrateBounties() {
+    for await (const bounty of this.migrateEntity<Bounty>(
+      Bounty.name,
+      this.bountyRepository,
+      {
+        relations: [
+          'dao',
+          'bountyContext',
+          'bountyContext.proposal',
+          'bountyDoneProposals',
+          'bountyClaims',
+        ],
+      },
+    )) {
+      await this.opensearchService.indexBounty(bounty.id, bounty);
+    }
+  }
+
   private async *migrateEntity<
-    E extends Dao | Proposal | Comment | DraftProposal,
+    E extends Dao | Proposal | Comment | DraftProposal | Bounty,
   >(
     entity: string,
     repo: Repository<E> | MongoRepository<E>,

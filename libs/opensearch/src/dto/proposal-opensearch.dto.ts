@@ -20,15 +20,25 @@ import {
 } from '@sputnik-v2/proposal';
 import { ActionCall } from '@sputnik-v2/sputnikdao';
 
-import { BountyOpensearchDto } from './bounty-opensearch.dto';
 import { BaseOpensearchDto } from './base-opensearch.dto';
 import { DaoOpensearchDto, mapDaoToOpensearchDto } from './dao-opensearch.dto';
+
+export class BountyProposalOpensearchDto {
+  id: string;
+  bountyId: number;
+  description: string;
+  token: string;
+  amount: string;
+  times: string;
+  maxDeadline: string;
+  numberOfClaims: number;
+}
 
 export class ProposalOpensearchDto extends BaseOpensearchDto {
   id: string;
   proposalId: number;
   daoId: string;
-  dao: DaoOpensearchDto;
+  dao?: DaoOpensearchDto;
   proposer: string;
   description: string;
   status: ProposalStatus;
@@ -59,7 +69,7 @@ export class ProposalOpensearchDto extends BaseOpensearchDto {
   amount?: string;
   msg?: string;
   stakingId?: string;
-  bounty?: BountyOpensearchDto;
+  bounty?: BountyProposalOpensearchDto;
   bountyId?: string;
 }
 
@@ -96,7 +106,7 @@ export function mapProposalToOpensearchDto(
     accounts: [proposer, ...Object.keys(votes)].join(' '),
     proposalId,
     daoId,
-    dao: mapDaoToOpensearchDto(dao),
+    dao: dao ? mapDaoToOpensearchDto(dao) : null,
     proposer,
     description,
     status,
@@ -142,7 +152,7 @@ export function mapProposalToOpensearchDto(
           times,
           numberOfClaims,
           maxDeadline,
-        } as BountyOpensearchDto,
+        } as BountyProposalOpensearchDto,
       };
 
       break;
