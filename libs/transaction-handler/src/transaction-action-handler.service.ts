@@ -700,6 +700,19 @@ export class TransactionActionHandlerService {
       }),
     );
     this.logger.log('Successfully stored new Bounty');
+
+    await this.opensearchService.indexBounty(
+      bounty.id,
+      await this.bountyService.findOne(bounty.id, {
+        relations: [
+          'dao',
+          'bountyContext',
+          'bountyContext.proposal',
+          'bountyDoneProposals',
+          'bountyClaims',
+        ],
+      }),
+    );
   }
 
   async handleDoneBounty({
@@ -746,6 +759,19 @@ export class TransactionActionHandlerService {
       }),
     );
     this.logger.log(`Bounty successfully updated: ${bounty.id}`);
+
+    await this.opensearchService.indexBounty(
+      bounty.id,
+      await this.bountyService.findOne(bounty.id, {
+        relations: [
+          'dao',
+          'bountyContext',
+          'bountyContext.proposal',
+          'bountyDoneProposals',
+          'bountyClaims',
+        ],
+      }),
+    );
   }
 
   async handleClaimUnclaimBounty({
@@ -802,6 +828,19 @@ export class TransactionActionHandlerService {
       }),
     );
     this.logger.log(`Bounty successfully updated: ${bounty.id}`);
+
+    await this.opensearchService.indexBounty(
+      bounty.id,
+      await this.bountyService.findOne(bounty.id, {
+        relations: [
+          'dao',
+          'bountyContext',
+          'bountyContext.proposal',
+          'bountyDoneProposals',
+          'bountyClaims',
+        ],
+      }),
+    );
 
     return {
       type: ContractHandlerResultType.BountyClaim,
