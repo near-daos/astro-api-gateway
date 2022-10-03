@@ -7,10 +7,7 @@ import {
   Receipt,
   Transaction,
 } from '@sputnik-v2/near-indexer';
-import {
-  AGGREGATOR_HANDLER_STATE_ID,
-  INDEXER_PROCESSOR_HANDLER_STATE_ID,
-} from '@sputnik-v2/common';
+import { INDEXER_PROCESSOR_HANDLER_STATE_ID } from '@sputnik-v2/common';
 
 import { TransactionActionMapperService } from './transaction-action-mapper.service';
 import { TransactionActionHandlerService } from './transaction-action-handler.service';
@@ -41,9 +38,6 @@ export class TransactionHandlerService {
 
   async getHandlerBlocks(): Promise<TransactionHandlerBlocks> {
     try {
-      const aggregatorBlock = await this.getStateBlock(
-        AGGREGATOR_HANDLER_STATE_ID,
-      );
       const processorBlock = await this.getStateBlock(
         INDEXER_PROCESSOR_HANDLER_STATE_ID,
       );
@@ -55,9 +49,7 @@ export class TransactionHandlerService {
       const lastNearLakeBlock =
         await this.nearIndexerService.lastNearLakeBlock();
       const lastHandledBlock =
-        aggregatorBlock.blockTimestamp > processorBlock.blockTimestamp
-          ? aggregatorBlock
-          : processorBlock.blockTimestamp > lastAstroBlock.blockTimestamp
+        processorBlock.blockTimestamp > lastAstroBlock.blockTimestamp
           ? lastAstroBlock
           : processorBlock;
       return {
@@ -72,10 +64,6 @@ export class TransactionHandlerService {
         lastHandledBlock: {
           height: lastHandledBlock.blockHeight,
           timestamp: lastHandledBlock.blockTimestamp,
-        },
-        lastAggregatedBlock: {
-          height: aggregatorBlock.blockHeight,
-          timestamp: aggregatorBlock.blockTimestamp,
         },
         lastProcessedBlock: {
           height: processorBlock.blockHeight,
@@ -95,10 +83,6 @@ export class TransactionHandlerService {
           timestamp: 0,
         },
         lastHandledBlock: {
-          height: 0,
-          timestamp: 0,
-        },
-        lastAggregatedBlock: {
           height: 0,
           timestamp: 0,
         },

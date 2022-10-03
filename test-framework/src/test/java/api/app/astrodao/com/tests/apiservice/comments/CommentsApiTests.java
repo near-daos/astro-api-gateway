@@ -88,8 +88,8 @@ public class CommentsApiTests extends BaseTest {
         commentsApiSteps.assertDtoValue(commentResponse, r -> r.getPage().intValue(), page, "page");
         commentsApiSteps.assertDtoValue(commentResponse, r -> r.getCount().intValue(), limit, "limit");
         commentsApiSteps.assertCollectionHasCorrectSize(commentResponse.getData(), limit);
-        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> r.getCreatedAt() != null, "data/createdAt");
-        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> r.getUpdatedAt() != null, "data/updatedAt");
+        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> !r.getCreatedAt().toString().isEmpty(), "data/createdAt");
+        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> !r.getUpdatedAt().toString().isEmpty(), "data/updatedAt");
         commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> r.getId().longValue() > 0, "data/id");
         commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> r.getDaoId().endsWith(".sputnikv2.testnet"), "data/daoId");
         commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> !r.getContextId().isBlank(), "data/contextId");
@@ -124,8 +124,8 @@ public class CommentsApiTests extends BaseTest {
         commentsApiSteps.assertDtoValue(commentResponse, r -> r.getPage().intValue(), page, "page");
         commentsApiSteps.assertDtoValue(commentResponse, r -> r.getCount().intValue(), count, "limit");
         commentsApiSteps.assertCollectionHasCorrectSize(commentResponse.getData(), count);
-        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> r.getCreatedAt() != null, "data/createdAt");
-        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> r.getUpdatedAt() != null, "data/updatedAt");
+        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> !r.getCreatedAt().toString().isEmpty(), "data/createdAt");
+        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> !r.getUpdatedAt().toString().isEmpty(), "data/updatedAt");
         commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> r.getId().longValue() > 0, "data/id");
         commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> r.getDaoId().endsWith(".sputnikv2.testnet"), "data/daoId");
         commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> !r.getContextId().isBlank(), "data/contextId");
@@ -195,8 +195,8 @@ public class CommentsApiTests extends BaseTest {
         commentsApiSteps.assertDtoValue(commentResponse, r -> r.getPage().intValue(), page, "page");
         commentsApiSteps.assertDtoValue(commentResponse, r -> r.getCount().intValue(), count, "count");
         commentsApiSteps.assertCollectionHasCorrectSize(commentResponse.getData(), count);
-        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> r.getCreatedAt() != null, "data/createdAt");
-        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> r.getUpdatedAt() != null, "data/updatedAt");
+        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> !r.getCreatedAt().toString().isEmpty(), "data/createdAt");
+        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> !r.getUpdatedAt().toString().isEmpty(), "data/updatedAt");
         commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> r.getId().longValue() > 0, "data/id");
         commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> r.getDaoId().endsWith(".sputnikv2.testnet"), "data/daoId");
         commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> !r.getContextId().isBlank(), "data/contextId");
@@ -233,8 +233,8 @@ public class CommentsApiTests extends BaseTest {
         commentsApiSteps.assertDtoValue(commentResponse, r -> r.getPage().intValue(), page, "page");
         commentsApiSteps.assertDtoValue(commentResponse, r -> r.getCount().intValue(), count, "count");
         commentsApiSteps.assertCollectionHasCorrectSize(commentResponse.getData(), count);
-        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> r.getCreatedAt() != null, "data/createdAt");
-        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> r.getUpdatedAt() != null, "data/updatedAt");
+        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> !r.getCreatedAt().toString().isEmpty(), "data/createdAt");
+        commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> !r.getUpdatedAt().toString().isEmpty(), "data/updatedAt");
         commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> r.getId().longValue() > 0, "data/id");
         commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> r.getDaoId().endsWith(".sputnikv2.testnet"), "data/daoId");
         commentsApiSteps.assertCollectionElementsHasValue(commentResponse.getData(), r -> !r.getContextId().isBlank(), "data/contextId");

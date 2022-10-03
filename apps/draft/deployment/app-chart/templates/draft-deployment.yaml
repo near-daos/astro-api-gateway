@@ -95,6 +95,8 @@ spec:
               name: api-redis-secrets
           - secretRef:
               name: draft-documentdb-secrets
+          - secretRef:
+              name: api-opensearch-secrets
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:

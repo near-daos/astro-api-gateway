@@ -21,7 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static java.net.HttpURLConnection.*;
+import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
+import static java.net.HttpURLConnection.HTTP_OK;
 import static org.hamcrest.Matchers.equalTo;
 
 @Tags({@Tag("all"), @Tag("proposalsAccountProposalsAccountIdApiTests")})
@@ -178,7 +179,7 @@ public class ProposalsAccountProposalsAccountIdApiTests extends BaseTest {
 				"sort","createdAt,DESC",
 				"offset", 50,
 				"s", String.format("{\"type\": \"%s\"}", type),
-				"fields", "createdAt,id,kind,description,type"
+				"fields", "createdAt,id,kind,description,type,commentsCount"
 		);
 
 		ProposalResponse proposalResponse = proposalsApiSteps.getAccountProposals(query, account1Id).then()

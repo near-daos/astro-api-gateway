@@ -4,6 +4,7 @@ import { default as database } from './database';
 import databaseNearIndexer from './database-near-indexer';
 import { default as nearConfig } from './near-config';
 import { default as notifi } from './notifi';
+import opensearch from './opensearch';
 import { default as redis } from './redis';
 
 export { default as validate } from './validationSchema';
@@ -28,4 +29,5 @@ export default [
   nearConfig,
   databaseNearIndexer,
   notifi,
+  opensearch,
 ];

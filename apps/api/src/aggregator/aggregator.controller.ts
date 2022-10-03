@@ -14,7 +14,6 @@ import { Interval } from '@nestjs/schedule';
 import {
   AccountAccessGuard,
   AdminGuard,
-  AGGREGATOR_HANDLER_STATE_ID,
   AuthorizedRequest,
   FindOneParams,
   StatsDService,
@@ -78,13 +77,8 @@ export class AggregatorController {
     const data: TransactionHandlerBlocks =
       await this.transactionHandlerService.getHandlerBlocks();
 
-    const {
-      lastBlock,
-      lastAstroBlock,
-      lastAggregatedBlock,
-      lastProcessedBlock,
-      lastHandledBlock,
-    } = data;
+    const { lastBlock, lastAstroBlock, lastProcessedBlock, lastHandledBlock } =
+      data;
 
     currentSpan.addTags({
       ...data,
@@ -105,15 +99,6 @@ export class AggregatorController {
     this.statsDService.client.gauge(
       'block.lastAstroBlock.timestamp',
       lastAstroBlock.timestamp as number,
-    );
-
-    this.statsDService.client.gauge(
-      'block.lastAggregatedBlock.height',
-      lastAggregatedBlock.height,
-    );
-    this.statsDService.client.gauge(
-      'block.lastAggregatedBlock.timestamp',
-      lastAggregatedBlock.timestamp as number,
     );
 
     this.statsDService.client.gauge(

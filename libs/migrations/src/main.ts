@@ -23,7 +23,7 @@ export default class MigrationRunner {
         continue;
       }
 
-      await app.get(script.name).migrate();
+      await app.get(script).migrate();
     }
   }
 }

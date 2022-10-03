@@ -231,6 +231,15 @@
         "tsConfigPath": "libs/comment/tsconfig.lib.json"
       }
     },
+    "opensearch": {
+      "type": "library",
+      "root": "libs/opensearch",
+      "entryFile": "index",
+      "sourceRoot": "libs/opensearch/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/opensearch/tsconfig.lib.json"
+      }
+    },
     "stats": {
       "type": "library",
       "root": "libs/stats",

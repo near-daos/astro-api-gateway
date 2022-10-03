@@ -18,19 +18,19 @@ import { WebsocketModule, WebsocketGateway } from '@sputnik-v2/websocket';
 import { BountyModule } from './bounty/bounty.module';
 import { DaoModule } from './dao/dao.module';
 import { ProposalModule } from './proposal/proposal.module';
-import { SearchModule } from './search/search.module';
 import { SubscriptionModule } from './subscription/subscription.module';
 import { TokenModule } from './token/token.module';
 import { TransactionModule } from './transaction/transaction.module';
 import { AppController } from './api.controller';
 import { NotificationModule } from './notification/notification.module';
-import { CommentModule } from './comment/comment.module';
+import { CommentApiModule } from './comment/comment-api.module';
 import { AggregatorModule } from './aggregator/aggregator.module';
 import { MetricsModule } from './metrics/metrics.module';
 import { StatsModule } from './stats/stats.module';
 import { ApiDaoSettingsModule } from './dao-settings/dao-settings.module';
 import { AccountModule } from './account/account.module';
 import { ProposalTemplateModule } from './proposal-template/proposal-template.module';
+import { SearchModule } from './search/search.module';
 
 @Module({
   imports: [
@@ -73,7 +73,6 @@ import { ProposalTemplateModule } from './proposal-template/proposal-template.mo
     ApiDaoSettingsModule,
     ProposalTemplateModule,
     ProposalModule,
-    SearchModule,
     SubscriptionModule,
     TokenModule,
     TransactionModule,
@@ -81,11 +80,12 @@ import { ProposalTemplateModule } from './proposal-template/proposal-template.mo
     WebsocketModule,
     EventModule,
     NotificationModule,
-    CommentModule,
+    CommentApiModule,
     AggregatorModule,
     MetricsModule,
     StatsModule,
     AccountModule,
+    SearchModule,
   ],
   controllers: [AppController],
   providers: [WebsocketGateway],

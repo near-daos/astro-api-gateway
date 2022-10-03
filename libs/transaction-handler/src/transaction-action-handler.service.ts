@@ -24,6 +24,7 @@ import {
   buildProposalId,
 } from '@sputnik-v2/utils';
 import { CacheService } from '@sputnik-v2/cache';
+import { OpensearchService } from '@sputnik-v2/opensearch';
 
 import {
   castActProposal,
@@ -61,6 +62,7 @@ export class TransactionActionHandlerService {
     private readonly tokenService: TokenService,
     private readonly nftTokenService: NFTTokenService,
     private readonly cacheService: CacheService,
+    private readonly opensearchService: OpensearchService,
   ) {
     const { contractName } = this.configService.get('near');
     // TODO: Split on multiple handlers
@@ -212,6 +214,11 @@ export class TransactionActionHandlerService {
 
     await this.eventService.sendDaoUpdateNotificationEvent(dao, txAction);
 
+    await this.opensearchService.indexDao(
+      daoId,
+      await this.daoService.findOne(daoId, { relations: ['delegations'] }),
+    );
+
     return {
       type: ContractHandlerResultType.DaoCreate,
       metadata: { daoId: dao.id },
@@ -299,6 +306,20 @@ export class TransactionActionHandlerService {
     this.logger.log(`Updating DAO: ${receiverId} due to transaction`);
     await this.daoService.saveWithProposalCount(dao);
     this.logger.log(`DAO successfully updated: ${receiverId}`);
+
+    await this.opensearchService.indexProposal(
+      proposal.id,
+      await this.proposalService.findOne(proposal.id, {
+        loadEagerRelations: false,
+        relations: ['dao'],
+      }),
+    );
+    await this.opensearchService.indexDao(
+      proposal.daoId,
+      await this.daoService.findOne(proposal.daoId, {
+        relations: ['delegations'],
+      }),
+    );
 
     await this.cacheService.handleProposalCache(proposal);
 
@@ -390,6 +411,20 @@ export class TransactionActionHandlerService {
         await this.proposalService.create(proposal);
         break;
     }
+
+    await this.opensearchService.indexProposal(
+      proposal.id,
+      await this.proposalService.findOne(proposal.id, {
+        loadEagerRelations: false,
+        relations: ['dao'],
+      }),
+    );
+    await this.opensearchService.indexDao(
+      proposal.daoId,
+      await this.daoService.findOne(proposal.daoId, {
+        relations: ['delegations'],
+      }),
+    );
 
     await this.cacheService.handleProposalCache(proposal);
 
@@ -787,6 +822,11 @@ export class TransactionActionHandlerService {
     await this.daoService.saveWithFunds({ ...dao });
     this.logger.log(`DAO successfully updated: ${receiverId}`);
 
+    await this.opensearchService.indexDao(
+      dao.id,
+      await this.daoService.findOne(dao.id, { relations: ['delegations'] }),
+    );
+
     return {
       type: ContractHandlerResultType.Unknown,
       metadata: { daoId: receiverId },
@@ -871,6 +911,11 @@ export class TransactionActionHandlerService {
     }
 
     await this.daoService.updateDaoMembers(daoId);
+
+    await this.opensearchService.indexDao(
+      dao.id,
+      await this.daoService.findOne(dao.id, { relations: ['delegations'] }),
+    );
 
     return { type: ContractHandlerResultType.Delegate };
   }

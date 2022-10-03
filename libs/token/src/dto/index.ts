@@ -3,3 +3,4 @@ export * from './nft-token-response.dto';
 export * from './token.dto';
 export * from './token-balance.dto';
 export * from './token-response.dto';
+export * from './tokens-request.dto';

@@ -10,8 +10,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -19,7 +17,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import static api.app.astrodao.com.core.Constants.Variables.EMPTY_STRING;
-import static java.net.HttpURLConnection.*;
+import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
+import static java.net.HttpURLConnection.HTTP_OK;
 import static org.hamcrest.Matchers.equalTo;
 
 @Tags({@Tag("all"), @Tag("daoAccountDaosAccountIdApiTests")})
@@ -42,7 +41,7 @@ public class DaoAccountDaosAccountIdApiTests extends BaseTest {
 				.statusCode(HTTP_OK)
 				.extract().as( AccountDAOs.class);
 
-		List<String> expectedDaoIds = Arrays.asList(
+		List<String> expectedDaoIds = List.of(
 				"test-dao-1640251360527.sputnikv2.testnet",
 				"test-dao-1640251195272.sputnikv2.testnet",
 				"test-dao-1640172170380.sputnikv2.testnet",
@@ -55,7 +54,7 @@ public class DaoAccountDaosAccountIdApiTests extends BaseTest {
 
 		daoApiSteps.assertCollectionHasCorrectSize(accountDaos, 9);
 		daoApiSteps.assertCollectionHasSameElementsAs(accountDaos, Dao::getId, expectedDaoIds, "id");
-		daoApiSteps.assertCollectionContainsExactlyInAnyOrder(accountDaos, Dao::getStatus, "Inactive");
+		daoApiSteps.assertCollectionContainsExactlyInAnyOrder(accountDaos, Dao::getStatus, "Inactive", "Active");
 	}
 
 	@Test

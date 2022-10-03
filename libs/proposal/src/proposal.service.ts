@@ -1,6 +1,5 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
-import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 import { CrudRequest } from '@nestjsx/crud';
 import {
   Brackets,
@@ -13,9 +12,13 @@ import {
   SelectQueryBuilder,
   UpdateResult,
 } from 'typeorm';
-import { Role, RoleKindType, Delegation } from '@sputnik-v2/dao/entities';
-import { SearchQuery } from '@sputnik-v2/common';
-import { buildDelegationId, getAccountPermissions } from '@sputnik-v2/utils';
+import { Dao, Delegation, Role, RoleKindType } from '@sputnik-v2/dao/entities';
+import { Order, SearchQuery } from '@sputnik-v2/common';
+import {
+  buildDelegationId,
+  getAccountPermissions,
+  getBlockTimestamp,
+} from '@sputnik-v2/utils';
 import { BaseTypeOrmCrudService } from '@sputnik-v2/common/services/type-orm-crud.service';
 
 import {
@@ -23,9 +26,12 @@ import {
   ProposalDto,
   ProposalQuery,
   ProposalResponse,
+  ProposalsRequest,
+  ProposalsResponse,
 } from './dto';
 import { Proposal } from './entities';
 import { ProposalStatus, ProposalVoteStatus } from './types';
+import { BountyContext } from '@sputnik-v2/bounty';
 
 @Injectable()
 export class ProposalService extends BaseTypeOrmCrudService<Proposal> {
@@ -38,6 +44,8 @@ export class ProposalService extends BaseTypeOrmCrudService<Proposal> {
     private readonly roleRepository: Repository<Role>,
     @InjectRepository(Delegation)
     private readonly delegationRepository: Repository<Delegation>,
+    @InjectRepository(Dao)
+    private readonly daoRepository: Repository<Dao>,
     @InjectConnection()
     private connection: Connection,
   ) {
@@ -70,6 +78,20 @@ export class ProposalService extends BaseTypeOrmCrudService<Proposal> {
     return this.proposalRepository.save(proposal);
   }
 
+  async updateCommentsCount(
+    id: string,
+    commentsCount: number,
+  ): Promise<UpdateResult> {
+    return this.proposalRepository
+      .createQueryBuilder()
+      .update(Proposal)
+      .where('id = :id', {
+        id,
+      })
+      .set({ commentsCount })
+      .execute();
+  }
+
   async getById(
     proposalId: string,
     permissionsAccountId?: string,
@@ -92,17 +114,172 @@ export class ProposalService extends BaseTypeOrmCrudService<Proposal> {
     );
   }
 
-  async getFeed(
-    req: CrudRequest,
-    params: AccountProposalQuery,
-  ): Promise<ProposalResponse | Proposal[]> {
-    const queryBuilder = await super.createBuilder(req.parsed, req.options);
-    const proposalResponse = await super.doGetMany(
-      this.buildVotedQuery(queryBuilder, params),
-      req.parsed,
-      req.options,
+  async getFeed(params: ProposalsRequest): Promise<ProposalsResponse> {
+    const {
+      offset = 0,
+      orderBy,
+      order = Order.DESC,
+      dao,
+      status,
+      type,
+      proposer,
+      active,
+      failed,
+      accountId,
+    } = params;
+    const limit = Math.min(params.limit || 50, 50);
+    const query = await this.proposalRepository
+      .createQueryBuilder('proposal')
+      .select([
+        'proposal.id',
+        'proposal.daoId',
+        'proposal.proposalId',
+        'proposal.type',
+        'proposal.kind',
+        'proposal.description',
+        'proposal.votes',
+        'proposal.status',
+        'proposal.voteStatus',
+        'proposal.proposer',
+        'proposal.votePeriodEnd',
+        'proposal.transactionHash',
+        'proposal.createdAt',
+        'proposal.updatedAt',
+        'proposal.commentsCount',
+      ])
+      .leftJoinAndSelect('proposal.actions', 'actions')
+      .skip(offset)
+      .take(Math.min(limit, 50));
+
+    if (dao) {
+      this.buildInArrayQuery(query, 'proposal.daoId', dao.split(','));
+    }
+
+    if (status) {
+      this.buildInArrayQuery(query, 'proposal.status', status.split(','));
+    }
+
+    if (type) {
+      this.buildInArrayQuery(query, 'proposal.type', type.split(','));
+    }
+
+    if (proposer) {
+      this.buildInArrayQuery(query, 'proposal.proposer', proposer.split(','));
+    }
+
+    if (active) {
+      query.andWhere('proposal.status = :status', {
+        status: ProposalStatus.InProgress,
+      });
+      query.andWhere('proposal.voteStatus = :voteStatus', {
+        voteStatus: ProposalVoteStatus.Active,
+      });
+      query.andWhere('proposal.votePeriodEnd > :timestamp', {
+        timestamp: getBlockTimestamp(),
+      });
+    }
+
+    if (failed) {
+      query.andWhere(
+        new Brackets((qb) => {
+          qb.where(`proposal.status IN (:...statuses)`, {
+            statuses: [
+              ProposalStatus.Rejected,
+              ProposalStatus.Expired,
+              ProposalStatus.Moved,
+              ProposalStatus.Removed,
+            ],
+          });
+          qb.orWhere(
+            '(proposal.status != :status AND proposal.votePeriodEnd < :timestamp)',
+            {
+              status: ProposalStatus.Approved,
+              timestamp: getBlockTimestamp(),
+            },
+          );
+        }),
+      );
+    }
+
+    this.buildVotedQuery(query, params);
+
+    if (orderBy) {
+      query.orderBy(`proposal.${orderBy}`, order);
+    }
+
+    const [proposals, total] = await query.getManyAndCount();
+
+    return {
+      limit,
+      offset,
+      total,
+      data: await this.mapProposals(proposals, accountId),
+    };
+  }
+
+  public async mapProposals(
+    proposals: Proposal[],
+    permissionsAccountId?: string,
+  ): Promise<Proposal[]> {
+    if (!proposals?.length) {
+      return proposals;
+    }
+
+    const daoIds = [...new Set(proposals.map((proposal) => proposal.daoId))];
+    const daoQueryBuilder = this.daoRepository
+      .createQueryBuilder('dao')
+      .leftJoin('dao.policy', 'policy')
+      .select([
+        'dao.id',
+        'dao.transactionHash',
+        'dao.config',
+        'dao.numberOfMembers',
+        'policy.daoId',
+        'policy.defaultVotePolicy',
+        'policy.defaultVotePolicy',
+      ])
+      .where('dao.id IN (:...daoIds)', { daoIds });
+    let accountDelegations = [];
+
+    if (permissionsAccountId) {
+      daoQueryBuilder
+        .leftJoin('policy.roles', 'role')
+        .addSelect([
+          'role.name',
+          'role.kind',
+          'role.accountIds',
+          'role.balance',
+          'role.permissions',
+        ]);
+      accountDelegations = await this.delegationRepository.find({
+        select: ['daoId', 'balance'],
+        where: {
+          accountId: permissionsAccountId,
+          daoId: In(daoIds),
+        },
+      });
+    }
+
+    const daos = (await daoQueryBuilder.getMany()).reduce(
+      (daos, dao) => ({ ...daos, [dao.id]: dao }),
+      {},
     );
-    return this.mapProposalFeed(proposalResponse, params.accountId);
+
+    return proposals.map((proposal) => {
+      const { policy: daoPolicy, ...dao } = daos[proposal.daoId];
+      const { roles, ...policy } = daoPolicy;
+      const accountDelegation = accountDelegations.find(
+        ({ daoId }) => daoId === proposal.daoId,
+      );
+      proposal.dao = { ...dao, policy };
+
+      return this.populateProposalPermissions(
+        proposal,
+        roles,
+        permissionsAccountId,
+        accountDelegation?.balance,
+      );
+    });
   }
 
   buildPermissionsSubQuery(
@@ -148,12 +325,30 @@ export class ProposalService extends BaseTypeOrmCrudService<Proposal> {
 
   buildVotedQuery(
     query: SelectQueryBuilder<Proposal>,
-    params: AccountProposalQuery,
+    params: AccountProposalQuery | ProposalsRequest,
   ): SelectQueryBuilder<Proposal> {
     if (params.accountId && typeof params.voted === 'boolean') {
       query.andWhere(
         `${params.voted ? '' : 'NOT'} (votes ? '${params.accountId}')`,
       );
+    }
+
+    return query;
+  }
+
+  buildInArrayQuery(
+    query: SelectQueryBuilder<Proposal>,
+    field: string,
+    arr: string[],
+  ): SelectQueryBuilder<Proposal> {
+    if (arr.length > 1) {
+      query.andWhere(`${field} IN (:...${field})`, {
+        [field]: arr,
+      });
+    } else if (arr.length === 1) {
+      query.andWhere(`${field} = :${field}`, {
+        [field]: arr[0],
+      });
     }
 
     return query;

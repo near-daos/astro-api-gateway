@@ -5,3 +5,5 @@ export * from './proposal-response.dto';
 export * from './proposal-action.dto';
 export * from './account-proposal-query.dto';
 export * from './proposal-query.dto';
+export * from './proposals-request.dto';
+export * from './proposals-response.dto';
