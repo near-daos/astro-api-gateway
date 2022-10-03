@@ -4,12 +4,8 @@ import api.app.astrodao.com.openapi.models.DaoResponseV1;
 import api.app.astrodao.com.openapi.models.Proposal;
 import api.app.astrodao.com.openapi.models.SearchResultDto;
 import api.app.astrodao.com.openapi.models.VotePolicy;
-import api.app.astrodao.com.steps.apiservice.ProposalsApiSteps;
 import api.app.astrodao.com.steps.apiservice.SearchApiSteps;
-import api.app.astrodao.com.steps.apiservice.TransactionsSteps;
-import api.app.astrodao.com.steps.cli.NearCLISteps;
 import api.app.astrodao.com.tests.BaseTest;
-import com.github.javafaker.Faker;
 import io.qameta.allure.*;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.DisplayName;
@@ -20,8 +16,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_OK;
@@ -34,10 +32,6 @@ import static org.hamcrest.Matchers.hasItem;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class SearchApiTests extends BaseTest {
     private final SearchApiSteps searchApiSteps;
-    private final NearCLISteps nearCLISteps;
-    private final ProposalsApiSteps proposalsApiSteps;
-    private final TransactionsSteps transactionsSteps;
-    private final Faker faker;
 
     @Value("${accounts.account1.accountId}")
     private String account1Id;
@@ -45,30 +39,37 @@ public class SearchApiTests extends BaseTest {
 
     @Test
     @Severity(SeverityLevel.CRITICAL)
-    @Story("Performing search with query param: [limit, offset]")
-    @DisplayName("Performing search with query param: [limit, offset]")
-    void performingSearchWithLimitOffsetParams() {
-        int page = 1;
+    @Story("Performing search with query param: [limit, offset, page]")
+    @DisplayName("Performing search with query param: [limit, offset, page]")
+    void performingSearchWithLimitOffsetPageParams() {
+        int page = 2;
         int count = 5;
         Map<String, Object> query = Map.of(
-                "query","dao",
+                "query", "test-dao",
                 "limit", count,
-                "offset", 0
+                "offset", 5,
+                "page", page
         );
 
         SearchResultDto searchResult = searchApiSteps.search(query).then()
                 .statusCode(HTTP_OK)
                 .extract().as(SearchResultDto.class);
 
-        searchApiSteps.assertDtoValue(searchResult, r -> r.getDaos().getPage(), page, "daos/page");
-        searchApiSteps.assertDtoValueGreaterThan(searchResult, r -> r.getDaos().getPageCount(), page, "daos/pageCount");
-        searchApiSteps.assertDtoValue(searchResult, r -> r.getDaos().getCount(), count, "daos/count");
-        searchApiSteps.assertDtoValueGreaterThan(searchResult, r -> r.getDaos().getTotal(), count, "daos/total");
+        searchApiSteps.assertDtoValue(searchResult, r -> r.getDaos().getPage().intValue(), page, "daos/page");
+        searchApiSteps.assertDtoValueGreaterThan(searchResult, r -> r.getDaos().getPageCount().intValue(), 310, "daos/pageCount");
+        searchApiSteps.assertDtoValue(searchResult, r -> r.getDaos().getCount().intValue(), count, "daos/count");
+        searchApiSteps.assertDtoValueGreaterThan(searchResult, r -> r.getDaos().getTotal().intValue(), 1553, "daos/total");
 
-        searchApiSteps.assertDtoValue(searchResult, r -> r.getProposals().getPage(), page, "proposals/page");
-        searchApiSteps.assertDtoValueGreaterThan(searchResult, r -> r.getProposals().getPageCount(), page, "proposals/pageCount");
-        searchApiSteps.assertDtoValue(searchResult, r -> r.getProposals().getCount(), count, "proposals/count");
-        searchApiSteps.assertDtoValueGreaterThan(searchResult, r -> r.getProposals().getTotal(), count, "proposals/total");
+
+        searchApiSteps.assertDtoValue(searchResult, r -> r.getProposals().getCount().intValue(), count, "proposals/count");
+        searchApiSteps.assertDtoValueGreaterThan(searchResult, r -> r.getProposals().getTotal().intValue(), 8070, "proposals/total");
+        searchApiSteps.assertDtoValue(searchResult, r -> r.getProposals().getPage().intValue(), page, "proposals/page");
+        searchApiSteps.assertDtoValueGreaterThan(searchResult, r -> r.getProposals().getPageCount().intValue(), 1614, "proposals/pageCount");
+
+        searchApiSteps.assertDtoValue(searchResult, r -> r.getMembers().getCount().intValue(), 0, "members/count");
+        searchApiSteps.assertDtoValue(searchResult, r -> r.getMembers().getTotal().intValue(), 1, "members/total");
+        searchApiSteps.assertDtoValue(searchResult, r -> r.getMembers().getPage().intValue(), page, "members/page");
+        searchApiSteps.assertDtoValue(searchResult, r -> r.getMembers().getPageCount().intValue(), 1, "members/pageCount");
     }
 
     @Test
@@ -102,7 +103,7 @@ public class SearchApiTests extends BaseTest {
         String daoId = "testdao1.sputnikv2.testnet";
 
         Map<String, Object> query = Map.of(
-                "query",daoId,
+                "query", daoId,
                 "accountId", account1Id
         );
 
@@ -138,7 +139,7 @@ public class SearchApiTests extends BaseTest {
         searchApiSteps.assertCollectionElementsHasValue(searchResult.getProposals().getData(), proposal -> !proposal.getStatus().toString().isEmpty(), "proposals/data/status");
         searchApiSteps.assertCollectionElementsHasValue(searchResult.getProposals().getData(), proposal -> !proposal.getVoteStatus().toString().isEmpty(), "proposals/data/voteStatus");
         searchApiSteps.assertCollectionElementsHasValue(searchResult.getProposals().getData(), proposal -> proposal.getKind() != null, "proposals/data/kind");
-//        searchApiSteps.assertCollectionContainsOnly(searchResult.getProposals().getData(), Proposal::getType, ProposalType.CHANGECONFIG, "proposals/data/type");
+        searchApiSteps.assertCollectionElementsHasValue(searchResult.getProposals().getData(), proposal -> !proposal.getType().toString().isEmpty(), "proposals/data/type");
         searchApiSteps.assertCollectionElementsHasValue(searchResult.getProposals().getData(), proposal -> proposal.getVotes() != null, "proposals/data/votes");
         searchApiSteps.assertCollectionElementsHasValue(searchResult.getProposals().getData(), proposal -> proposal.getVotePeriodEnd().longValue() > 0, "proposals/data/votePeriodEnd");
         searchApiSteps.assertCollectionContainsOnly(searchResult.getProposals().getData(), Proposal::getCommentsCount, BigDecimal.valueOf(0), "proposals/data/commentsCount");
@@ -173,4 +174,41 @@ public class SearchApiTests extends BaseTest {
         searchApiSteps.assertDtoValue(searchResult, r -> r.getMembers().getCount().intValue(), 0, "members/count");
         searchApiSteps.assertDtoValue(searchResult, r -> r.getMembers().getTotal().intValue(), 0, "members/total");
     }
+
+    @Test
+    @Severity(SeverityLevel.CRITICAL)
+    @Story("Performing search with query param: [sort, offset, query, accountId]")
+    @DisplayName("Performing search with query param: [sort, offset, query, accountId]")
+    void performingSearchWithSortOffsetQueryAccountIdParams() {
+        String searchQuery = "test-dao";
+        String accountId = "testdao2.testnet";
+        String sort = "createdAt,ASC";
+        int limit = 5;
+
+        Map<String, Object> query = Map.of(
+                "query",searchQuery,
+                "accountId", accountId,
+                "offset", 5,
+                "sort", sort,
+                "limit", limit
+        );
+
+        SearchResultDto searchResult = searchApiSteps.search(query).then()
+                .statusCode(HTTP_OK)
+                .extract().as(SearchResultDto.class);
+
+        List<OffsetDateTime> daosCreatedAtList = searchResult.getDaos().getData().stream()
+                .map(DaoResponseV1::getCreatedAt)
+                .collect(Collectors.toList());
+
+        List<OffsetDateTime> proposalsCreatedAtList = searchResult.getProposals().getData().stream()
+                .map(Proposal::getCreatedAt)
+                .collect(Collectors.toList());
+
+        searchApiSteps.assertOffsetDateTimesAreSortedCorrectly(daosCreatedAtList, OffsetDateTime::compareTo, "DAOs should be sorted by 'createdAt' in ASC order");
+        searchApiSteps.assertOffsetDateTimesAreSortedCorrectly(proposalsCreatedAtList, OffsetDateTime::compareTo, "Proposals should be sorted by 'createdAt' in ASC order");
+        searchApiSteps.assertDtoValue(searchResult, r -> r.getDaos().getCount().intValue(), limit, "daos/count");
+        searchApiSteps.assertDtoValue(searchResult, r -> r.getProposals().getCount().intValue(), limit, "proposals/count");
+    }
+
 }
