@@ -13,7 +13,7 @@ import configuration, {
 } from '@sputnik-v2/config/migration-config';
 import { Token } from '@sputnik-v2/token';
 import { Dao, DaoModule } from '@sputnik-v2/dao';
-import { BountyClaim, BountyModule } from '@sputnik-v2/bounty';
+import { Bounty, BountyClaim, BountyModule } from '@sputnik-v2/bounty';
 import { AccountNotificationSettings } from '@sputnik-v2/notification';
 import { Comment, CommentModule } from '@sputnik-v2/comment';
 import {
@@ -39,6 +39,7 @@ import migrationScripts from './scripts';
       ProposalTemplate,
       Proposal,
       Comment,
+      Bounty,
     ]),
     TypeOrmModule.forRootAsync({
       name: DRAFT_DB_CONNECTION,

@@ -3,6 +3,7 @@ import { InjectOpensearchClient, OpensearchClient } from 'nestjs-opensearch';
 import { ApiResponse } from '@opensearch-project/opensearch/lib/Transport';
 import { Injectable, Logger } from '@nestjs/common';
 
+import { Bounty } from '@sputnik-v2/bounty';
 import { Dao } from '@sputnik-v2/dao';
 import { Proposal } from '@sputnik-v2/proposal';
 import { DraftProposal } from '@sputnik-v2/draft-proposal';
@@ -13,6 +14,7 @@ import { mapDaoToOpensearchDto } from './dto/dao-opensearch.dto';
 import { mapCommentToOpensearchDto } from './dto/comment-opensearch.dto';
 import { mapDraftProposalToOpensearchDto } from './dto/draft-proposal-opensearch.dto';
 import { Comment } from '../../comment/src/entities';
+import { mapBountyToOpensearchDto } from './dto';
 
 @Injectable()
 export class OpensearchService {
@@ -59,6 +61,14 @@ export class OpensearchService {
       DraftProposal.name,
       mapDraftProposalToOpensearchDto(draftProposal),
     );
+  }
+
+  async indexBounty(id: string, bounty: Bounty): Promise<ApiResponse> {
+    if (!bounty) {
+      return this.remove(Bounty.name, id);
+    }
+
+    return this.index(Bounty.name, mapBountyToOpensearchDto(bounty));
   }
 
   async index(index: string, dto: BaseOpensearchDto): Promise<ApiResponse> {
