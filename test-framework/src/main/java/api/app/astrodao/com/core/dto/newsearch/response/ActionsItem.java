@@ -1,9 +1,9 @@
-package api.app.astrodao.com.core.dto.api.search;
+package api.app.astrodao.com.core.dto.newsearch.response;
 
 import lombok.Data;
 
 @Data
-public class Actions {
+public class ActionsItem{
 	private String args;
 	private String gas;
 	private String methodName;

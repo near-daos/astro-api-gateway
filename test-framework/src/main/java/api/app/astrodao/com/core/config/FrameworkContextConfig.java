@@ -41,6 +41,11 @@ public class FrameworkContextConfig {
     }
 
     @Bean
+    public RequestSpecification requestSpecForSearchService(@Value("${framework.search.service.uri}") String baseUri) {
+        return getRequestSpecification(baseUri);
+    }
+
+    @Bean
     public RequestSpecification requestSpecForDisposableWebMail(@Value("${framework.webmail.provider.uri}") String baseUri) {
         return new RequestSpecBuilder()
                 .setBaseUri(baseUri)
