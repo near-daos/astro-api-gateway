@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class Dao{
+public class Dao {
 	private String stakingContract;
 	private Double totalDaoFunds;
 	private String metadata;

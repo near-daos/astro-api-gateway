@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class Source{
+public class Source {
 	private String policyLabel;
 	private String daoId;
 	private Object bountyClaimId;

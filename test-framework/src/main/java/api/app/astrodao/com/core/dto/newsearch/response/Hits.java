@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class Hits{
+public class Hits {
 	private List<HitsItem> hits;
 	private Total total;
 	private Double maxScore;
