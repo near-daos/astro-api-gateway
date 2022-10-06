@@ -103,7 +103,7 @@ export function mapProposalToOpensearchDto(
   let dto: ProposalOpensearchDto = {
     id,
     name: id,
-    accounts: [proposer, ...Object.keys(votes)].join(' '),
+    accounts: [...new Set([proposer, ...Object.keys(votes)])].join(' '),
     proposalId,
     daoId,
     dao: dao ? mapDaoToOpensearchDto(dao) : null,
