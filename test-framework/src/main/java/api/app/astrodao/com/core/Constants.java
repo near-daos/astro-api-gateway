@@ -101,4 +101,9 @@ public class Constants {
 		public static final String DRAFT_COMMENTS_ID_REMOVE_LIKE = "/api/v1/draft-comments/{id}/remove-like";
 
 	}
+
+	@UtilityClass
+	public class NewSearchServiceEndpoints {
+		public static final String SEARCH = "/_search";
+	}
 }
