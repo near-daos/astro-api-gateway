@@ -705,7 +705,6 @@ export class TransactionActionHandlerService {
       bounty.id,
       await this.bountyService.findOne(bounty.id, {
         relations: [
-          'dao',
           'bountyContext',
           'bountyContext.proposal',
           'bountyDoneProposals',
@@ -764,7 +763,6 @@ export class TransactionActionHandlerService {
       bounty.id,
       await this.bountyService.findOne(bounty.id, {
         relations: [
-          'dao',
           'bountyContext',
           'bountyContext.proposal',
           'bountyDoneProposals',
@@ -833,7 +831,6 @@ export class TransactionActionHandlerService {
       bounty.id,
       await this.bountyService.findOne(bounty.id, {
         relations: [
-          'dao',
           'bountyContext',
           'bountyContext.proposal',
           'bountyDoneProposals',
