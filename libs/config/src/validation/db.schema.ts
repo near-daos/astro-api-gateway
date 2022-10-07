@@ -21,4 +21,12 @@ export class DatabaseValidationSchema extends BaseValidationSchema {
   @IsNumber()
   @IsNotEmpty()
   DATABASE_PORT: number;
+
+  @IsString()
+  @IsNotEmpty()
+  DYNAMODB_REGION: string;
+
+  @IsString()
+  @IsNotEmpty()
+  DYNAMODB_ENDPOINT: string;
 }

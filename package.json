@@ -202,7 +202,9 @@
       "@sputnik-v2/dao-api/(.*)": "<rootDir>/libs/dao-api/src/$1",
       "@sputnik-v2/dao-api": "<rootDir>/libs/dao-api/src",
       "@sputnik-v2/error-tracker/(.*)": "<rootDir>/libs/error-tracker/src/$1",
-      "@sputnik-v2/error-tracker": "<rootDir>/libs/error-tracker/src"
+      "@sputnik-v2/error-tracker": "<rootDir>/libs/error-tracker/src",
+      "@sputnik-v2/dynamodb/(.*)": "<rootDir>/libs/dynamodb/src/$1",
+      "@sputnik-v2/dynamodb": "<rootDir>/libs/dynamodb/src"
     }
   }
 }
