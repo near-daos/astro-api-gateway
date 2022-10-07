@@ -100,7 +100,6 @@ export class OpensearchIndexMigration implements Migration {
       this.bountyRepository,
       {
         relations: [
-          'dao',
           'bountyContext',
           'bountyContext.proposal',
           'bountyDoneProposals',

@@ -1,4 +1,4 @@
-package api.app.astrodao.com.core.dto.api.search;
+package api.app.astrodao.com.core.dto.newsearch.response;
 
 import lombok.Data;
 

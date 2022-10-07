@@ -58,6 +58,7 @@ public class DraftCommentsE2EApiTests extends BaseTest {
 			"DELETE /api/v1/draft-comments/{id}")
 	void crudOperationWithLikeRemoveLikeActionsForDraftCommentsEndpoints() {
 		//create comment
+		//dao test-dao-1641395769436.sputnikv2.testnet
 		String contextId = "6332ae623b5f700008b15b62";
 		String comment1 = faker.yoda().quote();
 		DraftCommentPageResponse draftCommentPageResponse;

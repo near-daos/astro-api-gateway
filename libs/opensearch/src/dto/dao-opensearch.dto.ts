@@ -72,7 +72,7 @@ export function mapDaoToOpensearchDto(dao: Dao): DaoOpensearchDto {
   const dto: DaoOpensearchDto = {
     id,
     name: id,
-    accounts: accountIds.join(' '),
+    accounts: [...new Set(accountIds)].join(' '),
     config,
     metadata: JSON.stringify(metadata),
     amount,
