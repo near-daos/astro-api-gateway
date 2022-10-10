@@ -303,12 +303,15 @@ export class TransactionActionHandlerService {
         id: proposal.id,
         daoId: proposal.daoId,
       });
-      await this.dynamodbService.saveBounty({
-        proposalId: proposal.id,
-        daoId: proposal.daoId,
-        transactionHash,
-        createTimestamp: timestamp,
-      });
+      await this.dynamodbService.saveBounty(
+        {
+          proposalId: proposal.id,
+          daoId: proposal.daoId,
+          transactionHash,
+          createTimestamp: timestamp,
+        },
+        proposal.proposalId,
+      );
       this.logger.log(`Successfully stored Bounty Context: ${proposal.id}`);
     }
 
