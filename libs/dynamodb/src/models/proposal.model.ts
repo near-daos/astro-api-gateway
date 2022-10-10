@@ -3,7 +3,6 @@ import {
   Proposal,
   ProposalAction,
   ProposalKind,
-  ProposalPermissions,
   ProposalPolicyLabel,
   ProposalStatus,
   ProposalType,
@@ -11,11 +10,11 @@ import {
 } from '@sputnik-v2/proposal';
 import { Vote } from '@sputnik-v2/sputnikdao';
 import { TransactionModel } from './transaction.model';
-import { DynamoEntityType } from '@sputnik-v2/dynamodb/types';
+import { DynamoEntityType } from '../types';
 
 export class ProposalModel extends TransactionModel {
+  id: string;
   proposalId: number;
-  daoId: string;
   proposer: string;
   description: string;
   status: ProposalStatus;
@@ -45,15 +44,16 @@ export class ProposalActionModel {
 
 export function mapProposalToProposalModel(proposal: Proposal): ProposalModel {
   return {
+    daoId: proposal.daoId,
+    entityId: `${DynamoEntityType.Proposal}:${proposal.id}`,
     entityType: DynamoEntityType.Proposal,
-    id: proposal.id,
     isArchived: proposal.isArchived,
     transactionHash: proposal.transactionHash,
     updateTransactionHash: proposal.updateTransactionHash,
     createTimestamp: proposal.createTimestamp,
     updateTimestamp: proposal.updateTimestamp,
+    id: proposal.id,
     proposalId: proposal.proposalId,
-    daoId: proposal.daoId,
     proposer: proposal.proposer,
     description: proposal.description,
     status: proposal.status,
