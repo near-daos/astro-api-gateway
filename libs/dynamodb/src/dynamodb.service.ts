@@ -1,6 +1,9 @@
-import { Injectable } from '@nestjs/common';
 import * as AWS from 'aws-sdk';
+import DynamoDB, { DocumentClient } from 'aws-sdk/clients/dynamodb';
+
 import { ConfigService } from '@nestjs/config';
+import { Injectable } from '@nestjs/common';
+
 import { Dao } from '@sputnik-v2/dao';
 import { Proposal } from '@sputnik-v2/proposal';
 import { Bounty } from '@sputnik-v2/bounty';
@@ -21,11 +24,20 @@ export class DynamodbService {
   private client: AWS.DynamoDB.DocumentClient;
 
   constructor(private readonly configService: ConfigService) {
-    const { region, endpoint } = configService.get('dynamodb');
-    this.client = new AWS.DynamoDB.DocumentClient({
+    const { region, endpoint, accessKeyId, secretAccessKey } =
+      configService.get('dynamodb');
+
+    let options: DocumentClient.DocumentClientOptions &
+      DynamoDB.Types.ClientConfiguration = {
       region,
-      endpoint,
-    });
+      credentials: { accessKeyId, secretAccessKey },
+    };
+
+    if (endpoint) {
+      options = { ...options, endpoint };
+    }
+
+    this.client = new AWS.DynamoDB.DocumentClient(options);
   }
 
   public async saveDao(dao: Dao) {

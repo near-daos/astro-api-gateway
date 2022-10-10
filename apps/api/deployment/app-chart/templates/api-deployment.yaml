@@ -91,6 +91,8 @@ spec:
               name: api-redis-secrets
           - secretRef:
               name: api-opensearch-secrets
+          - secretRef:
+              name: indexer-iam-user-secrets
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
