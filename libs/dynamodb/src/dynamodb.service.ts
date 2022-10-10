@@ -17,14 +17,15 @@ import {
   mapProposalToProposalModel,
   ProposalModel,
 } from './models';
-import { DynamoTableName } from './types';
 
 @Injectable()
 export class DynamodbService {
   private client: AWS.DynamoDB.DocumentClient;
 
+  private tableName: string;
+
   constructor(private readonly configService: ConfigService) {
-    const { region, endpoint, accessKeyId, secretAccessKey } =
+    const { region, endpoint, tableName, accessKeyId, secretAccessKey } =
       configService.get('dynamodb');
 
     let options: DocumentClient.DocumentClientOptions &
@@ -37,7 +38,9 @@ export class DynamodbService {
       options = { ...options, endpoint };
     }
 
-    this.client = new AWS.DynamoDB.DocumentClient(options);
+    this.client = new AWS.DynamoDB.DocumentClient({ ...options });
+
+    this.tableName = tableName;
   }
 
   public async saveDao(dao: Dao) {
@@ -54,7 +57,7 @@ export class DynamodbService {
 
   private async getItemById<M extends BaseModel = BaseModel>(
     id: string,
-    tableName = DynamoTableName.AstroDao,
+    tableName = this.tableName,
   ): Promise<M | null> {
     return await this.client
       .get({
@@ -68,7 +71,7 @@ export class DynamodbService {
 
   private async saveItem<M extends BaseModel = BaseModel>(
     data: Partial<M>,
-    tableName = DynamoTableName.AstroDao,
+    tableName = this.tableName,
   ) {
     const item = await this.getItemById(data.id);
     return this.client

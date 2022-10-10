@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as AWS from 'aws-sdk';
-import { DynamoTableName } from '@sputnik-v2/dynamodb';
 
 import { Migration } from '..';
 
@@ -9,7 +8,13 @@ import { Migration } from '..';
 export class DynamoDaoTableMigration implements Migration {
   private readonly logger = new Logger(DynamoDaoTableMigration.name);
 
-  constructor(private readonly configService: ConfigService) {}
+  private readonly tableName: string;
+
+  constructor(private readonly configService: ConfigService) {
+    const { tableName } = configService.get('dynamodb');
+
+    this.tableName = tableName || 'entities_dev';
+  }
 
   public async migrate(): Promise<void> {
     this.logger.log('Starting DynamoDB AstroDao Table migration...');
@@ -20,7 +25,7 @@ export class DynamoDaoTableMigration implements Migration {
     this.logger.log('Creating AstroDao table in DynamoDB...');
     await dynamodb
       .createTable({
-        TableName: DynamoTableName.AstroDao,
+        TableName: this.tableName,
         KeySchema: [{ AttributeName: 'id', KeyType: 'HASH' }],
         AttributeDefinitions: [{ AttributeName: 'id', AttributeType: 'S' }],
         ProvisionedThroughput: {
