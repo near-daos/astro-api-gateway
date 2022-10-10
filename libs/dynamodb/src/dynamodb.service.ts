@@ -56,13 +56,14 @@ export class DynamodbService {
   }
 
   private async getItemById<M extends BaseModel = BaseModel>(
+    daoId: string,
     entityId: string,
     tableName = this.tableName,
   ): Promise<M | null> {
     return await this.client
       .get({
         TableName: tableName,
-        Key: { entityId },
+        Key: { daoId, entityId },
       })
       .promise()
       .then(({ Item }) => Item as M)
@@ -73,7 +74,7 @@ export class DynamodbService {
     data: Partial<M>,
     tableName = this.tableName,
   ) {
-    const item = await this.getItemById(data.entityId);
+    const item = await this.getItemById(data.daoId, data.entityId);
     return this.client
       .put({
         TableName: tableName,
