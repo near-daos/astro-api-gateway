@@ -8,7 +8,7 @@ import {
   RoleKindType,
 } from '@sputnik-v2/dao/entities';
 import { TransactionModel } from './transaction.model';
-import { DynamoEntityType } from '@sputnik-v2/dynamodb/types';
+import { DynamoEntityType } from '../types';
 
 export class DaoModel extends TransactionModel {
   metadata: Record<string, any>;
@@ -71,8 +71,9 @@ export class DaoDelegationModel {
 
 export function mapDaoToDaoModel(dao: Dao): DaoModel {
   return {
+    daoId: dao.id,
+    entityId: `${DynamoEntityType.Dao}:${dao.id}`,
     entityType: DynamoEntityType.Dao,
-    id: dao.id,
     isArchived: dao.isArchived,
     transactionHash: dao.transactionHash,
     updateTransactionHash: dao.updateTransactionHash,

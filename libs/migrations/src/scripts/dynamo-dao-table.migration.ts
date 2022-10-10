@@ -26,8 +26,14 @@ export class DynamoDaoTableMigration implements Migration {
     await dynamodb
       .createTable({
         TableName: this.tableName,
-        KeySchema: [{ AttributeName: 'id', KeyType: 'HASH' }],
-        AttributeDefinitions: [{ AttributeName: 'id', AttributeType: 'S' }],
+        KeySchema: [
+          { AttributeName: 'daoId', KeyType: 'HASH' },
+          { AttributeName: 'entityId', KeyType: 'RANGE' },
+        ],
+        AttributeDefinitions: [
+          { AttributeName: 'daoId', AttributeType: 'S' },
+          { AttributeName: 'entityId', AttributeType: 'S' },
+        ],
         ProvisionedThroughput: {
           ReadCapacityUnits: 100,
           WriteCapacityUnits: 10,
