@@ -24,10 +24,13 @@ export class BountyClaimModel {
   endTime: string;
 }
 
-export function mapBountyToBountyModel(bounty: Partial<Bounty>): BountyModel {
+export function mapBountyToBountyModel(
+  bounty: Partial<Bounty>,
+  proposalId = bounty.bountyContext?.proposal?.proposalId,
+): BountyModel {
   return {
     daoId: bounty.daoId,
-    entityId: `${DynamoEntityType.Bounty}:${bounty.proposalId}`,
+    entityId: `${DynamoEntityType.Bounty}:${proposalId}`,
     entityType: DynamoEntityType.Bounty,
     isArchived: bounty.isArchived,
     transactionHash: bounty.transactionHash,

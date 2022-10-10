@@ -51,8 +51,10 @@ export class DynamodbService {
     return this.saveItem<ProposalModel>(mapProposalToProposalModel(proposal));
   }
 
-  public async saveBounty(bounty: Partial<Bounty>) {
-    return this.saveItem<BountyModel>(mapBountyToBountyModel(bounty));
+  public async saveBounty(bounty: Partial<Bounty>, proposalId?: number) {
+    return this.saveItem<BountyModel>(
+      mapBountyToBountyModel(bounty, proposalId),
+    );
   }
 
   private async getItemById<M extends BaseModel = BaseModel>(
