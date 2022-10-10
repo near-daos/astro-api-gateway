@@ -47,6 +47,12 @@ After first docker start postgres database is empty, to run database migration:
 yarn migration:run
 ```
 
+To run dynamodb migration:
+```shell
+DATABASE_MIGRATIONS_LIST=DynamoDaoTableMigration yarn start-migrations
+```
+
+
 ## Environment variables
 By default `.env` contains environment variables needed for local development besides some secrets that need to be added locally. <br>
 To override or add some local env variables create `.env.local` in the root folder. <br>
@@ -74,6 +80,12 @@ DATABASE_PASSWORD=sputnik
 DATABASE_NAME=sputnik-v2
 DATABASE_HOST=localhost
 DATABASE_PORT=5437
+```
+
+- DynamoDB connection variables (docker's amazon/dynamodb-local by default):
+```shell
+DYNAMODB_REGION=local
+DYNAMODB_ENDPOINT=http://localhost:8000
 ```
 
  - Drafts database connection variables (docker's mongodb by default):

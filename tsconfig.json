@@ -195,6 +195,12 @@
       ],
       "@sputnik-v2/error-tracker/*": [
         "libs/error-tracker/src/*"
+      ],
+      "@sputnik-v2/dynamodb": [
+        "libs/dynamodb/src"
+      ],
+      "@sputnik-v2/dynamodb/*": [
+        "libs/dynamodb/src/*"
       ]
     }
   }

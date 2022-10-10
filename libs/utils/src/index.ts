@@ -60,6 +60,10 @@ export const buildBountyId = (daoId: string, bountyId: string): string => {
   return `${daoId}-${bountyId}`;
 };
 
+export const buildBountyDynamoId = (proposalId: string): string => {
+  return `b-${proposalId}`;
+};
+
 export const buildBountyClaimId = (
   daoId: string,
   bountyId: string,
