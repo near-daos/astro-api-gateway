@@ -4,6 +4,7 @@ import api.app.astrodao.com.core.utils.JsonUtils;
 import io.qameta.allure.Step;
 import io.restassured.response.Response;
 import org.assertj.core.api.AssertionsForInterfaceTypes;
+import org.assertj.core.api.iterable.ThrowingExtractor;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -109,6 +110,17 @@ public abstract class BaseSteps {
         assertThat(actual)
                 .as(String.format("'%s' field should have value in collection.", fieldName))
                 .filteredOn(predicate)
+                .hasSize(actual.size());
+    }
+
+    @Step("User sees fields '{fieldName}' filtered by condition '{condition}' have value in a collection")
+    public <T, D> void assertDeepCollectionElementsHasValue(Collection<T> actual,
+                                                            ThrowingExtractor<? super T, ? extends Collection<D>, ?> extractor,
+                                                            Predicate<? super D> predicate,
+                                                            String fieldName, String condition) {
+        assertThat(actual)
+                .as(String.format("Field '%s' filtered by condition '%s' have no value in collection.", fieldName, condition))
+                .flatExtracting(extractor).filteredOn(predicate)
                 .hasSize(actual.size());
     }
 
