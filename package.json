@@ -60,9 +60,9 @@
     "@nestjsx/crud-typeorm": "^5.0.0-alpha.3",
     "@notifi-network/notifi-axios-utils": "^0.8.0",
     "@notifi-network/notifi-node": "^0.11.1",
+    "@opensearch-project/opensearch": "^2.0.0",
     "@supercharge/promise-pool": "^1.7.0",
     "@types/cache-manager": "^3.4.2",
-    "@opensearch-project/opensearch": "^2.0.0",
     "amqp-connection-manager": "^3.2.2",
     "amqplib": "^0.8.0",
     "aws-sdk": "^2.937.0",
@@ -75,11 +75,12 @@
     "dd-trace": "^2.10.0",
     "hot-shots": "^9.2.0",
     "ioredis": "^4.14.1",
-    "nestjs-ddtrace": "^1.0.4",
+    "launchdarkly-node-server-sdk": "^6.4.3",
     "mongodb": "^3.7.3",
     "near-api-js": "^0.44.2",
-    "nestjs-pino": "^2.6.0",
+    "nestjs-ddtrace": "^1.0.4",
     "nestjs-opensearch": "^0.2.0",
+    "nestjs-pino": "^2.6.0",
     "object-hash": "^2.2.0",
     "parse-redis-url-simple": "^1.0.2",
     "pg": "^8.6.0",
@@ -204,7 +205,9 @@
       "@sputnik-v2/error-tracker/(.*)": "<rootDir>/libs/error-tracker/src/$1",
       "@sputnik-v2/error-tracker": "<rootDir>/libs/error-tracker/src",
       "@sputnik-v2/dynamodb/(.*)": "<rootDir>/libs/dynamodb/src/$1",
-      "@sputnik-v2/dynamodb": "<rootDir>/libs/dynamodb/src"
+      "@sputnik-v2/dynamodb": "<rootDir>/libs/dynamodb/src",
+      "@sputnik-v2/feature-flags/(.*)": "<rootDir>/libs/feature-flags/src/$1",
+      "@sputnik-v2/feature-flags": "<rootDir>/libs/feature-flags/src"
     }
   }
 }

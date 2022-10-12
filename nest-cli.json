@@ -338,6 +338,15 @@
       "compilerOptions": {
         "tsConfigPath": "libs/dynamodb/tsconfig.lib.json"
       }
+    },
+    "feature-flags": {
+      "type": "library",
+      "root": "libs/feature-flags",
+      "entryFile": "index",
+      "sourceRoot": "libs/feature-flags/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/feature-flags/tsconfig.lib.json"
+      }
     }
   }
 }
