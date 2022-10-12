@@ -124,6 +124,17 @@ public abstract class BaseSteps {
                 .hasSize(actual.size());
     }
 
+    @Step("User sees fields '{fieldName}' match condition '{condition}' in a collection")
+    public <T, D> void assertDeepCollectionElementsMatchCondition(Collection<T> actual,
+                                                            ThrowingExtractor<? super T, ? extends Collection<D>, ?> extractor,
+                                                            Predicate<? super D> predicate,
+                                                            String fieldName, String condition) {
+        assertThat(actual)
+                .as(String.format("Field '%s' doesn't match condition '%s' in collection.", fieldName, condition))
+                .flatExtracting(extractor)
+                .allMatch(predicate);
+    }
+
     @Step("User sees '{fieldName}' fields has no value in a collection")
     public <T> void assertCollectionElementsHasNoValue(Collection<T> actual,
                                                      Predicate<? super T> predicate, String fieldName) {
