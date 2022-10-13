@@ -71,6 +71,22 @@ export class ProposalOpensearchDto extends BaseOpensearchDto {
   stakingId?: string;
   bounty?: BountyProposalOpensearchDto;
   bountyId?: string;
+
+  public static getMappings(): any {
+    const mappings = super.getMappings();
+    const { properties } = mappings;
+
+    return {
+      mappings: {
+        ...mappings,
+        properties: {
+          ...properties,
+          createTimestamp: { type: 'long' },
+          type: { type: 'text' },
+        },
+      },
+    };
+  }
 }
 
 export function mapProposalToOpensearchDto(

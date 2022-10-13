@@ -13,6 +13,7 @@ import { SharedProposalTemplateMigration } from './shared-proposal-template.migr
 import { OpensearchIndexMigration } from './opensearch-index.migration';
 import { CommentsCountMigration } from './comments-count.migration';
 import { DynamoDaoTableMigration } from './dynamo-dao-table.migration';
+import { OpensearchIndexMappingMigration } from './opensearch-index-mapping.migration';
 
 export default [
   ProposalActionsMigration,
@@ -30,4 +31,5 @@ export default [
   OpensearchIndexMigration,
   CommentsCountMigration,
   DynamoDaoTableMigration,
+  OpensearchIndexMappingMigration,
 ];

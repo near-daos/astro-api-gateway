@@ -162,7 +162,7 @@ export class OpensearchService {
     }
   }
 
-  async createIndex(index: string): Promise<ApiResponse> {
+  async createIndex(index: string, settings?: any): Promise<ApiResponse> {
     this.logger.log(`[Opensearch] Index: ${index} | Creating`);
 
     const { body: exists } = await this.client.indices.exists({
@@ -177,7 +177,22 @@ export class OpensearchService {
       return;
     }
 
-    return this.client.indices.create({ index: index.toLowerCase() });
+    return this.client.indices.create({
+      index: index.toLowerCase(),
+      body: settings,
+    });
+  }
+
+  async reIndex(source: string, dest: string): Promise<ApiResponse> {
+    this.logger.log(`[Opensearch] Index: ${source} | ReIndexing to ${dest}`);
+
+    return this.client.reindex({
+      body: {
+        source: { index: source.toLowerCase() },
+        dest: { index: dest.toLowerCase() },
+      },
+      refresh: true,
+    });
   }
 
   async deleteIndexIfExists(index: string): Promise<ApiResponse> {
