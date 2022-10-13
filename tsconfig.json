@@ -201,6 +201,12 @@
       ],
       "@sputnik-v2/dynamodb/*": [
         "libs/dynamodb/src/*"
+      ],
+      "@sputnik-v2/feature-flags": [
+        "libs/feature-flags/src"
+      ],
+      "@sputnik-v2/feature-flags/*": [
+        "libs/feature-flags/src/*"
       ]
     }
   }

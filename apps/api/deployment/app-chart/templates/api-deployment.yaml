@@ -93,6 +93,8 @@ spec:
               name: api-opensearch-secrets
           - secretRef:
               name: indexer-iam-user-secrets
+          - secretRef:
+              name: launch-darkly-secrets
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}

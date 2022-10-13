@@ -44,4 +44,8 @@ export class BaseValidationSchema {
   @IsString()
   @IsNotEmpty()
   LOG_LEVEL: string;
+
+  @IsString()
+  @IsNotEmpty()
+  LAUNCHDARKLY_SDK_KEY: string;
 }
