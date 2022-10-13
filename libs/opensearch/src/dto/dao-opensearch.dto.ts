@@ -4,7 +4,7 @@ import { BaseOpensearchDto } from './base-opensearch.dto';
 
 export class DaoOpensearchDto extends BaseOpensearchDto {
   public static getMappings(): any {
-    const mappings = super.getMappings();
+    const { mappings } = super.getMappings();
     const { properties } = mappings;
 
     return {
