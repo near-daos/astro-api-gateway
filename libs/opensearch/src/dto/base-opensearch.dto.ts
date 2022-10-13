@@ -11,7 +11,6 @@ export class BaseOpensearchDto {
         dynamic: false,
         properties: {
           id: { type: 'text' },
-          name: { type: 'text' },
           description: { type: 'text' },
           accounts: { type: 'text' },
         },
