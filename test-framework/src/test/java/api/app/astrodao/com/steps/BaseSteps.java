@@ -120,7 +120,8 @@ public abstract class BaseSteps {
                                                             String fieldName, String condition) {
         assertThat(actual)
                 .as(String.format("Field '%s' filtered by condition '%s' have no value in collection.", fieldName, condition))
-                .flatExtracting(extractor).filteredOn(predicate)
+                .flatExtracting(extractor)
+                .filteredOn(predicate)
                 .hasSize(actual.size());
     }
 
@@ -133,6 +134,18 @@ public abstract class BaseSteps {
                 .as(String.format("Field '%s' doesn't match condition '%s' in collection.", fieldName, condition))
                 .flatExtracting(extractor)
                 .allMatch(predicate);
+    }
+
+    @Step("User sees fields '{fieldName}' containing one of the elements '{values}'")
+    public <T, D> void assertCollectionContainsAnyOf(Collection<T> actual,
+                                                     Function<T, D> valueExtractor,
+                                                     Iterable<? extends D> values,
+                                                     String fieldName) {
+
+        assertThat(actual)
+                .as(String.format("Field '%s' doesn't contains any elements of %s", fieldName, values))
+                .extracting(valueExtractor)
+                .containsAnyElementsOf(values);
     }
 
     @Step("User sees '{fieldName}' fields has no value in a collection")

@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.time.OffsetDateTime;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -283,7 +284,7 @@ public class ProposalsApiTests extends BaseTest {
         proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> !r.getVotePeriodEnd().toString().isEmpty(), "data/votePeriodEnd");
         proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> r.getCommentsCount().intValue() >= 0, "data/commentsCount");
         proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> r.getActions() != null, "data/actions");
-//
+
         proposalsApiSteps.assertDeepCollectionElementsMatchCondition(proposalsResponse.getData(), Proposal::getActions, proposal -> !proposal.getId().isEmpty(), "data/actions/id", "not empty");
         proposalsApiSteps.assertDeepCollectionElementsMatchCondition(proposalsResponse.getData(), Proposal::getActions, proposal -> !proposal.getProposalId().isEmpty(), "data/actions/proposalId", "not empty");
         proposalsApiSteps.assertDeepCollectionElementsMatchCondition(proposalsResponse.getData(), Proposal::getActions, proposal -> !proposal.getAccountId().isEmpty(), "data/actions/accountId", "not empty");
@@ -313,6 +314,72 @@ public class ProposalsApiTests extends BaseTest {
         List<String> listOfIds = proposalsResponse.getData().stream().map(Proposal::getId).collect(Collectors.toList());
         proposalsApiSteps.assertStringsAreSortedCorrectly(listOfIds, Comparator.naturalOrder(),
                                                                   "Proposals should be sorted by 'id' field in ASC order");
+    }
+
+    @Test
+    @Severity(SeverityLevel.CRITICAL)
+    @Story("Get list of proposals with query param: [active=false, failed=false]")
+    @DisplayName("Get list of proposals with query param: [active=false, failed=false]")
+    void getListOfProposalsWithQueryParamsActiveFailed() {
+        Map<String, Object> query = Map.of(
+                "active", false,
+                "failed", false
+        );
+
+        ProposalsResponse proposalsResponse = proposalsApiSteps.getProposals(query).then()
+                .statusCode(HTTP_OK)
+                .extract().as(ProposalsResponse.class);
+
+        proposalsApiSteps.assertDtoValueGreaterThan(proposalsResponse, r -> r.getTotal().intValue(), 50, "total");
+        proposalsApiSteps.assertDtoValue(proposalsResponse, r -> r.getOffset().intValue(), 0, "offset");
+        proposalsApiSteps.assertDtoValueGreaterThan(proposalsResponse, r -> r.getTotal().intValue(), 28857, "total");
+        proposalsApiSteps.assertCollectionHasCorrectSize(proposalsResponse.getData(), 50);
+
+        proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> !r.getCreatedAt().toString().isEmpty(), "data/createdAt");
+        proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> !r.getUpdatedAt().toString().isEmpty(), "data/updatedAt");
+        proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> !r.getTransactionHash().isEmpty(), "data/transactionHash");
+        proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> r.getId().contains(".sputnikv2.testnet-"), "data/id");
+        proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> r.getProposalId().intValue() >= 0, "data/proposalId");
+        proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> r.getDaoId().endsWith(".sputnikv2.testnet"), "data/daoId");
+        proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> !r.getProposer().isEmpty(), "data/proposer");
+        proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> r.getDescription() != null, "data/description");
+
+        proposalsApiSteps.assertCollectionContainsAnyOf(proposalsResponse.getData(), Proposal::getStatus, Arrays.asList(Proposal.StatusEnum.values()), "data/status");
+        proposalsApiSteps.assertCollectionContainsAnyOf(proposalsResponse.getData(), Proposal::getVoteStatus, Arrays.asList(Proposal.VoteStatusEnum.values()), "data/voteStatus");
+
+        proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> r.getKind() != null, "data/kind");
+
+        proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> !r.getType().toString().isEmpty(), "data/type");
+        proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> r.getVotes() != null, "data/votes");
+        proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> !r.getVotePeriodEnd().toString().isEmpty(), "data/votePeriodEnd");
+        proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> r.getCommentsCount().intValue() >= 0, "data/commentsCount");
+        proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> r.getActions() != null, "data/actions");
+
+        proposalsApiSteps.assertDeepCollectionElementsMatchCondition(proposalsResponse.getData(), Proposal::getActions, proposal -> !proposal.getId().isEmpty(), "data/actions/id", "not empty");
+        proposalsApiSteps.assertDeepCollectionElementsMatchCondition(proposalsResponse.getData(), Proposal::getActions, proposal -> !proposal.getProposalId().isEmpty(), "data/actions/proposalId", "not empty");
+        proposalsApiSteps.assertDeepCollectionElementsMatchCondition(proposalsResponse.getData(), Proposal::getActions, proposal -> !proposal.getAccountId().isEmpty(), "data/actions/accountId", "not empty");
+        proposalsApiSteps.assertDeepCollectionElementsMatchCondition(proposalsResponse.getData(), Proposal::getActions, proposal -> proposal.getAction() != null, "data/actions/action", "!= null");
+        proposalsApiSteps.assertDeepCollectionElementsMatchCondition(proposalsResponse.getData(), Proposal::getActions, proposal -> !proposal.getTransactionHash().isEmpty(), "data/actions/transactionHash", "not empty");
+        proposalsApiSteps.assertDeepCollectionElementsMatchCondition(proposalsResponse.getData(), Proposal::getActions, proposal -> !proposal.getTimestamp().toString().isEmpty(), "data/actions/timestamp", "not empty");
+
+        proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> r.getDao() != null, "data/dao");
+        proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> !r.getDao().getTransactionHash().isEmpty(), "data/dao/transactionHash");
+        proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> !r.getDao().getId().isEmpty(), "data/dao/id");
+        proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> !r.getDao().getConfig().getName().isEmpty(), "data/dao/config/name");
+        proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> r.getDao().getConfig().getPurpose() != null, "data/dao/config/purpose");
+        proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> !r.getDao().getConfig().getMetadata().isEmpty(), "data/dao/config/metadata");
+        proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> r.getDao().getNumberOfMembers().intValue() >= 1, "data/dao/numberOfMembers");
+        proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> !r.getDao().getPolicy().getDaoId().isEmpty(), "data/dao/policy/daoId");
+        proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> !r.getDao().getPolicy().getDefaultVotePolicy().getWeightKind().toString().isEmpty(), "data/dao/policy/defaultVotePolicy/weightKind");
+        proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> r.getDao().getPolicy().getDefaultVotePolicy().getQuorum().intValue() >= 0, "data/dao/policy/defaultVotePolicy/quorum");
+        proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> !r.getDao().getPolicy().getDefaultVotePolicy().getKind().toString().isEmpty(), "data/dao/policy/defaultVotePolicy/kind");
+        proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> !r.getDao().getPolicy().getDefaultVotePolicy().getRatio().isEmpty(), "data/dao/policy/defaultVotePolicy/ratio");
+
+        proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), proposal -> !proposal.getPermissions().getIsCouncil().toString().isEmpty(), "data/permissions/isCouncil");
+        proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), proposal -> !proposal.getPermissions().getCanApprove().toString().isEmpty(), "data/permissions/canApprove");
+        proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), proposal -> !proposal.getPermissions().getCanReject().toString().isEmpty(), "data/permissions/canReject");
+        proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), proposal -> !proposal.getPermissions().getCanDelete().toString().isEmpty(), "data/permissions/canDelete");
+        proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), proposal -> !proposal.getPermissions().getCanAdd().toString().isEmpty(), "data/permissions/canAdd");
     }
 
     @ParameterizedTest
