@@ -212,4 +212,9 @@ export class OpensearchService {
 
     return this.client.indices.delete({ index: index.toLowerCase() });
   }
+
+  async getIndexCount(index: string): Promise<number> {
+    const { body } = await this.client.count({ index: index.toLowerCase() });
+    return body.count;
+  }
 }
