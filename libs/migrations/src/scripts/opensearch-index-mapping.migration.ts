@@ -33,8 +33,6 @@ export class OpensearchIndexMappingMigration implements Migration {
       ProposalOpensearchDto.getMappings(),
     );
 
-    // TODO: propagate to each Opensearch index in question
-
     this.logger.log('Finished Opensearch Index Mapping migration.');
   }
 
@@ -44,7 +42,13 @@ export class OpensearchIndexMappingMigration implements Migration {
     mappings: any,
   ) {
     await this.opensearchService.createIndex(dest, mappings);
-
     await this.opensearchService.reIndex(source, dest);
+
+    await this.opensearchService.deleteIndexIfExists(source);
+
+    await this.opensearchService.createIndex(source, mappings);
+    await this.opensearchService.reIndex(dest, source);
+
+    await this.opensearchService.deleteIndexIfExists(dest);
   }
 }
