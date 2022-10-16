@@ -83,6 +83,10 @@ export class ProposalOpensearchDto extends BaseOpensearchDto {
           ...properties,
           createTimestamp: { type: 'long' },
           type: { type: 'text' },
+          status: { type: 'text' },
+          proposer: { type: 'text' },
+          daoId: { type: 'text' },
+          votes: { type: 'text' },
         },
       },
     };
