@@ -143,6 +143,7 @@ export function mapProposalToOpensearchDto(
     permissions,
     transactionHash,
     createTimestamp,
+    indexedBy: 'nodejs',
   };
 
   switch (type) {

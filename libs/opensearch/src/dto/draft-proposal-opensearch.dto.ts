@@ -42,6 +42,7 @@ export function mapDraftProposalToOpensearchDto(
     state,
     proposer,
     replies,
+    indexedBy: 'nodejs',
   };
 
   return dto;
