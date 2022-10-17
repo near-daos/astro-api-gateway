@@ -143,7 +143,7 @@ export function mapProposalToOpensearchDto(
     permissions,
     transactionHash,
     createTimestamp,
-    indexedBy: 'nodejs',
+    indexedBy: 'astro-api',
   };
 
   switch (type) {

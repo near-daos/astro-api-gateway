@@ -39,7 +39,7 @@ export function mapCommentToOpensearchDto(
     contextType,
     message,
     isArchived,
-    indexedBy: 'nodejs',
+    indexedBy: 'astro-api',
   };
 
   return dto;

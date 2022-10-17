@@ -42,7 +42,7 @@ export function mapDraftProposalToOpensearchDto(
     state,
     proposer,
     replies,
-    indexedBy: 'nodejs',
+    indexedBy: 'astro-api',
   };
 
   return dto;

@@ -75,7 +75,7 @@ export function mapBountyToOpensearchDto(bounty: Bounty): BountyOpensearchDto {
     createTimestamp,
     proposal: proposal ? mapProposalToOpensearchDto(proposal) : null,
     commentsCount,
-    indexedBy: 'nodejs',
+    indexedBy: 'astro-api',
   };
 
   return dto;

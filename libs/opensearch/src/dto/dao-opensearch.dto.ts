@@ -32,7 +32,7 @@ export function mapDaoToOpensearchDto(dao: Dao): DaoOpensearchDto {
     ...dao,
     name: metadata?.displayName,
     accounts: [...new Set(accountIds)].join(' '),
-    indexedBy: 'nodejs',
+    indexedBy: 'astro-api',
   };
 
   return dto;
