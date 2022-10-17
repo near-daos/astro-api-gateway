@@ -30,7 +30,7 @@ export class OpensearchService {
   async indexDao(id: string, dao: Dao): Promise<ApiResponse> {
     if (
       !(await this.featureFlagsService.check(
-        FeatureFlags.OpenSearchProposalIndexing,
+        FeatureFlags.OpenSearchDaoIndexing,
       ))
     ) {
       return;
