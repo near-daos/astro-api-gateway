@@ -16,6 +16,9 @@ export class DaoOpensearchDto extends BaseOpensearchDto {
           // typecasting possible in Opensearch while re-indexing
           createTimestamp: { type: 'long' },
           name: { type: 'text' },
+          totalDaoFunds: { type: 'float' },
+          totalProposalCount: { type: 'integer' },
+          numberOfMembers: { type: 'integer' },
         },
       },
     };
@@ -23,12 +26,13 @@ export class DaoOpensearchDto extends BaseOpensearchDto {
 }
 
 export function mapDaoToOpensearchDto(dao: Dao): DaoOpensearchDto {
-  const { id, accountIds } = dao;
+  const { metadata, accountIds } = dao;
 
   const dto: DaoOpensearchDto = {
     ...dao,
-    name: id,
+    name: metadata?.displayName,
     accounts: [...new Set(accountIds)].join(' '),
+    indexedBy: 'astro-api',
   };
 
   return dto;

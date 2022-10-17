@@ -3,6 +3,7 @@ export class BaseOpensearchDto {
   name: string;
   description: string;
   accounts: string;
+  indexedBy?: string;
 
   // add custom mapping for each downstream class
   public static getMappings(): any {

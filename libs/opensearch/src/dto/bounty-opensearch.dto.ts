@@ -56,7 +56,7 @@ export function mapBountyToOpensearchDto(bounty: Bounty): BountyOpensearchDto {
     ]),
   ];
 
-  let dto: BountyOpensearchDto = {
+  const dto: BountyOpensearchDto = {
     id,
     name: id,
     accounts: [...new Set(accountIds)].join(' '),
@@ -75,6 +75,7 @@ export function mapBountyToOpensearchDto(bounty: Bounty): BountyOpensearchDto {
     createTimestamp,
     proposal: proposal ? mapProposalToOpensearchDto(proposal) : null,
     commentsCount,
+    indexedBy: 'astro-api',
   };
 
   return dto;

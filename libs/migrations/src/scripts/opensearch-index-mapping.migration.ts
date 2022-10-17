@@ -6,9 +6,10 @@ import {
   DaoOpensearchDto,
   ProposalOpensearchDto,
 } from '@sputnik-v2/opensearch/dto';
+import { Proposal } from '@sputnik-v2/proposal';
+import { sleep } from '@sputnik-v2/utils';
 
 import { Migration } from '..';
-import { Proposal } from '@sputnik-v2/proposal';
 
 @Injectable()
 export class OpensearchIndexMappingMigration implements Migration {
@@ -33,8 +34,6 @@ export class OpensearchIndexMappingMigration implements Migration {
       ProposalOpensearchDto.getMappings(),
     );
 
-    // TODO: propagate to each Opensearch index in question
-
     this.logger.log('Finished Opensearch Index Mapping migration.');
   }
 
@@ -43,8 +42,40 @@ export class OpensearchIndexMappingMigration implements Migration {
     dest: string,
     mappings: any,
   ) {
+    this.logger.log(`Creating ${dest} index`);
     await this.opensearchService.createIndex(dest, mappings);
 
+    this.logger.log(`Waiting for ${dest} re-index...`);
     await this.opensearchService.reIndex(source, dest);
+    await this.waitOnReIndex(source, dest);
+
+    this.logger.log(`Deleting ${source} index`);
+    await this.opensearchService.deleteIndexIfExists(source);
+
+    this.logger.log(`Creating ${source} index`);
+    await this.opensearchService.createIndex(source, mappings);
+
+    this.logger.log(`Waiting for ${source} re-index...`);
+    await this.opensearchService.reIndex(dest, source);
+    await this.waitOnReIndex(dest, source);
+
+    this.logger.log(`Deleting ${dest} index`);
+    await this.opensearchService.deleteIndexIfExists(dest);
+  }
+
+  private async waitOnReIndex(source: string, dest: string) {
+    let sourceCount = await this.opensearchService.getIndexCount(source);
+    let destCount = await this.opensearchService.getIndexCount(dest);
+
+    while (destCount !== destCount) {
+      this.logger.log(
+        `${source} index count: ${sourceCount} / ${dest} index count: ${destCount}`,
+      );
+
+      await sleep(5000);
+
+      sourceCount = await this.opensearchService.getIndexCount(source);
+      destCount = await this.opensearchService.getIndexCount(dest);
+    }
   }
 }
