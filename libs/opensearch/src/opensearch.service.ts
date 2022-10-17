@@ -28,6 +28,14 @@ export class OpensearchService {
   ) {}
 
   async indexDao(id: string, dao: Dao): Promise<ApiResponse> {
+    if (
+      !(await this.featureFlagsService.check(
+        FeatureFlags.OpenSearchProposalIndexing,
+      ))
+    ) {
+      return;
+    }
+
     if (!dao) {
       return this.remove(Dao.name, id);
     }
