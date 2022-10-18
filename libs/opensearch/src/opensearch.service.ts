@@ -85,6 +85,14 @@ export class OpensearchService {
   }
 
   async indexBounty(id: string, bounty: Bounty): Promise<ApiResponse> {
+    if (
+      !(await this.featureFlagsService.check(
+        FeatureFlags.OpenSearchBountyIndexing,
+      ))
+    ) {
+      return;
+    }
+
     if (!bounty) {
       return this.remove(Bounty.name, id);
     }
