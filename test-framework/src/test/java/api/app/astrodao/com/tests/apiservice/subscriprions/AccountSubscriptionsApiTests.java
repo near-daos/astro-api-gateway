@@ -8,13 +8,11 @@ import io.qameta.allure.*;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.parallel.Execution;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
-import static java.net.HttpURLConnection.*;
-import static org.hamcrest.Matchers.equalTo;
+import static java.net.HttpURLConnection.HTTP_CREATED;
+import static java.net.HttpURLConnection.HTTP_OK;
 import static org.junit.jupiter.api.parallel.ExecutionMode.SAME_THREAD;
 
 @Tags({@Tag("all"), @Tag("accountSubscriptionsApiTests")})

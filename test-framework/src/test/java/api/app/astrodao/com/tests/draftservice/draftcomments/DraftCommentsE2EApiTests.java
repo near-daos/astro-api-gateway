@@ -8,10 +8,8 @@ import com.github.javafaker.Faker;
 import io.qameta.allure.*;
 import jdk.jfr.Description;
 import lombok.RequiredArgsConstructor;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Tags;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.parallel.Execution;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -22,12 +20,15 @@ import static java.net.HttpURLConnection.HTTP_CREATED;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasToString;
+import static org.junit.jupiter.api.parallel.ExecutionMode.SAME_THREAD;
 
 @Tags({@Tag("all"), @Tag("draftCommentsE2EApiTests")})
 @Epic("Draft Comments")
 @Feature("Draft Comments E2E API tests")
 @DisplayName("Draft Comments E2E API tests")
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@Execution(SAME_THREAD)
 public class DraftCommentsE2EApiTests extends BaseTest {
 	public final DraftCommentsApiSteps draftCommentsApiSteps;
 	private final Faker faker;
@@ -45,6 +46,11 @@ public class DraftCommentsE2EApiTests extends BaseTest {
 	@Value("${accounts.account2.token}")
 	private String authToken2;
 
+
+	@BeforeAll
+	public void deleteAllComments() {
+		draftCommentsApiSteps.deleteAllComments(authToken1);
+	}
 
 	@Test
 	@Severity(SeverityLevel.CRITICAL)
