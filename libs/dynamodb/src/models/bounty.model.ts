@@ -51,7 +51,7 @@ export function mapBountyToBountyModel(
     bountyClaims: bounty.bountyClaims
       ? bounty.bountyClaims.map(mapBountyClaimToBountyClaimModel)
       : undefined,
-    bountyDoneProposalIds: bounty.bountyDoneProposals
+    bountyDoneProposalIds: bounty.bountyDoneProposals?.length
       ? bounty.bountyDoneProposals.map(({ id }) => id)
       : undefined,
   };
