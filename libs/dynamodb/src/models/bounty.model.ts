@@ -13,7 +13,7 @@ export class BountyModel extends TransactionModel {
   numberOfClaims: number;
   commentsCount: number;
   bountyClaims: BountyClaimModel[];
-  bountyDoneProposals: string[];
+  bountyDoneProposalIds: string[];
 }
 
 export class BountyClaimModel {
@@ -51,7 +51,7 @@ export function mapBountyToBountyModel(
     bountyClaims: bounty.bountyClaims
       ? bounty.bountyClaims.map(mapBountyClaimToBountyClaimModel)
       : undefined,
-    bountyDoneProposals: bounty.bountyDoneProposals
+    bountyDoneProposalIds: bounty.bountyDoneProposals
       ? bounty.bountyDoneProposals.map(({ id }) => id)
       : undefined,
   };
