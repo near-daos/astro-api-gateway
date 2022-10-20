@@ -5,8 +5,10 @@ import { OpensearchService } from '@sputnik-v2/opensearch';
 import {
   DaoOpensearchDto,
   ProposalOpensearchDto,
+  BountyOpensearchDto,
 } from '@sputnik-v2/opensearch/dto';
 import { Proposal } from '@sputnik-v2/proposal';
+import { Bounty } from '@sputnik-v2/bounty';
 import { sleep } from '@sputnik-v2/utils';
 
 import { Migration } from '..';
@@ -32,6 +34,13 @@ export class OpensearchIndexMappingMigration implements Migration {
       Proposal.name,
       `astro_${Proposal.name}`,
       ProposalOpensearchDto.getMappings(),
+    );
+
+    this.logger.log('Bounty Index Mapping migration...');
+    await this.migrateIndexMapping(
+      Bounty.name,
+      `astro_${Bounty.name}`,
+      BountyOpensearchDto.getMappings(),
     );
 
     this.logger.log('Finished Opensearch Index Mapping migration.');
