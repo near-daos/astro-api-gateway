@@ -264,7 +264,7 @@ public class ProposalsApiTests extends BaseTest {
 
         proposalsApiSteps.assertDtoValueGreaterThan(proposalsResponse, r -> r.getTotal().intValue(), limit, "total");
         proposalsApiSteps.assertDtoValue(proposalsResponse, r -> r.getOffset().intValue(), 0, "offset");
-        proposalsApiSteps.assertDtoValueGreaterThan(proposalsResponse, r -> r.getTotal().intValue(), 185, "total");
+        proposalsApiSteps.assertDtoValueGreaterThan(proposalsResponse, r -> r.getTotal().intValue(), 100, "total");
         proposalsApiSteps.assertCollectionHasCorrectSize(proposalsResponse.getData(), limit);
 
         proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> !r.getCreatedAt().toString().isEmpty(), "data/createdAt");
