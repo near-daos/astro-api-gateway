@@ -23,6 +23,21 @@ export class BountyOpensearchDto extends BaseOpensearchDto {
   bountyClaims: string;
   transactionHash: string;
   createTimestamp: number;
+
+  public static getMappings(): any {
+    const { mappings } = super.getMappings();
+    const { properties } = mappings;
+
+    return {
+      mappings: {
+        ...mappings,
+        properties: {
+          ...properties,
+          createTimestamp: { type: 'long' },
+        },
+      },
+    };
+  }
 }
 
 export function mapBountyToOpensearchDto(bounty: Bounty): BountyOpensearchDto {
