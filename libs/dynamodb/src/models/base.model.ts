@@ -1,9 +1,7 @@
-import { DynamoEntityType } from '../types';
-
-export type EntityId = `${DynamoEntityType}:${string}`;
+import { DynamoEntityType, EntityId } from '../types';
 
 export class BaseModel {
-  daoId: string;
+  partitionId: string;
   entityId: EntityId;
   entityType: DynamoEntityType;
   isArchived: boolean;

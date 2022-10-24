@@ -12,7 +12,8 @@ import { DaoVersionsMigration } from './dao-version.migration';
 import { SharedProposalTemplateMigration } from './shared-proposal-template.migration';
 import { OpensearchIndexMigration } from './opensearch-index.migration';
 import { CommentsCountMigration } from './comments-count.migration';
-import { DynamoDaoTableMigration } from './dynamo-dao-table.migration';
+import { DynamoTableMigration } from './dynamo-table.migration';
+import { DynamoDataMigration } from './dynamo-data.migration';
 import { OpensearchIndexMappingMigration } from './opensearch-index-mapping.migration';
 
 export default [
@@ -30,6 +31,7 @@ export default [
   SharedProposalTemplateMigration,
   OpensearchIndexMigration,
   CommentsCountMigration,
-  DynamoDaoTableMigration,
+  DynamoTableMigration,
+  DynamoDataMigration,
   OpensearchIndexMappingMigration,
 ];
