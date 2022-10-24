@@ -83,8 +83,8 @@ export const buildSubscriptionId = (
   return `${daoId}-${accountId}`;
 };
 
-export const buildNotificationId = (txHash: string, type: string): string => {
-  return `${type.toLowerCase()}-${txHash.toLowerCase()}`;
+export const buildNotificationId = (type: string, txHash: string): string => {
+  return `${txHash.toLowerCase()}-${type.toLowerCase()}`;
 };
 
 export const buildAccountNotificationId = (

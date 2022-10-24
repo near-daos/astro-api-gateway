@@ -5,8 +5,8 @@ import * as AWS from 'aws-sdk';
 import { Migration } from '..';
 
 @Injectable()
-export class DynamoDaoTableMigration implements Migration {
-  private readonly logger = new Logger(DynamoDaoTableMigration.name);
+export class DynamoTableMigration implements Migration {
+  private readonly logger = new Logger(DynamoTableMigration.name);
 
   private readonly tableName: string;
 
@@ -17,21 +17,21 @@ export class DynamoDaoTableMigration implements Migration {
   }
 
   public async migrate(): Promise<void> {
-    this.logger.log('Starting DynamoDB AstroDao Table migration...');
+    this.logger.log(`Starting DynamoDB ${this.tableName} Table migration...`);
 
     const { region, endpoint } = this.configService.get('dynamodb');
     const dynamodb = new AWS.DynamoDB({ region, endpoint });
 
-    this.logger.log('Creating AstroDao table in DynamoDB...');
+    this.logger.log(`Creating ${this.tableName} table in DynamoDB...`);
     await dynamodb
       .createTable({
         TableName: this.tableName,
         KeySchema: [
-          { AttributeName: 'daoId', KeyType: 'HASH' },
+          { AttributeName: 'partitionId', KeyType: 'HASH' },
           { AttributeName: 'entityId', KeyType: 'RANGE' },
         ],
         AttributeDefinitions: [
-          { AttributeName: 'daoId', AttributeType: 'S' },
+          { AttributeName: 'partitionId', AttributeType: 'S' },
           { AttributeName: 'entityId', AttributeType: 'S' },
         ],
         ProvisionedThroughput: {
@@ -41,6 +41,6 @@ export class DynamoDaoTableMigration implements Migration {
       })
       .promise();
 
-    this.logger.log('DynamoDB AstroDao Table migration finished.');
+    this.logger.log(`DynamoDB ${this.tableName} Table migration finished.`);
   }
 }

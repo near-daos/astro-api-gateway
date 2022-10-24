@@ -7,6 +7,7 @@ import {
   Role,
   RoleKindType,
 } from '@sputnik-v2/dao/entities';
+import { DaoSettings } from '@sputnik-v2/dao-settings';
 import { TransactionModel } from './transaction.model';
 import { DynamoEntityType } from '../types';
 
@@ -30,10 +31,11 @@ export class DaoModel extends TransactionModel {
   activeProposalCount: number;
   totalProposalCount: number;
   totalDaoFunds: number;
-  policy: DaoPolicyModel;
-  config: DaoConfig;
-  daoVersion: DaoVersionModel;
+  policy?: DaoPolicyModel;
+  config?: DaoConfig;
+  daoVersion?: DaoVersionModel;
   delegations?: DaoDelegationModel[];
+  settings?: any;
 }
 
 export class DaoPolicyModel {
@@ -71,7 +73,7 @@ export class DaoDelegationModel {
 
 export function mapDaoToDaoModel(dao: Dao): DaoModel {
   return {
-    daoId: dao.id,
+    partitionId: dao.id,
     entityId: `${DynamoEntityType.Dao}:${dao.id}`,
     entityType: DynamoEntityType.Dao,
     isArchived: dao.isArchived,
@@ -100,7 +102,9 @@ export function mapDaoToDaoModel(dao: Dao): DaoModel {
     totalDaoFunds: dao.totalDaoFunds,
     policy: dao.policy ? mapPolicyToDaoPolicyModel(dao.policy) : undefined,
     config: dao.config,
-    daoVersion: mapDaoVersionToDaoVersionModel(dao.daoVersion),
+    daoVersion: dao.daoVersion
+      ? mapDaoVersionToDaoVersionModel(dao.daoVersion)
+      : undefined,
     delegations: dao.delegations?.map(mapDelegationToDaoDelegationModel),
   };
 }
@@ -147,5 +151,16 @@ export function mapDelegationToDaoDelegationModel(
     accountId: delegation.accountId,
     balance: delegation.balance,
     delegators: delegation.delegators,
+  };
+}
+
+export function mapDaoSettingsToDaoModel(
+  settings: DaoSettings,
+): Partial<DaoModel> {
+  return {
+    partitionId: settings.daoId,
+    entityId: `${DynamoEntityType.Dao}:${settings.daoId}`,
+    entityType: DynamoEntityType.Dao,
+    settings: settings.settings,
   };
 }

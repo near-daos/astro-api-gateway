@@ -30,7 +30,7 @@ export function mapBountyToBountyModel(
   proposalId = bounty.bountyContext?.proposal?.proposalId,
 ): BountyModel {
   return {
-    daoId: bounty.daoId,
+    partitionId: bounty.daoId,
     entityId: `${DynamoEntityType.Bounty}:${proposalId}`,
     entityType: DynamoEntityType.Bounty,
     isArchived: bounty.isArchived,

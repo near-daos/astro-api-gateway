@@ -44,7 +44,7 @@ export class ProposalActionModel {
 
 export function mapProposalToProposalModel(proposal: Proposal): ProposalModel {
   return {
-    daoId: proposal.daoId,
+    partitionId: proposal.daoId,
     entityId: `${DynamoEntityType.Proposal}:${proposal.proposalId}`,
     entityType: DynamoEntityType.Proposal,
     isArchived: proposal.isArchived,
