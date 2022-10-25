@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class RoleKindMember {
   @ApiProperty()
-  [RoleKindType.Member]: number;
+  [RoleKindType.Member]: number | string;
 }
 export class RoleKindGroup {
   @ApiProperty()

@@ -22,7 +22,7 @@ class RoleBaseDto extends BaseEntity {
   name: string;
 
   @ApiProperty()
-  balance: number;
+  balance: number | string;
 
   @ApiProperty()
   accountIds: string[];

@@ -225,7 +225,8 @@ export const getAccountPermissions = (
       role.kind === RoleKindType.Everyone ||
       (role.kind === RoleKindType.Group &&
         role.accountIds.includes(accountId)) ||
-      (role.kind === RoleKindType.Member && accountBalance >= role.balance)
+      (role.kind === RoleKindType.Member &&
+        accountBalance >= Number(role.balance))
     ) {
       return [...roles, ...role.permissions];
     }
