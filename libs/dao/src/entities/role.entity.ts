@@ -31,8 +31,8 @@ export class Role extends BaseEntity {
   kind: RoleKindType;
 
   @ApiProperty()
-  @Column({ type: 'text', nullable: true })
-  balance: string;
+  @Column({ type: 'numeric', nullable: true })
+  balance: number;
 
   @ApiProperty()
   @Column({ type: 'text', array: true, nullable: true })
