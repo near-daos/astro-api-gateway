@@ -31,7 +31,7 @@ export class Role extends BaseEntity {
   kind: RoleKindType;
 
   @ApiProperty()
-  @Column({ type: 'bigint', nullable: true })
+  @Column({ type: 'numeric', nullable: true })
   balance: number;
 
   @ApiProperty()
