@@ -4,8 +4,10 @@ import lombok.Data;
 
 @Data
 public class ActionsItem {
-	private String args;
-	private String gas;
-	private String methodName;
-	private String deposit;
+	private String accountId;
+	private String action;
+	private String id;
+	private String proposalId;
+	private String transactionHash;
+	private String timestamp;
 }
