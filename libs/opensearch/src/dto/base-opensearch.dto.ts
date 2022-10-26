@@ -11,7 +11,7 @@ export class BaseOpensearchDto {
       mappings: {
         dynamic: false,
         properties: {
-          id: { type: 'text' },
+          id: { type: 'keyword' },
           description: { type: 'text' },
           accounts: { type: 'text' },
         },

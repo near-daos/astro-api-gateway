@@ -1,4 +1,5 @@
 import { Bounty } from '@sputnik-v2/bounty';
+import { ProposalStatus } from '@sputnik-v2/proposal';
 
 import {
   ProposalOpensearchDto,
@@ -18,6 +19,7 @@ export class BountyOpensearchDto extends BaseOpensearchDto {
   maxDeadline: string;
   numberOfClaims: number;
   commentsCount: number;
+  proposalStatus: ProposalStatus;
   proposal: ProposalOpensearchDto;
   bountyDoneProposals: string;
   bountyClaims: string;
@@ -34,6 +36,10 @@ export class BountyOpensearchDto extends BaseOpensearchDto {
         properties: {
           ...properties,
           createTimestamp: { type: 'long' },
+          daoId: { type: 'keyword' },
+          numberOfClaims: { type: 'integer' },
+          bountyId: { type: 'integer' },
+          proposalStatus: { type: 'keyword' },
         },
       },
     };
@@ -88,6 +94,7 @@ export function mapBountyToOpensearchDto(bounty: Bounty): BountyOpensearchDto {
     bountyDoneProposals: JSON.stringify(bountyDoneProposals),
     transactionHash,
     createTimestamp,
+    proposalStatus: proposal.status,
     proposal: proposal ? mapProposalToOpensearchDto(proposal) : null,
     commentsCount,
     indexedBy: 'astro-api',

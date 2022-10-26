@@ -19,7 +19,7 @@ export class DaoOpensearchDto extends BaseOpensearchDto {
           totalDaoFunds: { type: 'float' },
           totalProposalCount: { type: 'integer' },
           numberOfMembers: { type: 'integer' },
-          status: { type: 'text' },
+          status: { type: 'keyword' },
         },
       },
     };
