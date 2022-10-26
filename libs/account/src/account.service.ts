@@ -121,6 +121,7 @@ export class AccountService {
     if (isEmail || isPhone) {
       await this.notifiClientService.sendTemplateMessage(
         accountNotification.accountId,
+        accountNotification.notificationId,
         {
           emailTemplate: isEmail ? template.emailTemplate : undefined,
           smsTemplate: isPhone ? template.smsTemplate : undefined,
@@ -151,7 +152,7 @@ export class AccountService {
 
     const code = await this.otpService.createOtp(account.email);
 
-    await this.notifiClientService.sendTemplateMessage(accountId, {
+    await this.notifiClientService.sendTemplateMessage(accountId, otp.hash, {
       emailTemplate: NotifiTemplate.Verification,
       variables: { code },
     });
@@ -224,7 +225,7 @@ export class AccountService {
 
     const code = await this.otpService.createOtp(account.phoneNumber);
 
-    await this.notifiClientService.sendTemplateMessage(accountId, {
+    await this.notifiClientService.sendTemplateMessage(accountId, otp.hash, {
       smsTemplate: NotifiTemplate.Verification,
       variables: { code },
     });
