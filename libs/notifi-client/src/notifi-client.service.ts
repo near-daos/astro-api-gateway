@@ -45,10 +45,14 @@ export class NotifiClientService {
     return id;
   }
 
-  async sendMessage(accountId: string, message: string): Promise<void> {
+  async sendMessage(
+    accountId: string,
+    key: string,
+    message: string,
+  ): Promise<void> {
     const jwt = await this.getToken();
     return this.client.sendDirectPush(jwt, {
-      key: `${accountId}:last-message`,
+      key: `${accountId}:${key}`,
       walletPublicKey: this.buildNotifiAccountId(accountId),
       walletBlockchain: 'NEAR',
       message: message,
@@ -57,11 +61,12 @@ export class NotifiClientService {
 
   async sendTemplateMessage(
     accountId: string,
+    key: string,
     template: NotifiTemplateMessageDto,
   ): Promise<void> {
     const jwt = await this.getToken();
     return this.client.sendDirectPush(jwt, {
-      key: `${accountId}:last-message`,
+      key: `${accountId}:${key}`,
       walletPublicKey: this.buildNotifiAccountId(accountId),
       walletBlockchain: 'NEAR',
       template: template,
