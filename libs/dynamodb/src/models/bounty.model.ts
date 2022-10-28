@@ -34,6 +34,7 @@ export function mapBountyToBountyModel(
     entityId: `${DynamoEntityType.Bounty}:${proposalId}`,
     entityType: DynamoEntityType.Bounty,
     isArchived: bounty.isArchived,
+    processingTimeStamp: Date.now(),
     transactionHash: bounty.transactionHash,
     updateTransactionHash:
       bounty.updateTransactionHash || bounty.transactionHash,

@@ -20,6 +20,8 @@ export class DraftProposalModel extends BaseModel {
   saveAccounts: string[];
   replies: number;
   history: DraftProposalHistoryModel[];
+  createTimestamp: number;
+  updateTimestamp: number;
 }
 
 export class DraftProposalHistoryModel {
@@ -30,7 +32,7 @@ export class DraftProposalHistoryModel {
   description: string;
   kind: ProposalKind;
   type: ProposalType;
-  date: Date;
+  timestamp: number;
 }
 
 export function mapDraftProposalToDraftProposalModel(
@@ -39,10 +41,13 @@ export function mapDraftProposalToDraftProposalModel(
 ): DraftProposalModel {
   return {
     partitionId: draftProposal.daoId,
-    entityId: `${DynamoEntityType.DraftProposal}:${draftProposal.id}`,
+    entityId: `${
+      DynamoEntityType.DraftProposal
+    }:${draftProposal.id.toString()}`,
     entityType: DynamoEntityType.DraftProposal,
     isArchived: draftProposal.isArchived,
-    id: draftProposal.id,
+    processingTimeStamp: Date.now(),
+    id: draftProposal.id.toString(),
     proposalId: draftProposal.proposalId,
     proposer: draftProposal.proposer,
     title: draftProposal.title,
@@ -53,6 +58,8 @@ export function mapDraftProposalToDraftProposalModel(
     viewAccounts: draftProposal.viewAccounts,
     saveAccounts: draftProposal.saveAccounts,
     replies: draftProposal.replies,
+    createTimestamp: new Date(draftProposal.createdAt).getTime(),
+    updateTimestamp: new Date(draftProposal.updatedAt).getTime(),
     history: history?.length
       ? history.map(mapDraftProposalHistoryToDraftProposalHistoryModel)
       : undefined,
@@ -63,13 +70,13 @@ export function mapDraftProposalHistoryToDraftProposalHistoryModel(
   draftProposalHistory: DraftProposalHistory,
 ): DraftProposalHistoryModel {
   return {
-    id: draftProposalHistory.id,
+    id: draftProposalHistory.id.toString(),
     daoId: draftProposalHistory.daoId,
     proposer: draftProposalHistory.proposer,
     title: draftProposalHistory.title,
     description: draftProposalHistory.description,
     kind: draftProposalHistory.kind,
     type: draftProposalHistory.type,
-    date: draftProposalHistory.date,
+    timestamp: new Date(draftProposalHistory.date).getTime(),
   };
 }

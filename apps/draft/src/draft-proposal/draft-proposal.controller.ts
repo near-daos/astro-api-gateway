@@ -37,6 +37,7 @@ import {
   AuthorizedRequest,
   BaseResponseDto,
   DeleteResponse,
+  FindOneMongoDaoParams,
   FindOneMongoParams,
 } from '@sputnik-v2/common';
 import { DraftPageResponse } from './dto/draft-page-response.dto';
@@ -103,6 +104,10 @@ export class DraftProposalController {
   }
 
   @ApiParam({
+    name: 'daoId',
+    type: String,
+  })
+  @ApiParam({
     name: 'id',
     type: String,
   })
@@ -121,15 +126,19 @@ export class DraftProposalController {
   @ApiBearerAuth()
   @UseGuards(ThrottlerGuard)
   @UseGuards(AccountAccessGuard)
-  @Patch('/:id')
+  @Patch('/:daoId/:id')
   updateDraftProposals(
-    @Param() { id }: FindOneMongoParams,
+    @Param() { daoId, id }: FindOneMongoDaoParams,
     @Req() req: AuthorizedRequest,
     @Body() body: UpdateDraftProposal,
   ): Promise<string> {
-    return this.draftProposalService.update(id, req.accountId, body);
+    return this.draftProposalService.update(daoId, id, req.accountId, body);
   }
 
+  @ApiParam({
+    name: 'daoId',
+    type: String,
+  })
   @ApiParam({
     name: 'id',
     type: String,
@@ -151,14 +160,18 @@ export class DraftProposalController {
   })
   @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
-  @Delete('/:id')
+  @Delete('/:daoId/:id')
   deleteDraftProposal(
-    @Param() { id }: FindOneMongoParams,
+    @Param() { daoId, id }: FindOneMongoDaoParams,
     @Req() req: AuthorizedRequest,
   ): Promise<DeleteResponse> {
-    return this.draftProposalService.delete(id, req.accountId);
+    return this.draftProposalService.delete(daoId, id, req.accountId);
   }
 
+  @ApiParam({
+    name: 'daoId',
+    type: String,
+  })
   @ApiParam({
     name: 'id',
     type: String,
@@ -177,14 +190,18 @@ export class DraftProposalController {
   })
   @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
-  @Post('/:id/view')
+  @Post('/:daoId/:id/view')
   viewDraftProposal(
-    @Param() { id }: FindOneMongoParams,
+    @Param() { daoId, id }: FindOneMongoDaoParams,
     @Req() req: AuthorizedRequest,
   ) {
-    return this.draftProposalService.view(id, req.accountId);
+    return this.draftProposalService.view(daoId, id, req.accountId);
   }
 
+  @ApiParam({
+    name: 'daoId',
+    type: String,
+  })
   @ApiParam({
     name: 'id',
     type: String,
@@ -203,14 +220,18 @@ export class DraftProposalController {
   })
   @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
-  @Post('/:id/save')
+  @Post('/:daoId/:id/save')
   saveDraftProposal(
-    @Param() { id }: FindOneMongoParams,
+    @Param() { daoId, id }: FindOneMongoDaoParams,
     @Req() req: AuthorizedRequest,
   ) {
-    return this.draftProposalService.save(id, req.accountId);
+    return this.draftProposalService.save(daoId, id, req.accountId);
   }
 
+  @ApiParam({
+    name: 'daoId',
+    type: String,
+  })
   @ApiParam({
     name: 'id',
     type: String,
@@ -229,14 +250,18 @@ export class DraftProposalController {
   })
   @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
-  @Delete('/:id/save')
+  @Delete('/:daoId/:id/save')
   removeDraftProposalSave(
-    @Param() { id }: FindOneMongoParams,
+    @Param() { daoId, id }: FindOneMongoDaoParams,
     @Req() req: AuthorizedRequest,
   ) {
-    return this.draftProposalService.removeSave(id, req.accountId);
+    return this.draftProposalService.removeSave(daoId, id, req.accountId);
   }
 
+  @ApiParam({
+    name: 'daoId',
+    type: String,
+  })
   @ApiParam({
     name: 'id',
     type: String,
@@ -258,12 +283,12 @@ export class DraftProposalController {
   })
   @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
-  @Post('/:id/close')
+  @Post('/:daoId/:id/close')
   closeDraftProposal(
-    @Param() { id }: FindOneMongoParams,
+    @Param() { daoId, id }: FindOneMongoDaoParams,
     @Req() req: AuthorizedRequest,
     @Body() body: CloseDraftProposal,
   ) {
-    return this.draftProposalService.close(id, req.accountId, body);
+    return this.draftProposalService.close(daoId, id, req.accountId, body);
   }
 }
