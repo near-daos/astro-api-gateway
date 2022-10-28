@@ -121,12 +121,10 @@ export class EventService {
   }
 
   public async sendCloseDraftProposalEvent(
-    daoId: string,
     draftId: string,
     proposalId: string,
   ): Promise<void> {
     const message = new BaseMessage(EVENT_DRAFT_PROPOSAL_CLOSE, {
-      daoId,
       draftId,
       proposalId,
     });

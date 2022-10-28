@@ -7,7 +7,6 @@ import { default as redis } from './redis';
 import { default as daoApi } from './dao-api';
 import opensearch from './opensearch';
 import launchdarkly from './launchdarkly';
-import dynamodb from './dynamodb';
 
 export { default as validate } from './validationSchema';
 export { TypeOrmConfigService } from './typeorm-config.service';
@@ -30,6 +29,5 @@ export default [
   redis,
   draft,
   opensearch,
-  dynamodb,
   launchdarkly,
 ];

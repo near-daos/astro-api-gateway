@@ -1,29 +1,30 @@
 import * as AWS from 'aws-sdk';
 import DynamoDB, { DocumentClient } from 'aws-sdk/clients/dynamodb';
+
 import { ConfigService } from '@nestjs/config';
 import { Injectable } from '@nestjs/common';
 
-import { Dao } from '@sputnik-v2/dao/entities';
-import { Proposal } from '@sputnik-v2/proposal/entities';
-import { Bounty } from '@sputnik-v2/bounty/entities';
-import { Account } from '@sputnik-v2/account/entities';
+import { Dao } from '@sputnik-v2/dao';
+import { Proposal } from '@sputnik-v2/proposal';
+import { Bounty } from '@sputnik-v2/bounty';
+import { Account } from '@sputnik-v2/account';
 import {
   AccountNotification,
   AccountNotificationSettings,
 } from '@sputnik-v2/notification';
-import { Comment } from '@sputnik-v2/comment/entities';
-import { DraftComment } from '@sputnik-v2/draft-comment/entities';
-import { DaoStats } from '@sputnik-v2/stats/entities';
+import { Comment } from '@sputnik-v2/comment';
+import { DraftComment } from '@sputnik-v2/draft-comment';
+import { DaoStats } from '@sputnik-v2/stats';
 import {
   DraftProposal,
   DraftProposalHistory,
-} from '@sputnik-v2/draft-proposal/entities';
-import { NFTToken, TokenBalance } from '@sputnik-v2/token/entities';
+} from '@sputnik-v2/draft-proposal';
+import { NFTToken, TokenBalance } from '@sputnik-v2/token';
 import {
   ProposalTemplate,
   SharedProposalTemplate,
-} from '@sputnik-v2/proposal-template/entities';
-import { Subscription } from '@sputnik-v2/subscription/entities';
+} from '@sputnik-v2/proposal-template';
+import { Subscription } from '@sputnik-v2/subscription';
 
 import {
   BaseModel,
@@ -57,7 +58,6 @@ import {
   TokenBalanceModel,
   mapTokenBalanceToTokenBalanceModel,
 } from './models';
-import { DynamoEntityType } from './types';
 
 @Injectable()
 export class DynamodbService {
@@ -190,34 +190,25 @@ export class DynamodbService {
       .promise();
   }
 
-  public async getItemByType<M extends BaseModel = BaseModel>(
-    partitionId: string,
-    entityType: DynamoEntityType,
-    id: string,
-  ): Promise<M | null> {
-    return await this.getItemById(partitionId, `${entityType}:${id}`);
-  }
-
-  public async getItemById<M extends BaseModel = BaseModel>(
-    partitionId: string,
+  private async getItemById<M extends BaseModel = BaseModel>(
+    daoId: string,
     entityId: string,
-    tableName = this.tableName,
+    tableName: string,
   ): Promise<M | null> {
     return await this.client
       .get({
         TableName: tableName,
-        Key: { partitionId, entityId },
+        Key: { daoId, entityId },
       })
       .promise()
       .then(({ Item }) => Item as M)
       .catch(() => null);
   }
 
-  public async saveItem<M extends BaseModel = BaseModel>(
+  private async saveItem<M extends BaseModel = BaseModel>(
     data: Partial<M>,
     tableName = this.tableName,
   ) {
-    const processingTimeStamp = Date.now();
     const item = await this.getItemById(
       data.partitionId,
       data.entityId,
@@ -226,9 +217,7 @@ export class DynamodbService {
     return this.client
       .put({
         TableName: tableName,
-        Item: item
-          ? { ...item, ...data, processingTimeStamp }
-          : { ...data, processingTimeStamp },
+        Item: item ? { ...item, ...data } : data,
       })
       .promise();
   }
