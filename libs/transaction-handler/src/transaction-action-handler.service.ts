@@ -340,7 +340,6 @@ export class TransactionActionHandlerService {
 
     if (args.draftId) {
       await this.eventService.sendCloseDraftProposalEvent(
-        proposal.daoId,
         args.draftId,
         proposal.id,
       );

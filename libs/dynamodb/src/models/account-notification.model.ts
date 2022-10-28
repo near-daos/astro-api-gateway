@@ -35,7 +35,6 @@ export function mapAccountNotificationToAccountNotificationModel(
     entityId: `${DynamoEntityType.AccountNotification}:${accountNotification.id}`,
     entityType: DynamoEntityType.AccountNotification,
     isArchived: accountNotification.isArchived,
-    processingTimeStamp: Date.now(),
     id: accountNotification.id,
     notification: mapNotificationToNotificationModel(
       accountNotification.notification,

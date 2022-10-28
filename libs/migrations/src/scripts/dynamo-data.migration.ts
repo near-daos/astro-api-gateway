@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { FindManyOptions, MongoRepository, Repository } from 'typeorm';
 import PromisePool from '@supercharge/promise-pool';
 import {
+  DynamodbService,
   mapAccountNotificationSettingsToAccountNotificationSettingsModel,
   mapAccountNotificationToAccountNotificationModel,
   mapAccountToAccountModel,
@@ -17,31 +18,30 @@ import {
   mapSharedProposalTemplateToSharedProposalTemplateModel,
   mapSubscriptionToSubscriptionModel,
   mapTokenBalanceToTokenBalanceModel,
-} from '@sputnik-v2/dynamodb/models';
-import { DynamodbService } from '@sputnik-v2/dynamodb/dynamodb.service';
-import { Account } from '@sputnik-v2/account/entities';
+} from '@sputnik-v2/dynamodb';
+import { Account } from '@sputnik-v2/account';
 import {
   AccountNotification,
   AccountNotificationSettings,
-} from '@sputnik-v2/notification/entities';
-import { Bounty } from '@sputnik-v2/bounty/entities';
-import { Comment } from '@sputnik-v2/comment/entities';
-import { DraftComment } from '@sputnik-v2/draft-comment/entities';
-import { Dao } from '@sputnik-v2/dao/entities';
+} from '@sputnik-v2/notification';
+import { Bounty } from '@sputnik-v2/bounty';
+import { Comment } from '@sputnik-v2/comment';
+import { DraftComment } from '@sputnik-v2/draft-comment';
+import { Dao } from '@sputnik-v2/dao';
 import { getChunkCount } from '@sputnik-v2/utils';
 import { DRAFT_DB_CONNECTION } from '@sputnik-v2/common';
-import { DaoStats } from '@sputnik-v2/stats/entities';
+import { DaoStats } from '@sputnik-v2/stats';
 import {
   DraftProposal,
   DraftProposalHistory,
-} from '@sputnik-v2/draft-proposal/entities';
-import { NFTToken, TokenBalance } from '@sputnik-v2/token/entities';
-import { Proposal } from '@sputnik-v2/proposal/entities';
+} from '@sputnik-v2/draft-proposal';
+import { NFTToken, TokenBalance } from '@sputnik-v2/token';
+import { Proposal } from '@sputnik-v2/proposal';
 import {
   ProposalTemplate,
   SharedProposalTemplate,
-} from '@sputnik-v2/proposal-template/entities';
-import { Subscription } from '@sputnik-v2/subscription/entities';
+} from '@sputnik-v2/proposal-template';
+import { Subscription } from '@sputnik-v2/subscription';
 
 import { Migration } from '..';
 

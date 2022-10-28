@@ -16,9 +16,6 @@ import { ProposalKind } from '@sputnik-v2/proposal';
 import { DaoApiService } from '@sputnik-v2/dao-api';
 import { getAccountPermissions } from '@sputnik-v2/utils';
 import { OpensearchService } from '@sputnik-v2/opensearch';
-import { DynamodbService } from '@sputnik-v2/dynamodb/dynamodb.service';
-import { DraftProposalModel } from '@sputnik-v2/dynamodb/models';
-import { DynamoEntityType } from '@sputnik-v2/dynamodb/types';
 
 import { DraftProposal, DraftProposalHistory } from './entities';
 import {
@@ -30,8 +27,6 @@ import {
   DraftProposalRequest,
   DraftProposalResponse,
   DraftProposalsRequest,
-  mapCreateDraftProposalToDraftProposalModel,
-  mapUpdateDraftProposalToDraftProposalModel,
   UpdateDraftProposal,
 } from './dto';
 import { DraftProposalState } from './types';
@@ -45,7 +40,6 @@ export class DraftProposalService {
     private draftProposalHistoryRepository: MongoRepository<DraftProposalHistory>,
     private daoApiService: DaoApiService,
     private opensearchService: OpensearchService,
-    private dynamodbService: DynamodbService,
   ) {}
 
   async create(
@@ -69,38 +63,22 @@ export class DraftProposalService {
       draftProposal.id,
       draftProposal,
     );
-    await this.dynamodbService.saveItem(
-      mapCreateDraftProposalToDraftProposalModel(
-        draftProposal.id.toString(), // TODO: Use uuid when mongo will be removed
-        accountId,
-        draftProposalDto,
-      ),
-    );
 
     return draftProposal.id.toString();
   }
 
   async update(
-    daoId: string,
     id: string,
     accountId: string,
     draftProposalDto: UpdateDraftProposal,
   ) {
-    const draftProposalEntity = await this.draftProposalRepository.findOne(id);
-    const draftProposal =
-      await this.dynamodbService.getItemByType<DraftProposalModel>(
-        daoId,
-        DynamoEntityType.DraftProposal,
-        id,
-      );
+    const draftProposal = await this.draftProposalRepository.findOne(id);
 
     if (!draftProposal) {
       throw new NotFoundException(`Draft proposal ${id} does not exist`);
     }
 
-    const { data: dao } = await this.daoApiService.getDao(
-      draftProposal.partitionId,
-    );
+    const { data: dao } = await this.daoApiService.getDao(draftProposal.daoId);
     const accountPermissions = getAccountPermissions(
       dao.policy.roles,
       draftProposalDto.type,
@@ -111,60 +89,40 @@ export class DraftProposalService {
       throw new ForbiddenException('Account is not the proposer or council');
     }
 
-    const historyItem = await this.draftProposalHistoryRepository.save({
-      draftProposalId: draftProposalEntity.id,
-      daoId: draftProposalEntity.daoId,
-      proposer: draftProposalEntity.proposer,
-      title: draftProposalEntity.title,
-      description: draftProposalEntity.description,
-      kind: draftProposalEntity.kind,
-      type: draftProposalEntity.type,
-      date: draftProposalEntity.updatedAt,
+    await this.draftProposalHistoryRepository.save({
+      draftProposalId: draftProposal.id,
+      daoId: draftProposal.daoId,
+      proposer: draftProposal.proposer,
+      title: draftProposal.title,
+      description: draftProposal.description,
+      kind: draftProposal.kind,
+      type: draftProposal.type,
+      date: draftProposal.updatedAt,
     });
     await this.draftProposalRepository.save({
-      ...draftProposalEntity,
+      ...draftProposal,
       title: draftProposalDto.title,
       description: draftProposalDto.description,
       kind: draftProposalDto.kind as ProposalKind,
       type: draftProposalDto.type,
     });
 
-    await this.dynamodbService.saveItem(
-      mapUpdateDraftProposalToDraftProposalModel(
-        draftProposal,
-        draftProposalDto,
-        historyItem.id.toString(), // TODO: Use uuid when mongo will be removed
-      ),
-    );
-
     await this.opensearchService.indexDraftProposal(
-      draftProposalEntity.id,
-      draftProposalEntity,
+      draftProposal.id,
+      draftProposal,
     );
 
     return draftProposal.id.toString();
   }
 
-  async delete(
-    daoId: string,
-    id: string,
-    accountId: string,
-  ): Promise<DeleteResponse> {
-    const draftProposalEntity = await this.draftProposalRepository.findOne(id);
-    const draftProposal =
-      await this.dynamodbService.getItemByType<DraftProposalModel>(
-        daoId,
-        DynamoEntityType.DraftProposal,
-        id,
-      );
+  async delete(id: string, accountId: string): Promise<DeleteResponse> {
+    const draftProposal = await this.draftProposalRepository.findOne(id);
 
     if (!draftProposal) {
       throw new NotFoundException(`Draft proposal ${id} does not exist`);
     }
 
-    const { data: dao } = await this.daoApiService.getDao(
-      draftProposal.partitionId,
-    );
+    const { data: dao } = await this.daoApiService.getDao(draftProposal.daoId);
     const accountPermissions = getAccountPermissions(
       dao.policy.roles,
       draftProposal.type,
@@ -180,19 +138,13 @@ export class DraftProposalService {
     }
 
     await this.draftProposalHistoryRepository.deleteMany({
-      draftProposalId: { $eq: draftProposalEntity.id },
+      draftProposalId: { $eq: draftProposal.id },
     });
-    await this.draftProposalRepository.delete(draftProposalEntity);
-
-    await this.dynamodbService.saveItem({
-      ...draftProposal,
-      updateTimestamp: Date.now(),
-      isArchived: true,
-    });
+    await this.draftProposalRepository.delete(draftProposal);
 
     await this.opensearchService.indexDraftProposal(
       draftProposal.id,
-      draftProposalEntity,
+      draftProposal,
     );
 
     return {
@@ -201,90 +153,50 @@ export class DraftProposalService {
     };
   }
 
-  async view(daoId: string, id: string, accountId: string): Promise<boolean> {
-    const draftProposalEntity = await this.draftProposalRepository.findOne(id);
-    const draftProposal =
-      await this.dynamodbService.getItemByType<DraftProposalModel>(
-        daoId,
-        DynamoEntityType.DraftProposal,
-        id,
-      );
+  async view(id: string, accountId: string): Promise<boolean> {
+    const draftProposal = await this.draftProposalRepository.findOne(id);
 
     if (!draftProposal) {
       throw new NotFoundException(`Draft proposal ${id} does not exist`);
     }
 
     if (!draftProposal.viewAccounts.includes(accountId)) {
-      const viewAccounts = [...draftProposal.viewAccounts, accountId];
-      await this.draftProposalRepository.update(draftProposalEntity.id, {
-        viewAccounts,
-      });
-      await this.dynamodbService.saveItem({
-        ...draftProposal,
-        viewAccounts,
-        updateTimestamp: Date.now(),
+      await this.draftProposalRepository.update(draftProposal.id, {
+        viewAccounts: [...draftProposal.viewAccounts, accountId],
       });
     }
 
     return true;
   }
 
-  async save(daoId: string, id: string, accountId: string): Promise<boolean> {
-    const draftProposalEntity = await this.draftProposalRepository.findOne(id);
-    const draftProposal =
-      await this.dynamodbService.getItemByType<DraftProposalModel>(
-        daoId,
-        DynamoEntityType.DraftProposal,
-        id,
-      );
+  async save(id: string, accountId: string): Promise<boolean> {
+    const draftProposal = await this.draftProposalRepository.findOne(id);
 
     if (!draftProposal) {
       throw new NotFoundException(`Draft proposal ${id} does not exist`);
     }
 
     if (!draftProposal.saveAccounts.includes(accountId)) {
-      const saveAccounts = [...draftProposal.saveAccounts, accountId];
-      await this.draftProposalRepository.update(draftProposalEntity.id, {
-        saveAccounts,
-      });
-      await this.dynamodbService.saveItem({
-        ...draftProposal,
-        saveAccounts,
-        updateTimestamp: Date.now(),
+      await this.draftProposalRepository.update(draftProposal.id, {
+        saveAccounts: [...draftProposal.saveAccounts, accountId],
       });
     }
 
     return true;
   }
 
-  async removeSave(
-    daoId: string,
-    id: string,
-    accountId: string,
-  ): Promise<boolean> {
-    const draftProposalEntity = await this.draftProposalRepository.findOne(id);
-    const draftProposal =
-      await this.dynamodbService.getItemByType<DraftProposalModel>(
-        daoId,
-        DynamoEntityType.DraftProposal,
-        id,
-      );
+  async removeSave(id: string, accountId: string): Promise<boolean> {
+    const draftProposal = await this.draftProposalRepository.findOne(id);
 
     if (!draftProposal) {
       throw new NotFoundException(`Draft proposal ${id} does not exist`);
     }
 
     if (draftProposal.saveAccounts.includes(accountId)) {
-      const saveAccounts = draftProposal.saveAccounts.filter(
-        (item) => item !== accountId,
-      );
-      await this.draftProposalRepository.update(draftProposalEntity.id, {
-        saveAccounts,
-      });
-      await this.dynamodbService.saveItem({
-        ...draftProposal,
-        saveAccounts,
-        updateTimestamp: Date.now(),
+      await this.draftProposalRepository.update(draftProposal.id, {
+        saveAccounts: draftProposal.saveAccounts.filter(
+          (item) => item !== accountId,
+        ),
       });
     }
 
@@ -292,26 +204,17 @@ export class DraftProposalService {
   }
 
   async close(
-    daoId: string,
     id: string,
     accountId: string,
     closeDraftProposalDto: CloseDraftProposal,
   ): Promise<boolean> {
-    const draftProposalEntity = await this.draftProposalRepository.findOne(id);
-    const draftProposal =
-      await this.dynamodbService.getItemByType<DraftProposalModel>(
-        daoId,
-        DynamoEntityType.DraftProposal,
-        id,
-      );
+    const draftProposal = await this.draftProposalRepository.findOne(id);
 
     if (!draftProposal) {
       throw new NotFoundException(`Draft proposal ${id} does not exist`);
     }
 
-    const { data: dao } = await this.daoApiService.getDao(
-      draftProposal.partitionId,
-    );
+    const { data: dao } = await this.daoApiService.getDao(draftProposal.daoId);
     const accountPermissions = getAccountPermissions(
       dao.policy.roles,
       draftProposal.type,
@@ -325,55 +228,30 @@ export class DraftProposalService {
     }
 
     if (draftProposal.state !== DraftProposalState.Closed) {
-      await this.draftProposalRepository.update(draftProposalEntity.id, {
+      await this.draftProposalRepository.update(draftProposal.id, {
         state: DraftProposalState.Closed,
         proposalId: closeDraftProposalDto.proposalId,
-      });
-      await this.dynamodbService.saveItem({
-        ...draftProposal,
-        state: DraftProposalState.Closed,
-        proposalId: closeDraftProposalDto.proposalId,
-        updateTimestamp: Date.now(),
       });
     }
 
     return true;
   }
 
-  async closeInternal(daoId: string, id: string, proposalId: string) {
-    const draftProposalEntity = await this.draftProposalRepository.findOne(id);
-    const draftProposal =
-      await this.dynamodbService.getItemByType<DraftProposalModel>(
-        daoId,
-        DynamoEntityType.DraftProposal,
-        id,
-      );
+  async closeInternal(id: string, proposalId: string) {
+    const draftProposal = await this.draftProposalRepository.findOne(id);
 
     if (draftProposal) {
-      await this.draftProposalRepository.update(draftProposalEntity.id, {
+      await this.draftProposalRepository.update(draftProposal.id, {
         state: DraftProposalState.Closed,
         proposalId,
-      });
-      await this.dynamodbService.saveItem({
-        ...draftProposal,
-        state: DraftProposalState.Closed,
-        proposalId,
-        updateTimestamp: Date.now(),
       });
     }
   }
 
-  async updateReplies(
-    daoId: string,
-    id: string,
-    replies: number,
-  ): Promise<void> {
+  async updateReplies(id: string, replies: number): Promise<void> {
     await this.draftProposalRepository.update(id, {
       replies,
     });
-    await this.dynamodbService.saveDraftProposal(
-      await this.draftProposalRepository.findOne(id),
-    );
   }
 
   async getAll(

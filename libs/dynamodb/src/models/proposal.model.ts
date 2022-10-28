@@ -48,7 +48,6 @@ export function mapProposalToProposalModel(proposal: Proposal): ProposalModel {
     entityId: `${DynamoEntityType.Proposal}:${proposal.proposalId}`,
     entityType: DynamoEntityType.Proposal,
     isArchived: proposal.isArchived,
-    processingTimeStamp: Date.now(),
     transactionHash: proposal.transactionHash,
     updateTransactionHash: proposal.updateTransactionHash,
     createTimestamp: proposal.createTimestamp,

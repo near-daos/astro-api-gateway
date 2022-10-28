@@ -22,7 +22,6 @@ export function mapSharedProposalTemplateToSharedProposalTemplateModel(
     entityId: `${DynamoEntityType.SharedProposalTemplate}:${sharedProposalTemplate.id}`,
     entityType: DynamoEntityType.SharedProposalTemplate,
     isArchived: sharedProposalTemplate.isArchived,
-    processingTimeStamp: Date.now(),
     id: sharedProposalTemplate.id,
     createdBy: sharedProposalTemplate.createdBy,
     name: sharedProposalTemplate.name,

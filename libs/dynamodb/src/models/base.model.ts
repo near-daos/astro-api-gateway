@@ -5,5 +5,4 @@ export class BaseModel {
   entityId: EntityId;
   entityType: DynamoEntityType;
   isArchived: boolean;
-  processingTimeStamp: number;
 }
