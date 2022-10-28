@@ -19,6 +19,7 @@ export function mapAccountToAccountModel(
     entityId: `${DynamoEntityType.Account}:${account.accountId}`,
     entityType: DynamoEntityType.Account,
     isArchived: account.isArchived,
+    processingTimeStamp: Date.now(),
     email: account.email,
     isEmailVerified: account.isEmailVerified,
     phoneNumber: account.phoneNumber,

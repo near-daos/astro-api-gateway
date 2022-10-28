@@ -71,6 +71,7 @@ export class DraftController {
       `Closing draft ${data.draftId} due to proposal creation: ${data.proposalId}`,
     );
     await this.draftProposalService.closeInternal(
+      data.daoId,
       data.draftId,
       data.proposalId,
     );

@@ -54,6 +54,7 @@ export class DraftCommentService {
       dislikeAccounts: [],
     });
     await this.draftProposalService.updateReplies(
+      draftProposal.daoId,
       draftProposal.id,
       await this.draftCommentRepository.count({
         contextId: { $eq: draftComment.contextId },
@@ -95,6 +96,7 @@ export class DraftCommentService {
 
     if (draftComment.contextType === DraftCommentContextType.DraftProposal) {
       await this.draftProposalService.updateReplies(
+        draftComment.daoId,
         draftComment.contextId,
         await this.draftCommentRepository.count({
           contextId: { $eq: draftComment.contextId },
@@ -276,6 +278,7 @@ export class DraftCommentService {
 
     if (draftComment.contextType === DraftCommentContextType.DraftProposal) {
       await this.draftProposalService.updateReplies(
+        draftComment.daoId,
         draftComment.contextId,
         await this.draftCommentRepository.count({
           contextId: { $eq: draftComment.contextId },
