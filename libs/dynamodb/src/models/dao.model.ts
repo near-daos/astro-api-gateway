@@ -77,6 +77,7 @@ export function mapDaoToDaoModel(dao: Dao): DaoModel {
     entityId: `${DynamoEntityType.Dao}:${dao.id}`,
     entityType: DynamoEntityType.Dao,
     isArchived: dao.isArchived,
+    processingTimeStamp: Date.now(),
     transactionHash: dao.transactionHash,
     updateTransactionHash: dao.updateTransactionHash,
     createTimestamp: dao.createTimestamp,

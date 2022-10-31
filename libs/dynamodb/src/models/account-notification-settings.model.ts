@@ -24,6 +24,7 @@ export function mapAccountNotificationSettingsToAccountNotificationSettingsModel
     entityId: `${DynamoEntityType.AccountNotificationSettings}:${accountNotificationSettings.id}`,
     entityType: DynamoEntityType.AccountNotificationSettings,
     isArchived: accountNotificationSettings.isArchived,
+    processingTimeStamp: Date.now(),
     id: accountNotificationSettings.id,
     daoId: accountNotificationSettings.daoId,
     types: accountNotificationSettings.types,

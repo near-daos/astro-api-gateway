@@ -47,6 +47,7 @@ export function mapNftTokenToNftModel(nft: NFTToken): NftModel {
     entityId: `${DynamoEntityType.Nft}:${nft.id}`,
     entityType: DynamoEntityType.Nft,
     isArchived: nft.isArchived,
+    processingTimeStamp: Date.now(),
     id: nft.id,
     ownerId: nft.ownerId,
     tokenId: nft.tokenId,

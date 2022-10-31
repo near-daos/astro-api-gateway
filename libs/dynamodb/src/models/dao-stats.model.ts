@@ -19,6 +19,7 @@ export function mapDaoStatsToDaoStatsModel(stats: DaoStats): DaoStatsModel {
     entityId: `${DynamoEntityType.DaoStats}:${stats.id}`,
     entityType: DynamoEntityType.DaoStats,
     isArchived: stats.isArchived,
+    processingTimeStamp: Date.now(),
     id: stats.id,
     timestamp: stats.timestamp,
     totalDaoFunds: stats.totalDaoFunds,
