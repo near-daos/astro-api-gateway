@@ -75,7 +75,6 @@ export class DynamodbService {
     };
 
     if (accessKeyId && secretAccessKey) {
-      console.log('accessKeyId:', accessKeyId);
       options = { ...options, credentials: { accessKeyId, secretAccessKey } };
     }
 
