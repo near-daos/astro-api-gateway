@@ -72,8 +72,11 @@ export class DynamodbService {
     let options: DocumentClient.DocumentClientOptions &
       DynamoDB.Types.ClientConfiguration = {
       region,
-      credentials: { accessKeyId, secretAccessKey },
     };
+
+    if (accessKeyId && secretAccessKey) {
+      options = { ...options, credentials: { accessKeyId, secretAccessKey } };
+    }
 
     if (endpoint) {
       options = { ...options, endpoint };
