@@ -1,12 +1,7 @@
-import {
-  Comment,
-  CommentContextType,
-  CommentReport,
-} from '@sputnik-v2/comment';
-import {
-  DraftComment,
-  DraftCommentContextType,
-} from '@sputnik-v2/draft-comment';
+import { Comment, CommentReport } from '@sputnik-v2/comment/entities';
+import { CommentContextType } from '@sputnik-v2/comment/types';
+import { DraftComment } from '@sputnik-v2/draft-comment/entities';
+import { DraftCommentContextType } from '@sputnik-v2/draft-comment/types';
 import { BaseModel } from './base.model';
 import { DynamoEntityType } from '../types';
 
@@ -37,6 +32,7 @@ export function mapCommentToCommentModel(
     entityId: `${entityType}:${comment.contextId}:${comment.id}`,
     entityType,
     isArchived: comment.isArchived,
+    processingTimeStamp: Date.now(),
     id: comment.id.toString(),
     contextId: comment.contextId,
     contextType: comment.contextType,
@@ -58,6 +54,7 @@ export function mapDraftCommentToCommentModel(
     entityId: `${entityType}:${comment.contextId}:${comment.id}`,
     entityType,
     isArchived: comment.isArchived,
+    processingTimeStamp: Date.now(),
     id: comment.id.toString(),
     contextId: comment.contextId,
     contextType: comment.contextType,
