@@ -46,14 +46,19 @@ public class AccountTokensApiTests extends BaseTest {
 	@Test
 	@Severity(SeverityLevel.CRITICAL)
 	@Story("Get list of tokens for valid accountId query parameter '{id}'")
-	@DisplayName("Get token list for valid accountId query parameter '{id}'")
+	@DisplayName("Get list of tokens for valid accountId query parameter '{id}'")
 	void getListOfTokensForValidDaoIdQueryParam() {
 		TokensList tokensList = tokenApiSteps.getTokensForDao("ref-finance.sputnikv2.testnet").then()
 				.statusCode(HTTP_OK)
 				.extract().as(TokensList.class);
 
-		tokenApiSteps.assertCollectionHasCorrectSize(tokensList, 4);
-		tokenApiSteps.assertCollectionContainsExactlyInAnyOrder(tokensList, Token::getId, "NEAR", "paras.fakes.testnet", "rft.tokenfactory.testnet", "ref.fakes.testnet");
+		tokenApiSteps.assertCollectionHasCorrectSize(tokensList, 5);
+		tokenApiSteps.assertCollectionContainsExactlyInAnyOrder(tokensList, Token::getId,
+		                                                        "NEAR",
+		                                                        "paras.fakes.testnet",
+		                                                        "rft.tokenfactory.testnet",
+		                                                        "ref.fakes.testnet",
+		                                                        "pulse.fakes.testnet");
 
 		tokenApiSteps.assertDtoValue(tokensList.get(0), Token::getId, "NEAR", "id");
 		tokenApiSteps.assertDtoHasValue(tokensList.get(0), token -> token.getTotalSupply().isEmpty(), "totalSupply");
@@ -90,5 +95,14 @@ public class AccountTokensApiTests extends BaseTest {
 		tokenApiSteps.assertDtoValueIsNull(tokensList.get(3), Token::getPrice, "price");
 		tokenApiSteps.assertDtoValue(tokensList.get(3), Token::getTokenId, "ref.fakes.testnet", "tokenId");
 		tokenApiSteps.assertDtoValue(tokensList.get(3), Token::getBalance, "0", "balance");
+
+		tokenApiSteps.assertDtoValue(tokensList.get(4), Token::getId, "pulse.fakes.testnet", "id");
+		tokenApiSteps.assertDtoValue(tokensList.get(4), Token::getTotalSupply, "1999915912493567219688554", "totalSupply");
+		tokenApiSteps.assertDtoValue(tokensList.get(4), Token::getDecimals, BigDecimal.valueOf(18), "decimals");
+		tokenApiSteps.assertDtoHasValue(tokensList.get(4), token -> !token.getIcon().isEmpty(), "icon");
+		tokenApiSteps.assertDtoValue(tokensList.get(4), Token::getSymbol, "PULSE", "symbol");
+		tokenApiSteps.assertDtoValueIsNull(tokensList.get(4), Token::getPrice, "price");
+		tokenApiSteps.assertDtoValue(tokensList.get(4), Token::getTokenId, "pulse.fakes.testnet", "tokenId");
+		tokenApiSteps.assertDtoValue(tokensList.get(4), Token::getBalance, "0", "balance");
 	}
 }
