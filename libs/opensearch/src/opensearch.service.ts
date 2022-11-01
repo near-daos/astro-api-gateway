@@ -74,6 +74,14 @@ export class OpensearchService {
     id: string,
     draftProposal: DraftProposal,
   ): Promise<ApiResponse> {
+    if (
+      !(await this.featureFlagsService.check(
+        FeatureFlags.OpenSearchDraftProposalIndexing,
+      ))
+    ) {
+      return;
+    }
+
     if (!draftProposal) {
       return this.remove(DraftProposal.name, id);
     }
