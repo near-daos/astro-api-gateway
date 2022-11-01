@@ -69,6 +69,8 @@ spec:
               name: api-redis-secrets
           - secretRef:
               name: api-service-secrets
+          - secretRef:
+              name: api-dynamodb-secrets
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
