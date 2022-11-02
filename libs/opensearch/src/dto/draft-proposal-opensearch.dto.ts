@@ -14,6 +14,7 @@ export class DraftProposalOpensearchDto extends BaseOpensearchDto {
   state: DraftProposalState;
   createTimestamp: number;
   replies: number;
+  viewAccounts: string[];
 
   public static getMappings(): any {
     const { mappings } = super.getMappings();
@@ -30,6 +31,7 @@ export class DraftProposalOpensearchDto extends BaseOpensearchDto {
           state: { type: 'keyword' },
           type: { type: 'keyword' },
           createTimestamp: { type: 'long' },
+          viewAccounts: { type: 'text' },
         },
       },
     };
@@ -49,6 +51,7 @@ export function mapDraftProposalToOpensearchDto(
     state,
     proposer,
     replies,
+    viewAccounts,
     createdAt,
   } = draftProposal;
 
@@ -64,6 +67,7 @@ export function mapDraftProposalToOpensearchDto(
     state,
     proposer,
     replies,
+    viewAccounts,
     createTimestamp: new Date(createdAt).getTime(),
     indexedBy: 'astro-api',
   };
