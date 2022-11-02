@@ -9,6 +9,7 @@ public class Metadata {
 	private String displayName;
 	private Legal legal;
 	private String flagLogo;
+	private String flag;
 	private List<Object> links;
 	private String flagCover;
 }

@@ -2,6 +2,7 @@ package api.app.astrodao.com.core.dto.newsearch.response;
 
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Data
@@ -12,6 +13,7 @@ public class Source {
 	private String description;
 	private String type;
 	private String indexedBy;
+	private String daoId;
 	private Integer proposalId;
 	private String submissionTime;
 	private String transactionHash;
@@ -21,6 +23,7 @@ public class Source {
 	private Object bountyDoneId;
 	private String policyLabel;
 	private String partitionId;
+	private BigDecimal processingTimeStamp;
 	private String entityType;
 	private Kind kind;
 	private String proposer;
