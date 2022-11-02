@@ -2,6 +2,7 @@ package api.app.astrodao.com.core.dto.newsearch.response;
 
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Data
@@ -42,4 +43,5 @@ public class Dao {
 	private Config config;
 	private String status;
 	private Integer totalProposalCount;
+	private BigDecimal processingTimeStamp;
 }
