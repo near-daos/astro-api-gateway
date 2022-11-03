@@ -31,7 +31,6 @@ import {
 } from './dto';
 import { Proposal } from './entities';
 import { ProposalStatus, ProposalVoteStatus } from './types';
-import { BountyContext } from '@sputnik-v2/bounty';
 
 @Injectable()
 export class ProposalService extends BaseTypeOrmCrudService<Proposal> {

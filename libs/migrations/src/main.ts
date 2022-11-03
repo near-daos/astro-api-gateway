@@ -4,15 +4,11 @@ import migrationScripts from './scripts';
 
 export default class MigrationRunner {
   async bootstrap(): Promise<void> {
-    const app = await NestFactory.create(MigrationModule);
+    const app = await NestFactory.createApplicationContext(MigrationModule);
 
     const targetMigrations = (process.env.DATABASE_MIGRATIONS_LIST || '').split(
       ',',
     );
-
-    if (!targetMigrations.length) {
-      return;
-    }
 
     for (const migration of targetMigrations) {
       const script = migrationScripts.find(
@@ -20,11 +16,13 @@ export default class MigrationRunner {
       );
 
       if (!script) {
-        continue;
+        throw new Error(`Invalid migration script: ${script}`);
       }
 
       await app.get(script).migrate();
     }
+
+    await app.close();
   }
 }
 
