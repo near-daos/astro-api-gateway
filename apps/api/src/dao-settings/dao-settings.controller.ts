@@ -6,12 +6,12 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { Span } from 'nestjs-ddtrace';
 
 import { AccountAccessGuard } from '@sputnik-v2/common';
 import { DaoSettingsDto, DaoSettingsService } from '@sputnik-v2/dao-settings';
-import { PatchSettingsBodyDto } from './dto/patch-settings-body.dto';
+import { Span } from 'nestjs-ddtrace';
 import { CouncilMemberGuard } from '../guards/council-member.guard';
+import { PatchSettingsBodyDto } from './dto/patch-settings-body.dto';
 import { PatchSettingsParamBodyDto } from './dto/patch-settings-param-body.dto';
 
 @Span()
@@ -30,9 +30,8 @@ export class DaoSettingsController {
     type: DaoSettingsDto,
   })
   @Get('/:daoId/settings')
-  async getSettings(@Param('daoId') daoId: string): Promise<DaoSettingsDto> {
-    const entity = await this.daoSettingsService.getSettings(daoId);
-    return entity?.settings || {};
+  getSettings(@Param('daoId') daoId: string): Promise<DaoSettingsDto> {
+    return this.daoSettingsService.getSettings(daoId);
   }
 
   @ApiResponse({
@@ -47,12 +46,11 @@ export class DaoSettingsController {
   @ApiBearerAuth()
   @UseGuards(AccountAccessGuard, CouncilMemberGuard)
   @Patch('/:daoId/settings')
-  async patchSettings(
+  patchSettings(
     @Param('daoId') daoId: string,
     @Body() { settings }: PatchSettingsBodyDto,
   ): Promise<DaoSettingsDto> {
-    const entity = await this.daoSettingsService.saveSettings(daoId, settings);
-    return entity.settings;
+    return this.daoSettingsService.saveSettings(daoId, settings);
   }
 
   @ApiResponse({
@@ -67,16 +65,11 @@ export class DaoSettingsController {
   @ApiBearerAuth()
   @UseGuards(AccountAccessGuard, CouncilMemberGuard)
   @Patch('/:daoId/settings/:key')
-  async patchSettingsParam(
+  patchSettingsParam(
     @Param('daoId') daoId: string,
     @Param('key') key: string,
     @Body() { value }: PatchSettingsParamBodyDto,
   ): Promise<DaoSettingsDto> {
-    const entity = await this.daoSettingsService.saveSettingsParam(
-      daoId,
-      key,
-      value,
-    );
-    return entity.settings;
+    return this.daoSettingsService.saveSettingsParam(daoId, key, value);
   }
 }
