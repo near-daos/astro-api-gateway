@@ -16,7 +16,7 @@ export class Delegation {
   @Column()
   accountId: string;
 
-  @Column({ type: 'numeric', precision: 45 })
+  @Column({ type: 'bigint' })
   balance: string;
 
   @Column({ nullable: true, type: 'jsonb' })

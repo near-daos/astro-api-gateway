@@ -28,9 +28,9 @@ import {
   DraftProposalBasicResponse,
   DraftProposalRequest,
   DraftProposalResponse,
+  DraftProposalService,
   DraftProposalsRequest,
   UpdateDraftProposal,
-  MongoDraftProposalService,
 } from '@sputnik-v2/draft-proposal';
 import {
   AccountAccessGuard,
@@ -41,18 +41,12 @@ import {
   FindOneMongoParams,
 } from '@sputnik-v2/common';
 import { DraftPageResponse } from './dto/draft-page-response.dto';
-import { DynamoDraftProposalService } from '@sputnik-v2/draft-proposal/dynamo-draft-proposal.service';
-import { FeatureFlags, FeatureFlagsService } from '@sputnik-v2/feature-flags';
 
 @Span()
 @ApiTags('Draft Proposals')
 @Controller('/draft-proposals')
 export class DraftProposalController {
-  constructor(
-    private readonly draftProposalService: MongoDraftProposalService,
-    private readonly dynamoDraftProposalService: DynamoDraftProposalService,
-    private readonly featureFlagsService: FeatureFlagsService,
-  ) {}
+  constructor(private readonly draftProposalService: DraftProposalService) {}
 
   @ApiResponse({
     status: 200,
@@ -102,13 +96,10 @@ export class DraftProposalController {
   @UseGuards(ThrottlerGuard)
   @UseGuards(AccountAccessGuard)
   @Post()
-  async createDraftProposals(
+  createDraftProposals(
     @Req() req: AuthorizedRequest,
     @Body() body: CreateDraftProposal,
   ): Promise<string> {
-    if (await this.featureFlagsService.check(FeatureFlags.DraftDynamo)) {
-      return this.dynamoDraftProposalService.create(req.accountId, body);
-    }
     return this.draftProposalService.create(req.accountId, body);
   }
 
@@ -136,19 +127,11 @@ export class DraftProposalController {
   @UseGuards(ThrottlerGuard)
   @UseGuards(AccountAccessGuard)
   @Patch('/:daoId/:id')
-  async updateDraftProposals(
+  updateDraftProposals(
     @Param() { daoId, id }: FindOneMongoDaoParams,
     @Req() req: AuthorizedRequest,
     @Body() body: UpdateDraftProposal,
   ): Promise<string> {
-    if (await this.featureFlagsService.check(FeatureFlags.DraftDynamo)) {
-      return this.dynamoDraftProposalService.update(
-        daoId,
-        id,
-        req.accountId,
-        body,
-      );
-    }
     return this.draftProposalService.update(daoId, id, req.accountId, body);
   }
 
@@ -178,13 +161,10 @@ export class DraftProposalController {
   @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
   @Delete('/:daoId/:id')
-  async deleteDraftProposal(
+  deleteDraftProposal(
     @Param() { daoId, id }: FindOneMongoDaoParams,
     @Req() req: AuthorizedRequest,
   ): Promise<DeleteResponse> {
-    if (await this.featureFlagsService.check(FeatureFlags.DraftDynamo)) {
-      return this.dynamoDraftProposalService.delete(daoId, id, req.accountId);
-    }
     return this.draftProposalService.delete(daoId, id, req.accountId);
   }
 
@@ -211,13 +191,10 @@ export class DraftProposalController {
   @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
   @Post('/:daoId/:id/view')
-  async viewDraftProposal(
+  viewDraftProposal(
     @Param() { daoId, id }: FindOneMongoDaoParams,
     @Req() req: AuthorizedRequest,
   ) {
-    if (await this.featureFlagsService.check(FeatureFlags.DraftDynamo)) {
-      return this.dynamoDraftProposalService.view(daoId, id, req.accountId);
-    }
     return this.draftProposalService.view(daoId, id, req.accountId);
   }
 
@@ -244,13 +221,10 @@ export class DraftProposalController {
   @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
   @Post('/:daoId/:id/save')
-  async saveDraftProposal(
+  saveDraftProposal(
     @Param() { daoId, id }: FindOneMongoDaoParams,
     @Req() req: AuthorizedRequest,
   ) {
-    if (await this.featureFlagsService.check(FeatureFlags.DraftDynamo)) {
-      return this.dynamoDraftProposalService.save(daoId, id, req.accountId);
-    }
     return this.draftProposalService.save(daoId, id, req.accountId);
   }
 
@@ -277,17 +251,10 @@ export class DraftProposalController {
   @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
   @Delete('/:daoId/:id/save')
-  async removeDraftProposalSave(
+  removeDraftProposalSave(
     @Param() { daoId, id }: FindOneMongoDaoParams,
     @Req() req: AuthorizedRequest,
   ) {
-    if (await this.featureFlagsService.check(FeatureFlags.DraftDynamo)) {
-      return this.dynamoDraftProposalService.removeSave(
-        daoId,
-        id,
-        req.accountId,
-      );
-    }
     return this.draftProposalService.removeSave(daoId, id, req.accountId);
   }
 
@@ -317,19 +284,11 @@ export class DraftProposalController {
   @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
   @Post('/:daoId/:id/close')
-  async closeDraftProposal(
+  closeDraftProposal(
     @Param() { daoId, id }: FindOneMongoDaoParams,
     @Req() req: AuthorizedRequest,
     @Body() body: CloseDraftProposal,
   ) {
-    if (await this.featureFlagsService.check(FeatureFlags.DraftDynamo)) {
-      return this.dynamoDraftProposalService.close(
-        daoId,
-        id,
-        req.accountId,
-        body,
-      );
-    }
     return this.draftProposalService.close(daoId, id, req.accountId, body);
   }
 }

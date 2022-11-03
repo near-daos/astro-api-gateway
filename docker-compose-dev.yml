@@ -13,6 +13,18 @@ services:
     networks:
       - postgres
 
+  mongo:
+    image: mongo:5.0
+    restart: always
+    ports:
+      - 27021:27017
+    volumes:
+      - mongodb_data_container:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_DATABASE=draft
+      - MONGO_INITDB_ROOT_USERNAME=draft
+      - MONGO_INITDB_ROOT_PASSWORD=draft
+
   pgadmin:
     links:
       - postgres:postgres
@@ -25,18 +37,6 @@ services:
       - .env.docker-dev
     networks:
       - postgres
-
-  mongo:
-    image: mongo:5.0
-    restart: always
-    ports:
-      - 27021:27017
-    volumes:
-      - mongodb_data_container:/data/db
-    environment:
-      - MONGO_INITDB_ROOT_DATABASE=draft
-      - MONGO_INITDB_ROOT_USERNAME=draft
-      - MONGO_INITDB_ROOT_PASSWORD=draft
 
   redis:
     image: 'redis:alpine'
@@ -138,6 +138,8 @@ volumes:
   opensearch-data2:
 
 networks:
+  postgres:
+    driver: bridge
   redis:
     driver: bridge
   opensearch-net:

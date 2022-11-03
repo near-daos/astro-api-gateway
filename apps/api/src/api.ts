@@ -10,7 +10,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { Transport } from '@nestjs/microservices';
 import { Logger as PinoLogger } from 'nestjs-pino';
 
-import { EVENT_API_QUEUE_NAME } from '@sputnik-v2/common';
+import { EVENT_API_QUEUE_NAME, tracer } from '@sputnik-v2/common';
 
 import { AppModule } from './api.module';
 import { initAdapters } from './adapters.init';

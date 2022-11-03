@@ -91,27 +91,6 @@ export class DynamodbService {
     return this.saveItem<AccountModel>(mapAccountToAccountModel(account));
   }
 
-  public async updateDraftProposalReplies(
-    daoId: string,
-    draftId: string,
-    replies: number,
-  ) {
-    const draft = await this.getItemByType<DraftProposalModel>(
-      daoId,
-      DynamoEntityType.DraftProposal,
-      draftId,
-    );
-
-    const currentReplies = draft.replies;
-
-    await this.saveItem<DraftProposalModel>({
-      partitionId: daoId,
-      entityId: `${DynamoEntityType.DraftProposal}:${draftId}`,
-      entityType: DynamoEntityType.DraftProposal,
-      replies: currentReplies ?? 0 + replies,
-    });
-  }
-
   public async saveAccountNotification(
     accountNotification: Partial<AccountNotification>,
   ) {

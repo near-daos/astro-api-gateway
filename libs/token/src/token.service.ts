@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, ILike, Not, Repository } from 'typeorm';
 import { NearApiService } from '@sputnik-v2/near-api';
