@@ -7,7 +7,7 @@ import {
   Role,
   RoleKindType,
 } from '@sputnik-v2/dao/entities';
-import { DaoSettings } from '@sputnik-v2/dao-settings';
+import { DaoSettings, DaoSettingsDto } from '@sputnik-v2/dao-settings';
 import { TransactionModel } from './transaction.model';
 import { DynamoEntityType } from '../types';
 
@@ -35,7 +35,7 @@ export class DaoModel extends TransactionModel {
   config?: DaoConfig;
   daoVersion?: DaoVersionModel;
   delegations?: DaoDelegationModel[];
-  settings?: any;
+  settings?: DaoSettingsDto;
 }
 
 export class DaoPolicyModel {
