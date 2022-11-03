@@ -27,22 +27,24 @@ import {
   AuthorizedRequest,
   BaseResponseDto,
   DeleteResponse,
-  FindOneMongoParams,
 } from '@sputnik-v2/common';
 import {
   CreateDraftComment,
+  DraftCommentContextParams,
   DraftCommentResponse,
-  DraftCommentService,
   DraftCommentsRequest,
   UpdateDraftComment,
 } from '@sputnik-v2/draft-comment';
 import { DraftCommentPageResponse } from './dto/draft-comment-page-response.dto';
+import { DraftCommentServiceFacade } from '@sputnik-v2/draft-comment/draft-comment-service-facade';
 
 @Span()
 @ApiTags('Draft Comments')
 @Controller('/draft-comments')
 export class DraftCommentController {
-  constructor(private readonly draftCommentService: DraftCommentService) {}
+  constructor(
+    private readonly draftCommentService: DraftCommentServiceFacade,
+  ) {}
 
   @ApiResponse({
     status: 200,
@@ -80,7 +82,15 @@ export class DraftCommentController {
   }
 
   @ApiParam({
-    name: 'id',
+    name: 'daoId',
+    type: String,
+  })
+  @ApiParam({
+    name: 'draftId',
+    type: String,
+  })
+  @ApiParam({
+    name: 'commentId',
     type: String,
   })
   @ApiResponse({
@@ -98,17 +108,28 @@ export class DraftCommentController {
   @ApiBearerAuth()
   @UseGuards(ThrottlerGuard)
   @UseGuards(AccountAccessGuard)
-  @Patch('/:id')
+  @Patch('/:daoId/:draftId/:commentId')
   updateDraftComment(
-    @Param() { id }: FindOneMongoParams,
+    @Param() params: DraftCommentContextParams,
     @Req() req: AuthorizedRequest,
     @Body() body: UpdateDraftComment,
   ): Promise<string> {
-    return this.draftCommentService.update(id, req.accountId, body);
+    return this.draftCommentService.update(
+      { ...params, accountId: req.accountId },
+      body,
+    );
   }
 
   @ApiParam({
-    name: 'id',
+    name: 'daoId',
+    type: String,
+  })
+  @ApiParam({
+    name: 'draftId',
+    type: String,
+  })
+  @ApiParam({
+    name: 'commentId',
     type: String,
   })
   @ApiResponse({
@@ -128,16 +149,27 @@ export class DraftCommentController {
   })
   @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
-  @Post('/:id/like')
+  @Post('/:daoId/:draftId/:commentId/like')
   likeDraftComment(
-    @Param() { id }: FindOneMongoParams,
+    @Param() params: DraftCommentContextParams,
     @Req() req: AuthorizedRequest,
   ): Promise<boolean> {
-    return this.draftCommentService.like(id, req.accountId);
+    return this.draftCommentService.like({
+      ...params,
+      accountId: req.accountId,
+    });
   }
 
   @ApiParam({
-    name: 'id',
+    name: 'daoId',
+    type: String,
+  })
+  @ApiParam({
+    name: 'draftId',
+    type: String,
+  })
+  @ApiParam({
+    name: 'commentId',
     type: String,
   })
   @ApiResponse({
@@ -154,16 +186,27 @@ export class DraftCommentController {
   })
   @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
-  @Post('/:id/remove-like')
+  @Post('/:daoId/:draftId/:commentId/remove-like')
   removeLikeFromDraftComment(
-    @Param() { id }: FindOneMongoParams,
+    @Param() params: DraftCommentContextParams,
     @Req() req: AuthorizedRequest,
   ): Promise<boolean> {
-    return this.draftCommentService.removeLike(id, req.accountId);
+    return this.draftCommentService.removeLike({
+      ...params,
+      accountId: req.accountId,
+    });
   }
 
   @ApiParam({
-    name: 'id',
+    name: 'daoId',
+    type: String,
+  })
+  @ApiParam({
+    name: 'draftId',
+    type: String,
+  })
+  @ApiParam({
+    name: 'commentId',
     type: String,
   })
   @ApiResponse({
@@ -183,16 +226,27 @@ export class DraftCommentController {
   })
   @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
-  @Post('/:id/dislike')
+  @Post('/:daoId/:draftId/:commentId/dislike')
   dislikeDraftComment(
-    @Param() { id }: FindOneMongoParams,
+    @Param() params: DraftCommentContextParams,
     @Req() req: AuthorizedRequest,
   ): Promise<boolean> {
-    return this.draftCommentService.dislike(id, req.accountId);
+    return this.draftCommentService.dislike({
+      ...params,
+      accountId: req.accountId,
+    });
   }
 
   @ApiParam({
-    name: 'id',
+    name: 'daoId',
+    type: String,
+  })
+  @ApiParam({
+    name: 'draftId',
+    type: String,
+  })
+  @ApiParam({
+    name: 'commentId',
     type: String,
   })
   @ApiResponse({
@@ -209,16 +263,27 @@ export class DraftCommentController {
   })
   @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
-  @Post('/:id/remove-dislike')
-  removeDislikeFromDraftComment(
-    @Param() { id }: FindOneMongoParams,
+  @Post('/:daoId/:draftId/:commentId/remove-dislike')
+  async removeDislikeFromDraftComment(
+    @Param() params: DraftCommentContextParams,
     @Req() req: AuthorizedRequest,
   ): Promise<boolean> {
-    return this.draftCommentService.removeDislike(id, req.accountId);
+    return this.draftCommentService.removeDislike({
+      ...params,
+      accountId: req.accountId,
+    });
   }
 
   @ApiParam({
-    name: 'id',
+    name: 'daoId',
+    type: String,
+  })
+  @ApiParam({
+    name: 'draftId',
+    type: String,
+  })
+  @ApiParam({
+    name: 'commentId',
     type: String,
   })
   @ApiResponse({
@@ -235,11 +300,14 @@ export class DraftCommentController {
   })
   @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
-  @Delete('/:id')
+  @Delete('/:daoId/:draftId/:commentId/')
   deleteDraftComment(
-    @Param() { id }: FindOneMongoParams,
+    @Param() params: DraftCommentContextParams,
     @Req() req: AuthorizedRequest,
   ): Promise<DeleteResponse> {
-    return this.draftCommentService.delete(id, req.accountId);
+    return this.draftCommentService.delete({
+      ...params,
+      accountId: req.accountId,
+    });
   }
 }
