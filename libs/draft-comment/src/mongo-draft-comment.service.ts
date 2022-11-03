@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DraftProposalService } from '@sputnik-v2/draft-proposal';
+import { MongoDraftProposalService } from '@sputnik-v2/draft-proposal';
 import { DeleteResponse, DRAFT_DB_CONNECTION, Order } from '@sputnik-v2/common';
 import { EventService } from '@sputnik-v2/event';
 import { DaoApiService } from '@sputnik-v2/dao-api';
@@ -17,15 +17,15 @@ import {
   DraftCommentsRequest,
   UpdateDraftComment,
 } from './dto';
-import { DraftCommentContextType } from './types';
+import { DraftCommentContextType, DraftCommentService } from './types';
 import { getAccountPermissions } from '@sputnik-v2/utils';
 
 @Injectable()
-export class DraftCommentService {
+export class MongoDraftCommentService implements DraftCommentService {
   constructor(
     @InjectRepository(DraftComment, DRAFT_DB_CONNECTION)
     private draftCommentRepository: MongoRepository<DraftComment>,
-    private draftProposalService: DraftProposalService,
+    private draftProposalService: MongoDraftProposalService,
     private daoApiService: DaoApiService,
     private eventService: EventService,
   ) {}
@@ -126,14 +126,15 @@ export class DraftCommentService {
   }
 
   async update(
-    id: string,
+    daoId: string,
+    commentId: string,
     accountId: string,
     draftCommentDto: UpdateDraftComment,
   ): Promise<string> {
-    const draftComment = await this.draftCommentRepository.findOne(id);
+    const draftComment = await this.draftCommentRepository.findOne(commentId);
 
     if (!draftComment) {
-      throw new NotFoundException(`Draft comment ${id} does not exist`);
+      throw new NotFoundException(`Draft comment ${commentId} does not exist`);
     }
 
     if (draftComment.author !== accountId) {
@@ -151,7 +152,7 @@ export class DraftCommentService {
     return draftComment.id.toString();
   }
 
-  async like(id: string, accountId: string): Promise<boolean> {
+  async like(daoId: string, id: string, accountId: string): Promise<boolean> {
     const draftComment = await this.draftCommentRepository.findOne(id);
 
     if (!draftComment) {
@@ -177,7 +178,11 @@ export class DraftCommentService {
     return true;
   }
 
-  async removeLike(id: string, accountId: string): Promise<boolean> {
+  async removeLike(
+    daoId: string,
+    id: string,
+    accountId: string,
+  ): Promise<boolean> {
     const draftComment = await this.draftCommentRepository.findOne(id);
 
     if (!draftComment) {
@@ -199,7 +204,11 @@ export class DraftCommentService {
     return true;
   }
 
-  async dislike(id: string, accountId: string): Promise<boolean> {
+  async dislike(
+    daoId: string,
+    id: string,
+    accountId: string,
+  ): Promise<boolean> {
     const draftComment = await this.draftCommentRepository.findOne(id);
 
     if (!draftComment) {
@@ -225,7 +234,11 @@ export class DraftCommentService {
     return true;
   }
 
-  async removeDislike(id: string, accountId: string): Promise<boolean> {
+  async removeDislike(
+    daoId: string,
+    id: string,
+    accountId: string,
+  ): Promise<boolean> {
     const draftComment = await this.draftCommentRepository.findOne(id);
 
     if (!draftComment) {
@@ -247,7 +260,11 @@ export class DraftCommentService {
     return true;
   }
 
-  async delete(id: string, accountId: string): Promise<DeleteResponse> {
+  async delete(
+    daoId: string,
+    id: string,
+    accountId: string,
+  ): Promise<DeleteResponse> {
     const draftComment = await this.draftCommentRepository.findOne(id);
 
     if (!draftComment) {

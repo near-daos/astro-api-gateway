@@ -6,7 +6,8 @@ import { OpenSearchModule } from '@sputnik-v2/opensearch';
 import { DynamodbModule } from '@sputnik-v2/dynamodb/dynamodb.module';
 
 import { DraftProposal, DraftProposalHistory } from './entities';
-import { DraftProposalService } from './draft-proposal.service';
+import { MongoDraftProposalService } from './mongo-draft-proposal.service';
+import { DynamoDraftProposalService } from '@sputnik-v2/draft-proposal/dynamo-draft-proposal.service';
 
 @Module({
   imports: [
@@ -18,7 +19,7 @@ import { DraftProposalService } from './draft-proposal.service';
     OpenSearchModule,
     DynamodbModule,
   ],
-  providers: [DraftProposalService],
-  exports: [DraftProposalService],
+  providers: [MongoDraftProposalService, DynamoDraftProposalService],
+  exports: [MongoDraftProposalService, DynamoDraftProposalService],
 })
 export class DraftProposalModule {}
