@@ -1,7 +1,6 @@
 import { OpensearchModule } from 'nestjs-opensearch';
 
-import { Module, OnApplicationShutdown } from '@nestjs/common';
-import { getConnection } from 'typeorm';
+import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { Proposal, ProposalAction, ProposalModule } from '@sputnik-v2/proposal';
@@ -120,8 +119,4 @@ import migrationScripts from './scripts';
   ],
   providers: [...migrationScripts],
 })
-export class MigrationModule implements OnApplicationShutdown {
-  onApplicationShutdown() {
-    getConnection(DRAFT_DB_CONNECTION).close();
-  }
-}
+export class MigrationModule {}

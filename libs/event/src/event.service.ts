@@ -24,7 +24,6 @@ import { Comment } from '@sputnik-v2/comment';
 
 import { BaseMessage } from './messages/base.event';
 import { DraftCommentResponse } from '@sputnik-v2/draft-comment';
-import { CommentModel } from '@sputnik-v2/dynamodb';
 
 @Injectable()
 export class EventService {
@@ -101,21 +100,21 @@ export class EventService {
   }
 
   public async sendNewDraftCommentEvent(
-    comment: DraftCommentResponse | CommentModel,
+    comment: DraftCommentResponse,
   ): Promise<void> {
     const message = new BaseMessage(EVENT_DRAFT_NEW_COMMENT, { comment });
     return this.sendEvent(this.draftEventClient, message);
   }
 
   public async sendUpdateDraftCommentEvent(
-    comment: DraftCommentResponse | CommentModel,
+    comment: DraftCommentResponse,
   ): Promise<void> {
     const message = new BaseMessage(EVENT_DRAFT_UPDATE_COMMENT, { comment });
     return this.sendEvent(this.draftEventClient, message);
   }
 
   public async sendDeleteDraftCommentEvent(
-    comment: DraftCommentResponse | CommentModel,
+    comment: DraftCommentResponse,
   ): Promise<void> {
     const message = new BaseMessage(EVENT_DRAFT_DELETE_COMMENT, { comment });
     return this.sendEvent(this.draftEventClient, message);

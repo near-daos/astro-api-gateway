@@ -27,28 +27,22 @@ import {
   AuthorizedRequest,
   BaseResponseDto,
   DeleteResponse,
-  FindOneMongoDaoParams,
+  FindOneMongoParams,
 } from '@sputnik-v2/common';
 import {
   CreateDraftComment,
   DraftCommentResponse,
+  DraftCommentService,
   DraftCommentsRequest,
   UpdateDraftComment,
-  MongoDraftCommentService,
-  DynamoDraftCommentService,
 } from '@sputnik-v2/draft-comment';
 import { DraftCommentPageResponse } from './dto/draft-comment-page-response.dto';
-import { FeatureFlags, FeatureFlagsService } from '@sputnik-v2/feature-flags';
 
 @Span()
 @ApiTags('Draft Comments')
 @Controller('/draft-comments')
 export class DraftCommentController {
-  constructor(
-    private readonly draftCommentService: MongoDraftCommentService,
-    private readonly dynamoDraftCommentService: DynamoDraftCommentService,
-    private readonly featureFlagsService: FeatureFlagsService,
-  ) {}
+  constructor(private readonly draftCommentService: DraftCommentService) {}
 
   @ApiResponse({
     status: 200,
@@ -78,23 +72,13 @@ export class DraftCommentController {
   @UseGuards(ThrottlerGuard)
   @UseGuards(AccountAccessGuard)
   @Post()
-  async createDraftComment(
+  createDraftComment(
     @Req() req: AuthorizedRequest,
     @Body() body: CreateDraftComment,
   ): Promise<string> {
-    if (
-      await this.featureFlagsService.check(FeatureFlags.DraftCommentsDynamo)
-    ) {
-      return this.dynamoDraftCommentService.create(req.accountId, body);
-    }
-
     return this.draftCommentService.create(req.accountId, body);
   }
 
-  @ApiParam({
-    name: 'daoId',
-    type: String,
-  })
   @ApiParam({
     name: 'id',
     type: String,
@@ -115,29 +99,14 @@ export class DraftCommentController {
   @UseGuards(ThrottlerGuard)
   @UseGuards(AccountAccessGuard)
   @Patch('/:id')
-  async updateDraftComment(
-    @Param() { id, daoId }: FindOneMongoDaoParams,
+  updateDraftComment(
+    @Param() { id }: FindOneMongoParams,
     @Req() req: AuthorizedRequest,
     @Body() body: UpdateDraftComment,
   ): Promise<string> {
-    if (
-      await this.featureFlagsService.check(FeatureFlags.DraftCommentsDynamo)
-    ) {
-      return this.dynamoDraftCommentService.update(
-        daoId,
-        id,
-        req.accountId,
-        body,
-      );
-    }
-
-    return this.draftCommentService.update(daoId, id, req.accountId, body);
+    return this.draftCommentService.update(id, req.accountId, body);
   }
 
-  @ApiParam({
-    name: 'daoId',
-    type: String,
-  })
   @ApiParam({
     name: 'id',
     type: String,
@@ -160,22 +129,13 @@ export class DraftCommentController {
   @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
   @Post('/:id/like')
-  async likeDraftComment(
-    @Param() { daoId, id }: FindOneMongoDaoParams,
+  likeDraftComment(
+    @Param() { id }: FindOneMongoParams,
     @Req() req: AuthorizedRequest,
   ): Promise<boolean> {
-    if (
-      await this.featureFlagsService.check(FeatureFlags.DraftCommentsDynamo)
-    ) {
-      return this.dynamoDraftCommentService.like(daoId, id, req.accountId);
-    }
-    return this.draftCommentService.like(daoId, id, req.accountId);
+    return this.draftCommentService.like(id, req.accountId);
   }
 
-  @ApiParam({
-    name: 'daoId',
-    type: String,
-  })
   @ApiParam({
     name: 'id',
     type: String,
@@ -195,26 +155,13 @@ export class DraftCommentController {
   @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
   @Post('/:id/remove-like')
-  async removeLikeFromDraftComment(
-    @Param() { daoId, id }: FindOneMongoDaoParams,
+  removeLikeFromDraftComment(
+    @Param() { id }: FindOneMongoParams,
     @Req() req: AuthorizedRequest,
   ): Promise<boolean> {
-    if (
-      await this.featureFlagsService.check(FeatureFlags.DraftCommentsDynamo)
-    ) {
-      return this.dynamoDraftCommentService.removeLike(
-        daoId,
-        id,
-        req.accountId,
-      );
-    }
-    return this.draftCommentService.removeLike(daoId, id, req.accountId);
+    return this.draftCommentService.removeLike(id, req.accountId);
   }
 
-  @ApiParam({
-    name: 'daoId',
-    type: String,
-  })
   @ApiParam({
     name: 'id',
     type: String,
@@ -237,22 +184,13 @@ export class DraftCommentController {
   @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
   @Post('/:id/dislike')
-  async dislikeDraftComment(
-    @Param() { daoId, id }: FindOneMongoDaoParams,
+  dislikeDraftComment(
+    @Param() { id }: FindOneMongoParams,
     @Req() req: AuthorizedRequest,
   ): Promise<boolean> {
-    if (
-      await this.featureFlagsService.check(FeatureFlags.DraftCommentsDynamo)
-    ) {
-      return this.dynamoDraftCommentService.dislike(daoId, id, req.accountId);
-    }
-    return this.draftCommentService.dislike(daoId, id, req.accountId);
+    return this.draftCommentService.dislike(id, req.accountId);
   }
 
-  @ApiParam({
-    name: 'daoId',
-    type: String,
-  })
   @ApiParam({
     name: 'id',
     type: String,
@@ -272,26 +210,13 @@ export class DraftCommentController {
   @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
   @Post('/:id/remove-dislike')
-  async removeDislikeFromDraftComment(
-    @Param() { daoId, id }: FindOneMongoDaoParams,
+  removeDislikeFromDraftComment(
+    @Param() { id }: FindOneMongoParams,
     @Req() req: AuthorizedRequest,
   ): Promise<boolean> {
-    if (
-      await this.featureFlagsService.check(FeatureFlags.DraftCommentsDynamo)
-    ) {
-      return this.dynamoDraftCommentService.removeDislike(
-        daoId,
-        id,
-        req.accountId,
-      );
-    }
-    return this.draftCommentService.removeDislike(daoId, id, req.accountId);
+    return this.draftCommentService.removeDislike(id, req.accountId);
   }
 
-  @ApiParam({
-    name: 'daoId',
-    type: String,
-  })
   @ApiParam({
     name: 'id',
     type: String,
@@ -311,16 +236,10 @@ export class DraftCommentController {
   @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
   @Delete('/:id')
-  async deleteDraftComment(
-    @Param() { daoId, id }: FindOneMongoDaoParams,
+  deleteDraftComment(
+    @Param() { id }: FindOneMongoParams,
     @Req() req: AuthorizedRequest,
   ): Promise<DeleteResponse> {
-    if (
-      await this.featureFlagsService.check(FeatureFlags.DraftCommentsDynamo)
-    ) {
-      return this.dynamoDraftCommentService.delete(daoId, id, req.accountId);
-    }
-
-    return this.draftCommentService.delete(daoId, id, req.accountId);
+    return this.draftCommentService.delete(id, req.accountId);
   }
 }
