@@ -1,4 +1,4 @@
-import { Controller, Get, Logger } from '@nestjs/common';
+import { Controller, Get, Inject, Logger } from '@nestjs/common';
 import { EventPattern, Transport } from '@nestjs/microservices';
 import { ApiExcludeEndpoint } from '@nestjs/swagger';
 import { Span } from 'nestjs-ddtrace';
@@ -14,7 +14,10 @@ import {
   EVENT_DRAFT_UPDATE_COMMENT,
 } from '@sputnik-v2/common';
 import { SocketService } from '@sputnik-v2/websocket';
-import { DraftProposalService } from '@sputnik-v2/draft-proposal';
+import {
+  DynamoDraftProposalService,
+  MongoDraftProposalService,
+} from '@sputnik-v2/draft-proposal';
 
 @Span()
 @Controller()
@@ -23,7 +26,8 @@ export class DraftController {
 
   constructor(
     private readonly socketService: SocketService,
-    private readonly draftProposalService: DraftProposalService,
+    private readonly draftProposalService: MongoDraftProposalService,
+    private readonly dynamoProposalService: DynamoDraftProposalService,
   ) {}
 
   @ApiExcludeEndpoint()
@@ -71,6 +75,12 @@ export class DraftController {
       `Closing draft ${data.draftId} due to proposal creation: ${data.proposalId}`,
     );
     await this.draftProposalService.closeInternal(
+      data.daoId,
+      data.draftId,
+      data.proposalId,
+    );
+
+    await this.dynamoProposalService.closeInternal(
       data.daoId,
       data.draftId,
       data.proposalId,
