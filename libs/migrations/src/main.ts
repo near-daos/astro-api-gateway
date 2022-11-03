@@ -1,6 +1,4 @@
-import { getConnection } from 'typeorm';
 import { NestFactory } from '@nestjs/core';
-import { DRAFT_DB_CONNECTION } from '@sputnik-v2/common';
 import { MigrationModule } from '.';
 import migrationScripts from './scripts';
 
@@ -25,9 +23,6 @@ export default class MigrationRunner {
     }
 
     await app.close();
-
-    // TODO: force close draft connection since nestjs does not
-    await getConnection(DRAFT_DB_CONNECTION).close();
   }
 }
 
