@@ -59,7 +59,8 @@ public class DaosDaoIdSettingsKeyApiTests extends BaseTest {
 
 		daoApiSteps.patchDaoSettings(testDao, fakeJson, accountAuthToken).then()
 				.statusCode(HTTP_OK)
-				.body("", equalTo(fakeJson));
+				.body("daoId", equalTo(testDao),
+				      "settings", equalTo(fakeJson));
 
 		daoApiSteps.getDaoSettings(testDao).then()
 				.statusCode(HTTP_OK)
@@ -70,7 +71,8 @@ public class DaosDaoIdSettingsKeyApiTests extends BaseTest {
 		fakeJson.put(key, newValue);
 		daoApiSteps.patchDaoSettingsByKey(testDao, key, newValue, accountAuthToken).then()
 				.statusCode(HTTP_OK)
-				.body("", equalTo(fakeJson));
+				.body("daoId", equalTo(testDao),
+				      "settings", equalTo(fakeJson));
 
 		daoApiSteps.getDaoSettings(testDao).then()
 				.statusCode(HTTP_OK)
