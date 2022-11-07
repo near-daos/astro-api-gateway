@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { EventService } from '@sputnik-v2/event';
+import { nanoid } from 'nanoid';
 import {
   CommentModel,
   DaoModel,
@@ -22,7 +23,6 @@ import {
   DraftCommentContextType,
   DraftCommentService,
 } from '@sputnik-v2/draft-comment/types';
-import { randomUUID } from 'crypto';
 import { BaseResponseDto, DeleteResponse } from '@sputnik-v2/common';
 import { getAccountPermissions } from '@sputnik-v2/utils';
 
@@ -54,7 +54,7 @@ export class DynamoDraftCommentService implements DraftCommentService {
     accountId: string,
     draftCommentDto: CreateDraftComment,
   ): Promise<string> {
-    const commentId = randomUUID();
+    const commentId = nanoid();
 
     const comment = await this.createDraftProposalCommentInDynamo(
       daoId,
@@ -82,7 +82,7 @@ export class DynamoDraftCommentService implements DraftCommentService {
     const reply = await this.createDraftProposalCommentInDynamo(
       daoId,
       accountId,
-      randomUUID(),
+      nanoid(),
       draftCommentDto,
     );
 
