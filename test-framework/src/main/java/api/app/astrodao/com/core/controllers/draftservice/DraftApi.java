@@ -45,21 +45,21 @@ public class DraftApi {
 				.post(DRAFT_PROPOSALS);
 	}
 
-	public Response patchDraftProposal(CreateDraftProposal draftProposal, String draftId, String authToken) {
+	public Response patchDraftProposal(CreateDraftProposal draftProposal, String daoId, String draftId, String authToken) {
 		return given().spec(requestSpecForDraftService)
 				.accept(JSON)
 				.header("Authorization", "Bearer " + authToken)
 				.contentType(JSON)
 				.body(draftProposal)
-				.patch(DRAFT_PROPOSALS_ID, draftId);
+				.patch(DRAFT_PROPOSALS_DAO_ID_ID, daoId, draftId);
 	}
 
-	public Response deleteDraftProposal(String draftId, String authToken) {
+	public Response deleteDraftProposal(String daoId, String draftId, String authToken) {
 		return given().spec(requestSpecForDraftService)
 				.accept(JSON)
 				.header("Authorization", "Bearer " + authToken)
 				.contentType(JSON)
-				.delete(DRAFT_PROPOSALS_ID, draftId);
+				.delete(DRAFT_PROPOSALS_DAO_ID_ID, daoId, draftId);
 	}
 
 	public Response postViewDraftProposal(String draftId, String authToken) {

@@ -108,7 +108,7 @@ public class DraftProposalsE2EApiTests extends BaseTest {
 		createDraftProposal.setTitle(title2);
 		createDraftProposal.setDescription(description2);
 
-		String updatedDraftId = draftProposalsApiSteps.updateDraftProposal(createDraftProposal, createdDraftId, authToken).then()
+		String updatedDraftId = draftProposalsApiSteps.updateDraftProposal(createDraftProposal, testDao, createdDraftId, authToken).then()
 				.statusCode(HTTP_OK)
 				.extract().body().asString();
 
@@ -122,7 +122,7 @@ public class DraftProposalsE2EApiTests extends BaseTest {
 		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, DraftProposalResponse::getTitle, title2, "title");
 		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, DraftProposalResponse::getDescription, description2, "description");
 
-		draftProposalsApiSteps.deleteDraftProposal(createdDraftId, authToken).then()
+		draftProposalsApiSteps.deleteDraftProposal(testDao, createdDraftId, authToken).then()
 				.statusCode(HTTP_OK)
 				.body("id", equalTo(updatedDraftId),
 				      "deleted", equalTo(true));

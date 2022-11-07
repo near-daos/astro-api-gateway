@@ -32,13 +32,13 @@ public class DraftProposalsApiSteps extends BaseSteps {
 	}
 
 	@Step("Update draft proposal")
-	public Response updateDraftProposal(CreateDraftProposal draftProposal, String draftId, String authToken) {
-		return draftApi.patchDraftProposal(draftProposal, draftId, authToken);
+	public Response updateDraftProposal(CreateDraftProposal draftProposal, String daoId, String draftId, String authToken) {
+		return draftApi.patchDraftProposal(draftProposal, daoId, draftId, authToken);
 	}
 
 	@Step("Delete draft proposal")
-	public Response deleteDraftProposal(String draftId, String authToken) {
-		return draftApi.deleteDraftProposal(draftId, authToken);
+	public Response deleteDraftProposal(String daoId, String draftId, String authToken) {
+		return draftApi.deleteDraftProposal(daoId, draftId, authToken);
 	}
 
 	@Step("Mark draft proposal as 'Read'")
