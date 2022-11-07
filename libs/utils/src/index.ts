@@ -206,7 +206,7 @@ export const filterProposalDesc = (description = '') => {
 };
 
 export const getAccountPermissions = (
-  roles: Role[],
+  roles: Partial<Role>[],
   type?: ProposalType,
   accountId?: string,
   accountBalance?: bigint,

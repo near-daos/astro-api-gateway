@@ -8,4 +8,6 @@ export enum FeatureFlags {
   BountyDynamo = 'bounty-dynamo',
   ProposalDynamo = 'proposal-dynamo',
   TokenDynamo = 'token-dynamo',
+  DraftCommentsDynamo = 'draft-comments-dynamo',
+  DraftDynamo = 'draft-dynamo',
 }

@@ -94,7 +94,8 @@
     "swagger-ui-express": "^4.1.6",
     "twilio": "^3.75.0",
     "typeorm": "^0.2.34",
-    "typeorm-naming-strategies": "^2.0.0"
+    "typeorm-naming-strategies": "^2.0.0",
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^8.2.8",

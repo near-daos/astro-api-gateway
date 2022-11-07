@@ -33,6 +33,7 @@ export function mapTokenBalanceToTokenBalanceModel(
     entityId: `${DynamoEntityType.TokenBalance}:${balance.tokenId}`,
     entityType: DynamoEntityType.TokenBalance,
     isArchived: false,
+    createTimestamp: Date.now(),
     processingTimeStamp: Date.now(),
     tokenId: balance.tokenId,
     accountId: balance.accountId,

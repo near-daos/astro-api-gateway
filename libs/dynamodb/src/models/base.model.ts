@@ -6,4 +6,5 @@ export class BaseModel {
   entityType: DynamoEntityType;
   isArchived: boolean;
   processingTimeStamp: number;
+  createTimestamp: number;
 }
