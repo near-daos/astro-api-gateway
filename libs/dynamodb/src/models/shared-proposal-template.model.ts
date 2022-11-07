@@ -27,6 +27,7 @@ export function mapSharedProposalTemplateToSharedProposalTemplateModel(
     createdBy: sharedProposalTemplate.createdBy,
     name: sharedProposalTemplate.name,
     description: sharedProposalTemplate.description,
+    createTimestamp: sharedProposalTemplate.createdAt.getTime(),
     config: sharedProposalTemplate.config,
   };
 }

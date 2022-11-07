@@ -28,5 +28,6 @@ export function mapDaoStatsToDaoStatsModel(stats: DaoStats): DaoStatsModel {
     nftCount: stats.nftCount,
     activeProposalCount: stats.activeProposalCount,
     totalProposalCount: stats.totalProposalCount,
+    createTimestamp: stats.createdAt.getTime(),
   };
 }

@@ -26,5 +26,6 @@ export function mapAccountToAccountModel(
     isPhoneVerified: account.isPhoneVerified,
     notifiUserId: account.notifiUserId,
     notifiAlertId: account.notifiAlertId,
+    createTimestamp: account.createdAt.getTime(),
   };
 }

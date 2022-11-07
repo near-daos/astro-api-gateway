@@ -33,5 +33,6 @@ export function mapAccountNotificationSettingsToAccountNotificationSettingsModel
     enableSms: accountNotificationSettings.enableSms,
     enableEmail: accountNotificationSettings.enableEmail,
     actionRequiredOnly: accountNotificationSettings.actionRequiredOnly,
+    createTimestamp: accountNotificationSettings.createdAt.getTime(),
   };
 }

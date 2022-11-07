@@ -56,6 +56,7 @@ export function mapNftTokenToNftModel(nft: NFTToken): NftModel {
     contractId: nft.contractId,
     contract: mapNftContractToNftContractModel(nft.contract),
     metadata: mapNftMetadataToNftMetadataModel(nft.metadata),
+    createTimestamp: nft.createdAt.getTime(),
   };
 }
 
