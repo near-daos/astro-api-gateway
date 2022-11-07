@@ -17,7 +17,6 @@ import {
   DraftCommentResponse,
   UpdateDraftComment,
 } from '@sputnik-v2/draft-comment/dto';
-import { CommentContextType } from '@sputnik-v2/comment';
 import {
   DraftCommentContextParams,
   DraftCommentContextType,
@@ -148,7 +147,7 @@ export class DynamoDraftCommentService implements DraftCommentService {
       createTimestamp: Date.now(),
       id: commentId,
       contextId: comment.contextId,
-      contextType: CommentContextType.Proposal,
+      contextType: DraftCommentContextType.DraftProposal,
       author: accountId,
       message: comment.message,
       replyTo: comment.replyTo,

@@ -329,6 +329,11 @@ export class TransactionActionHandlerService {
     await this.opensearchService.indexProposal(proposal.id, proposalById);
     await this.opensearchService.indexDao(proposal.daoId, daoById);
     await this.dynamodbService.saveProposal(proposalById);
+    await this.dynamodbService.saveScheduleProposalExpireEvent(
+      proposal.daoId,
+      proposalById.proposalId,
+      dao.policy.proposalPeriod,
+    );
     await this.dynamodbService.saveDao(daoById);
 
     await this.cacheService.handleProposalCache(proposal);
