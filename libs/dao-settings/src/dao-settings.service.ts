@@ -19,12 +19,12 @@ export class DaoSettingsService {
     private readonly featureFlagsService: FeatureFlagsService,
   ) {}
 
-  get useDynamoDB() {
+  async useDynamoDB() {
     return this.featureFlagsService.check(FeatureFlags.DaoSettingsDynamo);
   }
 
   async getSettings(daoId: string) {
-    if (this.useDynamoDB) {
+    if (await this.useDynamoDB()) {
       const dao = await this.dynamodbService.getItemByType<DaoModel>(
         daoId,
         DynamoEntityType.Dao,
@@ -43,7 +43,7 @@ export class DaoSettingsService {
       settings,
     });
 
-    if (this.useDynamoDB) {
+    if (await this.useDynamoDB()) {
       await this.dynamodbService.saveDaoSettings(entity);
     } else {
       await this.daoSettingsRepository.save(entity);
@@ -62,7 +62,7 @@ export class DaoSettingsService {
       },
     });
 
-    if (this.useDynamoDB) {
+    if (await this.useDynamoDB()) {
       await this.dynamodbService.saveDaoSettings(entity);
     } else {
       await this.daoSettingsRepository.save(entity);
