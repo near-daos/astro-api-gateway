@@ -28,7 +28,6 @@ import {
   DraftProposalBasicResponse,
   DraftProposalRequest,
   DraftProposalResponse,
-  DraftProposalService,
   DraftProposalsRequest,
   UpdateDraftProposal,
 } from '@sputnik-v2/draft-proposal';
@@ -41,12 +40,15 @@ import {
   FindOneMongoParams,
 } from '@sputnik-v2/common';
 import { DraftPageResponse } from './dto/draft-page-response.dto';
+import { DraftProposalServiceFacade } from '@sputnik-v2/draft-proposal/draft-proposal-service-facade';
 
 @Span()
 @ApiTags('Draft Proposals')
 @Controller('/draft-proposals')
 export class DraftProposalController {
-  constructor(private readonly draftProposalService: DraftProposalService) {}
+  constructor(
+    private readonly draftProposalService: DraftProposalServiceFacade,
+  ) {}
 
   @ApiResponse({
     status: 200,
@@ -96,7 +98,7 @@ export class DraftProposalController {
   @UseGuards(ThrottlerGuard)
   @UseGuards(AccountAccessGuard)
   @Post()
-  createDraftProposals(
+  async createDraftProposals(
     @Req() req: AuthorizedRequest,
     @Body() body: CreateDraftProposal,
   ): Promise<string> {
@@ -127,7 +129,7 @@ export class DraftProposalController {
   @UseGuards(ThrottlerGuard)
   @UseGuards(AccountAccessGuard)
   @Patch('/:daoId/:id')
-  updateDraftProposals(
+  async updateDraftProposals(
     @Param() { daoId, id }: FindOneMongoDaoParams,
     @Req() req: AuthorizedRequest,
     @Body() body: UpdateDraftProposal,
@@ -221,7 +223,7 @@ export class DraftProposalController {
   @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
   @Post('/:daoId/:id/save')
-  saveDraftProposal(
+  async saveDraftProposal(
     @Param() { daoId, id }: FindOneMongoDaoParams,
     @Req() req: AuthorizedRequest,
   ) {
@@ -251,7 +253,7 @@ export class DraftProposalController {
   @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
   @Delete('/:daoId/:id/save')
-  removeDraftProposalSave(
+  async removeDraftProposalSave(
     @Param() { daoId, id }: FindOneMongoDaoParams,
     @Req() req: AuthorizedRequest,
   ) {
