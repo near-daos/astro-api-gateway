@@ -18,7 +18,7 @@ import {
   UpdateDraftProposal,
 } from './dto';
 import { DraftProposalService, DraftProposalState } from './types';
-import { randomUUID } from 'crypto';
+import { nanoid } from 'nanoid';
 import { getAccountPermissions } from '@sputnik-v2/utils';
 
 @Injectable()
@@ -36,7 +36,7 @@ export class DynamoDraftProposalService implements DraftProposalService {
     accountId: string,
     draftProposalDto: CreateDraftProposal,
   ): Promise<string> {
-    const draftId = randomUUID();
+    const draftId = nanoid();
 
     await this.dynamodbService.saveItem<DraftProposalModel>({
       partitionId: draftProposalDto.daoId,
