@@ -1,9 +1,16 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
-import { DeleteResult, In, IsNull, Not, Repository } from 'typeorm';
+import { In, IsNull, Not, Repository } from 'typeorm';
 import { CrudRequest } from '@nestjsx/crud';
 import { NearApiService } from '@sputnik-v2/near-api';
+import {
+  DynamodbService,
+  DynamoEntityType,
+  mapNftTokenToNftModel,
+  NftModel,
+} from '@sputnik-v2/dynamodb';
+import { FeatureFlags, FeatureFlagsService } from '@sputnik-v2/feature-flags';
 
 import { AssetsNftEvent, NearIndexerService } from '@sputnik-v2/near-indexer';
 
@@ -18,28 +25,48 @@ export class NFTTokenService extends TypeOrmCrudService<NFTToken> {
     private readonly nftTokenRepository: Repository<NFTToken>,
     private readonly nearIndexerService: NearIndexerService,
     private readonly nearApiService: NearApiService,
+    private readonly dynamodbService: DynamodbService,
+    private readonly featureFlagsService: FeatureFlagsService,
   ) {
     super(nftTokenRepository);
+  }
+
+  async useDynamoDB() {
+    return this.featureFlagsService.check(FeatureFlags.TokenDynamo);
   }
 
   async create(tokenDto: NFTTokenDto): Promise<NFTToken> {
     return this.nftTokenRepository.save(tokenDto);
   }
 
-  async createMultiple(tokenDtos: NFTTokenDto[]): Promise<NFTToken[]> {
-    return this.nftTokenRepository.save(tokenDtos);
+  async createMultiple(nftDtos: NFTTokenDto[]) {
+    if (await this.useDynamoDB()) {
+      await this.dynamodbService.batchPut(
+        nftDtos.map((nft) => mapNftTokenToNftModel(nft)),
+      );
+    } else {
+      await this.nftTokenRepository.save(nftDtos);
+    }
   }
 
-  async purge(
-    accountId: string,
-    contractId: string,
-    ids: string[],
-  ): Promise<DeleteResult> {
-    return this.nftTokenRepository.delete({
-      accountId,
-      contractId,
-      id: Not(In(ids)),
-    });
+  async purge(accountId: string, contractId: string, ids: string[]) {
+    if (await this.useDynamoDB()) {
+      const nftsToDelete = await this.dynamodbService.getItemsByType<NftModel>(
+        accountId,
+        DynamoEntityType.Nft,
+        {
+          expression: 'contractId = :contractId and not contains(:ids, id)',
+          variables: { ':contractId': contractId, ':ids': ids },
+        },
+      );
+      await this.dynamodbService.batchDelete(nftsToDelete);
+    } else {
+      await this.nftTokenRepository.delete({
+        accountId,
+        contractId,
+        id: Not(In(ids)),
+      });
+    }
   }
 
   async lastToken(): Promise<NFTToken> {

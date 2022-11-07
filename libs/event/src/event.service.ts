@@ -21,6 +21,7 @@ import { Proposal, ProposalDto } from '@sputnik-v2/proposal';
 import { TransactionAction } from '@sputnik-v2/transaction-handler';
 import { AccountNotification, Notification } from '@sputnik-v2/notification';
 import { Comment } from '@sputnik-v2/comment';
+import { ProposalModel } from '@sputnik-v2/dynamodb';
 
 import { BaseMessage } from './messages/base.event';
 import { DraftCommentResponse } from '@sputnik-v2/draft-comment';
@@ -52,7 +53,7 @@ export class EventService {
   }
 
   public async sendProposalUpdateNotificationEvent(
-    proposal: ProposalDto | Proposal,
+    proposal: ProposalDto | Proposal | ProposalModel,
     txAction: TransactionAction,
   ): Promise<any> {
     const message = new BaseMessage(EVENT_PROPOSAL_UPDATE_NOTIFICATION, {

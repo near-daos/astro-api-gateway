@@ -18,7 +18,7 @@ import {
   DraftProposal,
   DraftProposalHistory,
 } from '@sputnik-v2/draft-proposal/entities';
-import { NFTToken, TokenBalance } from '@sputnik-v2/token/entities';
+import { NFTToken, Token, TokenBalance } from '@sputnik-v2/token/entities';
 import {
   ProposalTemplate,
   SharedProposalTemplate,
@@ -58,8 +58,11 @@ import {
   TokenBalanceModel,
   mapTokenBalanceToTokenBalanceModel,
   mapDaoSettingsToDaoModel,
+  mapTokenToTokenPriceModel,
+  TokenPriceModel,
 } from './models';
-import { DynamoEntityType } from './types';
+import { DynamoEntityType, DynamoQueryFilter } from './types';
+import PromisePool from '@supercharge/promise-pool';
 
 @Injectable()
 export class DynamodbService {
@@ -184,6 +187,21 @@ export class DynamodbService {
     );
   }
 
+  public async saveTokenPrice(token: Partial<Token>) {
+    return this.saveItem<TokenPriceModel>(mapTokenToTokenPriceModel(token));
+  }
+
+  public async batchDelete<M extends BaseModel = BaseModel>(
+    items: Partial<M>[],
+    tableName = this.tableName,
+  ) {
+    return PromisePool.withConcurrency(10)
+      .for(items)
+      .process((item) => {
+        return this.deleteItem(item, tableName);
+      });
+  }
+
   public async batchPut<M extends BaseModel = BaseModel>(
     items: Partial<M>[],
     tableName = this.tableName,
@@ -194,6 +212,48 @@ export class DynamodbService {
           [tableName]: items.map((Item) => ({
             PutRequest: { Item },
           })),
+        },
+      })
+      .promise();
+  }
+
+  public async getItemsByType<M extends BaseModel = BaseModel>(
+    partitionId: string,
+    entityType: DynamoEntityType,
+    filter?: DynamoQueryFilter,
+  ): Promise<M[]> {
+    return await this.query(partitionId, entityType, filter)
+      .then(({ Items }) => Items as M[])
+      .catch(() => []);
+  }
+
+  public async countItemsByType<M extends BaseModel = BaseModel>(
+    partitionId: string,
+    entityType: DynamoEntityType,
+    filter?: DynamoQueryFilter,
+  ): Promise<number> {
+    return await this.query<M>(partitionId, entityType, filter, 'COUNT')
+      .then(({ Count }) => Count)
+      .catch(() => 0);
+  }
+
+  public async query<M extends BaseModel = BaseModel>(
+    partitionId: string,
+    entityType: DynamoEntityType,
+    filter?: DynamoQueryFilter,
+    select?: string,
+  ) {
+    return await this.client
+      .query({
+        TableName: this.tableName,
+        Select: select,
+        KeyConditionExpression:
+          'partitionId = :partitionId and begins_with(entityId, :entityType)',
+        FilterExpression: filter?.expression,
+        ExpressionAttributeValues: {
+          ':partitionId': partitionId,
+          ':entityType': `${entityType}:`,
+          ...filter?.variables,
         },
       })
       .promise();
@@ -238,6 +298,18 @@ export class DynamodbService {
         Item: item
           ? { ...item, ...data, processingTimeStamp }
           : { ...data, processingTimeStamp },
+      })
+      .promise();
+  }
+
+  public async deleteItem<M extends BaseModel = BaseModel>(
+    data: Partial<M>,
+    tableName = this.tableName,
+  ) {
+    return this.client
+      .delete({
+        TableName: tableName,
+        Key: { partitionId: data.partitionId, entityId: data.entityId },
       })
       .promise();
   }

@@ -1,17 +1,23 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IsNull, ILike, Not, Repository } from 'typeorm';
+import { ILike, IsNull, Not, Repository } from 'typeorm';
 import { NearApiService } from '@sputnik-v2/near-api';
 import { BaseResponseDto, Order } from '@sputnik-v2/common';
 import { Dao } from '@sputnik-v2/dao/entities';
+import { FeatureFlags, FeatureFlagsService } from '@sputnik-v2/feature-flags';
+import {
+  DynamodbService,
+  DynamoEntityType,
+  TokenBalanceModel,
+  TokenPriceModel,
+} from '@sputnik-v2/dynamodb';
 
 import { Token, TokenBalance } from './entities';
 import {
+  castTokenResponse,
   TokenDto,
-  TokenBalanceDto,
   TokenResponse,
   TokensRequest,
-  castTokenResponse,
 } from './dto';
 import { castToken, castTokenBalance } from './types';
 
@@ -25,7 +31,13 @@ export class TokenService {
     @InjectRepository(Dao)
     private readonly daoRepository: Repository<Dao>,
     private readonly nearApiService: NearApiService,
+    private readonly dynamodbService: DynamodbService,
+    private readonly featureFlagsService: FeatureFlagsService,
   ) {}
+
+  async useDynamoDB() {
+    return this.featureFlagsService.check(FeatureFlags.TokenDynamo);
+  }
 
   async create(tokenDto: TokenDto): Promise<Token> {
     return this.tokenRepository.save(tokenDto);
@@ -35,21 +47,36 @@ export class TokenService {
     return this.tokenRepository.save(tokenDto);
   }
 
-  async createBalance(tokenBalanceDto: TokenBalanceDto): Promise<TokenBalance> {
-    return this.tokenBalanceRepository.save(tokenBalanceDto);
-  }
-
   async loadTokenById(tokenId: string, timestamp?: number) {
-    const contract = this.nearApiService.getContract('fToken', tokenId);
-    const metadata = await contract.ft_metadata();
-    const totalSupply = await contract.ft_total_supply();
-    await this.create(castToken(tokenId, metadata, totalSupply, timestamp));
+    if (!(await this.useDynamoDB())) {
+      const contract = this.nearApiService.getContract('fToken', tokenId);
+      const metadata = await contract.ft_metadata();
+      const totalSupply = await contract.ft_total_supply();
+      await this.create(castToken(tokenId, metadata, totalSupply, timestamp));
+    }
   }
 
-  async loadBalanceById(tokenId: string, accountId: string) {
-    const contract = this.nearApiService.getContract('fToken', tokenId);
-    const balance = await contract.ft_balance_of({ account_id: accountId });
-    await this.createBalance(castTokenBalance(tokenId, accountId, balance));
+  async loadBalanceById(
+    tokenId: string,
+    accountId: string,
+    timestamp?: number,
+  ) {
+    if (await this.useDynamoDB()) {
+      const contract = this.nearApiService.getContract('fToken', tokenId);
+      const metadata = await contract.ft_metadata();
+      const totalSupply = await contract.ft_total_supply();
+      const balance = await contract.ft_balance_of({ account_id: accountId });
+      await this.dynamodbService.saveTokenBalance({
+        ...castTokenBalance(tokenId, accountId, balance),
+        token: castToken(tokenId, metadata, totalSupply, timestamp) as Token,
+      });
+    } else {
+      const contract = this.nearApiService.getContract('fToken', tokenId);
+      const balance = await contract.ft_balance_of({ account_id: accountId });
+      await this.tokenBalanceRepository.save(
+        castTokenBalance(tokenId, accountId, balance),
+      );
+    }
   }
 
   async lastToken(): Promise<Token> {
@@ -97,11 +124,21 @@ export class TokenService {
     };
   }
 
-  async getNearToken(): Promise<TokenResponse> {
-    return this.tokenRepository.findOne(
-      { id: 'NEAR' },
-      { select: ['id', 'totalSupply', 'decimals', 'icon', 'symbol', 'price'] },
-    );
+  async getNearToken(): Promise<TokenResponse | TokenPriceModel> {
+    if (await this.useDynamoDB()) {
+      return this.dynamodbService.getItemByType<TokenPriceModel>(
+        'NEAR',
+        DynamoEntityType.TokenPrice,
+        'NEAR',
+      );
+    } else {
+      return this.tokenRepository.findOne(
+        { id: 'NEAR' },
+        {
+          select: ['id', 'totalSupply', 'decimals', 'icon', 'symbol', 'price'],
+        },
+      );
+    }
   }
 
   async getNearBalance(daoId: string): Promise<string | undefined> {
@@ -114,11 +151,20 @@ export class TokenService {
     )?.amount.toString();
   }
 
-  async tokenBalancesByAccount(accountId: string): Promise<TokenBalance[]> {
-    return this.tokenBalanceRepository.find({
-      where: { accountId },
-      relations: ['token'],
-    });
+  async tokenBalancesByAccount(
+    accountId: string,
+  ): Promise<Array<TokenBalance | TokenBalanceModel>> {
+    if (await this.useDynamoDB()) {
+      return this.dynamodbService.getItemsByType<TokenBalanceModel>(
+        accountId,
+        DynamoEntityType.TokenBalance,
+      );
+    } else {
+      return this.tokenBalanceRepository.find({
+        where: { accountId },
+        relations: ['token'],
+      });
+    }
   }
 
   async tokensByAccount(accountId: string): Promise<TokenResponse[]> {
@@ -141,7 +187,7 @@ export class TokenService {
       tokenId: token.id,
       balance: balance,
     }));
-    const nearToken = await this.getNearToken();
+    const nearToken = (await this.getNearToken()) as TokenResponse;
     nearToken.balance = await this.getNearBalance(accountId);
     nearToken.tokenId = '';
 

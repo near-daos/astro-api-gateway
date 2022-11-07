@@ -14,6 +14,7 @@ import { DynamoEntityType } from '../types';
 export class DaoModel extends TransactionModel {
   metadata: Record<string, any>;
   amount: number;
+  id: string;
   totalSupply: string;
   lastBountyId: number;
   lastProposalId: number;
@@ -78,6 +79,7 @@ export function mapDaoToDaoModel(dao: Dao): DaoModel {
     entityType: DynamoEntityType.Dao,
     isArchived: dao.isArchived,
     processingTimeStamp: Date.now(),
+    id: dao.id,
     transactionHash: dao.transactionHash,
     updateTransactionHash: dao.updateTransactionHash,
     createTimestamp: dao.createTimestamp,

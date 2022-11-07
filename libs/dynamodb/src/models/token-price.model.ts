@@ -1,0 +1,22 @@
+import { Token } from '@sputnik-v2/token/entities';
+import { BaseModel } from './base.model';
+import { DynamoEntityType } from '@sputnik-v2/dynamodb/types';
+
+export class TokenPriceModel extends BaseModel {
+  price: string;
+  decimals: number;
+}
+
+export function mapTokenToTokenPriceModel(
+  token: Partial<Token>,
+): TokenPriceModel {
+  return {
+    partitionId: token.id,
+    entityId: `${DynamoEntityType.TokenBalance}:${token.id}`,
+    entityType: DynamoEntityType.TokenBalance,
+    isArchived: false,
+    processingTimeStamp: Date.now(),
+    price: token.price,
+    decimals: token.decimals,
+  };
+}

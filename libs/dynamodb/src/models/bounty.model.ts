@@ -4,6 +4,7 @@ import { DynamoEntityType } from '../types';
 
 export class BountyModel extends TransactionModel {
   bountyId: number;
+  id: string;
   proposalId: string;
   description: string;
   token: string;
@@ -40,6 +41,7 @@ export function mapBountyToBountyModel(
       bounty.updateTransactionHash || bounty.transactionHash,
     createTimestamp: bounty.createTimestamp,
     updateTimestamp: bounty.updateTimestamp || bounty.createTimestamp,
+    id: bounty.id,
     bountyId: bounty.bountyId,
     proposalId: bounty.proposalId,
     description: bounty.description,

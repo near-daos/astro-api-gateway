@@ -12,6 +12,9 @@ export class NFTTokenContractDto {
   id: string;
 
   @ApiProperty()
+  name: string;
+
+  @ApiProperty()
   spec: string;
 
   @ApiProperty()
@@ -104,4 +107,6 @@ export class NFTTokenDto extends TransactionInfo {
 
   @ApiProperty()
   metadata: NFTTokenMetadataDto;
+
+  isArchived?: boolean;
 }

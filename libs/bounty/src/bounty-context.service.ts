@@ -4,6 +4,13 @@ import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 import { DeleteResult, Repository } from 'typeorm';
 import { CrudRequest } from '@nestjsx/crud';
 import { ProposalService } from '@sputnik-v2/proposal';
+import {
+  BountyModel,
+  DynamodbService,
+  DynamoEntityType,
+} from '@sputnik-v2/dynamodb';
+import { FeatureFlags, FeatureFlagsService } from '@sputnik-v2/feature-flags';
+import { buildProposalId } from '@sputnik-v2/utils';
 
 import { BountyContextDto, BountyContextResponse } from './dto';
 import { BountyContext } from './entities';
@@ -16,16 +23,49 @@ export class BountyContextService extends TypeOrmCrudService<BountyContext> {
     @InjectRepository(BountyContext)
     private readonly bountyContextRepository: Repository<BountyContext>,
     private readonly proposalService: ProposalService,
+    private readonly dynamodbService: DynamodbService,
+    private readonly featureFlagsService: FeatureFlagsService,
   ) {
     super(bountyContextRepository);
   }
 
-  async create(bountyContextDto: BountyContextDto): Promise<BountyContext> {
-    return this.bountyContextRepository.save(bountyContextDto);
+  async useDynamoDB() {
+    return this.featureFlagsService.check(FeatureFlags.ProposalDynamo);
   }
 
-  async remove(id: string): Promise<DeleteResult> {
-    return await this.bountyContextRepository.delete({ id });
+  async create(
+    bountyContextDto: BountyContextDto,
+    proposalId: number,
+  ): Promise<string> {
+    if (await this.useDynamoDB()) {
+      await this.dynamodbService.saveBounty(
+        {
+          proposalId: bountyContextDto.id,
+          daoId: bountyContextDto.daoId,
+          transactionHash: bountyContextDto.transactionHash,
+          createTimestamp: bountyContextDto.createTimestamp,
+        },
+        proposalId,
+      );
+    } else {
+      await this.bountyContextRepository.save(bountyContextDto);
+    }
+
+    return bountyContextDto.id;
+  }
+
+  async remove(daoId: string, proposalId: number) {
+    if (await this.useDynamoDB()) {
+      await this.dynamodbService.saveItem<BountyModel>({
+        partitionId: daoId,
+        entityId: `${DynamoEntityType.Bounty}:${proposalId}`,
+        isArchived: true,
+      });
+    } else {
+      await this.bountyContextRepository.delete({
+        id: buildProposalId(daoId, proposalId),
+      });
+    }
   }
 
   async createMultiple(

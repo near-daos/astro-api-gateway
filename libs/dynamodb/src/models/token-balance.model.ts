@@ -1,4 +1,4 @@
-import { Token, TokenBalance } from '@sputnik-v2/token';
+import { Token, TokenBalance } from '@sputnik-v2/token/entities';
 import { BaseModel } from './base.model';
 import { DynamoEntityType } from '@sputnik-v2/dynamodb/types';
 
