@@ -18,7 +18,7 @@ import {
   UpdateDraftProposal,
 } from './dto';
 import { DraftProposalService, DraftProposalState } from './types';
-import { nanoid } from 'nanoid';
+import { v4 as uuidv4 } from 'uuid';
 import { getAccountPermissions } from '@sputnik-v2/utils';
 
 @Injectable()
@@ -36,7 +36,7 @@ export class DynamoDraftProposalService implements DraftProposalService {
     accountId: string,
     draftProposalDto: CreateDraftProposal,
   ): Promise<string> {
-    const draftId = nanoid();
+    const draftId = uuidv4();
 
     await this.dynamodbService.saveItem<DraftProposalModel>({
       partitionId: draftProposalDto.daoId,

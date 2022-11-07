@@ -78,7 +78,6 @@
     "ioredis": "^4.14.1",
     "launchdarkly-node-server-sdk": "^6.4.3",
     "mongodb": "^3.7.3",
-    "nanoid": "^4.0.0",
     "near-api-js": "^0.44.2",
     "nestjs-ddtrace": "^1.0.4",
     "nestjs-opensearch": "^0.2.0",
@@ -95,7 +94,8 @@
     "swagger-ui-express": "^4.1.6",
     "twilio": "^3.75.0",
     "typeorm": "^0.2.34",
-    "typeorm-naming-strategies": "^2.0.0"
+    "typeorm-naming-strategies": "^2.0.0",
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^8.2.8",
