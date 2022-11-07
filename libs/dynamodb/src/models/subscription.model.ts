@@ -18,5 +18,6 @@ export function mapSubscriptionToSubscriptionModel(
     processingTimeStamp: Date.now(),
     id: subscription.id,
     accountId: subscription.accountId,
+    createTimestamp: subscription.createdAt.getTime(),
   };
 }
