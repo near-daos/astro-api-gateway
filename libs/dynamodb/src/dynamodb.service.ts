@@ -60,6 +60,7 @@ import {
   mapDaoSettingsToDaoModel,
 } from './models';
 import { DynamoEntityType } from './types';
+import { ScheduledProposalExpirationEvent } from '@sputnik-v2/dynamodb/models/scheduled-proposal-expiration.model';
 
 @Injectable()
 export class DynamodbService {
@@ -261,5 +262,28 @@ export class DynamodbService {
           : { ...data, processingTimeStamp },
       })
       .promise();
+  }
+
+  async saveScheduleProposalExpireEvent(
+    daoId: string,
+    proposalId: number,
+    proposalExpiration: number,
+  ) {
+    const secondsSinceEpoch = Math.round(Date.now() / 1000);
+    const proposalExpirationPeriod = proposalExpiration / 1000000000;
+    const ttl = secondsSinceEpoch + proposalExpirationPeriod;
+
+    const item: ScheduledProposalExpirationEvent = {
+      createTimestamp: new Date().getTime(),
+      entityId: `${DynamoEntityType.ScheduledProposalExpirationEvent}:${proposalId}`,
+      entityType: DynamoEntityType.ScheduledProposalExpirationEvent,
+      isArchived: false,
+      partitionId: daoId,
+      processingTimeStamp: new Date().getTime(),
+      proposalId: proposalId,
+      ttl,
+    };
+
+    return this.saveItem<ScheduledProposalExpirationEvent>(item);
   }
 }
