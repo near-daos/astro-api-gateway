@@ -4,6 +4,7 @@ export enum FeatureFlags {
   OpenSearchBountyIndexing = 'open-search-bounty-indexing',
   OpenSearchDraftProposalIndexing = 'open-search-draft-proposal-indexing',
   DaoSettingsDynamo = 'dao-settings-dynamo',
+  DaoStatsDynamo = 'dao-stats-dynamo',
   DraftCommentsDynamo = 'draft-comments-dynamo',
   DraftDynamo = 'draft-dynamo',
 }

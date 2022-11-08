@@ -13,7 +13,6 @@ import {
 } from '@sputnik-v2/notification';
 import { Comment } from '@sputnik-v2/comment/entities';
 import { DraftComment } from '@sputnik-v2/draft-comment/entities';
-import { DaoStats } from '@sputnik-v2/stats/entities';
 import {
   DraftProposal,
   DraftProposalHistory,
@@ -43,8 +42,6 @@ import {
   CommentModel,
   mapCommentToCommentModel,
   mapDraftCommentToCommentModel,
-  DaoStatsModel,
-  mapDaoStatsToDaoStatsModel,
   DraftProposalModel,
   mapDraftProposalToDraftProposalModel,
   NftModel,
@@ -59,7 +56,7 @@ import {
   mapTokenBalanceToTokenBalanceModel,
   mapDaoSettingsToDaoModel,
 } from './models';
-import { DynamoEntityType } from './types';
+import { DynamoEntityType, EntityId } from './types';
 import { ScheduledProposalExpirationEvent } from '@sputnik-v2/dynamodb/models/scheduled-proposal-expiration.model';
 
 @Injectable()
@@ -90,6 +87,10 @@ export class DynamodbService {
     this.tableName = tableName;
   }
 
+  buildEntityId(entityType: DynamoEntityType, id: string): EntityId {
+    return `${entityType}:${id}`;
+  }
+
   public async saveAccount(account: Partial<Account>) {
     return this.saveItem<AccountModel>(mapAccountToAccountModel(account));
   }
@@ -109,7 +110,7 @@ export class DynamodbService {
 
     await this.saveItem<DraftProposalModel>({
       partitionId: daoId,
-      entityId: `${DynamoEntityType.DraftProposal}:${draftId}`,
+      entityId: this.buildEntityId(DynamoEntityType.DraftProposal, draftId),
       entityType: DynamoEntityType.DraftProposal,
       replies: currentReplies ?? 0 + replies,
     });
@@ -153,10 +154,6 @@ export class DynamodbService {
 
   public async saveDaoSettings(daoSettings: DaoSettings) {
     return this.saveItem<DaoModel>(mapDaoSettingsToDaoModel(daoSettings));
-  }
-
-  public async saveDaoStats(daoStats: DaoStats) {
-    return this.saveItem<DaoStatsModel>(mapDaoStatsToDaoStatsModel(daoStats));
   }
 
   public async saveDraftProposal(
@@ -226,7 +223,10 @@ export class DynamodbService {
     entityType: DynamoEntityType,
     id: string,
   ): Promise<M | null> {
-    return await this.getItemById(partitionId, `${entityType}:${id}`);
+    return await this.getItemById(
+      partitionId,
+      this.buildEntityId(entityType, id),
+    );
   }
 
   public async getItemById<M extends BaseModel = BaseModel>(
@@ -241,6 +241,20 @@ export class DynamodbService {
       })
       .promise()
       .then(({ Item }) => Item as M)
+      .catch(() => null);
+  }
+
+  public async queryItems<M extends BaseModel = BaseModel>(
+    query: Omit<DocumentClient.QueryInput, 'TableName'>,
+    tableName = this.tableName,
+  ): Promise<M[]> {
+    return await this.client
+      .query({
+        TableName: tableName,
+        ...query,
+      })
+      .promise()
+      .then(({ Items }) => Items as M[])
       .catch(() => null);
   }
 
