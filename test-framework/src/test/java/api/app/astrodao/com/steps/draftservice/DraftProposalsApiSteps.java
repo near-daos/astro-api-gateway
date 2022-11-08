@@ -47,13 +47,13 @@ public class DraftProposalsApiSteps extends BaseSteps {
 	}
 
 	@Step("Save draft proposal")
-	public Response saveDraftProposal(String draftId, String authToken) {
-		return draftApi.postSaveDraftProposal(draftId, authToken);
+	public Response saveDraftProposal(String daoId, String draftId, String authToken) {
+		return draftApi.postSaveDraftProposal(daoId, draftId, authToken);
 	}
 
 	@Step("Unsave draft proposal")
-	public Response unsaveDraftProposal(String draftId, String authToken) {
-		return draftApi.unsaveDraftProposal(draftId, authToken);
+	public Response unsaveDraftProposal(String daoId, String draftId, String authToken) {
+		return draftApi.unsaveDraftProposal(daoId, draftId, authToken);
 	}
 
 	@Step("Close draft proposal")

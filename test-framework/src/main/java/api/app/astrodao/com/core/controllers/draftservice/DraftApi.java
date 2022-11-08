@@ -70,20 +70,20 @@ public class DraftApi {
 				.post(DRAFT_PROPOSALS_ID_VIEW, draftId);
 	}
 
-	public Response postSaveDraftProposal(String draftId, String authToken) {
+	public Response postSaveDraftProposal(String daoId, String draftId, String authToken) {
 		return given().spec(requestSpecForDraftService)
 				.accept(JSON)
 				.header("Authorization", "Bearer " + authToken)
 				.contentType(JSON)
-				.post(DRAFT_PROPOSALS_ID_SAVE, draftId);
+				.post(DRAFT_PROPOSALS_DAO_ID_ID_SAVE, daoId, draftId);
 	}
 
-	public Response unsaveDraftProposal(String draftId, String authToken) {
+	public Response unsaveDraftProposal(String daoId, String draftId, String authToken) {
 		return given().spec(requestSpecForDraftService)
 				.accept(JSON)
 				.header("Authorization", "Bearer " + authToken)
 				.contentType(JSON)
-				.delete(DRAFT_PROPOSALS_ID_SAVE, draftId);
+				.delete(DRAFT_PROPOSALS_DAO_ID_ID_SAVE, daoId, draftId);
 	}
 
 	public Response closeDraftProposal(String daoId, String draftId, String authToken) {
