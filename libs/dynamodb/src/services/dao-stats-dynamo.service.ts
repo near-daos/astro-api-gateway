@@ -5,7 +5,7 @@ import {
   mapDaoStatsModelToDaoStats,
   mapDaoStatsToDaoStatsModel,
 } from '@sputnik-v2/dynamodb/models';
-import { DynamoEntityType } from '@sputnik-v2/dynamodb/types';
+import { DynamoEntityType, QueryItemsQuery } from '@sputnik-v2/dynamodb/types';
 import { DaoStats } from '@sputnik-v2/stats';
 import { buildDaoStatsId } from '@sputnik-v2/utils';
 
@@ -35,12 +35,16 @@ export class DaoStatsDynamoService {
     return daoStats ? mapDaoStatsModelToDaoStats(daoStats) : undefined;
   }
 
-  async query(query) {
-    return this.dynamoDbService.queryItems<DaoStatsModel>(query);
+  async query(daoId: string, query: QueryItemsQuery = {}) {
+    return this.dynamoDbService.queryItemsByType<DaoStatsModel>(
+      daoId,
+      DynamoEntityType.DaoStats,
+      query,
+    );
   }
 
-  async queryDaoStats(query) {
-    const items = await this.query(query);
+  async queryDaoStats(daoId: string, query: QueryItemsQuery = {}) {
+    const items = await this.query(daoId, query);
     return items.map((item) => mapDaoStatsModelToDaoStats(item));
   }
 }

@@ -55,7 +55,12 @@ import {
   TokenBalanceModel,
   mapTokenBalanceToTokenBalanceModel,
 } from './models';
-import { DynamoEntityType, EntityId } from './types';
+import {
+  CountItemsQuery,
+  DynamoEntityType,
+  EntityId,
+  QueryItemsQuery,
+} from './types';
 import { ScheduledProposalExpirationEvent } from '@sputnik-v2/dynamodb/models/scheduled-proposal-expiration.model';
 
 @Injectable()
@@ -233,7 +238,7 @@ export class DynamodbService {
   }
 
   public async queryItems<M extends BaseModel = BaseModel>(
-    query: Omit<DocumentClient.QueryInput, 'TableName'>,
+    query: QueryItemsQuery,
     tableName = this.tableName,
   ): Promise<M[]> {
     return await this.client
@@ -247,7 +252,7 @@ export class DynamodbService {
   }
 
   public async countItems(
-    query: Omit<DocumentClient.QueryInput, 'TableName' | 'Select'>,
+    query: CountItemsQuery,
     tableName = this.tableName,
   ): Promise<number> {
     return await this.client
@@ -264,7 +269,7 @@ export class DynamodbService {
   public async queryItemsByType<M extends BaseModel = BaseModel>(
     partitionId: string,
     entityType: DynamoEntityType,
-    query: Omit<DocumentClient.QueryInput, 'TableName'> = {},
+    query: CountItemsQuery = {},
     tableName = this.tableName,
   ): Promise<M[]> {
     return await this.queryItems<M>(
@@ -285,7 +290,7 @@ export class DynamodbService {
   public async countItemsByType(
     partitionId: string,
     entityType: DynamoEntityType,
-    query: Omit<DocumentClient.QueryInput, 'TableName' | 'Select'> = {},
+    query: CountItemsQuery = {},
     tableName = this.tableName,
   ): Promise<number> {
     return this.countItems(

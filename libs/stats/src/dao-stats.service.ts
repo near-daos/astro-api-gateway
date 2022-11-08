@@ -5,11 +5,7 @@ import { BountyService } from '@sputnik-v2/bounty';
 import { DateTime } from 'luxon';
 
 import { Dao, DaoService } from '@sputnik-v2/dao';
-import {
-  DaoDynamoService,
-  DaoStatsDynamoService,
-  DynamoEntityType,
-} from '@sputnik-v2/dynamodb';
+import { DaoDynamoService, DaoStatsDynamoService } from '@sputnik-v2/dynamodb';
 import { FeatureFlags, FeatureFlagsService } from '@sputnik-v2/feature-flags';
 import { NFTTokenService } from '@sputnik-v2/token';
 import { buildDaoStatsId, getGrowth } from '@sputnik-v2/utils';
@@ -142,17 +138,11 @@ export class DaoStatsService {
     let daoStats: DaoStats[];
 
     if (await this.useDynamoDB()) {
-      daoStats = await this.daoStatsDynamoService.queryDaoStats({
-        KeyConditionExpression:
-          'partitionId = :daoId AND begins_with(entityId, :entityType)',
+      daoStats = await this.daoStatsDynamoService.queryDaoStats(daoId, {
         ProjectionExpression: '#timestamp, #field',
         ExpressionAttributeNames: {
           '#timestamp': 'timestamp',
           '#field': field,
-        },
-        ExpressionAttributeValues: {
-          ':daoId': daoId,
-          ':entityType': DynamoEntityType.DaoStats,
         },
       });
     } else {
@@ -179,17 +169,11 @@ export class DaoStatsService {
     let daoStats: DaoStats[];
 
     if (await this.useDynamoDB()) {
-      daoStats = await this.daoStatsDynamoService.queryDaoStats({
-        KeyConditionExpression:
-          'partitionId = :daoId AND begins_with(entityId, :entityType)',
+      daoStats = await this.daoStatsDynamoService.queryDaoStats(daoId, {
         ProjectionExpression:
           '#timestamp, activeProposalCount, totalProposalCount',
         ExpressionAttributeNames: {
           '#timestamp': 'timestamp',
-        },
-        ExpressionAttributeValues: {
-          ':daoId': daoId,
-          ':entityType': DynamoEntityType.DaoStats,
         },
       });
     } else {
