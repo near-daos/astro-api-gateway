@@ -23,7 +23,6 @@ import {
   SharedProposalTemplate,
 } from '@sputnik-v2/proposal-template/entities';
 import { Subscription } from '@sputnik-v2/subscription/entities';
-import { DaoSettings } from '@sputnik-v2/dao-settings';
 
 import {
   BaseModel,
@@ -150,10 +149,6 @@ export class DynamodbService {
 
   public async saveDao(dao: Dao) {
     return this.saveItem<DaoModel>(mapDaoToDaoModel(dao));
-  }
-
-  public async saveDaoSettings(daoSettings: DaoSettings) {
-    return this.saveItem<DaoModel>(mapDaoSettingsToDaoModel(daoSettings));
   }
 
   public async saveDraftProposal(

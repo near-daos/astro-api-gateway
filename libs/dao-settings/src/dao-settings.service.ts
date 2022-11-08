@@ -1,10 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  DaoModel,
-  DynamodbService,
-  DynamoEntityType,
-} from '@sputnik-v2/dynamodb';
+import { DaoDynamoService } from '@sputnik-v2/dynamodb';
 import { FeatureFlags, FeatureFlagsService } from '@sputnik-v2/feature-flags';
 import { Repository } from 'typeorm';
 import { DaoSettingsDto } from './dto';
@@ -15,7 +11,7 @@ export class DaoSettingsService {
   constructor(
     @InjectRepository(DaoSettings)
     private readonly daoSettingsRepository: Repository<DaoSettings>,
-    private readonly dynamodbService: DynamodbService,
+    private readonly daoDynamoService: DaoDynamoService,
     private readonly featureFlagsService: FeatureFlagsService,
   ) {}
 
@@ -25,11 +21,7 @@ export class DaoSettingsService {
 
   async getSettings(daoId: string) {
     if (await this.useDynamoDB()) {
-      const dao = await this.dynamodbService.getItemByType<DaoModel>(
-        daoId,
-        DynamoEntityType.Dao,
-        daoId,
-      );
+      const dao = await this.daoDynamoService.get(daoId);
       return dao?.settings || {};
     } else {
       const entity = await this.daoSettingsRepository.findOne(daoId);
@@ -44,7 +36,7 @@ export class DaoSettingsService {
     });
 
     if (await this.useDynamoDB()) {
-      await this.dynamodbService.saveDaoSettings(entity);
+      await this.daoDynamoService.saveDaoSettings(entity);
     } else {
       await this.daoSettingsRepository.save(entity);
     }
@@ -63,7 +55,7 @@ export class DaoSettingsService {
     });
 
     if (await this.useDynamoDB()) {
-      await this.dynamodbService.saveDaoSettings(entity);
+      await this.daoDynamoService.saveDaoSettings(entity);
     } else {
       await this.daoSettingsRepository.save(entity);
     }
