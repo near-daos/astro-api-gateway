@@ -1,3 +1,4 @@
+import { DateTime } from 'luxon';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindManyOptions, MongoRepository, Repository } from 'typeorm';
@@ -247,7 +248,15 @@ export class DynamoDataMigration implements Migration {
       this.daoStatsRepository,
     )) {
       await this.dynamodbService.batchPut(
-        daoStats.map((stats) => mapDaoStatsToDaoStatsModel(stats)),
+        daoStats.map((stats) =>
+          mapDaoStatsToDaoStatsModel({
+            ...stats,
+            // reset timestamp to start of day
+            timestamp: DateTime.fromMillis(stats.timestamp)
+              .startOf('day')
+              .toMillis(),
+          }),
+        ),
       );
     }
   }
