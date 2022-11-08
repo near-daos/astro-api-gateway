@@ -1,9 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, LessThan } from 'typeorm';
-
-import { DaoService } from '@sputnik-v2/dao';
+import { Repository } from 'typeorm';
 import { BountyService } from '@sputnik-v2/bounty';
+import { DateTime } from 'luxon';
+
+import { Dao, DaoService } from '@sputnik-v2/dao';
+import { DaoDynamoService, DaoStatsDynamoService } from '@sputnik-v2/dynamodb';
+import { FeatureFlags, FeatureFlagsService } from '@sputnik-v2/feature-flags';
 import { NFTTokenService } from '@sputnik-v2/token';
 import { buildDaoStatsId, getGrowth } from '@sputnik-v2/utils';
 
@@ -25,23 +28,48 @@ export class DaoStatsService {
     private readonly daoService: DaoService,
     private readonly bountyService: BountyService,
     private readonly nftTokenService: NFTTokenService,
+    private readonly featureFlagsService: FeatureFlagsService,
+    private readonly daoDynamoService: DaoDynamoService,
+    private readonly daoStatsDynamoService: DaoStatsDynamoService,
   ) {}
 
-  async create(daoStats: DaoStatsDto): Promise<DaoStats> {
-    return this.daoStatsRepository.save(daoStats);
+  async useDynamoDB() {
+    return this.featureFlagsService.check(FeatureFlags.DaoStatsDynamo);
+  }
+
+  async create(daoStatsDto: DaoStatsDto): Promise<DaoStats> {
+    const daoStats = this.daoStatsRepository.create(daoStatsDto);
+
+    if (await this.useDynamoDB()) {
+      await this.daoStatsDynamoService.saveDaoStats(daoStats);
+    } else {
+      await this.daoStatsRepository.save(daoStats);
+    }
+
+    return daoStats;
   }
 
   async getDaoStats(daoId: string): Promise<DaoStatsDto> {
-    const timestamp = Date.now();
-    const dao = await this.daoService.findById(daoId);
+    const timestamp = DateTime.now().startOf('day').toMillis();
+    const useDynamoDB = await this.useDynamoDB();
+
+    let dao: Dao;
+
+    if (useDynamoDB) {
+      dao = await this.daoDynamoService.getDao(daoId);
+    } else {
+      dao = await this.daoService.findById(daoId);
+    }
 
     if (!dao) {
       throw new NotFoundException();
     }
 
+    // TODO: get stats from dynamodb
     const bountyCount = await this.bountyService.getDaoActiveBountiesCount(
       daoId,
     );
+    // TODO: get stats from dynamodb
     const nftCount = await this.nftTokenService.getAccountTokenCount(daoId);
 
     return {
@@ -56,14 +84,19 @@ export class DaoStatsService {
     };
   }
 
-  async getLastDaoStats(
-    daoId: string,
-    untilTimestamp: number,
-  ): Promise<DaoStats> {
-    return this.daoStatsRepository.findOne({
-      where: { daoId, timestamp: LessThan(untilTimestamp) },
-      order: { timestamp: 'DESC' },
-    });
+  async getLastDaoStats(daoId: string, timestamp?: number): Promise<DaoStats> {
+    if (!timestamp) {
+      timestamp = DateTime.now().minus({ day: 1 }).startOf('day').toMillis();
+    }
+
+    if (await this.useDynamoDB()) {
+      return this.daoStatsDynamoService.getDaoStats(daoId, timestamp);
+    } else {
+      return this.daoStatsRepository.findOne({
+        where: { daoId, timestamp },
+        order: { timestamp: 'DESC' },
+      });
+    }
   }
 
   async getDaoStatsState(
@@ -101,17 +134,30 @@ export class DaoStatsService {
     field: DaoStatsEntryFields,
   ): Promise<StatsEntryDto[]> {
     const currentDaoStats = await this.getDaoStats(daoId);
-    const daoStats = await this.daoStatsRepository
-      .createQueryBuilder('stats')
-      .select(['stats.timestamp', `stats.${field}`])
-      .where('stats.daoId = :daoId', { daoId })
-      .andWhere(`stats.${field} is not NULL`)
-      .orderBy('stats.timestamp', 'ASC')
-      .getMany();
+
+    let daoStats: DaoStats[];
+
+    if (await this.useDynamoDB()) {
+      daoStats = await this.daoStatsDynamoService.queryDaoStats(daoId, {
+        ProjectionExpression: '#timestamp, #field',
+        ExpressionAttributeNames: {
+          '#timestamp': 'timestamp',
+          '#field': field,
+        },
+      });
+    } else {
+      daoStats = await this.daoStatsRepository
+        .createQueryBuilder('stats')
+        .select(['stats.timestamp', `stats.${field}`])
+        .where('stats.daoId = :daoId', { daoId })
+        .andWhere(`stats.${field} is not NULL`)
+        .orderBy('stats.timestamp', 'ASC')
+        .getMany();
+    }
 
     return [...daoStats, currentDaoStats].map((stats) => ({
       timestamp: Number(stats.timestamp),
-      value: stats[field],
+      value: stats[field] || 0,
     }));
   }
 
@@ -119,16 +165,29 @@ export class DaoStatsService {
     daoId: string,
   ): Promise<ProposalStatsEntryDto[]> {
     const currentDaoStats = await this.getDaoStats(daoId);
-    const daoStats = await this.daoStatsRepository
-      .createQueryBuilder('stats')
-      .select([
-        'stats.timestamp',
-        'stats.activeProposalCount',
-        'stats.totalProposalCount',
-      ])
-      .where('stats.daoId = :daoId', { daoId })
-      .orderBy('stats.timestamp', 'ASC')
-      .getMany();
+
+    let daoStats: DaoStats[];
+
+    if (await this.useDynamoDB()) {
+      daoStats = await this.daoStatsDynamoService.queryDaoStats(daoId, {
+        ProjectionExpression:
+          '#timestamp, activeProposalCount, totalProposalCount',
+        ExpressionAttributeNames: {
+          '#timestamp': 'timestamp',
+        },
+      });
+    } else {
+      daoStats = await this.daoStatsRepository
+        .createQueryBuilder('stats')
+        .select([
+          'stats.timestamp',
+          'stats.activeProposalCount',
+          'stats.totalProposalCount',
+        ])
+        .where('stats.daoId = :daoId', { daoId })
+        .orderBy('stats.timestamp', 'ASC')
+        .getMany();
+    }
 
     return [...daoStats, currentDaoStats].map((stats) => ({
       timestamp: Number(stats.timestamp),
@@ -137,9 +196,9 @@ export class DaoStatsService {
     }));
   }
 
-  getStatsState(currentValue: number, previousValue?: number): StatsStateDto {
+  getStatsState(currentValue?: number, previousValue?: number): StatsStateDto {
     return {
-      value: currentValue,
+      value: currentValue || 0,
       growth: getGrowth(currentValue, previousValue),
     };
   }

@@ -31,3 +31,20 @@ export function mapDaoStatsToDaoStatsModel(stats: DaoStats): DaoStatsModel {
     createTimestamp: stats.createdAt.getTime(),
   };
 }
+
+export function mapDaoStatsModelToDaoStats(stats: DaoStatsModel): DaoStats {
+  return {
+    id: stats.id,
+    daoId: stats.partitionId,
+    timestamp: stats.timestamp,
+    totalDaoFunds: stats.totalDaoFunds,
+    transactionsCount: stats.transactionsCount,
+    bountyCount: stats.bountyCount,
+    nftCount: stats.nftCount,
+    activeProposalCount: stats.activeProposalCount,
+    totalProposalCount: stats.totalProposalCount,
+    isArchived: stats.isArchived,
+    createdAt: new Date(stats.createTimestamp),
+    updatedAt: new Date(stats.createTimestamp),
+  };
+}

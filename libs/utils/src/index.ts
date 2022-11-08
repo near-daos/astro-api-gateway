@@ -1,3 +1,4 @@
+import { DynamoEntityType, EntityId } from '@sputnik-v2/dynamodb';
 import Decimal from 'decimal.js';
 
 import { DaoDto } from '@sputnik-v2/dao/dto';
@@ -126,6 +127,13 @@ export const buildTemplateId = (daoId: string): string => {
 
 export const buildDelegationId = (daoId: string, accountId: string): string => {
   return `${daoId}-${accountId}`;
+};
+
+export const buildEntityId = (
+  entityType: DynamoEntityType,
+  id: string,
+): EntityId => {
+  return `${entityType}:${id}`;
 };
 
 export const decodeBase64 = (b: string) => {

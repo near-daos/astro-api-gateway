@@ -95,7 +95,7 @@ export class MongoDraftProposalService implements DraftProposalService {
       throw new ForbiddenException('Account is not the proposer or council');
     }
 
-    const historyItem = await this.draftProposalHistoryRepository.save({
+    await this.draftProposalHistoryRepository.save({
       draftProposalId: draftProposalEntity.id,
       daoId: draftProposalEntity.daoId,
       proposer: draftProposalEntity.proposer,
