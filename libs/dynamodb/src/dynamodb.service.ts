@@ -55,7 +55,7 @@ import {
   TokenBalanceModel,
   mapTokenBalanceToTokenBalanceModel,
 } from './models';
-import { DynamoEntityType } from './types';
+import { DynamoEntityType, EntityId } from './types';
 import { ScheduledProposalExpirationEvent } from '@sputnik-v2/dynamodb/models/scheduled-proposal-expiration.model';
 
 @Injectable()
@@ -219,7 +219,7 @@ export class DynamodbService {
 
   public async getItemById<M extends BaseModel = BaseModel>(
     partitionId: string,
-    entityId: string,
+    entityId: EntityId,
     tableName = this.tableName,
   ): Promise<M | null> {
     return await this.client
@@ -244,6 +244,62 @@ export class DynamodbService {
       .promise()
       .then(({ Items }) => Items as M[])
       .catch(() => null);
+  }
+
+  public async countItems(
+    query: Omit<DocumentClient.QueryInput, 'TableName' | 'Select'>,
+    tableName = this.tableName,
+  ): Promise<number> {
+    return await this.client
+      .query({
+        TableName: tableName,
+        Select: 'COUNT',
+        ...query,
+      })
+      .promise()
+      .then(({ Count }) => Count)
+      .catch(() => 0);
+  }
+
+  public async queryItemsByType<M extends BaseModel = BaseModel>(
+    partitionId: string,
+    entityType: DynamoEntityType,
+    query: Omit<DocumentClient.QueryInput, 'TableName'> = {},
+    tableName = this.tableName,
+  ): Promise<M[]> {
+    return await this.queryItems<M>(
+      {
+        KeyConditionExpression:
+          'partitionId = :partitionId and begins_with(entityId, :entityType)',
+        ExpressionAttributeValues: {
+          ':partitionId': partitionId,
+          ':entityType': buildEntityId(entityType, ''),
+          ...query.ExpressionAttributeValues,
+        },
+        ...query,
+      },
+      tableName,
+    );
+  }
+
+  public async countItemsByType(
+    partitionId: string,
+    entityType: DynamoEntityType,
+    query: Omit<DocumentClient.QueryInput, 'TableName' | 'Select'> = {},
+    tableName = this.tableName,
+  ): Promise<number> {
+    return this.countItems(
+      {
+        KeyConditionExpression:
+          'partitionId = :partitionId and begins_with(entityId, :entityType)',
+        ExpressionAttributeValues: {
+          ':partitionId': partitionId,
+          ':entityType': buildEntityId(entityType, ''),
+          ...query.ExpressionAttributeValues,
+        },
+      },
+      tableName,
+    );
   }
 
   public async saveItem<M extends BaseModel = BaseModel>(
