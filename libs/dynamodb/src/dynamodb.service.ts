@@ -302,6 +302,7 @@ export class DynamodbService {
           ':entityType': buildEntityId(entityType, ''),
           ...query.ExpressionAttributeValues,
         },
+        ...query,
       },
       tableName,
     );
