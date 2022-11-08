@@ -12,8 +12,8 @@ export function mapTokenToTokenPriceModel(
 ): TokenPriceModel {
   return {
     partitionId: token.id,
-    entityId: `${DynamoEntityType.TokenBalance}:${token.id}`,
-    entityType: DynamoEntityType.TokenBalance,
+    entityId: `${DynamoEntityType.TokenPrice}:${token.id}`,
+    entityType: DynamoEntityType.TokenPrice,
     isArchived: false,
     processingTimeStamp: Date.now(),
     price: token.price,
