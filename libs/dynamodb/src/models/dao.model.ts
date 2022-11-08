@@ -23,6 +23,7 @@ export class DaoModel extends TransactionModel {
   numberOfGroups: number;
   council: string[];
   accountIds: string[];
+  followers: string[];
   councilSeats: number;
   link: string;
   description: string;
@@ -93,6 +94,7 @@ export function mapDaoToDaoModel(dao: Dao): DaoModel {
     numberOfGroups: dao.numberOfGroups,
     council: dao.council,
     accountIds: dao.accountIds,
+    followers: [],
     councilSeats: dao.councilSeats,
     link: dao.link,
     description: dao.description,
