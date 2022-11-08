@@ -46,5 +46,6 @@ export function castTransactionAction(
     args: action?.args?.args_json,
     deposit: (action?.args?.deposit as string) || '0',
     timestamp: receipt.included_in_block_timestamp,
+    receiptId: receipt.receipt_id,
   };
 }

@@ -228,14 +228,22 @@ export class TransactionActionHandlerService {
   async handleAddProposal(
     txAction: TransactionAction,
   ): Promise<ContractHandlerResult> {
-    const { receiverId, signerId, transactionHash, timestamp, args } = txAction;
+    const {
+      receiverId,
+      signerId,
+      transactionHash,
+      timestamp,
+      args,
+      receiptId,
+    } = txAction;
 
     const txStatus = await this.nearApiService.getTxStatus(
       transactionHash,
       receiverId,
     );
     const lastProposalId = parseInt(
-      (txStatus.status as FinalExecutionStatus)?.SuccessValue,
+      txStatus.receiptSuccessValues[receiptId] ||
+        (txStatus.status as FinalExecutionStatus)?.SuccessValue,
     );
 
     if (isNaN(lastProposalId)) {
