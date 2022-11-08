@@ -224,7 +224,7 @@ public class DraftProposalsE2EApiTests extends BaseTest {
 		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, DraftProposalResponse::getIsSaved, Boolean.FALSE, "isSaved");
 
 
-		draftProposalsApiSteps.closeDraftProposal(createdDraftId, authToken).then()
+		draftProposalsApiSteps.closeDraftProposal(testDao, createdDraftId, authToken).then()
 				.statusCode(HTTP_CREATED)
 				.body(equalTo("true"));
 

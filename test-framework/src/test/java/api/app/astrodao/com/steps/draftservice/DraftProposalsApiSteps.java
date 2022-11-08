@@ -57,12 +57,12 @@ public class DraftProposalsApiSteps extends BaseSteps {
 	}
 
 	@Step("Close draft proposal")
-	public Response closeDraftProposal(String draftId, String authToken) {
-		return draftApi.closeDraftProposal(draftId, authToken);
+	public Response closeDraftProposal(String daoId, String draftId, String authToken) {
+		return draftApi.closeDraftProposal(daoId, draftId, authToken);
 	}
 
 	@Step("Close draft proposal with empty body")
-	public Response closeDraftProposalWithEmptyBody(String draftId, String authToken) {
-		return draftApi.closeDraftProposalWithEmptyBody(draftId, authToken);
+	public Response closeDraftProposalWithEmptyBody(String daoId, String draftId, String authToken) {
+		return draftApi.closeDraftProposalWithEmptyBody(daoId, draftId, authToken);
 	}
 }

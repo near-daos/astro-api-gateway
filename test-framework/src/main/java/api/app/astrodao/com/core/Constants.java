@@ -94,7 +94,7 @@ public class Constants {
 		public static final String DRAFT_PROPOSALS_DAO_ID_ID = "/api/v1/draft-proposals/{daoId}/{id}";
 		public static final String DRAFT_PROPOSALS_ID_VIEW = "/api/v1/draft-proposals/{id}/view";
 		public static final String DRAFT_PROPOSALS_ID_SAVE = "/api/v1/draft-proposals/{id}/save";
-		public static final String DRAFT_PROPOSALS_ID_CLOSE = "/api/v1/draft-proposals/{id}/close";
+		public static final String DRAFT_PROPOSALS_DAO_ID_ID_CLOSE = "/api/v1/draft-proposals/{daoId}/{id}/close";
 
 		public static final String DRAFT_COMMENTS = "/api/v1/draft-comments";
 		public static final String DRAFT_COMMENTS_ID = "/api/v1/draft-comments/{id}";

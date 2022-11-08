@@ -86,7 +86,7 @@ public class DraftApi {
 				.delete(DRAFT_PROPOSALS_ID_SAVE, draftId);
 	}
 
-	public Response closeDraftProposal(String draftId, String authToken) {
+	public Response closeDraftProposal(String daoId, String draftId, String authToken) {
 		CloseDraftProposal closeDraftProposal = new CloseDraftProposal();
 		closeDraftProposal.setProposalId(draftId);
 
@@ -95,15 +95,15 @@ public class DraftApi {
 				.header("Authorization", "Bearer " + authToken)
 				.contentType(JSON)
 				.body(closeDraftProposal)
-				.post(DRAFT_PROPOSALS_ID_CLOSE, draftId);
+				.post(DRAFT_PROPOSALS_DAO_ID_ID_CLOSE, daoId, draftId);
 	}
 
-	public Response closeDraftProposalWithEmptyBody(String draftId, String authToken) {
+	public Response closeDraftProposalWithEmptyBody(String daoId, String draftId, String authToken) {
 		return given().spec(requestSpecForDraftService)
 				.accept(JSON)
 				.header("Authorization", "Bearer " + authToken)
 				.contentType(JSON)
-				.post(DRAFT_PROPOSALS_ID_CLOSE, draftId);
+				.post(DRAFT_PROPOSALS_DAO_ID_ID_CLOSE, daoId, draftId);
 	}
 
 	public Response getDraftComments(Map<String, Object> queryParams) {
