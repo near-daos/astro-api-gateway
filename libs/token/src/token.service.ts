@@ -155,7 +155,7 @@ export class TokenService {
     accountId: string,
   ): Promise<Array<TokenBalance | TokenBalanceModel>> {
     if (await this.useDynamoDB()) {
-      return this.dynamodbService.getItemsByType<TokenBalanceModel>(
+      return this.dynamodbService.queryItemsByType<TokenBalanceModel>(
         accountId,
         DynamoEntityType.TokenBalance,
       );

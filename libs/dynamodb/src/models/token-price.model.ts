@@ -18,5 +18,6 @@ export function mapTokenToTokenPriceModel(
     processingTimeStamp: Date.now(),
     price: token.price,
     decimals: token.decimals,
+    createTimestamp: token.createdAt.getTime(),
   };
 }

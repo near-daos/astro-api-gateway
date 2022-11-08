@@ -13,7 +13,6 @@ import {
 } from '@sputnik-v2/notification';
 import { Comment } from '@sputnik-v2/comment/entities';
 import { DraftComment } from '@sputnik-v2/draft-comment/entities';
-import { DaoStats } from '@sputnik-v2/stats/entities';
 import {
   DraftProposal,
   DraftProposalHistory,
@@ -24,7 +23,8 @@ import {
   SharedProposalTemplate,
 } from '@sputnik-v2/proposal-template/entities';
 import { Subscription } from '@sputnik-v2/subscription/entities';
-import { DaoSettings } from '@sputnik-v2/dao-settings';
+import { buildEntityId } from '@sputnik-v2/utils';
+import PromisePool from '@supercharge/promise-pool';
 
 import {
   BaseModel,
@@ -43,8 +43,6 @@ import {
   CommentModel,
   mapCommentToCommentModel,
   mapDraftCommentToCommentModel,
-  DaoStatsModel,
-  mapDaoStatsToDaoStatsModel,
   DraftProposalModel,
   mapDraftProposalToDraftProposalModel,
   NftModel,
@@ -57,12 +55,15 @@ import {
   mapSubscriptionToSubscriptionModel,
   TokenBalanceModel,
   mapTokenBalanceToTokenBalanceModel,
-  mapDaoSettingsToDaoModel,
   mapTokenToTokenPriceModel,
   TokenPriceModel,
 } from './models';
-import { DynamoEntityType, DynamoQueryFilter } from './types';
-import PromisePool from '@supercharge/promise-pool';
+import {
+  CountItemsQuery,
+  DynamoEntityType,
+  EntityId,
+  QueryItemsQuery,
+} from './types';
 import { ScheduledProposalExpirationEvent } from '@sputnik-v2/dynamodb/models/scheduled-proposal-expiration.model';
 
 @Injectable()
@@ -112,7 +113,7 @@ export class DynamodbService {
 
     await this.saveItem<DraftProposalModel>({
       partitionId: daoId,
-      entityId: `${DynamoEntityType.DraftProposal}:${draftId}`,
+      entityId: buildEntityId(DynamoEntityType.DraftProposal, draftId),
       entityType: DynamoEntityType.DraftProposal,
       replies: currentReplies ?? 0 + replies,
     });
@@ -152,14 +153,6 @@ export class DynamodbService {
 
   public async saveDao(dao: Dao) {
     return this.saveItem<DaoModel>(mapDaoToDaoModel(dao));
-  }
-
-  public async saveDaoSettings(daoSettings: DaoSettings) {
-    return this.saveItem<DaoModel>(mapDaoSettingsToDaoModel(daoSettings));
-  }
-
-  public async saveDaoStats(daoStats: DaoStats) {
-    return this.saveItem<DaoStatsModel>(mapDaoStatsToDaoStatsModel(daoStats));
   }
 
   public async saveDraftProposal(
@@ -239,59 +232,17 @@ export class DynamodbService {
       .promise();
   }
 
-  public async getItemsByType<M extends BaseModel = BaseModel>(
-    partitionId: string,
-    entityType: DynamoEntityType,
-    filter?: DynamoQueryFilter,
-  ): Promise<M[]> {
-    return await this.query(partitionId, entityType, filter)
-      .then(({ Items }) => Items as M[])
-      .catch(() => []);
-  }
-
-  public async countItemsByType<M extends BaseModel = BaseModel>(
-    partitionId: string,
-    entityType: DynamoEntityType,
-    filter?: DynamoQueryFilter,
-  ): Promise<number> {
-    return await this.query<M>(partitionId, entityType, filter, 'COUNT')
-      .then(({ Count }) => Count)
-      .catch(() => 0);
-  }
-
-  public async query<M extends BaseModel = BaseModel>(
-    partitionId: string,
-    entityType: DynamoEntityType,
-    filter?: DynamoQueryFilter,
-    select?: string,
-  ) {
-    return await this.client
-      .query({
-        TableName: this.tableName,
-        Select: select,
-        KeyConditionExpression:
-          'partitionId = :partitionId and begins_with(entityId, :entityType)',
-        FilterExpression: filter?.expression,
-        ExpressionAttributeValues: {
-          ':partitionId': partitionId,
-          ':entityType': `${entityType}:`,
-          ...filter?.variables,
-        },
-      })
-      .promise();
-  }
-
   public async getItemByType<M extends BaseModel = BaseModel>(
     partitionId: string,
     entityType: DynamoEntityType,
     id: string,
   ): Promise<M | null> {
-    return await this.getItemById(partitionId, `${entityType}:${id}`);
+    return await this.getItemById(partitionId, buildEntityId(entityType, id));
   }
 
   public async getItemById<M extends BaseModel = BaseModel>(
     partitionId: string,
-    entityId: string,
+    entityId: EntityId,
     tableName = this.tableName,
   ): Promise<M | null> {
     return await this.client
@@ -302,6 +253,77 @@ export class DynamodbService {
       .promise()
       .then(({ Item }) => Item as M)
       .catch(() => null);
+  }
+
+  public async queryItems<M extends BaseModel = BaseModel>(
+    query: QueryItemsQuery,
+    tableName = this.tableName,
+  ): Promise<M[]> {
+    return await this.client
+      .query({
+        TableName: tableName,
+        ...query,
+      })
+      .promise()
+      .then(({ Items }) => Items as M[])
+      .catch(() => null);
+  }
+
+  public async countItems(
+    query: CountItemsQuery,
+    tableName = this.tableName,
+  ): Promise<number> {
+    return await this.client
+      .query({
+        TableName: tableName,
+        Select: 'COUNT',
+        ...query,
+      })
+      .promise()
+      .then(({ Count }) => Count)
+      .catch(() => 0);
+  }
+
+  public async queryItemsByType<M extends BaseModel = BaseModel>(
+    partitionId: string,
+    entityType: DynamoEntityType,
+    query: CountItemsQuery = {},
+    tableName = this.tableName,
+  ): Promise<M[]> {
+    return await this.queryItems<M>(
+      {
+        KeyConditionExpression:
+          'partitionId = :partitionId and begins_with(entityId, :entityType)',
+        ...query,
+        ExpressionAttributeValues: {
+          ':partitionId': partitionId,
+          ':entityType': buildEntityId(entityType, ''),
+          ...query.ExpressionAttributeValues,
+        },
+      },
+      tableName,
+    );
+  }
+
+  public async countItemsByType(
+    partitionId: string,
+    entityType: DynamoEntityType,
+    query: CountItemsQuery = {},
+    tableName = this.tableName,
+  ): Promise<number> {
+    return this.countItems(
+      {
+        KeyConditionExpression:
+          'partitionId = :partitionId and begins_with(entityId, :entityType)',
+        ...query,
+        ExpressionAttributeValues: {
+          ':partitionId': partitionId,
+          ':entityType': buildEntityId(entityType, ''),
+          ...query.ExpressionAttributeValues,
+        },
+      },
+      tableName,
+    );
   }
 
   public async saveItem<M extends BaseModel = BaseModel>(

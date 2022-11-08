@@ -33,13 +33,11 @@ import {
 import { Proposal } from './entities';
 import { ProposalStatus, ProposalVoteStatus } from './types';
 import {
-  DaoModel,
   DynamodbService,
   DynamoEntityType,
   ProposalModel,
 } from '@sputnik-v2/dynamodb';
 import { FeatureFlags, FeatureFlagsService } from '@sputnik-v2/feature-flags';
-import { DaoStatus } from '@sputnik-v2/dao';
 
 @Injectable()
 export class ProposalService extends BaseTypeOrmCrudService<Proposal> {
@@ -447,8 +445,8 @@ export class ProposalService extends BaseTypeOrmCrudService<Proposal> {
         daoId,
         DynamoEntityType.Proposal,
         {
-          expression: 'status = :status and voteStatus <> :voteStatus',
-          variables: {
+          FilterExpression: 'status = :status and voteStatus <> :voteStatus',
+          ExpressionAttributeValues: {
             ':status': ProposalStatus.InProgress,
             ':voteStatus': ProposalVoteStatus.Expired,
           },

@@ -3,6 +3,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Dao } from '@sputnik-v2/dao';
 import { buildSubscriptionId } from '@sputnik-v2/utils';
+import {
+  DaoModel,
+  DynamodbService,
+  DynamoEntityType,
+} from '@sputnik-v2/dynamodb';
 
 import { SubscriptionDto } from './dto';
 import { Subscription } from './entities';
@@ -12,6 +17,7 @@ export class SubscriptionService {
   constructor(
     @InjectRepository(Subscription)
     private readonly subscriptionRepository: Repository<Subscription>,
+    private readonly dynamoDbService: DynamodbService,
   ) {}
 
   async create(
@@ -27,14 +33,44 @@ export class SubscriptionService {
     subscription.dao = dao;
     subscription.accountId = accountId;
 
+    const daoModel = await this.dynamoDbService.getItemByType<DaoModel>(
+      daoId,
+      DynamoEntityType.Dao,
+      daoId,
+    );
+
+    await this.dynamoDbService.saveItem<DaoModel>({
+      ...daoModel,
+      followers: [...daoModel.followers, accountId],
+    });
+
     return this.subscriptionRepository.save(subscription);
   }
 
-  async remove(id: string): Promise<void> {
-    const deleteResponse = await this.subscriptionRepository.delete({ id });
+  async remove(
+    daoId: string,
+    accountId: string,
+    subscriptionId: string,
+  ): Promise<void> {
+    const daoModel = await this.dynamoDbService.getItemByType<DaoModel>(
+      daoId,
+      DynamoEntityType.Dao,
+      daoId,
+    );
+
+    await this.dynamoDbService.saveItem<DaoModel>({
+      ...daoModel,
+      followers: daoModel.followers.filter((item) => item !== accountId),
+    });
+
+    const deleteResponse = await this.subscriptionRepository.delete({
+      id: subscriptionId,
+    });
 
     if (!deleteResponse.affected) {
-      throw new NotFoundException(`Subscription with id ${id} not found`);
+      throw new NotFoundException(
+        `Subscription with id ${subscriptionId} not found`,
+      );
     }
   }
 

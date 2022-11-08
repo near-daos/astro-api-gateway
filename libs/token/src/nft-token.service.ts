@@ -51,14 +51,19 @@ export class NFTTokenService extends TypeOrmCrudService<NFTToken> {
 
   async purge(accountId: string, contractId: string, ids: string[]) {
     if (await this.useDynamoDB()) {
-      const nftsToDelete = await this.dynamodbService.getItemsByType<NftModel>(
-        accountId,
-        DynamoEntityType.Nft,
-        {
-          expression: 'contractId = :contractId and not contains(:ids, id)',
-          variables: { ':contractId': contractId, ':ids': ids },
-        },
-      );
+      const nftsToDelete =
+        await this.dynamodbService.queryItemsByType<NftModel>(
+          accountId,
+          DynamoEntityType.Nft,
+          {
+            FilterExpression:
+              'contractId = :contractId and not contains(:ids, id)',
+            ExpressionAttributeValues: {
+              ':contractId': contractId,
+              ':ids': ids,
+            },
+          },
+        );
       await this.dynamodbService.batchDelete(nftsToDelete);
     } else {
       await this.nftTokenRepository.delete({

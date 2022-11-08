@@ -1,4 +1,4 @@
-import { Controller, Get, Inject, Logger } from '@nestjs/common';
+import { Controller, Get, Logger } from '@nestjs/common';
 import { EventPattern, Transport } from '@nestjs/microservices';
 import { ApiExcludeEndpoint } from '@nestjs/swagger';
 import { Span } from 'nestjs-ddtrace';

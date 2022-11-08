@@ -33,12 +33,12 @@ export class BountyService extends TypeOrmCrudService<Bounty> {
     const id = buildBountyId(daoId, bountyId);
     if (await this.useDynamoDB()) {
       return (
-        await this.dynamodbService.getItemsByType<BountyModel>(
+        await this.dynamodbService.queryItemsByType<BountyModel>(
           daoId,
           DynamoEntityType.Bounty,
           {
-            expression: 'id = :id',
-            variables: { ':id': id },
+            FilterExpression: 'id = :id',
+            ExpressionAttributeValues: { ':id': id },
           },
         )
       )[0];
