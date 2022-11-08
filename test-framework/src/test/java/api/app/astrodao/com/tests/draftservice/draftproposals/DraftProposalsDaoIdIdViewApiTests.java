@@ -20,12 +20,12 @@ import static java.net.HttpURLConnection.HTTP_FORBIDDEN;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static org.hamcrest.Matchers.equalTo;
 
-@Tags({@Tag("all"), @Tag("draftProposalsIdViewApiTests")})
+@Tags({@Tag("all"), @Tag("draftProposalsDaoIdIdViewApiTests")})
 @Epic("Draft Proposals")
-@Feature("/draft-proposals/{id}/view API tests")
-@DisplayName("draft-proposals/{id}/view API tests")
+@Feature("/draft-proposals/{daoId}/{id}/view API tests")
+@DisplayName("/draft-proposals/{daoId}/{id}/view API tests")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-public class DraftProposalsIdViewApiTests extends BaseTest {
+public class DraftProposalsDaoIdIdViewApiTests extends BaseTest {
 	private final DraftProposalsApiSteps draftProposalsApiSteps;
 
 	@Value("${accounts.account1.accountId}")
@@ -40,6 +40,9 @@ public class DraftProposalsIdViewApiTests extends BaseTest {
 	@Value("${accounts.account1.signature}")
 	private String account1Signature;
 
+	@Value("${test.dao1}")
+	private String testDao;
+
 
 	@Test
 	@Severity(SeverityLevel.NORMAL)
@@ -47,7 +50,7 @@ public class DraftProposalsIdViewApiTests extends BaseTest {
 	@DisplayName("Get HTTP 404 for draft proposal view endpoint for non existing draft proposal")
 	void getHttp404ForDraftProposalViewEndpointForNonExistingDraftProposal() {
 		String nonExistingDraftId = "00ed00c0000e0e000000f00f";
-		draftProposalsApiSteps.viewDraftProposal(nonExistingDraftId, authToken).then()
+		draftProposalsApiSteps.viewDraftProposal(testDao, nonExistingDraftId, authToken).then()
 				.statusCode(HTTP_NOT_FOUND)
 				.body("statusCode", equalTo(HTTP_NOT_FOUND),
 				      "message", equalTo("Draft proposal 00ed00c0000e0e000000f00f does not exist"),
@@ -65,7 +68,7 @@ public class DraftProposalsIdViewApiTests extends BaseTest {
 		String authToken = Base64Utils.encodeAuthToken(accountId, account1PublicKey, account1Signature);
 		String errorMessage = String.format("Account %s identity is invalid - public key", accountId);
 
-		draftProposalsApiSteps.viewDraftProposal(draftId, authToken).then()
+		draftProposalsApiSteps.viewDraftProposal(testDao, draftId, authToken).then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
 				      "message", equalTo(errorMessage),
@@ -80,7 +83,7 @@ public class DraftProposalsIdViewApiTests extends BaseTest {
 		String draftId = "63063c43a050fd00089b1f33";
 		String authToken = Base64Utils.encodeAuthToken(EMPTY_STRING, account1PublicKey, account1Signature);
 
-		draftProposalsApiSteps.viewDraftProposal(draftId, authToken).then()
+		draftProposalsApiSteps.viewDraftProposal(testDao, draftId, authToken).then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
 				      "message", equalTo("Authorization header payload is invalid"),
@@ -98,7 +101,7 @@ public class DraftProposalsIdViewApiTests extends BaseTest {
 		String errorMessage = String.format("Account %s identity is invalid - public key", account1Id);
 		String draftId = "63063c43a050fd00089b1f33";
 
-		draftProposalsApiSteps.viewDraftProposal(draftId, authToken).then()
+		draftProposalsApiSteps.viewDraftProposal(testDao, draftId, authToken).then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
 				      "message", equalTo(errorMessage),
@@ -113,7 +116,7 @@ public class DraftProposalsIdViewApiTests extends BaseTest {
 		String authToken = Base64Utils.encodeAuthToken(account1Id, EMPTY_STRING, account1Signature);
 		String draftId = "63063c43a050fd00089b1f33";
 
-		draftProposalsApiSteps.viewDraftProposal(draftId, authToken).then()
+		draftProposalsApiSteps.viewDraftProposal(testDao, draftId, authToken).then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
 				      "message", equalTo("Authorization header payload is invalid"),
@@ -129,7 +132,7 @@ public class DraftProposalsIdViewApiTests extends BaseTest {
 		String authToken = Base64Utils.encodeAuthToken(account1Id, account1PublicKey, invalidSignature);
 		String draftId = "63063c43a050fd00089b1f33";
 
-		draftProposalsApiSteps.viewDraftProposal(draftId, authToken).then()
+		draftProposalsApiSteps.viewDraftProposal(testDao, draftId, authToken).then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
 				      "message", equalTo("Invalid signature"),
@@ -144,7 +147,7 @@ public class DraftProposalsIdViewApiTests extends BaseTest {
 		String authToken = Base64Utils.encodeAuthToken(account1Id, account1PublicKey, null);
 		String draftId = "63063c43a050fd00089b1f33";
 
-		draftProposalsApiSteps.viewDraftProposal(draftId, authToken).then()
+		draftProposalsApiSteps.viewDraftProposal(testDao, draftId, authToken).then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
 				      "message", equalTo("Invalid signature"),
@@ -159,7 +162,7 @@ public class DraftProposalsIdViewApiTests extends BaseTest {
 		String authToken = Base64Utils.encodeAuthToken(account1Id, account1PublicKey, EMPTY_STRING);
 		String draftId = "63063c43a050fd00089b1f33";
 
-		draftProposalsApiSteps.viewDraftProposal(draftId, authToken).then()
+		draftProposalsApiSteps.viewDraftProposal(testDao, draftId, authToken).then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
 				      "message", equalTo("Authorization header payload is invalid"),

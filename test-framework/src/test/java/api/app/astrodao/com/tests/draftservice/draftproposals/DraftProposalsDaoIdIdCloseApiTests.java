@@ -24,8 +24,8 @@ import static org.hamcrest.Matchers.hasToString;
 
 @Tags({@Tag("all"), @Tag("draftProposalsDaoIdIdCloseApiTests")})
 @Epic("Draft Proposals")
-@Feature("draft-proposals/{daoId}/{id}/close API tests")
-@DisplayName("draft-proposals/{daoId}/{id}/close API tests")
+@Feature("/draft-proposals/{daoId}/{id}/close API tests")
+@DisplayName("/draft-proposals/{daoId}/{id}/close API tests")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class DraftProposalsDaoIdIdCloseApiTests extends BaseTest {
 	private final DraftProposalsApiSteps draftProposalsApiSteps;

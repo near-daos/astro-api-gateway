@@ -24,7 +24,7 @@ import static org.hamcrest.Matchers.equalTo;
 @Tags({@Tag("all"), @Tag("draftProposalsIdApiTests")})
 @Epic("Draft Proposals")
 @Feature("/draft-proposals/{id} API tests")
-@DisplayName("draft-proposals/{id} API tests")
+@DisplayName("/draft-proposals/{id} API tests")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class DraftProposalsIdApiTests extends BaseTest {
 	private final DraftProposalsApiSteps draftProposalsApiSteps;

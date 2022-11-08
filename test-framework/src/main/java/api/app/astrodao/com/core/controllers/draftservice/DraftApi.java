@@ -62,12 +62,12 @@ public class DraftApi {
 				.delete(DRAFT_PROPOSALS_DAO_ID_ID, daoId, draftId);
 	}
 
-	public Response postViewDraftProposal(String draftId, String authToken) {
+	public Response postViewDraftProposal(String daoId, String draftId, String authToken) {
 		return given().spec(requestSpecForDraftService)
 				.accept(JSON)
 				.header("Authorization", "Bearer " + authToken)
 				.contentType(JSON)
-				.post(DRAFT_PROPOSALS_ID_VIEW, draftId);
+				.post(DRAFT_PROPOSALS_DAO_ID_ID_VIEW, daoId, draftId);
 	}
 
 	public Response postSaveDraftProposal(String daoId, String draftId, String authToken) {

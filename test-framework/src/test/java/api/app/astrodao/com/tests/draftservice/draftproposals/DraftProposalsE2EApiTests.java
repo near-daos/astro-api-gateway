@@ -191,7 +191,7 @@ public class DraftProposalsE2EApiTests extends BaseTest {
 		draftProposalsApiSteps.assertCollectionElementsHasValue(draftProposalResponse.getHistory(), draftProposalHistory -> !draftProposalHistory.getUpdatedAt().toString().isEmpty(), "history/updatedAt");
 
 
-		draftProposalsApiSteps.viewDraftProposal(createdDraftId, authToken).then()
+		draftProposalsApiSteps.viewDraftProposal(testDao, createdDraftId, authToken).then()
 				.statusCode(HTTP_CREATED)
 				.body(equalTo("true"));
 

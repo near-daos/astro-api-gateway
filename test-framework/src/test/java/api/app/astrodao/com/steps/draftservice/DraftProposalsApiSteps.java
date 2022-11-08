@@ -42,8 +42,8 @@ public class DraftProposalsApiSteps extends BaseSteps {
 	}
 
 	@Step("Mark draft proposal as 'Read'")
-	public Response viewDraftProposal(String draftId, String authToken) {
-		return draftApi.postViewDraftProposal(draftId, authToken);
+	public Response viewDraftProposal(String daoId, String draftId, String authToken) {
+		return draftApi.postViewDraftProposal(daoId, draftId, authToken);
 	}
 
 	@Step("Save draft proposal")
