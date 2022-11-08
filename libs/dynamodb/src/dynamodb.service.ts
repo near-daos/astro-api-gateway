@@ -23,6 +23,7 @@ import {
   SharedProposalTemplate,
 } from '@sputnik-v2/proposal-template/entities';
 import { Subscription } from '@sputnik-v2/subscription/entities';
+import { buildEntityId } from '@sputnik-v2/utils';
 
 import {
   BaseModel,
@@ -53,9 +54,8 @@ import {
   mapSubscriptionToSubscriptionModel,
   TokenBalanceModel,
   mapTokenBalanceToTokenBalanceModel,
-  mapDaoSettingsToDaoModel,
 } from './models';
-import { DynamoEntityType, EntityId } from './types';
+import { DynamoEntityType } from './types';
 import { ScheduledProposalExpirationEvent } from '@sputnik-v2/dynamodb/models/scheduled-proposal-expiration.model';
 
 @Injectable()
@@ -86,10 +86,6 @@ export class DynamodbService {
     this.tableName = tableName;
   }
 
-  buildEntityId(entityType: DynamoEntityType, id: string): EntityId {
-    return `${entityType}:${id}`;
-  }
-
   public async saveAccount(account: Partial<Account>) {
     return this.saveItem<AccountModel>(mapAccountToAccountModel(account));
   }
@@ -109,7 +105,7 @@ export class DynamodbService {
 
     await this.saveItem<DraftProposalModel>({
       partitionId: daoId,
-      entityId: this.buildEntityId(DynamoEntityType.DraftProposal, draftId),
+      entityId: buildEntityId(DynamoEntityType.DraftProposal, draftId),
       entityType: DynamoEntityType.DraftProposal,
       replies: currentReplies ?? 0 + replies,
     });
@@ -218,10 +214,7 @@ export class DynamodbService {
     entityType: DynamoEntityType,
     id: string,
   ): Promise<M | null> {
-    return await this.getItemById(
-      partitionId,
-      this.buildEntityId(entityType, id),
-    );
+    return await this.getItemById(partitionId, buildEntityId(entityType, id));
   }
 
   public async getItemById<M extends BaseModel = BaseModel>(
