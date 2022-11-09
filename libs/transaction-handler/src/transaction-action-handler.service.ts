@@ -726,7 +726,7 @@ export class TransactionActionHandlerService {
   }) {
     const { bountyId, receiverId } = proposalKind;
     const bounty = await this.bountyService.findById(dao.id, bountyId, {
-      relations: ['bountyClaims'],
+      relations: ['bountyClaims', 'bountyContext'],
     });
 
     if (!bounty) {
