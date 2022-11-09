@@ -1,11 +1,10 @@
 import { CacheModule, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import {
-  BountyService,
   Bounty,
   BountyClaim,
   BountyContext,
-  BountyContextService,
+  BountyModule as MainBountyModule,
 } from '@sputnik-v2/bounty';
 import { ProposalModule } from '@sputnik-v2/proposal';
 import { CacheConfigService } from '@sputnik-v2/config/api-config';
@@ -27,9 +26,8 @@ import { BountyController } from './bounty.controller';
     NearModule,
     FeatureFlagsModule,
     DynamodbModule,
+    MainBountyModule,
   ],
-  providers: [BountyService, BountyContextService],
   controllers: [BountyController],
-  exports: [BountyService, BountyContextService],
 })
 export class BountyModule {}
