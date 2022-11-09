@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
-import { DeleteResult, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { CrudRequest } from '@nestjsx/crud';
 import { ProposalService } from '@sputnik-v2/proposal';
 import {
@@ -9,7 +9,6 @@ import {
   DynamodbService,
   DynamoEntityType,
 } from '@sputnik-v2/dynamodb';
-import { FeatureFlags, FeatureFlagsService } from '@sputnik-v2/feature-flags';
 import { buildProposalId } from '@sputnik-v2/utils';
 
 import { BountyContextDto, BountyContextResponse } from './dto';
@@ -24,7 +23,6 @@ export class BountyContextService extends TypeOrmCrudService<BountyContext> {
     private readonly bountyContextRepository: Repository<BountyContext>,
     private readonly proposalService: ProposalService,
     private readonly dynamodbService: DynamodbService,
-    private readonly featureFlagsService: FeatureFlagsService,
   ) {
     super(bountyContextRepository);
   }
@@ -69,6 +67,25 @@ export class BountyContextService extends TypeOrmCrudService<BountyContext> {
     ids,
     isArchived,
   }: UpdateBountyContextDto): Promise<UpdateResult> {
+    const existingItems =
+      await this.dynamodbService.queryItemsByType<BountyModel>(
+        daoId,
+        DynamoEntityType.Bounty,
+        {
+          FilterExpression: 'contains(:id, id)',
+          ExpressionAttributeValues: {
+            ':id': ids,
+          },
+        },
+      );
+
+    const updatedItems = existingItems.map((item) => ({
+      ...item,
+      isArchived,
+    }));
+
+    await this.dynamodbService.batchPut<BountyModel>(updatedItems);
+
     return this.bountyContextRepository
       .createQueryBuilder()
       .update(BountyContext)

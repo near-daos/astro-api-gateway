@@ -6,4 +6,5 @@ import { NearTransaction } from './near-transaction';
 export type NearTransactionStatus = {
   transaction: NearTransaction;
   receipts: NearTransactionReceipt[];
+  receiptSuccessValues: Record<string, any>;
 } & FinalExecutionOutcome;

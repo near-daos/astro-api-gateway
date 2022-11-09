@@ -22,6 +22,7 @@ export type TransactionAction = {
   args: any;
   deposit: string;
   timestamp: number;
+  receiptId?: string;
   status?: any;
 };
 
@@ -41,6 +42,7 @@ export function castNearTransactionAction(
     args: action.FunctionCall?.args,
     deposit: action.Transfer?.deposit || action.FunctionCall?.deposit,
     timestamp,
+    receiptId: receipt.receipt_id,
   };
 }
 
@@ -58,6 +60,7 @@ export function castNearIndexerReceiptAction(
     args: ac?.args?.args_json,
     deposit: (ac?.args?.deposit as string) || '0',
     timestamp: receipt.originatedFromTransaction.blockTimestamp,
+    receiptId: receipt.receiptId,
   };
 }
 

@@ -20,6 +20,7 @@ export class DaoOpensearchDto extends BaseOpensearchDto {
           totalProposalCount: { type: 'integer' },
           numberOfMembers: { type: 'integer' },
           status: { type: 'keyword' },
+          followers: { type: 'text' },
         },
       },
     };
