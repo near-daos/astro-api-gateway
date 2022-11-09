@@ -9,6 +9,12 @@ import { BountyContextDto, BountyContextResponse } from './dto';
 import { BountyContext } from './entities';
 import { UpdateBountyContextDto } from '../../../apps/api/src/bounty/dto/update-bounty-context.dto';
 import { UpdateResult } from 'typeorm/query-builder/result/UpdateResult';
+import {
+  BountyModel,
+  DynamodbService,
+  DynamoEntityType,
+} from '@sputnik-v2/dynamodb';
+import { buildEntityId } from '@sputnik-v2/utils';
 
 @Injectable()
 export class BountyContextService extends TypeOrmCrudService<BountyContext> {
@@ -16,6 +22,7 @@ export class BountyContextService extends TypeOrmCrudService<BountyContext> {
     @InjectRepository(BountyContext)
     private readonly bountyContextRepository: Repository<BountyContext>,
     private readonly proposalService: ProposalService,
+    private readonly dynamoDbService: DynamodbService,
   ) {
     super(bountyContextRepository);
   }
@@ -39,6 +46,25 @@ export class BountyContextService extends TypeOrmCrudService<BountyContext> {
     ids,
     isArchived,
   }: UpdateBountyContextDto): Promise<UpdateResult> {
+    const existingItems =
+      await this.dynamoDbService.queryItemsByType<BountyModel>(
+        daoId,
+        DynamoEntityType.Bounty,
+        {
+          FilterExpression: 'contains(:id, id)',
+          ExpressionAttributeValues: {
+            ':id': ids,
+          },
+        },
+      );
+
+    const updatedItems = existingItems.map((item) => ({
+      ...item,
+      isArchived,
+    }));
+
+    await this.dynamoDbService.batchPut<BountyModel>(updatedItems);
+
     return this.bountyContextRepository
       .createQueryBuilder()
       .update(BountyContext)

@@ -276,12 +276,12 @@ export class DynamodbService {
       {
         KeyConditionExpression:
           'partitionId = :partitionId and begins_with(entityId, :entityType)',
+        ...query,
         ExpressionAttributeValues: {
           ':partitionId': partitionId,
           ':entityType': buildEntityId(entityType, ''),
           ...query.ExpressionAttributeValues,
         },
-        ...query,
       },
       tableName,
     );
