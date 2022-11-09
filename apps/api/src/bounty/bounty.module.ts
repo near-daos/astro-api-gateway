@@ -10,6 +10,7 @@ import {
 import { ProposalModule } from '@sputnik-v2/proposal';
 import { CacheConfigService } from '@sputnik-v2/config/api-config';
 import { DaoModule } from '@sputnik-v2/dao';
+import { DynamodbModule } from '@sputnik-v2/dynamodb';
 
 import { NearModule } from '../near/near.module';
 import { BountyController } from './bounty.controller';
@@ -23,6 +24,7 @@ import { BountyController } from './bounty.controller';
     DaoModule,
     ProposalModule,
     NearModule,
+    DynamodbModule,
   ],
   providers: [BountyService, BountyContextService],
   controllers: [BountyController],
