@@ -49,14 +49,13 @@ export class BountyService extends TypeOrmCrudService<Bounty> {
 
   async create(bountyDto: BountyDto, proposalIndex?: number) {
     const entity = this.bountyRepository.create(bountyDto);
-    if (await this.useDynamoDB()) {
-      await this.dynamodbService.saveBounty(
-        { ...entity, id: bountyDto.id },
-        proposalIndex,
-      );
-    } else {
-      await this.bountyRepository.save({ ...entity, id: bountyDto.id });
-    }
+
+    await this.dynamodbService.saveBounty(
+      { ...entity, id: bountyDto.id },
+      proposalIndex || bountyDto.proposalIndex,
+    );
+    await this.bountyRepository.save({ ...entity, id: bountyDto.id });
+
     return bountyDto;
   }
 

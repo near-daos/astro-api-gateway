@@ -46,6 +46,7 @@ export class DaoStatsService {
 
     if (await this.useDynamoDB()) {
       await this.daoStatsDynamoService.saveDaoStats(daoStats);
+      await this.daoStatsRepository.save(daoStats);
     } else {
       await this.daoStatsRepository.save(daoStats);
     }

@@ -87,11 +87,8 @@ export class ProposalService extends BaseTypeOrmCrudService<Proposal> {
       kind: proposalDto.kind.kind,
     });
 
-    if (await this.useDynamoDB()) {
-      await this.dynamodbService.saveProposal(entity);
-    } else {
-      await this.proposalRepository.save(entity);
-    }
+    await this.dynamodbService.saveProposal(entity);
+    await this.proposalRepository.save(entity);
 
     return entity.id;
   }
@@ -429,40 +426,15 @@ export class ProposalService extends BaseTypeOrmCrudService<Proposal> {
   }
 
   public async getDaoProposalCount(daoId: string): Promise<number> {
-    if (await this.useDynamoDB()) {
-      return this.dynamodbService.countItemsByType(
-        daoId,
-        DynamoEntityType.Proposal,
-      );
-    } else {
-      return this.proposalRepository.count({ daoId });
-    }
+    return this.proposalRepository.count({ daoId });
   }
 
   public async getDaoActiveProposalCount(daoId: string): Promise<number> {
-    if (await this.useDynamoDB()) {
-      return this.dynamodbService.countItemsByType(
-        daoId,
-        DynamoEntityType.Proposal,
-        {
-          FilterExpression:
-            '#proposal_status = :statusValue and voteStatus <> :voteStatus',
-          ExpressionAttributeValues: {
-            ':statusValue': ProposalStatus.InProgress,
-            ':voteStatus': ProposalVoteStatus.Expired,
-          },
-          ExpressionAttributeNames: {
-            '#proposal_status': 'status',
-          },
-        },
-      );
-    } else {
-      return this.proposalRepository.count({
-        daoId,
-        status: ProposalStatus.InProgress,
-        voteStatus: Not(ProposalVoteStatus.Expired),
-      });
-    }
+    return this.proposalRepository.count({
+      daoId,
+      status: ProposalStatus.InProgress,
+      voteStatus: Not(ProposalVoteStatus.Expired),
+    });
   }
 
   async search(
@@ -558,17 +530,14 @@ export class ProposalService extends BaseTypeOrmCrudService<Proposal> {
   }
 
   async remove(daoId: string, proposalId: number) {
-    if (await this.useDynamoDB()) {
-      await this.dynamodbService.saveItem<ProposalModel>({
-        partitionId: daoId,
-        entityId: `${DynamoEntityType.Proposal}:${proposalId}`,
-        isArchived: true,
-      });
-    } else {
-      await this.proposalRepository.delete({
-        id: buildProposalId(daoId, proposalId),
-      });
-    }
+    await this.dynamodbService.saveItem<ProposalModel>({
+      partitionId: daoId,
+      entityId: `${DynamoEntityType.Proposal}:${proposalId}`,
+      isArchived: true,
+    });
+    await this.proposalRepository.delete({
+      id: buildProposalId(daoId, proposalId),
+    });
   }
 
   async removeMultiple(proposalIds: string[]): Promise<DeleteResult[]> {

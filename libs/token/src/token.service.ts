@@ -48,12 +48,10 @@ export class TokenService {
   }
 
   async loadTokenById(tokenId: string, timestamp?: number) {
-    if (!(await this.useDynamoDB())) {
-      const contract = this.nearApiService.getContract('fToken', tokenId);
-      const metadata = await contract.ft_metadata();
-      const totalSupply = await contract.ft_total_supply();
-      await this.create(castToken(tokenId, metadata, totalSupply, timestamp));
-    }
+    const contract = this.nearApiService.getContract('fToken', tokenId);
+    const metadata = await contract.ft_metadata();
+    const totalSupply = await contract.ft_total_supply();
+    await this.create(castToken(tokenId, metadata, totalSupply, timestamp));
   }
 
   async loadBalanceById(
@@ -61,22 +59,17 @@ export class TokenService {
     accountId: string,
     timestamp?: number,
   ) {
-    if (await this.useDynamoDB()) {
-      const contract = this.nearApiService.getContract('fToken', tokenId);
-      const metadata = await contract.ft_metadata();
-      const totalSupply = await contract.ft_total_supply();
-      const balance = await contract.ft_balance_of({ account_id: accountId });
-      await this.dynamodbService.saveTokenBalance({
-        ...castTokenBalance(tokenId, accountId, balance),
-        token: castToken(tokenId, metadata, totalSupply, timestamp) as Token,
-      });
-    } else {
-      const contract = this.nearApiService.getContract('fToken', tokenId);
-      const balance = await contract.ft_balance_of({ account_id: accountId });
-      await this.tokenBalanceRepository.save(
-        castTokenBalance(tokenId, accountId, balance),
-      );
-    }
+    const contract = this.nearApiService.getContract('fToken', tokenId);
+    const metadata = await contract.ft_metadata();
+    const totalSupply = await contract.ft_total_supply();
+    const balance = await contract.ft_balance_of({ account_id: accountId });
+    await this.dynamodbService.saveTokenBalance({
+      ...castTokenBalance(tokenId, accountId, balance),
+      token: castToken(tokenId, metadata, totalSupply, timestamp) as Token,
+    });
+    await this.tokenBalanceRepository.save(
+      castTokenBalance(tokenId, accountId, balance),
+    );
   }
 
   async lastToken(): Promise<Token> {

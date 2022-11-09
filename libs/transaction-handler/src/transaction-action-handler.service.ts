@@ -786,7 +786,7 @@ export class TransactionActionHandlerService {
     );
     const { id } = args;
     const bounty = await this.bountyService.findById(receiverId, id, {
-      relations: ['bountyClaims'],
+      relations: ['bountyClaims', 'bountyContext'],
     });
 
     if (!bounty) {

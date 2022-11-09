@@ -31,47 +31,35 @@ export class NFTTokenService extends TypeOrmCrudService<NFTToken> {
     super(nftTokenRepository);
   }
 
-  async useDynamoDB() {
-    return this.featureFlagsService.check(FeatureFlags.TokenDynamo);
-  }
-
   async create(tokenDto: NFTTokenDto): Promise<NFTToken> {
     return this.nftTokenRepository.save(tokenDto);
   }
 
   async createMultiple(nftDtos: NFTTokenDto[]) {
-    if (await this.useDynamoDB()) {
-      await this.dynamodbService.batchPut(
-        nftDtos.map((nft) => mapNftTokenToNftModel(nft)),
-      );
-    } else {
-      await this.nftTokenRepository.save(nftDtos);
-    }
+    await this.dynamodbService.batchPut(
+      nftDtos.map((nft) => mapNftTokenToNftModel(nft)),
+    );
+    await this.nftTokenRepository.save(nftDtos);
   }
 
   async purge(accountId: string, contractId: string, ids: string[]) {
-    if (await this.useDynamoDB()) {
-      const nftsToDelete =
-        await this.dynamodbService.queryItemsByType<NftModel>(
-          accountId,
-          DynamoEntityType.Nft,
-          {
-            FilterExpression:
-              'contractId = :contractId and not contains(:ids, id)',
-            ExpressionAttributeValues: {
-              ':contractId': contractId,
-              ':ids': ids,
-            },
-          },
-        );
-      await this.dynamodbService.batchDelete(nftsToDelete);
-    } else {
-      await this.nftTokenRepository.delete({
-        accountId,
-        contractId,
-        id: Not(In(ids)),
-      });
-    }
+    const nftsToDelete = await this.dynamodbService.queryItemsByType<NftModel>(
+      accountId,
+      DynamoEntityType.Nft,
+      {
+        FilterExpression: 'contractId = :contractId and not contains(:ids, id)',
+        ExpressionAttributeValues: {
+          ':contractId': contractId,
+          ':ids': ids,
+        },
+      },
+    );
+    await this.dynamodbService.batchDelete(nftsToDelete);
+    await this.nftTokenRepository.delete({
+      accountId,
+      contractId,
+      id: Not(In(ids)),
+    });
   }
 
   async lastToken(): Promise<NFTToken> {

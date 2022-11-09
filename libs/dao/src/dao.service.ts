@@ -303,21 +303,16 @@ export class DaoService extends TypeOrmCrudService<Dao> {
         dao.id,
       ),
     });
-    if (await this.useDynamoDB()) {
-      return this.dynamodbService.saveDao({ ...entity, id: dao.id });
-    } else {
-      return this.daoRepository.save({ ...entity, id: dao.id });
-    }
+
+    await this.dynamodbService.saveDao({ ...entity, id: dao.id });
+    await this.daoRepository.save({ ...entity, id: dao.id });
   }
 
   public async saveWithFunds(dao: Partial<DaoDto | DaoModel>) {
     const totalDaoFunds = await this.calculateDaoFunds(dao.id, dao.amount);
     const entity = this.daoRepository.create({ ...dao, totalDaoFunds });
-    if (await this.useDynamoDB()) {
-      return this.dynamodbService.saveDao({ ...entity, id: dao.id });
-    } else {
-      return this.daoRepository.save({ ...entity, id: dao.id });
-    }
+    await this.dynamodbService.saveDao({ ...entity, id: dao.id });
+    await this.daoRepository.save({ ...entity, id: dao.id });
   }
 
   public async saveWithAdditionalFields(dao: Partial<DaoDto>) {
@@ -332,11 +327,8 @@ export class DaoService extends TypeOrmCrudService<Dao> {
       totalDaoFunds: await this.calculateDaoFunds(dao.id, dao.amount),
     });
 
-    if (await this.useDynamoDB()) {
-      return this.dynamodbService.saveDao({ ...entity, id: dao.id });
-    } else {
-      return this.daoRepository.save({ ...entity, id: dao.id });
-    }
+    await this.dynamodbService.saveDao({ ...entity, id: dao.id });
+    await this.daoRepository.save({ ...entity, id: dao.id });
   }
 
   public async updateDaoStatus(dao: Dao): Promise<Dao> {
@@ -471,22 +463,17 @@ export class DaoService extends TypeOrmCrudService<Dao> {
   }
 
   async setDaoVersion(id: string): Promise<string> {
-    if (await this.useDynamoDB()) {
-      const version = await this.getDaoVersionById(id);
-      await this.dynamodbService.saveItem<DaoModel>({
-        partitionId: id,
-        entityId: buildEntityId(DynamoEntityType.Dao, id),
-        daoVersion: mapDaoVersionToDaoVersionModel(version),
-      });
-      return version?.hash;
-    } else {
-      const version = await this.getDaoVersionById(id);
-      await this.daoRepository.save({
-        id,
-        daoVersionHash: version?.hash,
-      });
-      return version?.hash;
-    }
+    const version = await this.getDaoVersionById(id);
+    await this.dynamodbService.saveItem<DaoModel>({
+      partitionId: id,
+      entityId: buildEntityId(DynamoEntityType.Dao, id),
+      daoVersion: mapDaoVersionToDaoVersionModel(version),
+    });
+    await this.daoRepository.save({
+      id,
+      daoVersionHash: version?.hash,
+    });
+    return version?.hash;
   }
 
   async saveDelegation(
