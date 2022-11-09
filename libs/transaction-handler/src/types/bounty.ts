@@ -57,6 +57,7 @@ export function castBountyClaims({
 export function castClaimBounty({
   bounty,
   accountId,
+  daoId,
   transactionHash,
   bountyClaims,
   numberOfClaims,
@@ -64,7 +65,7 @@ export function castClaimBounty({
   timestamp = getBlockTimestamp(),
 }): BountyDto {
   const claims = castBountyClaims({
-    contractId: bounty.dao.id,
+    contractId: bounty.dao?.id || daoId,
     accountId,
     bountyId: bounty.bountyId,
     bountyClaims,
@@ -75,6 +76,7 @@ export function castClaimBounty({
 
   return {
     ...bounty,
+    daoId: bounty.dao?.id || daoId,
     bountyClaims: filteredClaims ? filteredClaims.concat(claims) : claims,
     numberOfClaims: numberOfClaims,
     updateTransactionHash: transactionHash,

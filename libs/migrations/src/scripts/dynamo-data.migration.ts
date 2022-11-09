@@ -109,37 +109,37 @@ export class DynamoDataMigration implements Migration {
   public async migrate(): Promise<void> {
     this.logger.log('Starting Dynamo Data migration...');
 
-    // await this.migrateAccounts();
-    //
-    // await this.migrateAccountNotificationSettings();
-    //
-    // await this.migrateComments();
-    //
-    // await this.migrateDaos();
-    //
-    // await this.migrateProposals();
-    //
-    // await this.migrateBounties();
-    //
-    // await this.migrateDaoStats();
+    await this.migrateAccounts();
+
+    await this.migrateAccountNotificationSettings();
+
+    await this.migrateComments();
+
+    await this.migrateDaos();
+
+    await this.migrateProposals();
+
+    await this.migrateBounties();
+
+    await this.migrateDaoStats();
 
     await this.migrateNfts();
 
-    // await this.migrateProposalTemplates();
-    //
-    // await this.migrateSharedProposalTemplates();
-    //
-    // await this.migrateSubscription();
-    //
-    // await this.migrateTokenBalances();
-    //
-    // await this.migrateTokenPrices();
-    //
-    // await this.migrateDraftComments();
-    //
-    // await this.migrateDraftProposals();
-    //
-    // await this.migrateAccountNotifications();
+    await this.migrateProposalTemplates();
+
+    await this.migrateSharedProposalTemplates();
+
+    await this.migrateSubscription();
+
+    await this.migrateTokenBalances();
+
+    await this.migrateTokenPrices();
+
+    await this.migrateDraftComments();
+
+    await this.migrateDraftProposals();
+
+    await this.migrateAccountNotifications();
 
     // TODO: Migrate ErrorEntity, OTP, TransactionHandlerState
 

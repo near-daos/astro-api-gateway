@@ -445,10 +445,14 @@ export class ProposalService extends BaseTypeOrmCrudService<Proposal> {
         daoId,
         DynamoEntityType.Proposal,
         {
-          FilterExpression: 'status = :status and voteStatus <> :voteStatus',
+          FilterExpression:
+            '#proposal_status = :statusValue and voteStatus <> :voteStatus',
           ExpressionAttributeValues: {
-            ':status': ProposalStatus.InProgress,
+            ':statusValue': ProposalStatus.InProgress,
             ':voteStatus': ProposalVoteStatus.Expired,
+          },
+          ExpressionAttributeNames: {
+            '#proposal_status': 'status',
           },
         },
       );

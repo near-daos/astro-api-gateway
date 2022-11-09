@@ -1,11 +1,12 @@
-import { Bounty, BountyClaim } from '@sputnik-v2/bounty';
+import { Bounty, BountyClaim, BountyContext } from '@sputnik-v2/bounty';
 import { TransactionModel } from './transaction.model';
 import { DynamoEntityType } from '../types';
 
 export class BountyModel extends TransactionModel {
   bountyId: number;
   id: string;
-  proposalId: string;
+  daoId: string;
+  proposalId: number | string;
   description: string;
   token: string;
   amount: string;
@@ -28,7 +29,7 @@ export class BountyClaimModel {
 
 export function mapBountyToBountyModel(
   bounty: Partial<Bounty>,
-  proposalId = bounty.bountyContext?.proposal?.proposalId,
+  proposalId = bounty.bountyContext?.proposal?.proposalId || bounty.proposalId,
 ): BountyModel {
   return {
     partitionId: bounty.daoId,
@@ -42,8 +43,9 @@ export function mapBountyToBountyModel(
     createTimestamp: bounty.createTimestamp,
     updateTimestamp: bounty.updateTimestamp || bounty.createTimestamp,
     id: bounty.id,
+    daoId: bounty.daoId,
     bountyId: bounty.bountyId,
-    proposalId: bounty.proposalId,
+    proposalId: proposalId,
     description: bounty.description,
     token: bounty.token,
     amount: bounty.amount,

@@ -12,6 +12,7 @@ import {
 } from '@sputnik-v2/proposal';
 import {
   buildDelegationId,
+  buildEntityId,
   calculateFunds,
   getBlockTimestamp,
   paginate,
@@ -23,6 +24,7 @@ import {
   DaoModel,
   DynamodbService,
   DynamoEntityType,
+  mapDaoVersionToDaoVersionModel,
 } from '@sputnik-v2/dynamodb';
 import { FeatureFlags, FeatureFlagsService } from '@sputnik-v2/feature-flags';
 
@@ -302,9 +304,9 @@ export class DaoService extends TypeOrmCrudService<Dao> {
       ),
     });
     if (await this.useDynamoDB()) {
-      return this.dynamodbService.saveDao(entity);
+      return this.dynamodbService.saveDao({ ...entity, id: dao.id });
     } else {
-      return this.daoRepository.save(entity);
+      return this.daoRepository.save({ ...entity, id: dao.id });
     }
   }
 
@@ -312,9 +314,9 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     const totalDaoFunds = await this.calculateDaoFunds(dao.id, dao.amount);
     const entity = this.daoRepository.create({ ...dao, totalDaoFunds });
     if (await this.useDynamoDB()) {
-      return this.dynamodbService.saveDao(entity);
+      return this.dynamodbService.saveDao({ ...entity, id: dao.id });
     } else {
-      return this.daoRepository.save(entity);
+      return this.daoRepository.save({ ...entity, id: dao.id });
     }
   }
 
@@ -331,9 +333,9 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     });
 
     if (await this.useDynamoDB()) {
-      return this.dynamodbService.saveDao(entity);
+      return this.dynamodbService.saveDao({ ...entity, id: dao.id });
     } else {
-      return this.daoRepository.save(entity);
+      return this.daoRepository.save({ ...entity, id: dao.id });
     }
   }
 
@@ -452,13 +454,13 @@ export class DaoService extends TypeOrmCrudService<Dao> {
         id,
       );
       return daoVersions
-        .find(([hash]) => daoVersionHash === hash)
         .map(([hash, { version, commit_id, changelog_url }]) => ({
           hash,
           version,
           commitId: commit_id,
           changelogUrl: changelog_url,
-        }));
+        }))
+        .find(({ hash }) => daoVersionHash === hash);
     } else {
       const versions = await this.daoVersionRepository.find();
       const daoVersionHash = await this.nearApiService.getContractVersionHash(
@@ -471,9 +473,10 @@ export class DaoService extends TypeOrmCrudService<Dao> {
   async setDaoVersion(id: string): Promise<string> {
     if (await this.useDynamoDB()) {
       const version = await this.getDaoVersionById(id);
-      await this.daoRepository.save({
-        id,
-        daoVersion: version,
+      await this.dynamodbService.saveItem<DaoModel>({
+        partitionId: id,
+        entityId: buildEntityId(DynamoEntityType.Dao, id),
+        daoVersion: mapDaoVersionToDaoVersionModel(version),
       });
       return version?.hash;
     } else {
@@ -508,7 +511,7 @@ export class DaoService extends TypeOrmCrudService<Dao> {
         DynamoEntityType.Dao,
         daoId,
       );
-      return dao.delegations.map(({ accountId }) => accountId);
+      return dao?.delegations?.map(({ accountId }) => accountId) || [];
     } else {
       return (
         await this.delegationRepository.find({

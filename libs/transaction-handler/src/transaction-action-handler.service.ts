@@ -18,11 +18,7 @@ import { Transaction } from '@sputnik-v2/near-indexer';
 import { BountyContextService, BountyService } from '@sputnik-v2/bounty';
 import { EventService } from '@sputnik-v2/event';
 import { NFTTokenService, TokenService } from '@sputnik-v2/token';
-import {
-  buildBountyId,
-  buildDelegationId,
-  buildProposalId,
-} from '@sputnik-v2/utils';
+import { buildBountyId, buildDelegationId } from '@sputnik-v2/utils';
 import { CacheService } from '@sputnik-v2/cache';
 import { OpensearchService } from '@sputnik-v2/opensearch';
 import { DynamodbService } from '@sputnik-v2/dynamodb';
@@ -516,7 +512,6 @@ export class TransactionActionHandlerService {
           dao,
           daoContract,
           proposalKind: proposal.kind.kind,
-          proposalIndex: proposal.proposalId,
           transactionHash,
           timestamp,
         });
@@ -593,7 +588,6 @@ export class TransactionActionHandlerService {
         dao,
         daoContract,
         proposalKind: proposal.kind.kind,
-        proposalIndex: proposal.proposalId,
         transactionHash,
         timestamp,
       });
@@ -635,7 +629,6 @@ export class TransactionActionHandlerService {
           dao,
           daoContract,
           proposalKind: proposalEntity?.kind,
-          proposalIndex: proposal?.proposalId,
           transactionHash,
           timestamp,
         });
@@ -710,14 +703,17 @@ export class TransactionActionHandlerService {
       this.logger.log('Successfully stored new Bounty');
     }
 
-    const bountyById = await this.bountyService.findOne(bounty.id, {
-      relations: [
-        'bountyContext',
-        'bountyContext.proposal',
-        'bountyDoneProposals',
-        'bountyClaims',
-      ],
-    });
+    const bountyById = await this.bountyService.findOne(
+      buildBountyId(dao.id, bountyId),
+      {
+        relations: [
+          'bountyContext',
+          'bountyContext.proposal',
+          'bountyDoneProposals',
+          'bountyClaims',
+        ],
+      },
+    );
     await this.opensearchService.indexBounty(bounty.id, bountyById);
   }
 
@@ -725,7 +721,6 @@ export class TransactionActionHandlerService {
     dao,
     daoContract,
     proposalKind,
-    proposalIndex,
     transactionHash,
     timestamp,
   }) {
@@ -763,7 +758,6 @@ export class TransactionActionHandlerService {
         transactionHash,
         timestamp,
       }),
-      proposalIndex,
     );
     this.logger.log(`Bounty successfully updated: ${bounty.id}`);
 
@@ -823,6 +817,7 @@ export class TransactionActionHandlerService {
       castClaimBounty({
         bounty,
         accountId: signerId,
+        daoId: receiverId,
         transactionHash,
         bountyClaims,
         numberOfClaims,
