@@ -31,6 +31,10 @@ export class NFTTokenService extends TypeOrmCrudService<NFTToken> {
     super(nftTokenRepository);
   }
 
+  async useDynamoDB() {
+    return this.featureFlagsService.check(FeatureFlags.NftTokenDynamo);
+  }
+
   async create(tokenDto: NFTTokenDto): Promise<NFTToken> {
     return this.nftTokenRepository.save(tokenDto);
   }
@@ -75,7 +79,14 @@ export class NFTTokenService extends TypeOrmCrudService<NFTToken> {
   }
 
   async getAccountTokenCount(accountId: string): Promise<number> {
-    return this.nftTokenRepository.count({ accountId });
+    if (await this.useDynamoDB()) {
+      return this.dynamodbService.countItemsByType(
+        accountId,
+        DynamoEntityType.Nft,
+      );
+    } else {
+      return this.nftTokenRepository.count({ accountId });
+    }
   }
 
   async getTokenEvents(id: string): Promise<AssetsNftEvent[]> {

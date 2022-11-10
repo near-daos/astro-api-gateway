@@ -64,10 +64,23 @@ export class BountyService extends TypeOrmCrudService<Bounty> {
   }
 
   async getDaoActiveBountiesCount(daoId: string): Promise<number> {
-    return this.bountyRepository.count({
-      daoId,
-      times: Not('0'),
-    });
+    if (await this.useDynamoDB()) {
+      return this.dynamodbService.countItemsByType(
+        daoId,
+        DynamoEntityType.Bounty,
+        {
+          FilterExpression: 'times > :times',
+          ExpressionAttributeValues: {
+            ':times': 0,
+          },
+        },
+      );
+    } else {
+      return this.bountyRepository.count({
+        daoId,
+        times: Not('0'),
+      });
+    }
   }
 
   async getLastBountyClaim(
