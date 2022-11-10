@@ -4,6 +4,7 @@ import {
   DraftProposalHistory,
   DraftProposalState,
 } from '@sputnik-v2/draft-proposal';
+import { buildEntityId } from '@sputnik-v2/utils';
 import { BaseModel } from './base.model';
 import { DynamoEntityType } from '@sputnik-v2/dynamodb';
 
@@ -41,9 +42,10 @@ export function mapDraftProposalToDraftProposalModel(
 ): DraftProposalModel {
   return {
     partitionId: draftProposal.daoId,
-    entityId: `${
-      DynamoEntityType.DraftProposal
-    }:${draftProposal.id.toString()}`,
+    entityId: buildEntityId(
+      DynamoEntityType.DraftProposal,
+      String(draftProposal.id),
+    ),
     entityType: DynamoEntityType.DraftProposal,
     isArchived: draftProposal.isArchived,
     processingTimeStamp: Date.now(),

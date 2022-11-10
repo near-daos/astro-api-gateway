@@ -1,4 +1,5 @@
 import { Subscription } from '@sputnik-v2/subscription';
+import { buildEntityId } from '@sputnik-v2/utils';
 import { BaseModel } from './base.model';
 import { DynamoEntityType } from '@sputnik-v2/dynamodb/types';
 
@@ -12,7 +13,7 @@ export function mapSubscriptionToSubscriptionModel(
 ): SubscriptionModel {
   return {
     partitionId: subscription.daoId,
-    entityId: `${DynamoEntityType.Subscription}:${subscription.id}`,
+    entityId: buildEntityId(DynamoEntityType.Subscription, subscription.id),
     entityType: DynamoEntityType.Subscription,
     isArchived: subscription.isArchived,
     processingTimeStamp: Date.now(),

@@ -9,6 +9,7 @@ import {
   ProposalVoteStatus,
 } from '@sputnik-v2/proposal';
 import { Vote } from '@sputnik-v2/sputnikdao';
+import { buildEntityId } from '@sputnik-v2/utils';
 import { TransactionModel } from './transaction.model';
 import { DynamoEntityType } from '../types';
 
@@ -45,7 +46,10 @@ export class ProposalActionModel {
 export function mapProposalToProposalModel(proposal: Proposal): ProposalModel {
   return {
     partitionId: proposal.daoId,
-    entityId: `${DynamoEntityType.Proposal}:${proposal.proposalId}`,
+    entityId: buildEntityId(
+      DynamoEntityType.Proposal,
+      String(proposal.proposalId),
+    ),
     entityType: DynamoEntityType.Proposal,
     isArchived: proposal.isArchived,
     processingTimeStamp: Date.now(),

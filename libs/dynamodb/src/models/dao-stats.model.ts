@@ -1,4 +1,5 @@
 import { DaoStats } from '@sputnik-v2/stats';
+import { buildEntityId } from '@sputnik-v2/utils';
 import { BaseModel } from './base.model';
 import { DynamoEntityType } from '@sputnik-v2/dynamodb/types';
 
@@ -16,7 +17,7 @@ export class DaoStatsModel extends BaseModel {
 export function mapDaoStatsToDaoStatsModel(stats: DaoStats): DaoStatsModel {
   return {
     partitionId: stats.daoId,
-    entityId: `${DynamoEntityType.DaoStats}:${stats.id}`,
+    entityId: buildEntityId(DynamoEntityType.DaoStats, stats.id),
     entityType: DynamoEntityType.DaoStats,
     isArchived: stats.isArchived,
     processingTimeStamp: Date.now(),

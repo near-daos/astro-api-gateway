@@ -1,4 +1,5 @@
 import { Token, TokenBalance } from '@sputnik-v2/token/entities';
+import { buildEntityId } from '@sputnik-v2/utils';
 import { BaseModel } from './base.model';
 import { DynamoEntityType } from '@sputnik-v2/dynamodb/types';
 
@@ -30,7 +31,7 @@ export function mapTokenBalanceToTokenBalanceModel(
 ): TokenBalanceModel {
   return {
     partitionId: balance.accountId,
-    entityId: `${DynamoEntityType.TokenBalance}:${balance.tokenId}`,
+    entityId: buildEntityId(DynamoEntityType.TokenBalance, balance.tokenId),
     entityType: DynamoEntityType.TokenBalance,
     isArchived: false,
     createTimestamp: Date.now(),

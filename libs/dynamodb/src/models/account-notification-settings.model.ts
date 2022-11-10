@@ -2,6 +2,7 @@ import {
   AccountNotificationSettings,
   NotificationType,
 } from '@sputnik-v2/notification';
+import { buildEntityId } from '@sputnik-v2/utils';
 import { BaseModel } from './base.model';
 import { DynamoEntityType } from '../types';
 
@@ -21,7 +22,10 @@ export function mapAccountNotificationSettingsToAccountNotificationSettingsModel
 ): AccountNotificationSettingsModel {
   return {
     partitionId: accountNotificationSettings.accountId,
-    entityId: `${DynamoEntityType.AccountNotificationSettings}:${accountNotificationSettings.id}`,
+    entityId: buildEntityId(
+      DynamoEntityType.AccountNotificationSettings,
+      accountNotificationSettings.id,
+    ),
     entityType: DynamoEntityType.AccountNotificationSettings,
     isArchived: accountNotificationSettings.isArchived,
     processingTimeStamp: Date.now(),

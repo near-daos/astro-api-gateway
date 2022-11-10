@@ -18,7 +18,7 @@ import {
   UpdateDraftProposal,
 } from './dto';
 import { DraftProposalService, DraftProposalState } from './types';
-import { getAccountPermissions } from '@sputnik-v2/utils';
+import { buildEntityId, getAccountPermissions } from '@sputnik-v2/utils';
 
 @Injectable()
 export class DynamoDraftProposalService implements DraftProposalService {
@@ -38,7 +38,7 @@ export class DynamoDraftProposalService implements DraftProposalService {
   ): Promise<string> {
     await this.dynamodbService.saveItem<DraftProposalModel>({
       partitionId: draftProposalDto.daoId,
-      entityId: `${DynamoEntityType.DraftProposal}:${draftId}`,
+      entityId: buildEntityId(DynamoEntityType.DraftProposal, draftId),
       entityType: DynamoEntityType.DraftProposal,
       id: draftId,
       proposer: accountId,

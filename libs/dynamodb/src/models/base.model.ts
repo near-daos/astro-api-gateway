@@ -1,9 +1,6 @@
-import { DynamoEntityType, EntityId } from '../types';
+import { BaseEntity } from '../types';
 
-export class BaseModel {
-  partitionId: string;
-  entityId: EntityId;
-  entityType: DynamoEntityType;
+export class BaseModel extends BaseEntity {
   isArchived: boolean;
   processingTimeStamp: number;
   createTimestamp: number;

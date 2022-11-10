@@ -16,6 +16,7 @@ import { Dao, Delegation, Role, RoleKindType } from '@sputnik-v2/dao/entities';
 import { Order, SearchQuery } from '@sputnik-v2/common';
 import {
   buildDelegationId,
+  buildEntityId,
   buildProposalId,
   getAccountPermissions,
   getBlockTimestamp,
@@ -532,7 +533,8 @@ export class ProposalService extends BaseTypeOrmCrudService<Proposal> {
   async remove(daoId: string, proposalId: number) {
     await this.dynamodbService.saveItem<ProposalModel>({
       partitionId: daoId,
-      entityId: `${DynamoEntityType.Proposal}:${proposalId}`,
+      entityId: buildEntityId(DynamoEntityType.Proposal, String(proposalId)),
+      entityType: DynamoEntityType.Proposal,
       isArchived: true,
     });
     await this.proposalRepository.delete({

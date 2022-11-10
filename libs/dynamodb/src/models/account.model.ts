@@ -1,4 +1,5 @@
 import { Account } from '@sputnik-v2/account';
+import { buildEntityId } from '@sputnik-v2/utils';
 import { BaseModel } from './base.model';
 import { DynamoEntityType } from '@sputnik-v2/dynamodb';
 
@@ -16,7 +17,7 @@ export function mapAccountToAccountModel(
 ): AccountModel {
   return {
     partitionId: account.accountId,
-    entityId: `${DynamoEntityType.Account}:${account.accountId}`,
+    entityId: buildEntityId(DynamoEntityType.Account, account.accountId),
     entityType: DynamoEntityType.Account,
     isArchived: account.isArchived,
     processingTimeStamp: Date.now(),

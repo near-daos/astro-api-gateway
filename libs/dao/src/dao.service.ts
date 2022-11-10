@@ -467,6 +467,7 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     await this.dynamodbService.saveItem<DaoModel>({
       partitionId: id,
       entityId: buildEntityId(DynamoEntityType.Dao, id),
+      entityType: DynamoEntityType.Dao,
       daoVersion: mapDaoVersionToDaoVersionModel(version),
     });
     await this.daoRepository.save({
