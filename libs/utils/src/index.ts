@@ -11,6 +11,7 @@ import {
 import { Proposal } from '@sputnik-v2/proposal/entities';
 import { ProposalDto } from '@sputnik-v2/proposal/dto';
 import { BaseResponse, PROPOSAL_DESC_SEPARATOR } from '@sputnik-v2/common';
+import { DaoModel } from '@sputnik-v2/dynamodb';
 
 export const formatTimestamp = (timestamp: number): string => {
   const seconds = Number(timestamp / 1e9);
@@ -148,7 +149,7 @@ export const btoaJSON = (b: string) => {
 
 export const calcProposalVotePeriodEnd = (
   proposal: Proposal | ProposalDto | { submissionTime: number },
-  dao: Dao | DaoDto,
+  dao: Dao | DaoDto | DaoModel,
 ): number => {
   try {
     return Decimal.sum(

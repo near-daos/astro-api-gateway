@@ -18,6 +18,7 @@ import {
   mapSharedProposalTemplateToSharedProposalTemplateModel,
   mapSubscriptionToSubscriptionModel,
   mapTokenBalanceToTokenBalanceModel,
+  mapTokenToTokenPriceModel,
 } from '@sputnik-v2/dynamodb/models';
 import { DynamodbService } from '@sputnik-v2/dynamodb/dynamodb.service';
 import { Account } from '@sputnik-v2/account/entities';
@@ -36,7 +37,7 @@ import {
   DraftProposal,
   DraftProposalHistory,
 } from '@sputnik-v2/draft-proposal/entities';
-import { NFTToken, TokenBalance } from '@sputnik-v2/token/entities';
+import { NFTToken, Token, TokenBalance } from '@sputnik-v2/token/entities';
 import { Proposal } from '@sputnik-v2/proposal/entities';
 import {
   ProposalTemplate,
@@ -100,6 +101,9 @@ export class DynamoDataMigration implements Migration {
 
     @InjectRepository(TokenBalance)
     private readonly tokenBalanceRepository: Repository<TokenBalance>,
+
+    @InjectRepository(Token)
+    private readonly tokenRepository: Repository<Token>,
   ) {}
 
   public async migrate(): Promise<void> {
@@ -128,6 +132,8 @@ export class DynamoDataMigration implements Migration {
     await this.migrateSubscription();
 
     await this.migrateTokenBalances();
+
+    await this.migrateTokenPrices();
 
     await this.migrateDraftComments();
 
@@ -369,6 +375,17 @@ export class DynamoDataMigration implements Migration {
         tokenBalances.map((tokenBalance) =>
           mapTokenBalanceToTokenBalanceModel(tokenBalance),
         ),
+      );
+    }
+  }
+
+  public async migrateTokenPrices(): Promise<void> {
+    for await (const tokens of this.migrateEntity<Token>(
+      Token.name,
+      this.tokenRepository,
+    )) {
+      await this.dynamodbService.batchPut(
+        tokens.map((token) => mapTokenToTokenPriceModel(token)),
       );
     }
   }

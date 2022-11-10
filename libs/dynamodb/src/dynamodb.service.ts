@@ -17,43 +17,46 @@ import {
   DraftProposal,
   DraftProposalHistory,
 } from '@sputnik-v2/draft-proposal/entities';
-import { NFTToken, TokenBalance } from '@sputnik-v2/token/entities';
+import { NFTToken, Token, TokenBalance } from '@sputnik-v2/token/entities';
 import {
   ProposalTemplate,
   SharedProposalTemplate,
 } from '@sputnik-v2/proposal-template/entities';
 import { Subscription } from '@sputnik-v2/subscription/entities';
 import { buildEntityId } from '@sputnik-v2/utils';
+import PromisePool from '@supercharge/promise-pool';
 
 import {
-  BaseModel,
-  BountyModel,
-  DaoModel,
-  mapBountyToBountyModel,
-  mapDaoToDaoModel,
-  mapProposalToProposalModel,
-  mapAccountToAccountModel,
-  ProposalModel,
   AccountModel,
   AccountNotificationModel,
-  mapAccountNotificationToAccountNotificationModel,
   AccountNotificationSettingsModel,
-  mapAccountNotificationSettingsToAccountNotificationSettingsModel,
+  BaseModel,
+  BountyModel,
   CommentModel,
-  mapCommentToCommentModel,
-  mapDraftCommentToCommentModel,
+  DaoModel,
   DraftProposalModel,
+  mapAccountNotificationSettingsToAccountNotificationSettingsModel,
+  mapAccountNotificationToAccountNotificationModel,
+  mapAccountToAccountModel,
+  mapBountyToBountyModel,
+  mapCommentToCommentModel,
+  mapDaoToDaoModel,
+  mapDraftCommentToCommentModel,
   mapDraftProposalToDraftProposalModel,
-  NftModel,
   mapNftTokenToNftModel,
-  ProposalTemplateModel,
   mapProposalTemplateToProposalTemplateModel,
+  mapProposalToProposalModel,
   mapSharedProposalTemplateToSharedProposalTemplateModel,
+  mapSubscriptionToSubscriptionModel,
+  mapTokenBalanceToTokenBalanceModel,
+  mapTokenToTokenPriceModel,
+  NftModel,
+  ProposalModel,
+  ProposalTemplateModel,
   SharedProposalTemplateModel,
   SubscriptionModel,
-  mapSubscriptionToSubscriptionModel,
   TokenBalanceModel,
-  mapTokenBalanceToTokenBalanceModel,
+  TokenPriceModel,
 } from './models';
 import {
   CountItemsQuery,
@@ -199,6 +202,21 @@ export class DynamodbService {
     );
   }
 
+  public async saveTokenPrice(token: Partial<Token>) {
+    return this.saveItem<TokenPriceModel>(mapTokenToTokenPriceModel(token));
+  }
+
+  public async batchDelete<M extends BaseModel = BaseModel>(
+    items: Partial<M>[],
+    tableName = this.tableName,
+  ) {
+    return PromisePool.withConcurrency(10)
+      .for(items)
+      .process((item) => {
+        return this.deleteItem(item, tableName);
+      });
+  }
+
   public async batchPut<M extends BaseModel = BaseModel>(
     items: Partial<M>[],
     tableName = this.tableName,
@@ -297,12 +315,12 @@ export class DynamodbService {
       {
         KeyConditionExpression:
           'partitionId = :partitionId and begins_with(entityId, :entityType)',
+        ...query,
         ExpressionAttributeValues: {
           ':partitionId': partitionId,
           ':entityType': buildEntityId(entityType, ''),
           ...query.ExpressionAttributeValues,
         },
-        ...query,
       },
       tableName,
     );
@@ -324,6 +342,18 @@ export class DynamodbService {
         Item: item
           ? { ...item, ...data, processingTimeStamp }
           : { ...data, processingTimeStamp },
+      })
+      .promise();
+  }
+
+  public async deleteItem<M extends BaseModel = BaseModel>(
+    data: Partial<M>,
+    tableName = this.tableName,
+  ) {
+    return this.client
+      .delete({
+        TableName: tableName,
+        Key: { partitionId: data.partitionId, entityId: data.entityId },
       })
       .promise();
   }

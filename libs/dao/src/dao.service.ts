@@ -12,6 +12,7 @@ import {
 } from '@sputnik-v2/proposal';
 import {
   buildDelegationId,
+  buildEntityId,
   calculateFunds,
   getBlockTimestamp,
   paginate,
@@ -19,17 +20,24 @@ import {
 import { TokenService } from '@sputnik-v2/token';
 import { SearchQuery } from '@sputnik-v2/common';
 import { NearApiService } from '@sputnik-v2/near-api';
+import {
+  DaoModel,
+  DynamodbService,
+  DynamoEntityType,
+  mapDaoVersionToDaoVersionModel,
+} from '@sputnik-v2/dynamodb';
+import { FeatureFlags, FeatureFlagsService } from '@sputnik-v2/feature-flags';
 
 import {
   AccountDaoResponse,
+  castDaoResponseV2,
   DaoDto,
   DaoMemberVote,
   DaoPageResponse,
+  DaoResponseV2,
+  DelegationDto,
   SearchMemberDto,
   SearchMemberResponse,
-  DelegationDto,
-  DaoResponseV2,
-  castDaoResponseV2,
 } from './dto';
 import { Dao, DaoVersion, Delegation, RoleKindType } from './entities';
 import { DaoStatus, DaoVariant, WeightKind } from './types';
@@ -48,8 +56,14 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     private readonly proposalService: ProposalService,
     private readonly tokenService: TokenService,
     private readonly nearApiService: NearApiService,
+    private readonly dynamodbService: DynamodbService,
+    private readonly featureFlagsService: FeatureFlagsService,
   ) {
     super(daoRepository);
+  }
+
+  async useDynamoDB() {
+    return this.featureFlagsService.check(FeatureFlags.DaoDynamo);
   }
 
   async findAccountDaos(
@@ -72,8 +86,19 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     }));
   }
 
-  async findById(id: string): Promise<Dao> {
-    return this.daoRepository.findOne({ id, status: Not(DaoStatus.Disabled) });
+  async findById(id: string): Promise<Dao | DaoModel> {
+    if (await this.useDynamoDB()) {
+      return this.dynamodbService.getItemByType<DaoModel>(
+        id,
+        DynamoEntityType.Dao,
+        id,
+      );
+    } else {
+      return this.daoRepository.findOne({
+        id,
+        status: Not(DaoStatus.Disabled),
+      });
+    }
   }
 
   async findByIdV2(id: string): Promise<DaoResponseV2> {
@@ -269,7 +294,7 @@ export class DaoService extends TypeOrmCrudService<Dao> {
   }
 
   public async saveWithProposalCount(dao: Partial<DaoDto>) {
-    return this.daoRepository.save({
+    const entity = this.daoRepository.create({
       ...dao,
       totalProposalCount: await this.proposalService.getDaoProposalCount(
         dao.id,
@@ -278,17 +303,20 @@ export class DaoService extends TypeOrmCrudService<Dao> {
         dao.id,
       ),
     });
+
+    await this.dynamodbService.saveDao({ ...entity, id: dao.id });
+    await this.daoRepository.save({ ...entity, id: dao.id });
   }
 
-  public async saveWithFunds(dao: Partial<DaoDto>) {
-    return this.daoRepository.save({
-      ...dao,
-      totalDaoFunds: await this.calculateDaoFunds(dao.id, dao.amount),
-    });
+  public async saveWithFunds(dao: Partial<DaoDto | DaoModel>) {
+    const totalDaoFunds = await this.calculateDaoFunds(dao.id, dao.amount);
+    const entity = this.daoRepository.create({ ...dao, totalDaoFunds });
+    await this.dynamodbService.saveDao({ ...entity, id: dao.id });
+    await this.daoRepository.save({ ...entity, id: dao.id });
   }
 
   public async saveWithAdditionalFields(dao: Partial<DaoDto>) {
-    return this.daoRepository.save({
+    const entity = this.daoRepository.create({
       ...dao,
       totalProposalCount: await this.proposalService.getDaoProposalCount(
         dao.id,
@@ -298,6 +326,9 @@ export class DaoService extends TypeOrmCrudService<Dao> {
       ),
       totalDaoFunds: await this.calculateDaoFunds(dao.id, dao.amount),
     });
+
+    await this.dynamodbService.saveDao({ ...entity, id: dao.id });
+    await this.daoRepository.save({ ...entity, id: dao.id });
   }
 
   public async updateDaoStatus(dao: Dao): Promise<Dao> {
@@ -357,9 +388,10 @@ export class DaoService extends TypeOrmCrudService<Dao> {
   ): Promise<number> {
     const tokenBalances = await this.tokenService.tokenBalancesByAccount(daoId);
     const nearToken = await this.tokenService.getNearToken();
-    const nearBalance = nearAmount
-      ? calculateFunds(nearAmount, nearToken.price, nearToken.decimals)
-      : 0;
+    const nearBalance =
+      nearToken && nearAmount
+        ? calculateFunds(nearAmount, nearToken.price, nearToken.decimals)
+        : 0;
     const tokenBalance = tokenBalances.reduce((balance, tokenBalance) => {
       if (
         tokenBalance.balance &&
@@ -406,13 +438,37 @@ export class DaoService extends TypeOrmCrudService<Dao> {
   }
 
   async getDaoVersionById(id: string): Promise<DaoVersion> {
-    const versions = await this.daoVersionRepository.find();
-    const daoVersionHash = await this.nearApiService.getContractVersionHash(id);
-    return versions.find(({ hash }) => daoVersionHash === hash);
+    if (await this.useDynamoDB()) {
+      const sputnikDaoFactory =
+        this.nearApiService.getContract('sputnikDaoFactory');
+      const daoVersions = await sputnikDaoFactory.get_contracts_metadata();
+      const daoVersionHash = await this.nearApiService.getContractVersionHash(
+        id,
+      );
+      return daoVersions
+        .map(([hash, { version, commit_id, changelog_url }]) => ({
+          hash,
+          version,
+          commitId: commit_id,
+          changelogUrl: changelog_url,
+        }))
+        .find(({ hash }) => daoVersionHash === hash);
+    } else {
+      const versions = await this.daoVersionRepository.find();
+      const daoVersionHash = await this.nearApiService.getContractVersionHash(
+        id,
+      );
+      return versions.find(({ hash }) => daoVersionHash === hash);
+    }
   }
 
   async setDaoVersion(id: string): Promise<string> {
     const version = await this.getDaoVersionById(id);
+    await this.dynamodbService.saveItem<DaoModel>({
+      partitionId: id,
+      entityId: buildEntityId(DynamoEntityType.Dao, id),
+      daoVersion: mapDaoVersionToDaoVersionModel(version),
+    });
     await this.daoRepository.save({
       id,
       daoVersionHash: version?.hash,
@@ -436,11 +492,20 @@ export class DaoService extends TypeOrmCrudService<Dao> {
   }
 
   async getDelegationAccountsByDaoId(daoId: string): Promise<string[]> {
-    return (
-      await this.delegationRepository.find({
-        where: { daoId },
-        select: ['accountId'],
-      })
-    ).map(({ accountId }) => accountId);
+    if (await this.useDynamoDB()) {
+      const dao = await this.dynamodbService.getItemByType<DaoModel>(
+        daoId,
+        DynamoEntityType.Dao,
+        daoId,
+      );
+      return dao?.delegations?.map(({ accountId }) => accountId) || [];
+    } else {
+      return (
+        await this.delegationRepository.find({
+          where: { daoId },
+          select: ['accountId'],
+        })
+      ).map(({ accountId }) => accountId);
+    }
   }
 }

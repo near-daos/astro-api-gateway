@@ -16,5 +16,6 @@ export enum DynamoEntityType {
   Subscription = 'Subscription',
   Nft = 'Nft',
   TokenBalance = 'TokenBalance',
+  TokenPrice = 'TokenPrice',
   ScheduledProposalExpirationEvent = 'ScheduledProposalExpirationEvent',
 }

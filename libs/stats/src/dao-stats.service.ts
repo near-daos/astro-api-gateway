@@ -5,7 +5,11 @@ import { BountyService } from '@sputnik-v2/bounty';
 import { DateTime } from 'luxon';
 
 import { Dao, DaoService } from '@sputnik-v2/dao';
-import { DaoDynamoService, DaoStatsDynamoService } from '@sputnik-v2/dynamodb';
+import {
+  DaoDynamoService,
+  DaoModel,
+  DaoStatsDynamoService,
+} from '@sputnik-v2/dynamodb';
 import { FeatureFlags, FeatureFlagsService } from '@sputnik-v2/feature-flags';
 import { NFTTokenService } from '@sputnik-v2/token';
 import { buildDaoStatsId, getGrowth } from '@sputnik-v2/utils';
@@ -42,6 +46,7 @@ export class DaoStatsService {
 
     if (await this.useDynamoDB()) {
       await this.daoStatsDynamoService.saveDaoStats(daoStats);
+      await this.daoStatsRepository.save(daoStats);
     } else {
       await this.daoStatsRepository.save(daoStats);
     }
@@ -53,7 +58,7 @@ export class DaoStatsService {
     const timestamp = DateTime.now().startOf('day').toMillis();
     const useDynamoDB = await this.useDynamoDB();
 
-    let dao: Dao;
+    let dao: Dao | DaoModel;
 
     if (useDynamoDB) {
       dao = await this.daoDynamoService.getDao(daoId);

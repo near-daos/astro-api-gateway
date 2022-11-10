@@ -4,7 +4,10 @@ import { DynamoEntityType } from '../types';
 
 export class BountyModel extends TransactionModel {
   bountyId: number;
+  id: string;
+  daoId: string;
   proposalId: string;
+  proposalIndex: number;
   description: string;
   token: string;
   amount: string;
@@ -27,11 +30,11 @@ export class BountyClaimModel {
 
 export function mapBountyToBountyModel(
   bounty: Partial<Bounty>,
-  proposalId = bounty.bountyContext?.proposal?.proposalId,
+  proposalIndex = bounty.bountyContext?.proposal?.proposalId,
 ): BountyModel {
   return {
     partitionId: bounty.daoId,
-    entityId: `${DynamoEntityType.Bounty}:${proposalId}`,
+    entityId: `${DynamoEntityType.Bounty}:${proposalIndex}`,
     entityType: DynamoEntityType.Bounty,
     isArchived: bounty.isArchived,
     processingTimeStamp: Date.now(),
@@ -40,8 +43,11 @@ export function mapBountyToBountyModel(
       bounty.updateTransactionHash || bounty.transactionHash,
     createTimestamp: bounty.createTimestamp,
     updateTimestamp: bounty.updateTimestamp || bounty.createTimestamp,
+    id: bounty.id,
+    daoId: bounty.daoId,
     bountyId: bounty.bountyId,
     proposalId: bounty.proposalId,
+    proposalIndex: proposalIndex,
     description: bounty.description,
     token: bounty.token,
     amount: bounty.amount,

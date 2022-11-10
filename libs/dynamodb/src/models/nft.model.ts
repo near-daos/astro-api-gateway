@@ -1,6 +1,15 @@
-import { NFTContract, NFTToken, NFTTokenMetadata } from '@sputnik-v2/token';
+import {
+  NFTContract,
+  NFTToken,
+  NFTTokenMetadata,
+} from '@sputnik-v2/token/entities';
 import { BaseModel } from './base.model';
 import { DynamoEntityType } from '../types';
+import {
+  NFTTokenContractDto,
+  NFTTokenDto,
+  NFTTokenMetadataDto,
+} from '@sputnik-v2/token';
 
 export class NftModel extends BaseModel {
   id: string;
@@ -41,12 +50,12 @@ export class NftMetadataModel {
   approvedAccountIds: string[];
 }
 
-export function mapNftTokenToNftModel(nft: NFTToken): NftModel {
+export function mapNftTokenToNftModel(nft: NFTToken | NFTTokenDto): NftModel {
   return {
     partitionId: nft.accountId,
     entityId: `${DynamoEntityType.Nft}:${nft.id}`,
     entityType: DynamoEntityType.Nft,
-    isArchived: nft.isArchived,
+    isArchived: !!nft.isArchived,
     processingTimeStamp: Date.now(),
     id: nft.id,
     ownerId: nft.ownerId,
@@ -61,7 +70,7 @@ export function mapNftTokenToNftModel(nft: NFTToken): NftModel {
 }
 
 export function mapNftContractToNftContractModel(
-  contract: NFTContract,
+  contract: NFTContract | NFTTokenContractDto,
 ): NftContractModel {
   return {
     id: contract.id,
@@ -76,7 +85,7 @@ export function mapNftContractToNftContractModel(
 }
 
 export function mapNftMetadataToNftMetadataModel(
-  metadata: NFTTokenMetadata,
+  metadata: NFTTokenMetadata | NFTTokenMetadataDto,
 ): NftMetadataModel {
   return {
     tokenId: metadata.tokenId,

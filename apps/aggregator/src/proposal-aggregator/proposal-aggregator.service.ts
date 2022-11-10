@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { SputnikService } from '@sputnik-v2/sputnikdao';
 import { Dao, DaoService } from '@sputnik-v2/dao';
 import { Transaction } from '@sputnik-v2/near-indexer';
-import { Proposal, ProposalService, ProposalType } from '@sputnik-v2/proposal';
+import { ProposalService, ProposalType } from '@sputnik-v2/proposal';
 
 import { castProposal } from './types/proposal';
 import PromisePool from '@supercharge/promise-pool';
@@ -18,10 +18,7 @@ export class ProposalAggregatorService {
     private readonly bountyContextService: BountyContextService,
   ) {}
 
-  public async aggregateProposalsByDao(
-    dao: Dao,
-    txs: Transaction[],
-  ): Promise<Proposal[]> {
+  public async aggregateProposalsByDao(dao: Dao, txs: Transaction[]) {
     const proposals = await this.sputnikService.getProposalsByDaoId(
       dao.id,
       dao.lastProposalId,
@@ -48,13 +45,11 @@ export class ProposalAggregatorService {
       await this.proposalService.removeMultiple(removedProposalIds);
     }
 
-    const { results: createdProposals } = await PromisePool.withConcurrency(5)
+    await PromisePool.withConcurrency(5)
       .for(proposalDtos)
       .process((proposalDto) => this.proposalService.create(proposalDto));
 
     await this.bountyContextService.createMultiple(bountyContextDtos);
-
-    return createdProposals;
   }
 
   public async updateExpiredProposals(): Promise<void> {

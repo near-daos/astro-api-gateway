@@ -18,11 +18,7 @@ import { Transaction } from '@sputnik-v2/near-indexer';
 import { BountyContextService, BountyService } from '@sputnik-v2/bounty';
 import { EventService } from '@sputnik-v2/event';
 import { NFTTokenService, TokenService } from '@sputnik-v2/token';
-import {
-  buildBountyId,
-  buildDelegationId,
-  buildProposalId,
-} from '@sputnik-v2/utils';
+import { buildBountyId, buildDelegationId } from '@sputnik-v2/utils';
 import { CacheService } from '@sputnik-v2/cache';
 import { OpensearchService } from '@sputnik-v2/opensearch';
 import { DynamodbService } from '@sputnik-v2/dynamodb';
@@ -220,7 +216,6 @@ export class TransactionActionHandlerService {
       relations: ['delegations'],
     });
     await this.opensearchService.indexDao(daoId, daoById);
-    await this.dynamodbService.saveDao(daoById);
 
     return {
       type: ContractHandlerResultType.DaoCreate,
@@ -260,7 +255,7 @@ export class TransactionActionHandlerService {
       };
     }
 
-    const daoEntity = await this.daoService.findOne(receiverId);
+    const daoEntity = await this.daoService.findById(receiverId);
     const daoProposal = await this.sputnikService.getProposal(
       receiverId,
       lastProposalId,
@@ -293,7 +288,8 @@ export class TransactionActionHandlerService {
     if (proposal.type === ProposalType.BountyDone) {
       const proposalKind = proposal.kind.kind as ProposalKindBountyDone;
       const bountyClaim = await this.bountyService.getLastBountyClaim(
-        buildBountyId(dao.id, proposalKind.bountyId),
+        dao.id,
+        proposalKind.bountyId,
         proposalKind.receiverId,
         timestamp,
       );
@@ -308,13 +304,9 @@ export class TransactionActionHandlerService {
       this.logger.log(
         `Storing Bounty Context: ${proposal.id} due to transaction`,
       );
-      await this.bountyContextService.create({
-        id: proposal.id,
-        daoId: proposal.daoId,
-      });
-      await this.dynamodbService.saveBounty(
+      await this.bountyContextService.create(
         {
-          proposalId: proposal.id,
+          id: proposal.id,
           daoId: proposal.daoId,
           transactionHash,
           createTimestamp: timestamp,
@@ -340,10 +332,9 @@ export class TransactionActionHandlerService {
     await this.dynamodbService.saveProposal(proposalById);
     await this.dynamodbService.saveScheduleProposalExpireEvent(
       proposal.daoId,
-      proposalById.proposalId,
+      proposal.proposalId,
       dao.policy.proposalPeriod,
     );
-    await this.dynamodbService.saveDao(daoById);
 
     await this.cacheService.handleProposalCache(proposal);
 
@@ -371,7 +362,7 @@ export class TransactionActionHandlerService {
   ): Promise<ContractHandlerResult> {
     const { receiverId, signerId, transactionHash, args, timestamp, status } =
       txAction;
-    const dao = await this.daoService.findOne(receiverId);
+    const dao = await this.daoService.findById(receiverId);
     const daoContract = this.nearApiService.getContract(
       'sputnikDao',
       receiverId,
@@ -389,8 +380,9 @@ export class TransactionActionHandlerService {
         timestamp,
         action: args.action,
       });
-    const proposalEntity = await this.proposalService.findOne(
-      buildProposalId(receiverId, args.id),
+    const proposalEntity = await this.proposalService.findById(
+      receiverId,
+      args.id,
     );
 
     switch (args.action) {
@@ -446,8 +438,6 @@ export class TransactionActionHandlerService {
     });
     await this.opensearchService.indexProposal(proposal.id, proposalById);
     await this.opensearchService.indexDao(proposal.daoId, daoById);
-    await this.dynamodbService.saveDao(daoById);
-    await this.dynamodbService.saveProposal(proposalById);
 
     await this.cacheService.handleProposalCache(proposal);
 
@@ -657,11 +647,11 @@ export class TransactionActionHandlerService {
         this.logger.log(
           `Removing Bounty Context: ${proposalEntity?.id} due to transaction`,
         );
-        await this.bountyContextService.remove(proposalEntity?.id);
+        await this.bountyContextService.remove(dao.id, proposal?.proposalId);
       }
 
       this.logger.log(`Removing Proposal: ${args.id} due to transaction`);
-      await this.proposalService.remove(proposalEntity?.id);
+      await this.proposalService.remove(dao.id, proposal?.proposalId);
     } else {
       this.logger.log(`Updating Proposal: ${proposal.id} due to transaction`);
       await this.proposalService.create(proposal);
@@ -702,9 +692,7 @@ export class TransactionActionHandlerService {
     }
 
     const bountyId = daoBounty.id;
-    const bounty = await this.bountyService.findOne({
-      id: buildBountyId(dao.id, bountyId),
-    });
+    const bounty = await this.bountyService.findById(dao.id, bountyId);
 
     if (bounty) {
       this.logger.log('Bounty has already been created');
@@ -719,20 +707,23 @@ export class TransactionActionHandlerService {
           transactionHash,
           timestamp,
         }),
+        proposal.proposalId,
       );
       this.logger.log('Successfully stored new Bounty');
     }
 
-    const bountyById = await this.bountyService.findOne(bounty.id, {
-      relations: [
-        'bountyContext',
-        'bountyContext.proposal',
-        'bountyDoneProposals',
-        'bountyClaims',
-      ],
-    });
+    const bountyById = await this.bountyService.findOne(
+      buildBountyId(dao.id, bountyId),
+      {
+        relations: [
+          'bountyContext',
+          'bountyContext.proposal',
+          'bountyDoneProposals',
+          'bountyClaims',
+        ],
+      },
+    );
     await this.opensearchService.indexBounty(bounty.id, bountyById);
-    await this.dynamodbService.saveBounty(bountyById);
   }
 
   async handleDoneBounty({
@@ -743,10 +734,9 @@ export class TransactionActionHandlerService {
     timestamp,
   }) {
     const { bountyId, receiverId } = proposalKind;
-    const bounty = await this.bountyService.findOne(
-      buildBountyId(dao.id, bountyId),
-      { relations: ['bountyClaims'] },
-    );
+    const bounty = await this.bountyService.findById(dao.id, bountyId, {
+      relations: ['bountyClaims', 'bountyContext'],
+    });
 
     if (!bounty) {
       this.logger.warn(
@@ -789,7 +779,6 @@ export class TransactionActionHandlerService {
       ],
     });
     await this.opensearchService.indexBounty(bounty.id, bountyById);
-    await this.dynamodbService.saveBounty(bountyById);
   }
 
   async handleClaimUnclaimBounty({
@@ -805,10 +794,9 @@ export class TransactionActionHandlerService {
       receiverId,
     );
     const { id } = args;
-    const bounty = await this.bountyService.findOne(
-      buildBountyId(receiverId, id),
-      { relations: ['bountyClaims'] },
-    );
+    const bounty = await this.bountyService.findById(receiverId, id, {
+      relations: ['bountyClaims', 'bountyContext'],
+    });
 
     if (!bounty) {
       this.logger.warn(
@@ -838,6 +826,7 @@ export class TransactionActionHandlerService {
       castClaimBounty({
         bounty,
         accountId: signerId,
+        daoId: receiverId,
         transactionHash,
         bountyClaims,
         numberOfClaims,
@@ -856,19 +845,18 @@ export class TransactionActionHandlerService {
       ],
     });
     await this.opensearchService.indexBounty(bounty.id, bountyById);
-    await this.dynamodbService.saveBounty(bountyById);
 
     return {
       type: ContractHandlerResultType.BountyClaim,
       metadata: {
         daoId: receiverId,
-        bountyContextId: bounty.bountyContext?.id,
+        bountyContextId: bounty.proposalId,
       },
     };
   }
 
   async handleUnknownDaoTransaction({ receiverId }: TransactionAction) {
-    const dao = await this.daoService.findOne(receiverId);
+    const dao = await this.daoService.findById(receiverId);
     const state = await this.nearApiService.getAccountState(receiverId);
 
     dao.amount = Number(state.amount);
@@ -881,7 +869,6 @@ export class TransactionActionHandlerService {
       relations: ['delegations'],
     });
     await this.opensearchService.indexDao(dao.id, daoById);
-    await this.dynamodbService.saveDao(daoById);
 
     return {
       type: ContractHandlerResultType.Unknown,

@@ -105,7 +105,7 @@ export class DaoController {
   @UseInterceptors(HttpCacheInterceptor)
   @Get('/:id')
   async daoById(@Param() { id }: FindOneParams): Promise<DaoResponseV1> {
-    const dao = await this.daoService.findById(id);
+    const dao = await this.daoService.findOne(id);
 
     if (!dao) {
       throw new BadRequestException(`Invalid DAO ID ${id}`);
