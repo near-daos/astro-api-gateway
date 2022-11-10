@@ -7,7 +7,7 @@ import { NearApiService } from '@sputnik-v2/near-api';
 import { FeatureFlags, FeatureFlagsService } from '@sputnik-v2/feature-flags';
 
 import { AssetsNftEvent, NearIndexerService } from '@sputnik-v2/near-indexer';
-import { NftTokenDynamoService } from '../nft-token-dynamo.service';
+import { NFTTokenDynamoService } from './nft-token-dynamo.service';
 
 import { NFTToken } from './entities';
 import { NFTTokenDto, NFTTokenResponse } from './dto';
@@ -20,7 +20,7 @@ export class NFTTokenService extends TypeOrmCrudService<NFTToken> {
     private readonly nftTokenRepository: Repository<NFTToken>,
     private readonly nearIndexerService: NearIndexerService,
     private readonly nearApiService: NearApiService,
-    private readonly nftTokenDynamoService: NftTokenDynamoService,
+    private readonly nftTokenDynamoService: NFTTokenDynamoService,
     private readonly featureFlagsService: FeatureFlagsService,
   ) {
     super(nftTokenRepository);

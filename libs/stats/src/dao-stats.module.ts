@@ -19,10 +19,10 @@ import { DaoStatsService } from './dao-stats.service';
     ProposalModule,
     TokenModule,
     BountyModule,
-    FeatureFlagsModule,
     DynamodbModule,
+    FeatureFlagsModule,
   ],
   providers: [DaoStatsService, DaoStatsDynamoService],
   exports: [DaoStatsService, DaoStatsDynamoService],
 })
-export class StatsModule {}
+export class DaoStatsModule {}

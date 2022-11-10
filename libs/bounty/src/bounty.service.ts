@@ -1,15 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
+import { BountyDynamoService } from '@sputnik-v2/bounty/bounty-dynamo.service';
 import { FindOneOptions, Not, Repository } from 'typeorm';
 import { buildBountyId, getBlockTimestamp } from '@sputnik-v2/utils';
 import { FeatureFlags, FeatureFlagsService } from '@sputnik-v2/feature-flags';
-import {
-  BountyClaimModel,
-  BountyModel,
-  DynamodbService,
-  DynamoEntityType,
-} from '@sputnik-v2/dynamodb';
+import { BountyClaimModel } from '@sputnik-v2/dynamodb';
 
 import { BountyDto } from './dto';
 import { Bounty, BountyClaim } from './entities';
@@ -19,7 +15,7 @@ export class BountyService extends TypeOrmCrudService<Bounty> {
   constructor(
     @InjectRepository(Bounty)
     private readonly bountyRepository: Repository<Bounty>,
-    private readonly dynamodbService: DynamodbService,
+    private readonly bountyDynamoService: BountyDynamoService,
     private readonly featureFlagsService: FeatureFlagsService,
   ) {
     super(bountyRepository);
@@ -33,14 +29,10 @@ export class BountyService extends TypeOrmCrudService<Bounty> {
     const id = buildBountyId(daoId, bountyId);
     if (await this.useDynamoDB()) {
       return (
-        await this.dynamodbService.queryItemsByType<BountyModel>(
-          daoId,
-          DynamoEntityType.Bounty,
-          {
-            FilterExpression: 'id = :id',
-            ExpressionAttributeValues: { ':id': id },
-          },
-        )
+        await this.bountyDynamoService.query(daoId, {
+          FilterExpression: 'id = :id',
+          ExpressionAttributeValues: { ':id': id },
+        })
       )[0];
     } else {
       return this.findOne(buildBountyId(daoId, bountyId), options);
@@ -50,7 +42,7 @@ export class BountyService extends TypeOrmCrudService<Bounty> {
   async create(bountyDto: BountyDto, proposalIndex?: number) {
     const entity = this.bountyRepository.create(bountyDto);
 
-    await this.dynamodbService.saveBounty(
+    await this.bountyDynamoService.saveBounty(
       { ...entity, id: bountyDto.id },
       proposalIndex || bountyDto.proposalIndex,
     );
@@ -59,22 +51,19 @@ export class BountyService extends TypeOrmCrudService<Bounty> {
     return bountyDto;
   }
 
+  // TODO: dynamo
   async createMultiple(bountyDtos: BountyDto[]): Promise<Bounty[]> {
     return this.bountyRepository.save(bountyDtos);
   }
 
   async getDaoActiveBountiesCount(daoId: string): Promise<number> {
     if (await this.useDynamoDB()) {
-      return this.dynamodbService.countItemsByType(
-        daoId,
-        DynamoEntityType.Bounty,
-        {
-          FilterExpression: 'times > :times',
-          ExpressionAttributeValues: {
-            ':times': 0,
-          },
+      return this.bountyDynamoService.count(daoId, {
+        FilterExpression: 'times > :times',
+        ExpressionAttributeValues: {
+          ':times': 0,
         },
-      );
+      });
     } else {
       return this.bountyRepository.count({
         daoId,

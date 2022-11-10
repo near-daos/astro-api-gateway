@@ -1,11 +1,9 @@
 import { Module } from '@nestjs/common';
-
-import { StatsModule as StatsLibModule } from '@sputnik-v2/stats';
-
+import { DaoStatsModule } from '@sputnik-v2/stats/dao-stats.module';
 import { StatsController } from './stats.controller';
 
 @Module({
-  imports: [StatsLibModule],
+  imports: [DaoStatsModule],
   controllers: [StatsController],
 })
 export class StatsModule {}

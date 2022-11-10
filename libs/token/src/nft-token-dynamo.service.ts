@@ -10,7 +10,7 @@ import {
 import { NFTToken, NFTTokenDto } from '@sputnik-v2/token';
 
 @Injectable()
-export class NftTokenDynamoService {
+export class NFTTokenDynamoService {
   constructor(private readonly dynamoDbService: DynamodbService) {}
 
   async save(nft: NFTToken | NFTTokenDto) {

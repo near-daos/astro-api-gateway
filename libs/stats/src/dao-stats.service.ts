@@ -50,11 +50,10 @@ export class DaoStatsService {
 
   async getDaoStats(daoId: string): Promise<DaoStatsDto> {
     const timestamp = DateTime.now().startOf('day').toMillis();
-    const useDynamoDB = await this.useDynamoDB();
 
     let dao: Dao | DaoModel;
 
-    if (useDynamoDB) {
+    if (await this.useDynamoDB()) {
       dao = await this.daoDynamoService.getDao(daoId);
     } else {
       dao = await this.daoService.findById(daoId);
