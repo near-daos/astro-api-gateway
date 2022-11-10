@@ -90,17 +90,17 @@ export class DynamoDraftProposalService implements DraftProposalService {
     }
 
     await this.dynamodbService.saveItem<DraftProposalModel>({
-      ...draftProposalDto,
+      ...draftProposal,
+      title: draftProposalDto.title,
+      description: draftProposalDto.description,
+      kind: draftProposalDto.kind,
+      type: draftProposalDto.type,
       history: [
+        ...draftProposal.history,
         {
-          id: draftProposal.id,
+          ...draftProposal,
           daoId: draftProposal.partitionId,
-          proposer: draftProposal.proposer,
-          title: draftProposal.title,
-          description: draftProposal.description,
-          kind: draftProposal.kind,
-          type: draftProposal.type,
-          timestamp: draftProposal.updateTimestamp,
+          timestamp: Date.now(),
         },
       ],
     });
