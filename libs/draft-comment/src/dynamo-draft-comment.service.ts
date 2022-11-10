@@ -5,7 +5,6 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { EventService } from '@sputnik-v2/event';
-import { v4 as uuidv4 } from 'uuid';
 import {
   CommentModel,
   DaoModel,
@@ -54,9 +53,8 @@ export class DynamoDraftCommentService implements DraftCommentService {
     daoId: string,
     accountId: string,
     draftCommentDto: CreateDraftComment,
+    commentId: string,
   ): Promise<string> {
-    const commentId = uuidv4();
-
     const comment = await this.createDraftProposalCommentInDynamo(
       daoId,
       accountId,
@@ -70,22 +68,29 @@ export class DynamoDraftCommentService implements DraftCommentService {
       1,
     );
 
-    if (await this.featureFlagService.check(FeatureFlags.DraftCommentsDynamo)) {
+    if (await this.useDynamo()) {
       await this.eventService.sendNewDraftCommentEvent(comment);
     }
 
     return commentId;
   }
 
+  private async useDynamo() {
+    return await this.featureFlagService.check(
+      FeatureFlags.DraftCommentsDynamo,
+    );
+  }
+
   private async createDraftCommentReply(
     daoId: string,
     accountId: string,
     draftCommentDto: CreateDraftComment,
+    commentId: string,
   ): Promise<string> {
     const reply = await this.createDraftProposalCommentInDynamo(
       daoId,
       accountId,
-      uuidv4(),
+      commentId,
       draftCommentDto,
     );
 
@@ -95,7 +100,7 @@ export class DynamoDraftCommentService implements DraftCommentService {
       1,
     );
 
-    if (await this.featureFlagService.check(FeatureFlags.DraftCommentsDynamo)) {
+    if (await this.useDynamo()) {
       await this.eventService.sendNewDraftCommentEvent(reply);
     }
 
@@ -105,12 +110,14 @@ export class DynamoDraftCommentService implements DraftCommentService {
   create(
     accountId: string,
     draftCommentDto: CreateDraftComment,
+    commentId: string,
   ): Promise<string> {
     if (draftCommentDto.replyTo) {
       return this.createDraftCommentReply(
         draftCommentDto.daoId,
         accountId,
         draftCommentDto,
+        commentId,
       );
     }
 
@@ -119,6 +126,7 @@ export class DynamoDraftCommentService implements DraftCommentService {
         draftCommentDto.daoId,
         accountId,
         draftCommentDto,
+        commentId,
       );
     }
   }
@@ -217,9 +225,7 @@ export class DynamoDraftCommentService implements DraftCommentService {
         { likeAccounts },
       );
 
-      if (
-        await this.featureFlagService.check(FeatureFlags.DraftCommentsDynamo)
-      ) {
+      if (await this.useDynamo()) {
         await this.eventService.sendUpdateDraftCommentEvent({
           ...draftComment,
           likeAccounts,
@@ -249,9 +255,7 @@ export class DynamoDraftCommentService implements DraftCommentService {
         { likeAccounts },
       );
 
-      if (
-        await this.featureFlagService.check(FeatureFlags.DraftCommentsDynamo)
-      ) {
+      if (await this.useDynamo()) {
         await this.eventService.sendUpdateDraftCommentEvent({
           ...draftComment,
           likeAccounts,
@@ -287,9 +291,7 @@ export class DynamoDraftCommentService implements DraftCommentService {
         { dislikeAccounts },
       );
 
-      if (
-        await this.featureFlagService.check(FeatureFlags.DraftCommentsDynamo)
-      ) {
+      if (await this.useDynamo()) {
         await this.eventService.sendUpdateDraftCommentEvent({
           ...draftComment,
           dislikeAccounts,
@@ -319,9 +321,7 @@ export class DynamoDraftCommentService implements DraftCommentService {
         { dislikeAccounts },
       );
 
-      if (
-        await this.featureFlagService.check(FeatureFlags.DraftCommentsDynamo)
-      ) {
+      if (await this.useDynamo()) {
         await this.eventService.sendUpdateDraftCommentEvent({
           ...draftComment,
           dislikeAccounts,
@@ -363,7 +363,7 @@ export class DynamoDraftCommentService implements DraftCommentService {
       { isArchived: true },
     );
 
-    if (await this.featureFlagService.check(FeatureFlags.DraftCommentsDynamo)) {
+    if (await this.useDynamo()) {
       await this.eventService.sendDeleteDraftCommentEvent(draftComment);
     }
 

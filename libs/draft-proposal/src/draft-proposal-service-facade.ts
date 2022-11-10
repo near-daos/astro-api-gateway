@@ -54,8 +54,16 @@ export class DraftProposalServiceFacade implements DraftProposalService {
     accountId: string,
     draftProposalDto: CreateDraftProposal,
   ): Promise<string> {
-    await this.dynamoDraftProposalService.create(accountId, draftProposalDto);
-    return this.mongoDraftProposalService.create(accountId, draftProposalDto);
+    const draftId = await this.mongoDraftProposalService.create(
+      accountId,
+      draftProposalDto,
+    );
+    await this.dynamoDraftProposalService.create(
+      accountId,
+      draftProposalDto,
+      draftId,
+    );
+    return draftId;
   }
 
   async delete(

@@ -18,7 +18,6 @@ import {
   UpdateDraftProposal,
 } from './dto';
 import { DraftProposalService, DraftProposalState } from './types';
-import { v4 as uuidv4 } from 'uuid';
 import { getAccountPermissions } from '@sputnik-v2/utils';
 
 @Injectable()
@@ -35,9 +34,8 @@ export class DynamoDraftProposalService implements DraftProposalService {
   async create(
     accountId: string,
     draftProposalDto: CreateDraftProposal,
+    draftId: string,
   ): Promise<string> {
-    const draftId = uuidv4();
-
     await this.dynamodbService.saveItem<DraftProposalModel>({
       partitionId: draftProposalDto.daoId,
       entityId: `${DynamoEntityType.DraftProposal}:${draftId}`,

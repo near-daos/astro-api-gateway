@@ -47,7 +47,7 @@ import { DraftProposalServiceFacade } from '@sputnik-v2/draft-proposal/draft-pro
 @Controller('/draft-proposals')
 export class DraftProposalController {
   constructor(
-    private readonly draftProposalService: DraftProposalServiceFacade,
+    private readonly draftProposalServiceFacade: DraftProposalServiceFacade,
   ) {}
 
   @ApiResponse({
@@ -59,7 +59,7 @@ export class DraftProposalController {
   getDraftProposals(
     @Query() query: DraftProposalsRequest,
   ): Promise<BaseResponseDto<DraftProposalBasicResponse>> {
-    return this.draftProposalService.getAll(query);
+    return this.draftProposalServiceFacade.getAll(query);
   }
 
   @ApiParam({
@@ -79,7 +79,7 @@ export class DraftProposalController {
     @Param() { id }: FindOneMongoParams,
     @Query() query: DraftProposalRequest,
   ): Promise<DraftProposalResponse> {
-    return this.draftProposalService.getOneById(id, query);
+    return this.draftProposalServiceFacade.getOneById(id, query);
   }
 
   @ApiResponse({
@@ -102,7 +102,7 @@ export class DraftProposalController {
     @Req() req: AuthorizedRequest,
     @Body() body: CreateDraftProposal,
   ): Promise<string> {
-    return this.draftProposalService.create(req.accountId, body);
+    return this.draftProposalServiceFacade.create(req.accountId, body);
   }
 
   @ApiParam({
@@ -134,7 +134,12 @@ export class DraftProposalController {
     @Req() req: AuthorizedRequest,
     @Body() body: UpdateDraftProposal,
   ): Promise<string> {
-    return this.draftProposalService.update(daoId, id, req.accountId, body);
+    return this.draftProposalServiceFacade.update(
+      daoId,
+      id,
+      req.accountId,
+      body,
+    );
   }
 
   @ApiParam({
@@ -167,7 +172,7 @@ export class DraftProposalController {
     @Param() { daoId, id }: FindOneMongoDaoParams,
     @Req() req: AuthorizedRequest,
   ): Promise<DeleteResponse> {
-    return this.draftProposalService.delete(daoId, id, req.accountId);
+    return this.draftProposalServiceFacade.delete(daoId, id, req.accountId);
   }
 
   @ApiParam({
@@ -197,7 +202,7 @@ export class DraftProposalController {
     @Param() { daoId, id }: FindOneMongoDaoParams,
     @Req() req: AuthorizedRequest,
   ) {
-    return this.draftProposalService.view(daoId, id, req.accountId);
+    return this.draftProposalServiceFacade.view(daoId, id, req.accountId);
   }
 
   @ApiParam({
@@ -227,7 +232,7 @@ export class DraftProposalController {
     @Param() { daoId, id }: FindOneMongoDaoParams,
     @Req() req: AuthorizedRequest,
   ) {
-    return this.draftProposalService.save(daoId, id, req.accountId);
+    return this.draftProposalServiceFacade.save(daoId, id, req.accountId);
   }
 
   @ApiParam({
@@ -257,7 +262,7 @@ export class DraftProposalController {
     @Param() { daoId, id }: FindOneMongoDaoParams,
     @Req() req: AuthorizedRequest,
   ) {
-    return this.draftProposalService.removeSave(daoId, id, req.accountId);
+    return this.draftProposalServiceFacade.removeSave(daoId, id, req.accountId);
   }
 
   @ApiParam({
@@ -291,6 +296,11 @@ export class DraftProposalController {
     @Req() req: AuthorizedRequest,
     @Body() body: CloseDraftProposal,
   ) {
-    return this.draftProposalService.close(daoId, id, req.accountId, body);
+    return this.draftProposalServiceFacade.close(
+      daoId,
+      id,
+      req.accountId,
+      body,
+    );
   }
 }
