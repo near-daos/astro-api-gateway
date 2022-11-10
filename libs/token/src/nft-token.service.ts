@@ -4,15 +4,10 @@ import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 import { In, IsNull, Not, Repository } from 'typeorm';
 import { CrudRequest } from '@nestjsx/crud';
 import { NearApiService } from '@sputnik-v2/near-api';
-import {
-  DynamodbService,
-  DynamoEntityType,
-  mapNftTokenToNftModel,
-  NftModel,
-} from '@sputnik-v2/dynamodb';
 import { FeatureFlags, FeatureFlagsService } from '@sputnik-v2/feature-flags';
 
 import { AssetsNftEvent, NearIndexerService } from '@sputnik-v2/near-indexer';
+import { NftTokenDynamoService } from '../nft-token-dynamo.service';
 
 import { NFTToken } from './entities';
 import { NFTTokenDto, NFTTokenResponse } from './dto';
@@ -25,7 +20,7 @@ export class NFTTokenService extends TypeOrmCrudService<NFTToken> {
     private readonly nftTokenRepository: Repository<NFTToken>,
     private readonly nearIndexerService: NearIndexerService,
     private readonly nearApiService: NearApiService,
-    private readonly dynamodbService: DynamodbService,
+    private readonly nftTokenDynamoService: NftTokenDynamoService,
     private readonly featureFlagsService: FeatureFlagsService,
   ) {
     super(nftTokenRepository);
@@ -36,29 +31,24 @@ export class NFTTokenService extends TypeOrmCrudService<NFTToken> {
   }
 
   async create(tokenDto: NFTTokenDto): Promise<NFTToken> {
-    return this.nftTokenRepository.save(tokenDto);
+    await this.nftTokenDynamoService.save(tokenDto);
+    return await this.nftTokenRepository.save(tokenDto);
   }
 
   async createMultiple(nftDtos: NFTTokenDto[]) {
-    await this.dynamodbService.batchPut(
-      nftDtos.map((nft) => mapNftTokenToNftModel(nft)),
-    );
+    await this.nftTokenDynamoService.saveMultiple(nftDtos);
     await this.nftTokenRepository.save(nftDtos);
   }
 
   async purge(accountId: string, contractId: string, ids: string[]) {
-    const nftsToDelete = await this.dynamodbService.queryItemsByType<NftModel>(
-      accountId,
-      DynamoEntityType.Nft,
-      {
-        FilterExpression: 'contractId = :contractId and not contains(:ids, id)',
-        ExpressionAttributeValues: {
-          ':contractId': contractId,
-          ':ids': ids,
-        },
+    const nftsToDelete = await this.nftTokenDynamoService.query(accountId, {
+      FilterExpression: 'contractId = :contractId and not contains(:ids, id)',
+      ExpressionAttributeValues: {
+        ':contractId': contractId,
+        ':ids': ids,
       },
-    );
-    await this.dynamodbService.batchDelete(nftsToDelete);
+    });
+    await this.nftTokenDynamoService.delete(nftsToDelete);
     await this.nftTokenRepository.delete({
       accountId,
       contractId,
@@ -66,6 +56,7 @@ export class NFTTokenService extends TypeOrmCrudService<NFTToken> {
     });
   }
 
+  // TODO: dynamo
   async lastToken(): Promise<NFTToken> {
     return this.nftTokenRepository.findOne({
       where: { updateTimestamp: Not(IsNull()) },
@@ -73,6 +64,7 @@ export class NFTTokenService extends TypeOrmCrudService<NFTToken> {
     });
   }
 
+  // TODO: dynamo
   async getMany(req: CrudRequest): Promise<NFTTokenResponse | NFTToken[]> {
     req.options.query.join.contract = { eager: true };
     return super.getMany(req);
@@ -80,15 +72,13 @@ export class NFTTokenService extends TypeOrmCrudService<NFTToken> {
 
   async getAccountTokenCount(accountId: string): Promise<number> {
     if (await this.useDynamoDB()) {
-      return this.dynamodbService.countItemsByType(
-        accountId,
-        DynamoEntityType.Nft,
-      );
+      return this.nftTokenDynamoService.count(accountId);
     } else {
       return this.nftTokenRepository.count({ accountId });
     }
   }
 
+  // TODO: dynamo
   async getTokenEvents(id: string): Promise<AssetsNftEvent[]> {
     const nftToken = await this.nftTokenRepository.findOne(id);
 

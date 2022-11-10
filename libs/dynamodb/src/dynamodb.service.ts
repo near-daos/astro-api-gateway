@@ -17,7 +17,7 @@ import {
   DraftProposal,
   DraftProposalHistory,
 } from '@sputnik-v2/draft-proposal/entities';
-import { NFTToken, Token, TokenBalance } from '@sputnik-v2/token/entities';
+import { Token, TokenBalance } from '@sputnik-v2/token/entities';
 import {
   ProposalTemplate,
   SharedProposalTemplate,
@@ -43,14 +43,12 @@ import {
   mapDaoToDaoModel,
   mapDraftCommentToCommentModel,
   mapDraftProposalToDraftProposalModel,
-  mapNftTokenToNftModel,
   mapProposalTemplateToProposalTemplateModel,
   mapProposalToProposalModel,
   mapSharedProposalTemplateToSharedProposalTemplateModel,
   mapSubscriptionToSubscriptionModel,
   mapTokenBalanceToTokenBalanceModel,
   mapTokenToTokenPriceModel,
-  NftModel,
   ProposalModel,
   ProposalTemplateModel,
   SharedProposalTemplateModel,
@@ -162,10 +160,6 @@ export class DynamodbService {
     return this.saveItem<DraftProposalModel>(
       mapDraftProposalToDraftProposalModel(draftProposal, history),
     );
-  }
-
-  public async saveNft(nft: NFTToken) {
-    return this.saveItem<NftModel>(mapNftTokenToNftModel(nft));
   }
 
   public async saveProposal(proposal: Proposal) {
