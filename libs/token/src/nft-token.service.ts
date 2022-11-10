@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 import { In, IsNull, Not, Repository } from 'typeorm';
@@ -18,6 +23,7 @@ export class NFTTokenService extends TypeOrmCrudService<NFTToken> {
   constructor(
     @InjectRepository(NFTToken)
     private readonly nftTokenRepository: Repository<NFTToken>,
+    @Inject(forwardRef(() => NearIndexerService))
     private readonly nearIndexerService: NearIndexerService,
     private readonly nearApiService: NearApiService,
     private readonly nftTokenDynamoService: NFTTokenDynamoService,

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { NearIndexerModule } from '@sputnik-v2/near-indexer';
 import { NearApiModule } from '@sputnik-v2/near-api';
@@ -21,7 +21,7 @@ import { TokenFactoryService } from './token-factory.service';
       NFTTokenMetadata,
       Dao,
     ]),
-    NearIndexerModule,
+    forwardRef(() => NearIndexerModule),
     NearApiModule,
     FeatureFlagsModule,
     DynamodbModule,
