@@ -54,10 +54,10 @@ import {
   TokenPriceModel,
 } from './models';
 import {
-  BaseEntity,
   CountItemsQuery,
   DynamoEntityType,
   EntityId,
+  PartialEntity,
   QueryItemsQuery,
 } from './types';
 import { ScheduledProposalExpirationEvent } from '@sputnik-v2/dynamodb/models/scheduled-proposal-expiration.model';
@@ -313,7 +313,7 @@ export class DynamodbService {
   }
 
   async saveItem<M extends BaseModel>(
-    data: Partial<M> & BaseEntity,
+    data: PartialEntity<M>,
     tableName = this.tableName,
   ) {
     const processingTimeStamp = Date.now();
