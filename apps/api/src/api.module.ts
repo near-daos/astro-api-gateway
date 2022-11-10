@@ -23,7 +23,7 @@ import { TokenModule } from './token/token.module';
 import { TransactionModule } from './transaction/transaction.module';
 import { AppController } from './api.controller';
 import { NotificationModule } from './notification/notification.module';
-import { CommentApiModule } from './comment/comment-api.module';
+import { CommentModule } from './comment/comment.module';
 import { AggregatorModule } from './aggregator/aggregator.module';
 import { MetricsModule } from './metrics/metrics.module';
 import { StatsModule } from './stats/stats.module';
@@ -80,7 +80,7 @@ import { SearchModule } from './search/search.module';
     WebsocketModule,
     EventModule,
     NotificationModule,
-    CommentApiModule,
+    CommentModule,
     AggregatorModule,
     MetricsModule,
     StatsModule,

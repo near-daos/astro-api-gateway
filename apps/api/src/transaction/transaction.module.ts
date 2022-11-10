@@ -10,8 +10,8 @@ import { TransactionController } from './transaction.controller';
     CacheModule.registerAsync({
       useClass: CacheConfigService,
     }),
-    TransactionModuleLib,
     NearIndexerModule,
+    TransactionModuleLib,
   ],
   controllers: [TransactionController],
 })

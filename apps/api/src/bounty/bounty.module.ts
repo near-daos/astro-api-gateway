@@ -2,8 +2,8 @@ import { CacheModule, Module } from '@nestjs/common';
 import { BountyModule as BountyModuleLib } from '@sputnik-v2/bounty';
 import { CacheConfigService } from '@sputnik-v2/config/api-config';
 import { DaoModule } from '@sputnik-v2/dao';
+import { NearApiModule } from '@sputnik-v2/near-api';
 
-import { NearModule } from '../near/near.module';
 import { BountyController } from './bounty.controller';
 
 @Module({
@@ -12,7 +12,7 @@ import { BountyController } from './bounty.controller';
       useClass: CacheConfigService,
     }),
     DaoModule,
-    NearModule,
+    NearApiModule,
     BountyModuleLib,
   ],
   controllers: [BountyController],
