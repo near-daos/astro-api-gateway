@@ -2,9 +2,9 @@ import { CacheModule, Module } from '@nestjs/common';
 
 import { AccountModule as AccountModuleLib } from '@sputnik-v2/account';
 import { CacheConfigService } from '@sputnik-v2/config/cache';
+import { NearApiModule } from '@sputnik-v2/near-api';
 import { OtpModule } from '@sputnik-v2/otp';
 
-import { NearModule } from '../near/near.module';
 import { AccountController } from './account.controller';
 
 @Module({
@@ -12,9 +12,9 @@ import { AccountController } from './account.controller';
     CacheModule.registerAsync({
       useClass: CacheConfigService,
     }),
-    AccountModuleLib,
-    NearModule,
     OtpModule,
+    NearApiModule,
+    AccountModuleLib,
   ],
   controllers: [AccountController],
 })
