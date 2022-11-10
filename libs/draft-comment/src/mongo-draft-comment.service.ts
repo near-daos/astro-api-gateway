@@ -68,15 +68,19 @@ export class MongoDraftCommentService implements DraftCommentService {
       }),
     );
 
-    if (
-      !(await this.featureFlagsService.check(FeatureFlags.DraftCommentsDynamo))
-    ) {
+    if (await this.useMongo()) {
       await this.eventService.sendNewDraftCommentEvent(
         castDraftCommentResponse(draftComment),
       );
     }
 
     return draftComment.id.toString();
+  }
+
+  private async useMongo() {
+    return !(await this.featureFlagsService.check(
+      FeatureFlags.DraftCommentsDynamo,
+    ));
   }
 
   private async createDraftCommentReply(
@@ -115,9 +119,7 @@ export class MongoDraftCommentService implements DraftCommentService {
       );
     }
 
-    if (
-      !(await this.featureFlagsService.check(FeatureFlags.DraftCommentsDynamo))
-    ) {
+    if (await this.useMongo()) {
       await this.eventService.sendNewDraftCommentEvent(
         castDraftCommentResponse(draftComment),
       );
@@ -158,9 +160,7 @@ export class MongoDraftCommentService implements DraftCommentService {
       message: draftCommentDto.message,
     });
 
-    if (
-      !(await this.featureFlagsService.check(FeatureFlags.DraftCommentsDynamo))
-    ) {
+    if (await this.useMongo()) {
       await this.eventService.sendUpdateDraftCommentEvent(
         castDraftCommentResponse(updatedComment),
       );
@@ -345,9 +345,7 @@ export class MongoDraftCommentService implements DraftCommentService {
       );
     }
 
-    if (
-      !(await this.featureFlagsService.check(FeatureFlags.DraftCommentsDynamo))
-    ) {
+    if (await this.useMongo()) {
       await this.eventService.sendDeleteDraftCommentEvent(
         castDraftCommentResponse(draftComment),
       );

@@ -12,6 +12,7 @@ export interface DraftProposalService {
   create(
     accountId: string,
     draftProposalDto: CreateDraftProposal,
+    draftId?: string,
   ): Promise<string>;
 
   getAll(any: any): Promise<BaseResponseDto<DraftProposalBasicResponse>>;

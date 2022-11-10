@@ -24,8 +24,18 @@ export class DraftCommentServiceFacade implements DraftCommentService {
     accountId: string,
     draftCommentDto: CreateDraftComment,
   ): Promise<string> {
-    await this.dynamoDraftCommentService.create(accountId, draftCommentDto);
-    return this.mongoDraftCommentService.create(accountId, draftCommentDto);
+    const commentId = await this.mongoDraftCommentService.create(
+      accountId,
+      draftCommentDto,
+    );
+
+    await this.dynamoDraftCommentService.create(
+      accountId,
+      draftCommentDto,
+      commentId,
+    );
+
+    return commentId;
   }
 
   async delete(params: DraftCommentContextParams): Promise<DeleteResponse> {

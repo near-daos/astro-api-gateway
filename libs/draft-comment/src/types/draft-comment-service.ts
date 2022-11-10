@@ -11,6 +11,7 @@ export interface DraftCommentService {
   create(
     accountId: string,
     draftCommentDto: CreateDraftComment,
+    commentIdId?: string,
   ): Promise<string>;
 
   update(
