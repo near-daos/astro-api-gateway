@@ -23,6 +23,7 @@ import {
   DraftCommentService,
 } from './types';
 import { getAccountPermissions } from '@sputnik-v2/utils';
+import { FeatureFlags, FeatureFlagsService } from '@sputnik-v2/feature-flags';
 
 @Injectable()
 export class MongoDraftCommentService implements DraftCommentService {
@@ -32,6 +33,7 @@ export class MongoDraftCommentService implements DraftCommentService {
     private draftProposalService: MongoDraftProposalService,
     private daoApiService: DaoApiService,
     private eventService: EventService,
+    private featureFlagsService: FeatureFlagsService,
   ) {}
 
   private async createDraftProposalComment(
@@ -66,9 +68,13 @@ export class MongoDraftCommentService implements DraftCommentService {
       }),
     );
 
-    await this.eventService.sendNewDraftCommentEvent(
-      castDraftCommentResponse(draftComment),
-    );
+    if (
+      !(await this.featureFlagsService.check(FeatureFlags.DraftCommentsDynamo))
+    ) {
+      await this.eventService.sendNewDraftCommentEvent(
+        castDraftCommentResponse(draftComment),
+      );
+    }
 
     return draftComment.id.toString();
   }
@@ -109,9 +115,13 @@ export class MongoDraftCommentService implements DraftCommentService {
       );
     }
 
-    await this.eventService.sendNewDraftCommentEvent(
-      castDraftCommentResponse(draftComment),
-    );
+    if (
+      !(await this.featureFlagsService.check(FeatureFlags.DraftCommentsDynamo))
+    ) {
+      await this.eventService.sendNewDraftCommentEvent(
+        castDraftCommentResponse(draftComment),
+      );
+    }
 
     return draftComment.id.toString();
   }
@@ -147,9 +157,14 @@ export class MongoDraftCommentService implements DraftCommentService {
       ...draftComment,
       message: draftCommentDto.message,
     });
-    await this.eventService.sendUpdateDraftCommentEvent(
-      castDraftCommentResponse(updatedComment),
-    );
+
+    if (
+      !(await this.featureFlagsService.check(FeatureFlags.DraftCommentsDynamo))
+    ) {
+      await this.eventService.sendUpdateDraftCommentEvent(
+        castDraftCommentResponse(updatedComment),
+      );
+    }
 
     return draftComment.id.toString();
   }
@@ -175,9 +190,15 @@ export class MongoDraftCommentService implements DraftCommentService {
       await this.draftCommentRepository.update(draftComment.id, {
         likeAccounts,
       });
-      await this.eventService.sendUpdateDraftCommentEvent(
-        castDraftCommentResponse({ ...draftComment, likeAccounts }),
-      );
+      if (
+        !(await this.featureFlagsService.check(
+          FeatureFlags.DraftCommentsDynamo,
+        ))
+      ) {
+        await this.eventService.sendUpdateDraftCommentEvent(
+          castDraftCommentResponse({ ...draftComment, likeAccounts }),
+        );
+      }
     }
 
     return true;
@@ -200,9 +221,16 @@ export class MongoDraftCommentService implements DraftCommentService {
       await this.draftCommentRepository.update(draftComment.id, {
         likeAccounts,
       });
-      await this.eventService.sendUpdateDraftCommentEvent(
-        castDraftCommentResponse({ ...draftComment, likeAccounts }),
-      );
+
+      if (
+        !(await this.featureFlagsService.check(
+          FeatureFlags.DraftCommentsDynamo,
+        ))
+      ) {
+        await this.eventService.sendUpdateDraftCommentEvent(
+          castDraftCommentResponse({ ...draftComment, likeAccounts }),
+        );
+      }
     }
 
     return true;
@@ -229,9 +257,15 @@ export class MongoDraftCommentService implements DraftCommentService {
       await this.draftCommentRepository.update(draftComment.id, {
         dislikeAccounts,
       });
-      await this.eventService.sendUpdateDraftCommentEvent(
-        castDraftCommentResponse({ ...draftComment, dislikeAccounts }),
-      );
+      if (
+        !(await this.featureFlagsService.check(
+          FeatureFlags.DraftCommentsDynamo,
+        ))
+      ) {
+        await this.eventService.sendUpdateDraftCommentEvent(
+          castDraftCommentResponse({ ...draftComment, dislikeAccounts }),
+        );
+      }
     }
 
     return true;
@@ -254,9 +288,15 @@ export class MongoDraftCommentService implements DraftCommentService {
       await this.draftCommentRepository.update(draftComment.id, {
         dislikeAccounts,
       });
-      await this.eventService.sendUpdateDraftCommentEvent(
-        castDraftCommentResponse({ ...draftComment, dislikeAccounts }),
-      );
+      if (
+        !(await this.featureFlagsService.check(
+          FeatureFlags.DraftCommentsDynamo,
+        ))
+      ) {
+        await this.eventService.sendUpdateDraftCommentEvent(
+          castDraftCommentResponse({ ...draftComment, dislikeAccounts }),
+        );
+      }
     }
 
     return true;
@@ -305,9 +345,13 @@ export class MongoDraftCommentService implements DraftCommentService {
       );
     }
 
-    await this.eventService.sendDeleteDraftCommentEvent(
-      castDraftCommentResponse(draftComment),
-    );
+    if (
+      !(await this.featureFlagsService.check(FeatureFlags.DraftCommentsDynamo))
+    ) {
+      await this.eventService.sendDeleteDraftCommentEvent(
+        castDraftCommentResponse(draftComment),
+      );
+    }
 
     return { id: commentId, deleted: true };
   }
