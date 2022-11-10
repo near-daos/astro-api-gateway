@@ -11,4 +11,5 @@ export enum FeatureFlags {
   DaoStatsDynamo = 'dao-stats-dynamo',
   DraftCommentsDynamo = 'draft-comments-dynamo',
   DraftDynamo = 'draft-dynamo',
+  NftTokenDynamo = 'nft-token-dynamo',
 }

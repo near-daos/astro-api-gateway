@@ -5,7 +5,6 @@ import { Injectable } from '@nestjs/common';
 
 import { Dao } from '@sputnik-v2/dao/entities';
 import { Proposal } from '@sputnik-v2/proposal/entities';
-import { Bounty } from '@sputnik-v2/bounty/entities';
 import { Account } from '@sputnik-v2/account/entities';
 import {
   AccountNotification,
@@ -17,7 +16,7 @@ import {
   DraftProposal,
   DraftProposalHistory,
 } from '@sputnik-v2/draft-proposal/entities';
-import { NFTToken, Token, TokenBalance } from '@sputnik-v2/token/entities';
+import { Token, TokenBalance } from '@sputnik-v2/token/entities';
 import {
   ProposalTemplate,
   SharedProposalTemplate,
@@ -31,26 +30,22 @@ import {
   AccountNotificationModel,
   AccountNotificationSettingsModel,
   BaseModel,
-  BountyModel,
   CommentModel,
   DaoModel,
   DraftProposalModel,
   mapAccountNotificationSettingsToAccountNotificationSettingsModel,
   mapAccountNotificationToAccountNotificationModel,
   mapAccountToAccountModel,
-  mapBountyToBountyModel,
   mapCommentToCommentModel,
   mapDaoToDaoModel,
   mapDraftCommentToCommentModel,
   mapDraftProposalToDraftProposalModel,
-  mapNftTokenToNftModel,
   mapProposalTemplateToProposalTemplateModel,
   mapProposalToProposalModel,
   mapSharedProposalTemplateToSharedProposalTemplateModel,
   mapSubscriptionToSubscriptionModel,
   mapTokenBalanceToTokenBalanceModel,
   mapTokenToTokenPriceModel,
-  NftModel,
   ProposalModel,
   ProposalTemplateModel,
   SharedProposalTemplateModel,
@@ -94,11 +89,11 @@ export class DynamodbService {
     this.tableName = tableName;
   }
 
-  public async saveAccount(account: Partial<Account>) {
+  async saveAccount(account: Partial<Account>) {
     return this.saveItem<AccountModel>(mapAccountToAccountModel(account));
   }
 
-  public async updateDraftProposalReplies(
+  async updateDraftProposalReplies(
     daoId: string,
     draftId: string,
     replies: number,
@@ -119,7 +114,7 @@ export class DynamodbService {
     });
   }
 
-  public async saveAccountNotification(
+  async saveAccountNotification(
     accountNotification: Partial<AccountNotification>,
   ) {
     return this.saveItem<AccountNotificationModel>(
@@ -127,7 +122,7 @@ export class DynamodbService {
     );
   }
 
-  public async saveAccountNotificationSettings(
+  async saveAccountNotificationSettings(
     accountNotificationSettings: Partial<AccountNotificationSettings>,
   ) {
     return this.saveItem<AccountNotificationSettingsModel>(
@@ -137,25 +132,19 @@ export class DynamodbService {
     );
   }
 
-  public async saveBounty(bounty: Partial<Bounty>, proposalId?: number) {
-    return this.saveItem<BountyModel>(
-      mapBountyToBountyModel(bounty, proposalId),
-    );
-  }
-
-  public async saveComment(comment: Partial<Comment>) {
+  async saveComment(comment: Partial<Comment>) {
     return this.saveItem<CommentModel>(mapCommentToCommentModel(comment));
   }
 
-  public async saveDraftComment(comment: Partial<DraftComment>) {
+  async saveDraftComment(comment: Partial<DraftComment>) {
     return this.saveItem<CommentModel>(mapDraftCommentToCommentModel(comment));
   }
 
-  public async saveDao(dao: Dao) {
+  async saveDao(dao: Dao) {
     return this.saveItem<DaoModel>(mapDaoToDaoModel(dao));
   }
 
-  public async saveDraftProposal(
+  async saveDraftProposal(
     draftProposal: DraftProposal,
     history?: DraftProposalHistory[],
   ) {
@@ -164,21 +153,17 @@ export class DynamodbService {
     );
   }
 
-  public async saveNft(nft: NFTToken) {
-    return this.saveItem<NftModel>(mapNftTokenToNftModel(nft));
-  }
-
-  public async saveProposal(proposal: Proposal) {
+  async saveProposal(proposal: Proposal) {
     return this.saveItem<ProposalModel>(mapProposalToProposalModel(proposal));
   }
 
-  public async saveProposalTemplate(proposalTemplate: ProposalTemplate) {
+  async saveProposalTemplate(proposalTemplate: ProposalTemplate) {
     return this.saveItem<ProposalTemplateModel>(
       mapProposalTemplateToProposalTemplateModel(proposalTemplate),
     );
   }
 
-  public async saveSharedProposalTemplate(
+  async saveSharedProposalTemplate(
     sharedProposalTemplate: SharedProposalTemplate,
     daoId: string,
   ) {
@@ -190,23 +175,23 @@ export class DynamodbService {
     );
   }
 
-  public async saveSubscription(subscription: Subscription) {
+  async saveSubscription(subscription: Subscription) {
     return this.saveItem<SubscriptionModel>(
       mapSubscriptionToSubscriptionModel(subscription),
     );
   }
 
-  public async saveTokenBalance(tokenBalance: TokenBalance) {
+  async saveTokenBalance(tokenBalance: TokenBalance) {
     return this.saveItem<TokenBalanceModel>(
       mapTokenBalanceToTokenBalanceModel(tokenBalance),
     );
   }
 
-  public async saveTokenPrice(token: Partial<Token>) {
+  async saveTokenPrice(token: Partial<Token>) {
     return this.saveItem<TokenPriceModel>(mapTokenToTokenPriceModel(token));
   }
 
-  public async batchDelete<M extends BaseModel = BaseModel>(
+  async batchDelete<M extends BaseModel>(
     items: Partial<M>[],
     tableName = this.tableName,
   ) {
@@ -217,7 +202,7 @@ export class DynamodbService {
       });
   }
 
-  public async batchPut<M extends BaseModel = BaseModel>(
+  async batchPut<M extends BaseModel>(
     items: Partial<M>[],
     tableName = this.tableName,
   ) {
@@ -232,7 +217,7 @@ export class DynamodbService {
       .promise();
   }
 
-  public async getItemByType<M extends BaseModel = BaseModel>(
+  async getItemByType<M extends BaseModel>(
     partitionId: string,
     entityType: DynamoEntityType,
     id: string,
@@ -240,7 +225,7 @@ export class DynamodbService {
     return await this.getItemById(partitionId, buildEntityId(entityType, id));
   }
 
-  public async getItemById<M extends BaseModel = BaseModel>(
+  async getItemById<M extends BaseModel>(
     partitionId: string,
     entityId: EntityId,
     tableName = this.tableName,
@@ -255,7 +240,7 @@ export class DynamodbService {
       .catch(() => null);
   }
 
-  public async queryItems<M extends BaseModel = BaseModel>(
+  async queryItems<M extends BaseModel>(
     query: QueryItemsQuery,
     tableName = this.tableName,
   ): Promise<M[]> {
@@ -269,7 +254,7 @@ export class DynamodbService {
       .catch(() => null);
   }
 
-  public async countItems(
+  async countItems(
     query: CountItemsQuery,
     tableName = this.tableName,
   ): Promise<number> {
@@ -284,7 +269,7 @@ export class DynamodbService {
       .catch(() => 0);
   }
 
-  public async queryItemsByType<M extends BaseModel = BaseModel>(
+  async queryItemsByType<M extends BaseModel>(
     partitionId: string,
     entityType: DynamoEntityType,
     query: CountItemsQuery = {},
@@ -305,7 +290,7 @@ export class DynamodbService {
     );
   }
 
-  public async countItemsByType(
+  async countItemsByType(
     partitionId: string,
     entityType: DynamoEntityType,
     query: CountItemsQuery = {},
@@ -326,7 +311,7 @@ export class DynamodbService {
     );
   }
 
-  public async saveItem<M extends BaseModel = BaseModel>(
+  async saveItem<M extends BaseModel>(
     data: Partial<M>,
     tableName = this.tableName,
   ) {
@@ -346,7 +331,20 @@ export class DynamodbService {
       .promise();
   }
 
-  public async deleteItem<M extends BaseModel = BaseModel>(
+  async archiveItemByType(
+    partitionId: string,
+    entityType: DynamoEntityType,
+    id: string,
+    isArchived = true,
+  ) {
+    return this.saveItem({
+      partitionId,
+      entityId: buildEntityId(entityType, id),
+      isArchived,
+    });
+  }
+
+  async deleteItem<M extends BaseModel>(
     data: Partial<M>,
     tableName = this.tableName,
   ) {

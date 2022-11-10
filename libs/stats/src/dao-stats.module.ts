@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { DynamodbModule } from '@sputnik-v2/dynamodb';
 import { FeatureFlagsModule } from '@sputnik-v2/feature-flags';
 import { ProposalModule } from '@sputnik-v2/proposal';
+import { DaoStatsDynamoService } from '@sputnik-v2/stats/dao-stats-dynamo.service';
 import { TokenModule } from '@sputnik-v2/token';
 import { BountyModule } from '@sputnik-v2/bounty';
 import { DaoModule } from '@sputnik-v2/dao';
@@ -18,10 +19,10 @@ import { DaoStatsService } from './dao-stats.service';
     ProposalModule,
     TokenModule,
     BountyModule,
-    FeatureFlagsModule,
     DynamodbModule,
+    FeatureFlagsModule,
   ],
-  providers: [DaoStatsService],
-  exports: [DaoStatsService],
+  providers: [DaoStatsService, DaoStatsDynamoService],
+  exports: [DaoStatsService, DaoStatsDynamoService],
 })
-export class StatsModule {}
+export class DaoStatsModule {}

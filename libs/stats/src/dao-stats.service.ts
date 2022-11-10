@@ -1,15 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { DaoDynamoService } from '@sputnik-v2/dao';
+import { DaoStatsDynamoService } from '@sputnik-v2/stats';
 import { Repository } from 'typeorm';
 import { BountyService } from '@sputnik-v2/bounty';
 import { DateTime } from 'luxon';
 
 import { Dao, DaoService } from '@sputnik-v2/dao';
-import {
-  DaoDynamoService,
-  DaoModel,
-  DaoStatsDynamoService,
-} from '@sputnik-v2/dynamodb';
+import { DaoModel } from '@sputnik-v2/dynamodb';
 import { FeatureFlags, FeatureFlagsService } from '@sputnik-v2/feature-flags';
 import { NFTTokenService } from '@sputnik-v2/token';
 import { buildDaoStatsId, getGrowth } from '@sputnik-v2/utils';
@@ -44,23 +42,18 @@ export class DaoStatsService {
   async create(daoStatsDto: DaoStatsDto): Promise<DaoStats> {
     const daoStats = this.daoStatsRepository.create(daoStatsDto);
 
-    if (await this.useDynamoDB()) {
-      await this.daoStatsDynamoService.saveDaoStats(daoStats);
-      await this.daoStatsRepository.save(daoStats);
-    } else {
-      await this.daoStatsRepository.save(daoStats);
-    }
+    await this.daoStatsRepository.save(daoStats);
+    await this.daoStatsDynamoService.saveDaoStats(daoStats);
 
     return daoStats;
   }
 
   async getDaoStats(daoId: string): Promise<DaoStatsDto> {
     const timestamp = DateTime.now().startOf('day').toMillis();
-    const useDynamoDB = await this.useDynamoDB();
 
     let dao: Dao | DaoModel;
 
-    if (useDynamoDB) {
+    if (await this.useDynamoDB()) {
       dao = await this.daoDynamoService.getDao(daoId);
     } else {
       dao = await this.daoService.findById(daoId);
@@ -70,11 +63,9 @@ export class DaoStatsService {
       throw new NotFoundException();
     }
 
-    // TODO: get stats from dynamodb
     const bountyCount = await this.bountyService.getDaoActiveBountiesCount(
       daoId,
     );
-    // TODO: get stats from dynamodb
     const nftCount = await this.nftTokenService.getAccountTokenCount(daoId);
 
     return {

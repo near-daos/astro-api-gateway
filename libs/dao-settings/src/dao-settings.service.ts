@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DaoDynamoService } from '@sputnik-v2/dynamodb';
+import { DaoDynamoService } from '@sputnik-v2/dao';
 import { FeatureFlags, FeatureFlagsService } from '@sputnik-v2/feature-flags';
 import { Repository } from 'typeorm';
 import { DaoSettingsDto } from './dto';
@@ -35,11 +35,8 @@ export class DaoSettingsService {
       settings,
     });
 
-    if (await this.useDynamoDB()) {
-      await this.daoDynamoService.saveDaoSettings(entity);
-    } else {
-      await this.daoSettingsRepository.save(entity);
-    }
+    await this.daoSettingsRepository.save(entity);
+    await this.daoDynamoService.saveDaoSettings(entity);
 
     return entity;
   }
@@ -54,11 +51,8 @@ export class DaoSettingsService {
       },
     });
 
-    if (await this.useDynamoDB()) {
-      await this.daoDynamoService.saveDaoSettings(entity);
-    } else {
-      await this.daoSettingsRepository.save(entity);
-    }
+    await this.daoSettingsRepository.save(entity);
+    await this.daoDynamoService.saveDaoSettings(entity);
 
     return entity;
   }
