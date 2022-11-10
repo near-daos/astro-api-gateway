@@ -7,7 +7,6 @@ import {
   UpdateDraftProposal,
 } from '@sputnik-v2/draft-proposal/dto';
 import { BaseResponseDto, DeleteResponse } from '@sputnik-v2/common';
-import { FeatureFlags, FeatureFlagsService } from '@sputnik-v2/feature-flags';
 import { MongoDraftProposalService } from '@sputnik-v2/draft-proposal/mongo-draft-proposal.service';
 import { DynamoDraftProposalService } from '@sputnik-v2/draft-proposal/dynamo-draft-proposal.service';
 import { DraftProposalService } from '@sputnik-v2/draft-proposal/types';
@@ -18,7 +17,6 @@ export class DraftProposalServiceFacade implements DraftProposalService {
   constructor(
     private readonly mongoDraftProposalService: MongoDraftProposalService,
     private readonly dynamoDraftProposalService: DynamoDraftProposalService,
-    private readonly featureFlagsService: FeatureFlagsService,
   ) {}
 
   async close(
@@ -27,14 +25,13 @@ export class DraftProposalServiceFacade implements DraftProposalService {
     accountId: string,
     closeDraftProposalDto: CloseDraftProposal,
   ): Promise<boolean> {
-    if (await this.featureFlagsService.check(FeatureFlags.DraftDynamo)) {
-      return this.dynamoDraftProposalService.close(
-        daoId,
-        id,
-        accountId,
-        closeDraftProposalDto,
-      );
-    }
+    await this.dynamoDraftProposalService.close(
+      daoId,
+      id,
+      accountId,
+      closeDraftProposalDto,
+    );
+
     return this.mongoDraftProposalService.close(
       daoId,
       id,
@@ -48,13 +45,8 @@ export class DraftProposalServiceFacade implements DraftProposalService {
     id: string,
     proposalId: string,
   ): Promise<void> {
-    if (await this.featureFlagsService.check(FeatureFlags.DraftDynamo)) {
-      return this.dynamoDraftProposalService.closeInternal(
-        daoId,
-        id,
-        proposalId,
-      );
-    }
+    await this.dynamoDraftProposalService.closeInternal(daoId, id, proposalId);
+
     return this.mongoDraftProposalService.closeInternal(daoId, id, proposalId);
   }
 
@@ -62,12 +54,7 @@ export class DraftProposalServiceFacade implements DraftProposalService {
     accountId: string,
     draftProposalDto: CreateDraftProposal,
   ): Promise<string> {
-    if (await this.featureFlagsService.check(FeatureFlags.DraftDynamo)) {
-      return this.dynamoDraftProposalService.create(
-        accountId,
-        draftProposalDto,
-      );
-    }
+    await this.dynamoDraftProposalService.create(accountId, draftProposalDto);
     return this.mongoDraftProposalService.create(accountId, draftProposalDto);
   }
 
@@ -76,9 +63,7 @@ export class DraftProposalServiceFacade implements DraftProposalService {
     id: string,
     accountId: string,
   ): Promise<DeleteResponse> {
-    if (await this.featureFlagsService.check(FeatureFlags.DraftDynamo)) {
-      return this.dynamoDraftProposalService.delete(daoId, id, accountId);
-    }
+    await this.dynamoDraftProposalService.delete(daoId, id, accountId);
     return this.mongoDraftProposalService.delete(daoId, id, accountId);
   }
 
@@ -98,16 +83,12 @@ export class DraftProposalServiceFacade implements DraftProposalService {
     id: string,
     accountId: string,
   ): Promise<boolean> {
-    if (await this.featureFlagsService.check(FeatureFlags.DraftDynamo)) {
-      return this.dynamoDraftProposalService.removeSave(daoId, id, accountId);
-    }
+    await this.dynamoDraftProposalService.removeSave(daoId, id, accountId);
     return this.mongoDraftProposalService.removeSave(daoId, id, accountId);
   }
 
   async save(daoId: string, id: string, accountId: string): Promise<boolean> {
-    if (await this.featureFlagsService.check(FeatureFlags.DraftDynamo)) {
-      return this.dynamoDraftProposalService.save(daoId, id, accountId);
-    }
+    await this.dynamoDraftProposalService.save(daoId, id, accountId);
     return this.mongoDraftProposalService.save(daoId, id, accountId);
   }
 
@@ -117,14 +98,12 @@ export class DraftProposalServiceFacade implements DraftProposalService {
     accountId: string,
     draftProposalDto: UpdateDraftProposal,
   ): Promise<string> {
-    if (await this.featureFlagsService.check(FeatureFlags.DraftDynamo)) {
-      return this.dynamoDraftProposalService.update(
-        daoId,
-        id,
-        accountId,
-        draftProposalDto,
-      );
-    }
+    await this.dynamoDraftProposalService.update(
+      daoId,
+      id,
+      accountId,
+      draftProposalDto,
+    );
 
     return this.mongoDraftProposalService.update(
       daoId,
@@ -135,9 +114,7 @@ export class DraftProposalServiceFacade implements DraftProposalService {
   }
 
   async view(daoId: string, id: string, accountId: string): Promise<boolean> {
-    if (await this.featureFlagsService.check(FeatureFlags.DraftDynamo)) {
-      return this.dynamoDraftProposalService.view(daoId, id, accountId);
-    }
+    await this.dynamoDraftProposalService.view(daoId, id, accountId);
     return this.mongoDraftProposalService.view(daoId, id, accountId);
   }
 }

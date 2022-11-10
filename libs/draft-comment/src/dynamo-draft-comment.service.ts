@@ -24,12 +24,14 @@ import {
 } from '@sputnik-v2/draft-comment/types';
 import { BaseResponseDto, DeleteResponse } from '@sputnik-v2/common';
 import { getAccountPermissions } from '@sputnik-v2/utils';
+import { FeatureFlags, FeatureFlagsService } from '@sputnik-v2/feature-flags';
 
 @Injectable()
 export class DynamoDraftCommentService implements DraftCommentService {
   constructor(
     private eventService: EventService,
     private dynamodbService: DynamodbService,
+    private featureFlagService: FeatureFlagsService,
   ) {}
 
   getAll(): Promise<BaseResponseDto<DraftCommentResponse>> {
@@ -68,7 +70,9 @@ export class DynamoDraftCommentService implements DraftCommentService {
       1,
     );
 
-    await this.eventService.sendNewDraftCommentEvent(comment);
+    if (await this.featureFlagService.check(FeatureFlags.DraftCommentsDynamo)) {
+      await this.eventService.sendNewDraftCommentEvent(comment);
+    }
 
     return commentId;
   }
@@ -91,7 +95,9 @@ export class DynamoDraftCommentService implements DraftCommentService {
       1,
     );
 
-    await this.eventService.sendNewDraftCommentEvent(reply);
+    if (await this.featureFlagService.check(FeatureFlags.DraftCommentsDynamo)) {
+      await this.eventService.sendNewDraftCommentEvent(reply);
+    }
 
     return reply.id;
   }
@@ -211,10 +217,14 @@ export class DynamoDraftCommentService implements DraftCommentService {
         { likeAccounts },
       );
 
-      await this.eventService.sendUpdateDraftCommentEvent({
-        ...draftComment,
-        likeAccounts,
-      });
+      if (
+        await this.featureFlagService.check(FeatureFlags.DraftCommentsDynamo)
+      ) {
+        await this.eventService.sendUpdateDraftCommentEvent({
+          ...draftComment,
+          likeAccounts,
+        });
+      }
     }
 
     return true;
@@ -239,10 +249,14 @@ export class DynamoDraftCommentService implements DraftCommentService {
         { likeAccounts },
       );
 
-      await this.eventService.sendUpdateDraftCommentEvent({
-        ...draftComment,
-        likeAccounts,
-      });
+      if (
+        await this.featureFlagService.check(FeatureFlags.DraftCommentsDynamo)
+      ) {
+        await this.eventService.sendUpdateDraftCommentEvent({
+          ...draftComment,
+          likeAccounts,
+        });
+      }
     }
 
     return true;
@@ -273,10 +287,14 @@ export class DynamoDraftCommentService implements DraftCommentService {
         { dislikeAccounts },
       );
 
-      await this.eventService.sendUpdateDraftCommentEvent({
-        ...draftComment,
-        dislikeAccounts,
-      });
+      if (
+        await this.featureFlagService.check(FeatureFlags.DraftCommentsDynamo)
+      ) {
+        await this.eventService.sendUpdateDraftCommentEvent({
+          ...draftComment,
+          dislikeAccounts,
+        });
+      }
     }
 
     return true;
@@ -300,10 +318,15 @@ export class DynamoDraftCommentService implements DraftCommentService {
         draftComment.id,
         { dislikeAccounts },
       );
-      await this.eventService.sendUpdateDraftCommentEvent({
-        ...draftComment,
-        dislikeAccounts,
-      });
+
+      if (
+        await this.featureFlagService.check(FeatureFlags.DraftCommentsDynamo)
+      ) {
+        await this.eventService.sendUpdateDraftCommentEvent({
+          ...draftComment,
+          dislikeAccounts,
+        });
+      }
     }
 
     return true;
@@ -340,7 +363,9 @@ export class DynamoDraftCommentService implements DraftCommentService {
       { isArchived: true },
     );
 
-    await this.eventService.sendDeleteDraftCommentEvent(draftComment);
+    if (await this.featureFlagService.check(FeatureFlags.DraftCommentsDynamo)) {
+      await this.eventService.sendDeleteDraftCommentEvent(draftComment);
+    }
 
     return { id: commentId, deleted: true };
   }
