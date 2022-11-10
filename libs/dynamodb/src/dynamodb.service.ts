@@ -54,6 +54,7 @@ import {
   TokenPriceModel,
 } from './models';
 import {
+  BaseEntity,
   CountItemsQuery,
   DynamoEntityType,
   EntityId,
@@ -312,21 +313,23 @@ export class DynamodbService {
   }
 
   async saveItem<M extends BaseModel>(
-    data: Partial<M>,
+    data: Partial<M> & BaseEntity,
     tableName = this.tableName,
   ) {
     const processingTimeStamp = Date.now();
-    const item = await this.getItemById(
-      data.partitionId,
-      data.entityId,
-      tableName,
-    );
+    const { partitionId, entityId, entityType } = data;
+    const item = await this.getItemById(partitionId, entityId, tableName);
     return this.client
       .put({
         TableName: tableName,
-        Item: item
-          ? { ...item, ...data, processingTimeStamp }
-          : { ...data, processingTimeStamp },
+        Item: {
+          partitionId,
+          entityId,
+          entityType,
+          ...(item || {}),
+          ...data,
+          processingTimeStamp,
+        },
       })
       .promise();
   }
@@ -340,6 +343,7 @@ export class DynamodbService {
     return this.saveItem({
       partitionId,
       entityId: buildEntityId(entityType, id),
+      entityType: entityType,
       isArchived,
     });
   }
@@ -367,7 +371,10 @@ export class DynamodbService {
 
     const item: ScheduledProposalExpirationEvent = {
       createTimestamp: new Date().getTime(),
-      entityId: `${DynamoEntityType.ScheduledProposalExpirationEvent}:${proposalId}`,
+      entityId: buildEntityId(
+        DynamoEntityType.ScheduledProposalExpirationEvent,
+        String(proposalId),
+      ),
       entityType: DynamoEntityType.ScheduledProposalExpirationEvent,
       isArchived: false,
       partitionId: daoId,

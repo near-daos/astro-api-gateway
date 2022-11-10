@@ -4,8 +4,9 @@ import {
   NotificationStatus,
   NotificationType,
 } from '@sputnik-v2/notification';
+import { buildEntityId } from '@sputnik-v2/utils';
 import { BaseModel } from './base.model';
-import { DynamoEntityType } from '../types';
+import { BaseEntity, DynamoEntityType } from '../types';
 
 export class AccountNotificationModel extends BaseModel {
   id: string;
@@ -29,10 +30,13 @@ export class NotificationModel {
 
 export function mapAccountNotificationToAccountNotificationModel(
   accountNotification: Partial<AccountNotification>,
-): Partial<AccountNotificationModel> {
+): Partial<AccountNotificationModel> & BaseEntity {
   return {
     partitionId: accountNotification.accountId,
-    entityId: `${DynamoEntityType.AccountNotification}:${accountNotification.id}`,
+    entityId: buildEntityId(
+      DynamoEntityType.AccountNotification,
+      accountNotification.id,
+    ),
     entityType: DynamoEntityType.AccountNotification,
     isArchived: accountNotification.isArchived,
     processingTimeStamp: Date.now(),

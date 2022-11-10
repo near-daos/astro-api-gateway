@@ -3,6 +3,7 @@ import {
   NFTToken,
   NFTTokenMetadata,
 } from '@sputnik-v2/token/entities';
+import { buildEntityId } from '@sputnik-v2/utils';
 import { BaseModel } from './base.model';
 import { DynamoEntityType } from '../types';
 import {
@@ -53,7 +54,7 @@ export class NftMetadataModel {
 export function mapNftTokenToNftModel(nft: NFTToken | NFTTokenDto): NftModel {
   return {
     partitionId: nft.accountId,
-    entityId: `${DynamoEntityType.Nft}:${nft.id}`,
+    entityId: buildEntityId(DynamoEntityType.Nft, nft.id),
     entityType: DynamoEntityType.Nft,
     isArchived: !!nft.isArchived,
     processingTimeStamp: Date.now(),

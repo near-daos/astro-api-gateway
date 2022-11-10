@@ -2,6 +2,7 @@ import {
   ProposalTemplateConfigDto,
   SharedProposalTemplate,
 } from '@sputnik-v2/proposal-template';
+import { buildEntityId } from '@sputnik-v2/utils';
 import { BaseModel } from './base.model';
 import { DynamoEntityType } from '@sputnik-v2/dynamodb/types';
 
@@ -19,7 +20,10 @@ export function mapSharedProposalTemplateToSharedProposalTemplateModel(
 ): SharedProposalTemplateModel {
   return {
     partitionId: daoId,
-    entityId: `${DynamoEntityType.SharedProposalTemplate}:${sharedProposalTemplate.id}`,
+    entityId: buildEntityId(
+      DynamoEntityType.SharedProposalTemplate,
+      sharedProposalTemplate.id,
+    ),
     entityType: DynamoEntityType.SharedProposalTemplate,
     isArchived: sharedProposalTemplate.isArchived,
     processingTimeStamp: Date.now(),

@@ -2,6 +2,7 @@ import {
   ProposalTemplate,
   ProposalTemplateConfigDto,
 } from '@sputnik-v2/proposal-template';
+import { buildEntityId } from '@sputnik-v2/utils';
 import { BaseModel } from './base.model';
 import { DynamoEntityType } from '../types';
 
@@ -17,7 +18,10 @@ export function mapProposalTemplateToProposalTemplateModel(
 ): ProposalTemplateModel {
   return {
     partitionId: proposalTemplate.daoId,
-    entityId: `${DynamoEntityType.ProposalTemplate}:${proposalTemplate.id}`,
+    entityId: buildEntityId(
+      DynamoEntityType.ProposalTemplate,
+      proposalTemplate.id,
+    ),
     entityType: DynamoEntityType.ProposalTemplate,
     isArchived: proposalTemplate.isArchived,
     processingTimeStamp: Date.now(),

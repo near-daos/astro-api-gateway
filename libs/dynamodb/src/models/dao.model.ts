@@ -8,8 +8,9 @@ import {
   RoleKindType,
 } from '@sputnik-v2/dao/entities';
 import { DaoSettings, DaoSettingsDto } from '@sputnik-v2/dao-settings';
+import { buildEntityId } from '@sputnik-v2/utils';
 import { TransactionModel } from './transaction.model';
-import { DynamoEntityType } from '../types';
+import { DynamoEntityType, PartialEntity } from '../types';
 
 export class DaoModel extends TransactionModel {
   metadata: Record<string, any>;
@@ -76,7 +77,7 @@ export class DaoDelegationModel {
 export function mapDaoToDaoModel(dao: Dao): DaoModel {
   return {
     partitionId: dao.id,
-    entityId: `${DynamoEntityType.Dao}:${dao.id}`,
+    entityId: buildEntityId(DynamoEntityType.Dao, dao.id),
     entityType: DynamoEntityType.Dao,
     isArchived: dao.isArchived,
     processingTimeStamp: Date.now(),
@@ -285,10 +286,10 @@ export function mapDaoDelegationModelToDelegation(
 
 export function mapDaoSettingsToDaoModel(
   settings: DaoSettings,
-): Partial<DaoModel> {
+): PartialEntity<DaoModel> {
   return {
     partitionId: settings.daoId,
-    entityId: `${DynamoEntityType.Dao}:${settings.daoId}`,
+    entityId: buildEntityId(DynamoEntityType.Dao, settings.daoId),
     entityType: DynamoEntityType.Dao,
     settings: settings.settings,
   };

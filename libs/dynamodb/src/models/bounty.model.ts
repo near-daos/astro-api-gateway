@@ -1,4 +1,5 @@
 import { Bounty, BountyClaim } from '@sputnik-v2/bounty';
+import { buildEntityId } from '@sputnik-v2/utils';
 import { TransactionModel } from './transaction.model';
 import { DynamoEntityType } from '../types';
 
@@ -34,7 +35,7 @@ export function mapBountyToBountyModel(
 ): BountyModel {
   return {
     partitionId: bounty.daoId,
-    entityId: `${DynamoEntityType.Bounty}:${proposalIndex}`,
+    entityId: buildEntityId(DynamoEntityType.Bounty, String(proposalIndex)),
     entityType: DynamoEntityType.Bounty,
     isArchived: bounty.isArchived,
     processingTimeStamp: Date.now(),

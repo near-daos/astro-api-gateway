@@ -6,6 +6,7 @@ import {
   mapDaoModelToDao,
   mapDaoSettingsToDaoModel,
   mapDaoToDaoModel,
+  PartialEntity,
 } from '@sputnik-v2/dynamodb';
 import { DynamodbService } from '@sputnik-v2/dynamodb/dynamodb.service';
 import { DaoModel } from '@sputnik-v2/dynamodb/models';
@@ -14,7 +15,7 @@ import { DaoModel } from '@sputnik-v2/dynamodb/models';
 export class DaoDynamoService {
   constructor(private readonly dynamoDbService: DynamodbService) {}
 
-  async save(dao: Partial<DaoModel>) {
+  async save(dao: PartialEntity<DaoModel>) {
     return this.dynamoDbService.saveItem<DaoModel>(dao);
   }
 

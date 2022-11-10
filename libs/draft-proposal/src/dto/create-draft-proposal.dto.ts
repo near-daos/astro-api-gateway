@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ProposalKindSwaggerDto, ProposalType } from '@sputnik-v2/proposal';
+import { buildEntityId } from '@sputnik-v2/utils';
 import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
 import { DynamoEntityType } from '@sputnik-v2/dynamodb/types';
 import { DraftProposalModel } from '@sputnik-v2/dynamodb/models';
@@ -41,7 +42,7 @@ export function mapCreateDraftProposalToDraftProposalModel(
 ): Partial<DraftProposalModel> {
   return {
     partitionId: dto.daoId,
-    entityId: `${DynamoEntityType.DraftProposal}:${id}`,
+    entityId: buildEntityId(DynamoEntityType.DraftProposal, id),
     entityType: DynamoEntityType.DraftProposal,
     isArchived: false,
     id: id,
