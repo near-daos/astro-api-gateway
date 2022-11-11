@@ -190,15 +190,20 @@ export class DynamodbService {
       DynamoEntityType.Dao,
       daoId,
     );
-
-    const tokens = dao.tokens.map((token) =>
-      token.tokenId === updatedToken.tokenId ? updatedToken : token,
+    const tokenIndex = dao.tokens.findIndex(
+      (token) => token.tokenId === updatedToken.tokenId,
     );
+
+    if (tokenIndex) {
+      dao.tokens[tokenIndex] = updatedToken;
+    } else {
+      dao.tokens.push(updatedToken);
+    }
 
     return await this.updateItem(
       daoId,
       buildEntityId(DynamoEntityType.Dao, daoId),
-      { tokens },
+      { tokens: dao.tokens },
     );
   }
 
@@ -239,30 +244,33 @@ export class DynamodbService {
   ) {
     const keys = Object.keys(payload);
 
-    this.client.update({
-      Key: {
-        partitionId,
-        entityId,
-      },
-      UpdateExpression: `SET ${keys
-        .map((k, index) => `#field${index} = :value${index}`)
-        .join(', ')}`,
-      ExpressionAttributeNames: keys.reduce(
-        (accumulator, k, index) => ({ ...accumulator, [`#field${index}`]: k }),
-        {},
-      ),
-      ExpressionAttributeValues: DynamoDB.Converter.marshall(
-        keys.reduce(
+    await this.client
+      .update({
+        Key: {
+          partitionId,
+          entityId,
+        },
+        UpdateExpression: `SET ${keys
+          .map((k, index) => `#field${index} = :value${index}`)
+          .join(', ')}`,
+        ExpressionAttributeNames: keys.reduce(
+          (accumulator, k, index) => ({
+            ...accumulator,
+            [`#field${index}`]: k,
+          }),
+          {},
+        ),
+        ExpressionAttributeValues: keys.reduce(
           (accumulator, k, index) => ({
             ...accumulator,
             [`:value${index}`]: payload[k],
           }),
           {},
         ),
-      ),
 
-      TableName: this.tableName,
-    });
+        TableName: this.tableName,
+      })
+      .promise();
   }
 
   async getItemByType<M extends BaseModel>(
@@ -359,26 +367,37 @@ export class DynamodbService {
     );
   }
 
-  async saveItem<M extends BaseModel>(
-    data: PartialEntity<M>,
-    tableName = this.tableName,
-  ) {
-    const processingTimeStamp = Date.now();
-    const { partitionId, entityId, entityType } = data;
-    const item = await this.getItemById(partitionId, entityId, tableName);
-    return this.client
-      .put({
-        TableName: tableName,
-        Item: {
-          partitionId,
-          entityId,
-          entityType,
-          ...(item || {}),
-          ...data,
-          processingTimeStamp,
-        },
-      })
-      .promise();
+  async saveItem<M extends BaseModel>(data: PartialEntity<M>, upsert = true) {
+    if (upsert) {
+      const processingTimeStamp = Date.now();
+      const { partitionId, entityId } = data;
+      const item = await this.getItemById(
+        partitionId,
+        entityId,
+        this.tableName,
+      );
+      return this.client
+        .put({
+          TableName: this.tableName,
+          Item: {
+            ...(item || {}),
+            ...data,
+            processingTimeStamp,
+          },
+        })
+        .promise();
+    } else {
+      const processingTimeStamp = Date.now();
+      return this.client
+        .put({
+          TableName: this.tableName,
+          Item: {
+            ...data,
+            processingTimeStamp,
+          },
+        })
+        .promise();
+    }
   }
 
   async archiveItemByType(
