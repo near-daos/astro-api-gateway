@@ -21,7 +21,7 @@ import { NFTTokenService, TokenService } from '@sputnik-v2/token';
 import { buildBountyId, buildDelegationId } from '@sputnik-v2/utils';
 import { CacheService } from '@sputnik-v2/cache';
 import { OpensearchService } from '@sputnik-v2/opensearch';
-import { DynamodbService } from '@sputnik-v2/dynamodb';
+import { DynamodbService, DynamoEntityType } from '@sputnik-v2/dynamodb';
 
 import {
   castActProposal,
@@ -161,6 +161,16 @@ export class TransactionActionHandlerService {
     this.logger.log(`Handling transaction: ${action.transactionHash}`);
     const contractHandlers = this.getContractHandlers(action.receiverId);
 
+    if (
+      await this.dynamodbService.getItemByType(
+        action.transactionHash,
+        DynamoEntityType.HandledReceiptAction,
+        String(action.indexInReceipt),
+      )
+    ) {
+      return [];
+    }
+
     const { results, errors } = await PromisePool.for(contractHandlers).process(
       async (contractHandler) => {
         const handler =
@@ -179,6 +189,8 @@ export class TransactionActionHandlerService {
       );
       throw new Error(errorMessages);
     } else {
+      await this.dynamodbService.saveHandledTransactionAction(action);
+
       this.logger.log(
         `Transaction successfully handled: ${action.transactionHash}`,
       );
