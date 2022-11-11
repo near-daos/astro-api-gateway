@@ -18,4 +18,5 @@ export enum DynamoEntityType {
   TokenBalance = 'TokenBalance',
   TokenPrice = 'TokenPrice',
   ScheduledProposalExpirationEvent = 'ScheduledProposalExpirationEvent',
+  HandledReceiptAction = 'HandledReceiptAction',
 }

@@ -112,12 +112,13 @@ export class TransactionActionMapperService {
   ): TransactionAction[] {
     return txStatus.receipts
       .map((receipt) =>
-        receipt.receipt.Action.actions.map((action) =>
+        receipt.receipt.Action.actions.map((action, index) =>
           castNearTransactionAction(
             transactionHash,
             txStatus.status,
             receipt,
             action,
+            index,
           ),
         ),
       )

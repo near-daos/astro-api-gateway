@@ -29,7 +29,6 @@ import {
   AccountModel,
   AccountNotificationModel,
   AccountNotificationSettingsModel,
-  BaseModel,
   CommentModel,
   DaoModel,
   DraftProposalModel,
@@ -53,6 +52,7 @@ import {
   TokenPriceModel,
 } from './models';
 import {
+  BaseEntity,
   CountItemsQuery,
   DynamoEntityType,
   EntityId,
@@ -211,7 +211,7 @@ export class DynamodbService {
     return this.saveItem<TokenPriceModel>(mapTokenToTokenPriceModel(token));
   }
 
-  async batchDelete<M extends BaseModel>(
+  async batchDelete<M extends BaseEntity>(
     items: Partial<M>[],
     tableName = this.tableName,
   ) {
@@ -222,7 +222,7 @@ export class DynamodbService {
       });
   }
 
-  async batchPut<M extends BaseModel>(
+  async batchPut<M extends BaseEntity>(
     items: Partial<M>[],
     tableName = this.tableName,
   ) {
@@ -273,7 +273,7 @@ export class DynamodbService {
       .promise();
   }
 
-  async getItemByType<M extends BaseModel>(
+  async getItemByType<M extends BaseEntity>(
     partitionId: string,
     entityType: DynamoEntityType,
     id: string,
@@ -281,7 +281,7 @@ export class DynamodbService {
     return await this.getItemById(partitionId, buildEntityId(entityType, id));
   }
 
-  async getItemById<M extends BaseModel>(
+  async getItemById<M extends BaseEntity>(
     partitionId: string,
     entityId: EntityId,
     tableName = this.tableName,
@@ -296,7 +296,7 @@ export class DynamodbService {
       .catch(() => null);
   }
 
-  async queryItems<M extends BaseModel>(
+  async queryItems<M extends BaseEntity>(
     query: QueryItemsQuery,
     tableName = this.tableName,
   ): Promise<M[]> {
@@ -325,7 +325,7 @@ export class DynamodbService {
       .catch(() => 0);
   }
 
-  async queryItemsByType<M extends BaseModel>(
+  async queryItemsByType<M extends BaseEntity>(
     partitionId: string,
     entityType: DynamoEntityType,
     query: CountItemsQuery = {},
@@ -367,7 +367,7 @@ export class DynamodbService {
     );
   }
 
-  async saveItem<M extends BaseModel>(data: PartialEntity<M>, upsert = true) {
+  async saveItem<M extends BaseEntity>(data: PartialEntity<M>, upsert = true) {
     if (upsert) {
       const processingTimeStamp = Date.now();
       const { partitionId, entityId } = data;
@@ -414,7 +414,7 @@ export class DynamodbService {
     });
   }
 
-  async deleteItem<M extends BaseModel>(
+  async deleteItem<M extends BaseEntity>(
     data: Partial<M>,
     tableName = this.tableName,
   ) {
