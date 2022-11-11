@@ -113,9 +113,10 @@ public class DraftApi {
 				.get(DRAFT_COMMENTS);
 	}
 
-	public Response createDraftComment(String contextId, String comment, String authToken) {
+	public Response createDraftComment(String daoId, String contextId, String comment, String authToken) {
 		CreateDraftComment createDraftComment = new CreateDraftComment();
 		createDraftComment.setContextId(contextId);
+		createDraftComment.setDaoId(daoId);
 		createDraftComment.setContextType(CreateDraftComment.ContextTypeEnum.DRAFTPROPOSAL);
 		createDraftComment.setMessage(comment);
 
@@ -127,7 +128,7 @@ public class DraftApi {
 				.post(DRAFT_COMMENTS);
 	}
 
-	public Response patchDraftComment(String commentId, String comment, String authToken) {
+	public Response patchDraftComment(String daoId, String draftId, String commentId, String comment, String authToken) {
 		UpdateDraftComment updateDraftComment = new UpdateDraftComment();
 		updateDraftComment.setMessage(comment);
 
@@ -136,30 +137,30 @@ public class DraftApi {
 				.header("Authorization", "Bearer " + authToken)
 				.contentType(JSON)
 				.body(updateDraftComment)
-				.patch(DRAFT_COMMENTS_ID, commentId);
+				.patch(DRAFT_COMMENTS_DAO_ID_DRAFT_ID_COMMENT_ID, daoId, draftId, commentId);
 	}
 
-	public Response likeDraftComment(String commentId, String authToken) {
+	public Response likeDraftComment(String daoId, String draftId, String commentId, String authToken) {
 		return given().spec(requestSpecForDraftService)
 				.accept(JSON)
 				.header("Authorization", "Bearer " + authToken)
 				.contentType(JSON)
-				.post(DRAFT_COMMENTS_ID_LIKE, commentId);
+				.post(DRAFT_COMMENTS_DAO_ID_DRAFT_ID_COMMENT_ID_LIKE, daoId, draftId, commentId);
 	}
 
-	public Response removeLikeFromDraftComment(String commentId, String authToken) {
+	public Response removeLikeFromDraftComment(String daoId, String draftId, String commentId, String authToken) {
 		return given().spec(requestSpecForDraftService)
 				.accept(JSON)
 				.header("Authorization", "Bearer " + authToken)
 				.contentType(JSON)
-				.post(DRAFT_COMMENTS_ID_REMOVE_LIKE, commentId);
+				.post(DRAFT_COMMENTS_DAO_ID_DRAFT_ID_COMMENT_ID_REMOVE_LIKE, daoId, draftId, commentId);
 	}
 
-	public Response deleteDraftComment(String commentId, String authToken) {
+	public Response deleteDraftComment(String daoId, String draftId, String commentId, String authToken) {
 		return given().spec(requestSpecForDraftService)
 				.accept(JSON)
 				.header("Authorization", "Bearer " + authToken)
 				.contentType(JSON)
-				.delete(DRAFT_COMMENTS_ID, commentId);
+				.delete(DRAFT_COMMENTS_DAO_ID_DRAFT_ID_COMMENT_ID, daoId, draftId, commentId);
 	}
 }

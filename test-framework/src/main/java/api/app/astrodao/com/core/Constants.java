@@ -97,9 +97,9 @@ public class Constants {
 		public static final String DRAFT_PROPOSALS_DAO_ID_ID_CLOSE = "/api/v1/draft-proposals/{daoId}/{id}/close";
 
 		public static final String DRAFT_COMMENTS = "/api/v1/draft-comments";
-		public static final String DRAFT_COMMENTS_ID = "/api/v1/draft-comments/{id}";
-		public static final String DRAFT_COMMENTS_ID_LIKE = "/api/v1/draft-comments/{id}/like";
-		public static final String DRAFT_COMMENTS_ID_REMOVE_LIKE = "/api/v1/draft-comments/{id}/remove-like";
+		public static final String DRAFT_COMMENTS_DAO_ID_DRAFT_ID_COMMENT_ID = "/api/v1/draft-comments/{daoId}/{draftId}/{commentId}";
+		public static final String DRAFT_COMMENTS_DAO_ID_DRAFT_ID_COMMENT_ID_LIKE = "/api/v1/draft-comments/{daoId}/{draftId}/{commentId}/like";
+		public static final String DRAFT_COMMENTS_DAO_ID_DRAFT_ID_COMMENT_ID_REMOVE_LIKE = "/api/v1/draft-comments/{daoId}/{draftId}/{commentId}/remove-like";
 
 	}
 
