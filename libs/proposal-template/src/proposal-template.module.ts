@@ -9,6 +9,7 @@ import { ProposalTemplateService } from './proposal-template.service';
 import { SharedProposalTemplateService } from './shared-proposal-template.service';
 import { DynamoSharedProposalTemplateService } from '@sputnik-v2/proposal-template/dynamo-shared-proposal-template.service';
 import { DynamoProposalTemplateService } from '@sputnik-v2/proposal-template/dynamo-proposal-template.service';
+import { DynamodbModule } from '@sputnik-v2/dynamodb';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { DynamoProposalTemplateService } from '@sputnik-v2/proposal-template/dyn
       SharedProposalTemplateDao,
     ]),
     DaoModule,
+    DynamodbModule,
   ],
   providers: [
     ProposalTemplateService,
