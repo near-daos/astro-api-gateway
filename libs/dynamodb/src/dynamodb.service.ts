@@ -194,7 +194,7 @@ export class DynamodbService {
       (token) => token.tokenId === updatedToken.tokenId,
     );
 
-    if (tokenIndex) {
+    if (tokenIndex >= 0) {
       dao.tokens[tokenIndex] = updatedToken;
     } else {
       dao.tokens.push(updatedToken);
