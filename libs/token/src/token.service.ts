@@ -63,7 +63,8 @@ export class TokenService {
     const metadata = await contract.ft_metadata();
     const totalSupply = await contract.ft_total_supply();
     const balance = await contract.ft_balance_of({ account_id: accountId });
-    await this.dynamodbService.saveTokenBalance({
+
+    await this.dynamodbService.saveTokenBalanceToDao({
       ...castTokenBalance(tokenId, accountId, balance),
       token: castToken(tokenId, metadata, totalSupply, timestamp) as Token,
     });

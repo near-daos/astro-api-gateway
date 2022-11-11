@@ -371,11 +371,11 @@ export class DynamoDataMigration implements Migration {
         relations: ['token'],
       },
     )) {
-      await this.dynamodbService.batchPut(
-        tokenBalances.map((tokenBalance) =>
-          mapTokenBalanceToTokenBalanceModel(tokenBalance),
-        ),
-      );
+      await PromisePool.withConcurrency(1)
+        .for(tokenBalances)
+        .process(async (tokenBalance) => {
+          return await this.dynamodbService.saveTokenBalanceToDao(tokenBalance);
+        });
     }
   }
 
