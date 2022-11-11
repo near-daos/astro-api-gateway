@@ -13,6 +13,7 @@ export class TokenPriceOpensearchDto extends BaseOpensearchDto {
           tokenId: { type: 'keyword' },
           name: { type: 'text' },
           symbol: { type: 'text' },
+          price: { type: 'keyword' },
         },
       },
     };
