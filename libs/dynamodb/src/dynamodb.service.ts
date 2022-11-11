@@ -273,7 +273,7 @@ export class DynamodbService {
       .promise();
   }
 
-  async getItemByType<M extends BaseModel>(
+  async getItemByType<M extends BaseEntity>(
     partitionId: string,
     entityType: DynamoEntityType,
     id: string,
