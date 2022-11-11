@@ -113,15 +113,14 @@ public class AggregationWithCallbackTests extends BaseTest {
                 .statusCode(HTTP_OK)
                 .extract().as(DAODto.class);
 
-        //daoApiSteps.assertDtoValue(daoDto, DAODto::getIsArchived, Boolean.FALSE, "isArchived");
+        daoApiSteps.assertDtoValue(daoDto, DAODto::getIsArchived, Boolean.FALSE, "isArchived");
         daoApiSteps.assertDtoValue(daoDto, DAODto::getId, daoId, "id");
         daoApiSteps.assertDtoValue(daoDto, DAODto::getTransactionHash, output.getTransactionHash(), "transactionHash");
         daoApiSteps.assertDtoValue(daoDto, DAODto::getUpdateTransactionHash, output.getTransactionHash(), "updateTransactionHash");
         daoApiSteps.assertDtoValue(daoDto, d -> d.getConfig().getName(), daoName, "config/name");
         daoApiSteps.assertDtoValue(daoDto, d -> d.getConfig().getPurpose(), daoPurpose, "config/purpose");
         daoApiSteps.assertDtoValue(daoDto, d -> d.getConfig().getMetadata(), config.getMetadata(), "config/metadata");
-        //TODO: Add verification for amount
-        //daoApiSteps.assertDtoValue(daoDto, DAODto::getAmount, "5000071399234288200000000", "amount");
+        daoApiSteps.assertDtoHasValue(daoDto, dao -> !dao.getAmount().isEmpty(), "amount");
         daoApiSteps.assertDtoValue(daoDto, DAODto::getCreatedBy, testAccountId, "createdBy");
         daoApiSteps.assertDtoValue(daoDto, DAODto::getTotalSupply, "0", "totalSupply");
         daoApiSteps.assertDtoValue(daoDto, DAODto::getNumberOfMembers, 1, "numberOfMembers");

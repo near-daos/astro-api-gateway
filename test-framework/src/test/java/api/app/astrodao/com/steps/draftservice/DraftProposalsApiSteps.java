@@ -32,37 +32,37 @@ public class DraftProposalsApiSteps extends BaseSteps {
 	}
 
 	@Step("Update draft proposal")
-	public Response updateDraftProposal(CreateDraftProposal draftProposal, String draftId, String authToken) {
-		return draftApi.patchDraftProposal(draftProposal, draftId, authToken);
+	public Response updateDraftProposal(CreateDraftProposal draftProposal, String daoId, String draftId, String authToken) {
+		return draftApi.patchDraftProposal(draftProposal, daoId, draftId, authToken);
 	}
 
 	@Step("Delete draft proposal")
-	public Response deleteDraftProposal(String draftId, String authToken) {
-		return draftApi.deleteDraftProposal(draftId, authToken);
+	public Response deleteDraftProposal(String daoId, String draftId, String authToken) {
+		return draftApi.deleteDraftProposal(daoId, draftId, authToken);
 	}
 
 	@Step("Mark draft proposal as 'Read'")
-	public Response viewDraftProposal(String draftId, String authToken) {
-		return draftApi.postViewDraftProposal(draftId, authToken);
+	public Response viewDraftProposal(String daoId, String draftId, String authToken) {
+		return draftApi.postViewDraftProposal(daoId, draftId, authToken);
 	}
 
 	@Step("Save draft proposal")
-	public Response saveDraftProposal(String draftId, String authToken) {
-		return draftApi.postSaveDraftProposal(draftId, authToken);
+	public Response saveDraftProposal(String daoId, String draftId, String authToken) {
+		return draftApi.postSaveDraftProposal(daoId, draftId, authToken);
 	}
 
 	@Step("Unsave draft proposal")
-	public Response unsaveDraftProposal(String draftId, String authToken) {
-		return draftApi.unsaveDraftProposal(draftId, authToken);
+	public Response unsaveDraftProposal(String daoId, String draftId, String authToken) {
+		return draftApi.unsaveDraftProposal(daoId, draftId, authToken);
 	}
 
 	@Step("Close draft proposal")
-	public Response closeDraftProposal(String draftId, String authToken) {
-		return draftApi.closeDraftProposal(draftId, authToken);
+	public Response closeDraftProposal(String daoId, String draftId, String authToken) {
+		return draftApi.closeDraftProposal(daoId, draftId, authToken);
 	}
 
 	@Step("Close draft proposal with empty body")
-	public Response closeDraftProposalWithEmptyBody(String draftId, String authToken) {
-		return draftApi.closeDraftProposalWithEmptyBody(draftId, authToken);
+	public Response closeDraftProposalWithEmptyBody(String daoId, String draftId, String authToken) {
+		return draftApi.closeDraftProposalWithEmptyBody(daoId, draftId, authToken);
 	}
 }
