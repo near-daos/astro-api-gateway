@@ -51,6 +51,7 @@ export class DynamoDraftProposalService implements DraftProposalService {
       replies: 0,
       viewAccounts: [],
       saveAccounts: [],
+      history: [],
     });
 
     return draftId;
