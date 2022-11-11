@@ -1,8 +1,3 @@
-import {
-  HandledReceiptActionModel,
-  mapTransactionActionToHandledReceiptActionModel,
-} from '@sputnik-v2/dynamodb/models/handled-receipt-action.model';
-import { TransactionAction } from '@sputnik-v2/transaction-handler';
 import * as AWS from 'aws-sdk';
 import DynamoDB, { DocumentClient } from 'aws-sdk/clients/dynamodb';
 import { ConfigService } from '@nestjs/config';
@@ -195,12 +190,6 @@ export class DynamodbService {
 
   async saveTokenPrice(token: Partial<Token>) {
     return this.saveItem<TokenPriceModel>(mapTokenToTokenPriceModel(token));
-  }
-
-  async saveHandledTransactionAction(transactionAction: TransactionAction) {
-    return this.saveItem<HandledReceiptActionModel>(
-      mapTransactionActionToHandledReceiptActionModel(transactionAction),
-    );
   }
 
   async batchDelete<M extends BaseEntity>(

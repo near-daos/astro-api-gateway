@@ -1,4 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
+import {
+  HandledReceiptActionModel,
+  mapTransactionActionToHandledReceiptActionModel,
+} from '@sputnik-v2/dynamodb/models/handled-receipt-action.model';
 import PromisePool from '@supercharge/promise-pool';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -158,18 +162,15 @@ export class TransactionActionHandlerService {
   async handleTransactionAction(
     action: TransactionAction,
   ): Promise<ContractHandlerResult[]> {
-    this.logger.log(`Handling transaction: ${action.transactionHash}`);
-    const contractHandlers = this.getContractHandlers(action.receiverId);
-
-    if (
-      await this.dynamodbService.getItemByType(
-        action.transactionHash,
-        DynamoEntityType.HandledReceiptAction,
-        String(action.indexInReceipt),
-      )
-    ) {
+    if (await this.checkHandledReceiptAction(action)) {
+      this.logger.warn(
+        `Already handled transaction: ${action.transactionHash}`,
+      );
       return [];
     }
+
+    this.logger.log(`Handling transaction: ${action.transactionHash}`);
+    const contractHandlers = this.getContractHandlers(action.receiverId);
 
     const { results, errors } = await PromisePool.for(contractHandlers).process(
       async (contractHandler) => {
@@ -189,7 +190,7 @@ export class TransactionActionHandlerService {
       );
       throw new Error(errorMessages);
     } else {
-      await this.dynamodbService.saveHandledTransactionAction(action);
+      await this.saveHandledReceiptAction(action);
 
       this.logger.log(
         `Transaction successfully handled: ${action.transactionHash}`,
@@ -1121,5 +1122,19 @@ export class TransactionActionHandlerService {
   private isDaoContract(receiverId: string): boolean {
     const { contractName } = this.configService.get('near');
     return receiverId.endsWith(contractName);
+  }
+
+  private async saveHandledReceiptAction(action: TransactionAction) {
+    await this.dynamodbService.saveItem<HandledReceiptActionModel>(
+      mapTransactionActionToHandledReceiptActionModel(action),
+    );
+  }
+
+  private async checkHandledReceiptAction(action: TransactionAction) {
+    return this.dynamodbService.getItemByType(
+      action.transactionHash,
+      DynamoEntityType.HandledReceiptAction,
+      String(action.indexInReceipt),
+    );
   }
 }
