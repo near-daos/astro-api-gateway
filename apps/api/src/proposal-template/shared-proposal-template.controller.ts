@@ -39,6 +39,7 @@ import { EntityQueryWithJoin } from '@sputnik-v2/common/dto/EntityQueryWithJoin'
 
 import { CouncilMemberGuard } from '../guards/council-member.guard';
 import { SharedProposalTemplateCrudRequestInterceptor } from './interceptors/shared-proposal-template-crud.interceptor';
+import { DynamoSharedProposalTemplateService } from '@sputnik-v2/proposal-template/dynamo-shared-proposal-template.service';
 
 @Span()
 @ApiTags('Proposals')
@@ -46,6 +47,7 @@ import { SharedProposalTemplateCrudRequestInterceptor } from './interceptors/sha
 export class SharedProposalTemplateController {
   constructor(
     private readonly sharedProposalTemplateService: SharedProposalTemplateService,
+    private readonly dynamoSharedProposalTemplateService: DynamoSharedProposalTemplateService,
   ) {}
 
   @ApiQuery({ type: EntityQueryWithJoin })
@@ -100,7 +102,11 @@ export class SharedProposalTemplateController {
     type: String,
   })
   @ApiParam({
-    name: 'daoId',
+    name: 'fromDao',
+    type: String,
+  })
+  @ApiParam({
+    name: 'toDao',
     type: String,
   })
   @ApiResponse({
@@ -114,11 +120,17 @@ export class SharedProposalTemplateController {
   })
   @ApiBearerAuth()
   @UseGuards(AccountAccessGuard, CouncilMemberGuard)
-  @Post('/templates/:id/clone/:daoId')
+  @Post('/templates/:id/clone/:fromDao/:toDao')
   async createProposalTemplate(
     @Param('id') id: string,
-    @Param('daoId') daoId: string,
+    @Param('fromDao') fromDao: string,
+    @Param('toDao') toDao: string,
   ): Promise<ProposalTemplate> {
-    return this.sharedProposalTemplateService.cloneToDao(id, daoId);
+    await this.dynamoSharedProposalTemplateService.cloneToDao(
+      id,
+      fromDao,
+      toDao,
+    );
+    return this.sharedProposalTemplateService.cloneToDao(id, toDao);
   }
 }

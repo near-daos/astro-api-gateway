@@ -111,7 +111,7 @@ export class DynamodbService {
       partitionId: daoId,
       entityId: buildEntityId(DynamoEntityType.DraftProposal, draftId),
       entityType: DynamoEntityType.DraftProposal,
-      replies: currentReplies ?? 0 + replies,
+      replies: currentReplies ?? replies,
     });
   }
 
@@ -314,7 +314,7 @@ export class DynamodbService {
 
   async saveItem<M extends BaseModel>(
     data: PartialEntity<M>,
-    tableName = this.tableName,
+    tableName: string = this.tableName,
   ) {
     const processingTimeStamp = Date.now();
     const { partitionId, entityId, entityType } = data;
