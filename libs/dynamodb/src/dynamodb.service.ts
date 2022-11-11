@@ -50,7 +50,6 @@ import {
   ProposalTemplateModel,
   SharedProposalTemplateModel,
   SubscriptionModel,
-  TokenBalanceModel,
   TokenPriceModel,
 } from './models';
 import {
@@ -111,7 +110,7 @@ export class DynamodbService {
       partitionId: daoId,
       entityId: buildEntityId(DynamoEntityType.DraftProposal, draftId),
       entityType: DynamoEntityType.DraftProposal,
-      replies: currentReplies ?? 0 + replies,
+      replies: currentReplies ?? replies,
     });
   }
 
@@ -182,9 +181,24 @@ export class DynamodbService {
     );
   }
 
-  async saveTokenBalance(tokenBalance: TokenBalance) {
-    return this.saveItem<TokenBalanceModel>(
-      mapTokenBalanceToTokenBalanceModel(tokenBalance),
+  async saveTokenBalanceToDao(tokenBalance: TokenBalance) {
+    const { accountId: daoId } = tokenBalance;
+    const updatedToken = mapTokenBalanceToTokenBalanceModel(tokenBalance);
+
+    const dao = await this.getItemByType<DaoModel>(
+      daoId,
+      DynamoEntityType.Dao,
+      daoId,
+    );
+
+    const tokens = dao.tokens.map((token) =>
+      token.tokenId === updatedToken.tokenId ? updatedToken : token,
+    );
+
+    return await this.updateItem(
+      daoId,
+      buildEntityId(DynamoEntityType.Dao, daoId),
+      { tokens },
     );
   }
 
@@ -216,6 +230,39 @@ export class DynamodbService {
         },
       })
       .promise();
+  }
+
+  async updateItem(
+    partitionId: string,
+    entityId: string,
+    payload: Record<string, unknown>,
+  ) {
+    const keys = Object.keys(payload);
+
+    this.client.update({
+      Key: {
+        partitionId,
+        entityId,
+      },
+      UpdateExpression: `SET ${keys
+        .map((k, index) => `#field${index} = :value${index}`)
+        .join(', ')}`,
+      ExpressionAttributeNames: keys.reduce(
+        (accumulator, k, index) => ({ ...accumulator, [`#field${index}`]: k }),
+        {},
+      ),
+      ExpressionAttributeValues: DynamoDB.Converter.marshall(
+        keys.reduce(
+          (accumulator, k, index) => ({
+            ...accumulator,
+            [`:value${index}`]: payload[k],
+          }),
+          {},
+        ),
+      ),
+
+      TableName: this.tableName,
+    });
   }
 
   async getItemByType<M extends BaseModel>(

@@ -11,6 +11,7 @@ import { DaoSettings, DaoSettingsDto } from '@sputnik-v2/dao-settings';
 import { buildEntityId } from '@sputnik-v2/utils';
 import { TransactionModel } from './transaction.model';
 import { DynamoEntityType, PartialEntity } from '../types';
+import { TokenBalanceModel } from '@sputnik-v2/dynamodb/models/token-balance.model';
 
 export class DaoModel extends TransactionModel {
   metadata: Record<string, any>;
@@ -26,6 +27,7 @@ export class DaoModel extends TransactionModel {
   council: string[];
   accountIds: string[];
   followers: string[];
+  tokens: TokenBalanceModel[];
   councilSeats: number;
   link: string;
   description: string;
@@ -98,6 +100,7 @@ export function mapDaoToDaoModel(dao: Dao): DaoModel {
     council: dao.council,
     accountIds: dao.accountIds,
     followers: [],
+    tokens: [],
     councilSeats: dao.councilSeats,
     link: dao.link,
     description: dao.description,
