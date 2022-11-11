@@ -4,9 +4,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { DaoModule } from '@sputnik-v2/dao';
 
 import { ProposalTemplate, SharedProposalTemplate } from './entities';
-import { SharedProposalTemplateDao } from './entities/shared-proposal-template-dao.entity';
+import { SharedProposalTemplateDao } from '@sputnik-v2/proposal-template/entities';
 import { ProposalTemplateService } from './proposal-template.service';
 import { SharedProposalTemplateService } from './shared-proposal-template.service';
+import { DynamoSharedProposalTemplateService } from '@sputnik-v2/proposal-template/dynamo-shared-proposal-template.service';
+import { DynamoProposalTemplateService } from '@sputnik-v2/proposal-template/dynamo-proposal-template.service';
 
 @Module({
   imports: [
@@ -17,7 +19,17 @@ import { SharedProposalTemplateService } from './shared-proposal-template.servic
     ]),
     DaoModule,
   ],
-  providers: [ProposalTemplateService, SharedProposalTemplateService],
-  exports: [ProposalTemplateService, SharedProposalTemplateService],
+  providers: [
+    ProposalTemplateService,
+    SharedProposalTemplateService,
+    DynamoSharedProposalTemplateService,
+    DynamoProposalTemplateService,
+  ],
+  exports: [
+    ProposalTemplateService,
+    SharedProposalTemplateService,
+    DynamoSharedProposalTemplateService,
+    DynamoProposalTemplateService,
+  ],
 })
 export class ProposalTemplateModule {}

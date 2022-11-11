@@ -28,6 +28,7 @@ import { SharedProposalTemplateService } from '@sputnik-v2/proposal-template/sha
 
 import { CouncilMemberGuard } from '../guards/council-member.guard';
 import { ProposalTemplateBodyDto } from './dto/proposal-template-body.dto';
+import { DynamoProposalTemplateService } from '@sputnik-v2/proposal-template/dynamo-proposal-template.service';
 
 @Span()
 @ApiTags('DAO')
@@ -36,6 +37,8 @@ export class ProposalTemplateController {
   constructor(
     private readonly proposalTemplateService: ProposalTemplateService,
     private readonly sharedProposalTemplateService: SharedProposalTemplateService,
+    private readonly dynamoProposalTemplateService: DynamoProposalTemplateService,
+    private readonly dynamoSharedProposalTemplateService: SharedProposalTemplateService,
   ) {}
 
   @ApiParam({
@@ -89,6 +92,16 @@ export class ProposalTemplateController {
       config,
     };
 
+    await this.dynamoSharedProposalTemplateService.create({
+      ...proposalTemplate,
+      createdBy: req.accountId,
+    });
+
+    await this.dynamoProposalTemplateService.create({
+      ...proposalTemplate,
+      isEnabled,
+    });
+
     await this.sharedProposalTemplateService.create({
       ...proposalTemplate,
       createdBy: req.accountId,
@@ -128,6 +141,13 @@ export class ProposalTemplateController {
     @Param('id') id: string,
     @Body() { name, isEnabled, config }: ProposalTemplateBodyDto,
   ): Promise<ProposalTemplate> {
+    await this.dynamoProposalTemplateService.update(id, {
+      daoId,
+      name,
+      isEnabled,
+      config,
+    });
+
     return this.proposalTemplateService.update(id, {
       daoId,
       name,
@@ -162,6 +182,7 @@ export class ProposalTemplateController {
     @Param('daoId') daoId: string,
     @Param('id') id: string,
   ): Promise<void> {
+    await this.dynamoProposalTemplateService.delete(daoId, id);
     await this.proposalTemplateService.delete(id);
   }
 }
