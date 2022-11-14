@@ -4,11 +4,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { FindManyOptions, MongoRepository, Repository } from 'typeorm';
 import PromisePool from '@supercharge/promise-pool';
 import {
+  DaoIdsModel,
   mapAccountNotificationSettingsToAccountNotificationSettingsModel,
   mapAccountNotificationToAccountNotificationModel,
   mapAccountToAccountModel,
   mapBountyToBountyModel,
   mapCommentToCommentModel,
+  mapDaoIdsToDaoIdsModel,
   mapDaoStatsToDaoStatsModel,
   mapDaoToDaoModel,
   mapDraftCommentToCommentModel,
@@ -17,7 +19,6 @@ import {
   mapProposalToProposalModel,
   mapSharedProposalTemplateToSharedProposalTemplateModel,
   mapSubscriptionToSubscriptionModel,
-  mapTokenBalanceToTokenBalanceModel,
   mapTokenToTokenPriceModel,
 } from '@sputnik-v2/dynamodb/models';
 import { DynamodbService } from '@sputnik-v2/dynamodb/dynamodb.service';
@@ -116,6 +117,8 @@ export class DynamoDataMigration implements Migration {
     await this.migrateComments();
 
     await this.migrateDaos();
+
+    await this.migrateDaoIds();
 
     await this.migrateProposals();
 
@@ -246,6 +249,16 @@ export class DynamoDataMigration implements Migration {
         daos.map((dao) => mapDaoToDaoModel(dao)),
       );
     }
+  }
+
+  public async migrateDaoIds(): Promise<void> {
+    const daos = await this.daoRepository.find({
+      select: ['id'],
+      loadEagerRelations: false,
+    });
+    await this.dynamodbService.saveItem<DaoIdsModel>(
+      mapDaoIdsToDaoIdsModel(daos.map(({ id }) => id)),
+    );
   }
 
   public async migrateDaoStats(): Promise<void> {

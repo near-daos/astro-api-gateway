@@ -1,5 +1,6 @@
 export enum DynamoEntityType {
   Dao = 'Dao',
+  DaoIds = 'DAO_IDS',
   Proposal = 'Proposal',
   Bounty = 'Bounty',
   Account = 'Account',
