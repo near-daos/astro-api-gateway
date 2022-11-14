@@ -126,6 +126,14 @@ export class Dao extends TransactionEntity {
   @Column({ type: 'float', default: 0 })
   totalDaoFunds: number;
 
+  @ApiProperty()
+  @Column({ default: 0 })
+  bountyCount: number;
+
+  @ApiProperty()
+  @Column({ default: 0 })
+  nftCount: number;
+
   @OneToMany(() => Delegation, (delegation) => delegation.dao, {
     eager: false,
     nullable: true,

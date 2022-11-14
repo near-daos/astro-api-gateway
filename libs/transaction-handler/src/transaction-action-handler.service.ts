@@ -313,6 +313,8 @@ export class TransactionActionHandlerService {
 
     this.logger.log(`Storing Proposal: ${proposal.id} due to transaction`);
     await this.proposalService.create(proposal);
+    await this.daoService.increment(dao.id, 'totalProposalCount');
+    await this.daoService.increment(dao.id, 'activeProposalCount');
     this.logger.log(`Successfully stored Proposal: ${proposal.id}`);
 
     if (proposal.type === ProposalType.AddBounty) {
@@ -663,6 +665,7 @@ export class TransactionActionHandlerService {
           `Removing Bounty Context: ${proposalEntity?.id} due to transaction`,
         );
         await this.bountyContextService.remove(dao.id, proposal?.proposalId);
+        await this.daoService.decrement(dao.id, 'bountyCount');
       }
 
       this.logger.log(`Removing Proposal: ${args.id} due to transaction`);
@@ -724,6 +727,7 @@ export class TransactionActionHandlerService {
         }),
         proposal.proposalId,
       );
+      await this.daoService.increment(dao.id, 'bountyCount');
       this.logger.log('Successfully stored new Bounty');
     }
 
@@ -974,7 +978,7 @@ export class TransactionActionHandlerService {
       relations: ['delegations'],
     });
     await this.opensearchService.indexDao(dao.id, daoById);
-    await this.dynamodbService.saveDao(daoById);
+    await this.daoDynamoService.saveDao(daoById);
 
     return { type: ContractHandlerResultType.Delegate };
   }
@@ -1096,11 +1100,12 @@ export class TransactionActionHandlerService {
         this.logger.log(
           `Updating NFT ${txAction.receiverId} for ${accountId} due to transaction: ${txAction.transactionHash}`,
         );
-        await this.nftTokenService.loadNFT(
+        const nfts = await this.nftTokenService.loadNFT(
           txAction.receiverId,
           accountId,
           txAction.timestamp,
         );
+        await this.daoService.save({ id: accountId, nftCount: nfts.length });
         this.logger.log(
           `NFT ${txAction.receiverId} for ${accountId} successfully updated`,
         );

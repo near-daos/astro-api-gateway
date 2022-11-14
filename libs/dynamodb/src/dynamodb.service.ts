@@ -3,7 +3,6 @@ import DynamoDB, { DocumentClient } from 'aws-sdk/clients/dynamodb';
 import { ConfigService } from '@nestjs/config';
 import { Injectable } from '@nestjs/common';
 
-import { Dao } from '@sputnik-v2/dao/entities';
 import { Proposal } from '@sputnik-v2/proposal/entities';
 import { Account } from '@sputnik-v2/account/entities';
 import {
@@ -36,7 +35,6 @@ import {
   mapAccountNotificationToAccountNotificationModel,
   mapAccountToAccountModel,
   mapCommentToCommentModel,
-  mapDaoToDaoModel,
   mapDraftCommentToCommentModel,
   mapDraftProposalToDraftProposalModel,
   mapProposalTemplateToProposalTemplateModel,
@@ -138,10 +136,6 @@ export class DynamodbService {
 
   async saveDraftComment(comment: Partial<DraftComment>) {
     return this.saveItem<CommentModel>(mapDraftCommentToCommentModel(comment));
-  }
-
-  async saveDao(dao: Dao) {
-    return this.saveItem<DaoModel>(mapDaoToDaoModel(dao));
   }
 
   async saveDraftProposal(
@@ -367,7 +361,6 @@ export class DynamodbService {
 
   async saveItem<M extends BaseEntity>(data: PartialEntity<M>, upsert = true) {
     if (upsert) {
-      const processingTimeStamp = Date.now();
       const { partitionId, entityId } = data;
       const item = await this.getItemById(
         partitionId,
@@ -380,18 +373,17 @@ export class DynamodbService {
           Item: {
             ...(item || {}),
             ...data,
-            processingTimeStamp,
+            processingTimeStamp: Date.now(),
           },
         })
         .promise();
     } else {
-      const processingTimeStamp = Date.now();
       return this.client
         .put({
           TableName: this.tableName,
           Item: {
             ...data,
-            processingTimeStamp,
+            processingTimeStamp: Date.now(),
           },
         })
         .promise();
