@@ -165,12 +165,10 @@ export class DynamodbService {
 
   async saveSharedProposalTemplate(
     sharedProposalTemplate: SharedProposalTemplate,
-    daoId: string,
   ) {
     return this.saveItem<SharedProposalTemplateModel>(
       mapSharedProposalTemplateToSharedProposalTemplateModel(
         sharedProposalTemplate,
-        daoId,
       ),
     );
   }

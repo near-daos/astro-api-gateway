@@ -17,10 +17,9 @@ export class SharedProposalTemplateModel extends BaseModel {
 
 export function mapSharedProposalTemplateToSharedProposalTemplateModel(
   sharedProposalTemplate: SharedProposalTemplate,
-  daoId: string,
 ): SharedProposalTemplateModel {
   return {
-    partitionId: daoId,
+    partitionId: sharedProposalTemplate.id,
     entityId: buildEntityId(
       DynamoEntityType.SharedProposalTemplate,
       sharedProposalTemplate.id,
