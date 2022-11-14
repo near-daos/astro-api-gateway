@@ -8,6 +8,7 @@ import {
   DynamodbService,
   DynamoEntityType,
   mapSharedProposalTemplateToSharedProposalTemplateModel,
+  ProposalTemplateModel,
   SharedProposalTemplateModel,
 } from '@sputnik-v2/dynamodb';
 import { ConfigService } from '@nestjs/config';
@@ -65,10 +66,7 @@ export class DynamoSharedProposalTemplateService {
     };
 
     const templateModel =
-      mapSharedProposalTemplateToSharedProposalTemplateModel(
-        newTemplate,
-        daoId,
-      );
+      mapSharedProposalTemplateToSharedProposalTemplateModel(newTemplate);
 
     await this.dynamoDbService.saveItem<SharedProposalTemplateModel>({
       ...templateModel,
@@ -77,18 +75,14 @@ export class DynamoSharedProposalTemplateService {
     return newTemplate;
   }
 
-  async cloneToDao(
-    proposalTemplateId: string,
-    fromDao: string,
-    toDao: string,
-  ): Promise<void> {
+  async cloneToDao(proposalTemplateId: string, toDao: string): Promise<void> {
     this.logger.log(
       `Cloning Shared Proposal Template ${proposalTemplateId} to DAO ${toDao}`,
     );
 
     const existingTemplate =
       await this.dynamoDbService.getItemByType<SharedProposalTemplateModel>(
-        fromDao,
+        proposalTemplateId,
         DynamoEntityType.SharedProposalTemplate,
         proposalTemplateId,
       );
@@ -99,8 +93,6 @@ export class DynamoSharedProposalTemplateService {
       ...existingTemplate,
     };
 
-    await this.dynamoDbService.saveItem<SharedProposalTemplateModel>(
-      newTemplate,
-    );
+    await this.dynamoDbService.saveItem<ProposalTemplateModel>(newTemplate);
   }
 }
