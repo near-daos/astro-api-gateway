@@ -102,7 +102,7 @@ export class SharedProposalTemplateController {
     type: String,
   })
   @ApiParam({
-    name: 'toDao',
+    name: 'daoId',
     type: String,
   })
   @ApiResponse({
@@ -116,12 +116,12 @@ export class SharedProposalTemplateController {
   })
   @ApiBearerAuth()
   @UseGuards(AccountAccessGuard, CouncilMemberGuard)
-  @Post('/templates/:id/clone/:toDao')
+  @Post('/templates/:id/clone/:dao')
   async createProposalTemplate(
     @Param('id') id: string,
-    @Param('toDao') toDao: string,
+    @Param('daoId') daoId: string,
   ): Promise<ProposalTemplate> {
-    await this.dynamoSharedProposalTemplateService.cloneToDao(id, toDao);
-    return this.sharedProposalTemplateService.cloneToDao(id, toDao);
+    await this.dynamoSharedProposalTemplateService.cloneToDao(id, daoId);
+    return this.sharedProposalTemplateService.cloneToDao(id, daoId);
   }
 }
