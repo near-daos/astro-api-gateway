@@ -6,6 +6,7 @@ import { BaseResponseDto, Order } from '@sputnik-v2/common';
 import { Dao } from '@sputnik-v2/dao/entities';
 import { FeatureFlags, FeatureFlagsService } from '@sputnik-v2/feature-flags';
 import {
+  DaoModel,
   DynamodbService,
   DynamoEntityType,
   TokenBalanceModel,
@@ -149,10 +150,13 @@ export class TokenService {
     accountId: string,
   ): Promise<Array<TokenBalance | TokenBalanceModel>> {
     if (await this.useDynamoDB()) {
-      return this.dynamodbService.queryItemsByType<TokenBalanceModel>(
-        accountId,
-        DynamoEntityType.TokenBalance,
-      );
+      return (
+        await this.dynamodbService.getItemByType<DaoModel>(
+          accountId,
+          DynamoEntityType.Dao,
+          accountId,
+        )
+      ).tokens;
     } else {
       return this.tokenBalanceRepository.find({
         where: { accountId },

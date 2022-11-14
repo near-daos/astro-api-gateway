@@ -25,6 +25,7 @@ import {
   DynamodbService,
   DynamoEntityType,
   mapDaoVersionToDaoVersionModel,
+  TokenBalanceModel,
 } from '@sputnik-v2/dynamodb';
 import { FeatureFlags, FeatureFlagsService } from '@sputnik-v2/feature-flags';
 
@@ -393,19 +394,12 @@ export class DaoService extends TypeOrmCrudService<Dao> {
         ? calculateFunds(nearAmount, nearToken.price, nearToken.decimals)
         : 0;
     const tokenBalance = tokenBalances.reduce((balance, tokenBalance) => {
-      if (
-        tokenBalance.balance &&
-        tokenBalance.token?.price &&
-        tokenBalance.token.decimals
-      ) {
-        return (
-          balance +
-          calculateFunds(
-            tokenBalance.balance,
-            tokenBalance.token.price,
-            tokenBalance.token.decimals,
-          )
-        );
+      const { price, decimals } =
+        tokenBalance instanceof TokenBalanceModel
+          ? tokenBalance
+          : tokenBalance.token;
+      if (tokenBalance.balance && price && decimals) {
+        return balance + calculateFunds(tokenBalance.balance, price, decimals);
       }
       return balance;
     }, 0);

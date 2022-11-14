@@ -348,18 +348,13 @@ export class DynamoDataMigration implements Migration {
         relations: ['daos'],
       },
     )) {
-      await PromisePool.withConcurrency(2)
-        .for(sharedProposalTemplates)
-        .process(async (sharedProposalTemplate) => {
-          return await this.dynamodbService.batchPut(
-            sharedProposalTemplate.daos.map(({ id }) =>
-              mapSharedProposalTemplateToSharedProposalTemplateModel(
-                sharedProposalTemplate,
-                id,
-              ),
-            ),
-          );
-        });
+      await this.dynamodbService.batchPut(
+        sharedProposalTemplates.map((sharedProposalTemplate) =>
+          mapSharedProposalTemplateToSharedProposalTemplateModel(
+            sharedProposalTemplate,
+          ),
+        ),
+      );
     }
   }
 
