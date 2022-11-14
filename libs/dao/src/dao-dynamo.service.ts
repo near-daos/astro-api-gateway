@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Dao } from '@sputnik-v2/dao';
 import { DaoSettings } from '@sputnik-v2/dao-settings';
 import {
+  DaoIdsModel,
   DynamoEntityType,
   mapDaoModelToDao,
   mapDaoSettingsToDaoModel,
@@ -20,7 +21,19 @@ export class DaoDynamoService {
   }
 
   async saveDao(dao: Dao) {
-    return this.save(mapDaoToDaoModel(dao));
+    return this.dynamoDbService.saveItem(mapDaoToDaoModel(dao));
+  }
+
+  async saveDaoId(daoId: string) {
+    const daoIdsModel = await this.dynamoDbService.getItemByType<DaoIdsModel>(
+      DynamoEntityType.DaoIds,
+      DynamoEntityType.DaoIds,
+      '1',
+    );
+    if (!daoIdsModel.ids?.includes(daoId)) {
+      daoIdsModel.ids.push(daoId);
+      await this.dynamoDbService.saveItem(daoIdsModel);
+    }
   }
 
   async saveDaoSettings(daoSettings: DaoSettings) {

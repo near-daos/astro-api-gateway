@@ -11,7 +11,7 @@ import { FinalExecutionStatus } from 'near-api-js/lib/providers';
 
 import { NearApiService } from '@sputnik-v2/near-api';
 import { SputnikService } from '@sputnik-v2/sputnikdao';
-import { DaoService } from '@sputnik-v2/dao';
+import { DaoDynamoService, DaoService } from '@sputnik-v2/dao';
 import {
   ProposalKindBountyDone,
   ProposalService,
@@ -56,6 +56,7 @@ export class TransactionActionHandlerService {
     private readonly nearApiService: NearApiService,
     private readonly sputnikService: SputnikService,
     private readonly daoService: DaoService,
+    private readonly daoDynamoService: DaoDynamoService,
     private readonly proposalService: ProposalService,
     private readonly bountyService: BountyService,
     private readonly bountyContextService: BountyContextService,
@@ -221,6 +222,7 @@ export class TransactionActionHandlerService {
     this.logger.log(`Storing new DAO: ${daoId} due to transaction`);
     await this.daoService.saveWithFunds(dao);
     await this.daoService.setDaoVersion(daoId);
+    await this.daoDynamoService.saveDaoId(daoId);
     this.logger.log(`Successfully stored new DAO: ${daoId}`);
 
     await this.eventService.sendDaoUpdateNotificationEvent(dao, txAction);

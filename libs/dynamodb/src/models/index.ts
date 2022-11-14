@@ -15,3 +15,4 @@ export * from './subscription.model';
 export * from './nft.model';
 export * from './token-balance.model';
 export * from './token-price.model';
+export * from './dao-ids.model';
