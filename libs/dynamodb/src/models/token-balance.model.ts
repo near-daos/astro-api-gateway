@@ -1,16 +1,9 @@
-import { Token, TokenBalance } from '@sputnik-v2/token/entities';
-import { buildEntityId } from '@sputnik-v2/utils';
-import { BaseModel } from './base.model';
-import { DynamoEntityType } from '@sputnik-v2/dynamodb/types';
+import { TokenBalance } from '@sputnik-v2/token/entities';
 
-export class TokenBalanceModel extends BaseModel {
+export class TokenBalanceModel {
   tokenId: string;
   accountId: string;
   balance: string;
-  token: TokenModel;
-}
-
-export class TokenModel {
   id: string;
   ownerId: string;
   totalSupply: string;
@@ -22,29 +15,16 @@ export class TokenModel {
   spec: string;
   symbol: string;
   price: string;
-  tokenId?: string;
-  balance?: string;
 }
 
 export function mapTokenBalanceToTokenBalanceModel(
   balance: TokenBalance,
 ): TokenBalanceModel {
+  const token = balance.token;
   return {
-    partitionId: balance.accountId,
-    entityId: buildEntityId(DynamoEntityType.TokenBalance, balance.tokenId),
-    entityType: DynamoEntityType.TokenBalance,
-    isArchived: false,
-    createTimestamp: Date.now(),
-    processingTimeStamp: Date.now(),
     tokenId: balance.tokenId,
     accountId: balance.accountId,
     balance: balance.balance,
-    token: mapTokenToTokenModel(balance.token),
-  };
-}
-
-export function mapTokenToTokenModel(token: Token): TokenModel {
-  return {
     id: token.id,
     ownerId: token.ownerId,
     totalSupply: token.totalSupply,
@@ -56,7 +36,5 @@ export function mapTokenToTokenModel(token: Token): TokenModel {
     spec: token.spec,
     symbol: token.symbol,
     price: token.price,
-    tokenId: token.tokenId,
-    balance: token.balance,
   };
 }
