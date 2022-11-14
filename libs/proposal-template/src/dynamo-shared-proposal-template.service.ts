@@ -12,6 +12,7 @@ import {
   SharedProposalTemplateModel,
 } from '@sputnik-v2/dynamodb';
 import { ConfigService } from '@nestjs/config';
+import { buildEntityId, buildTemplateId } from '@sputnik-v2/utils';
 
 @Injectable()
 export class DynamoSharedProposalTemplateService {
@@ -96,9 +97,14 @@ export class DynamoSharedProposalTemplateService {
     }
 
     const newTemplate = {
-      partitionId: toDao,
-      daoCount: existingTemplate.daoCount + 1,
       ...existingTemplate,
+      partitionId: toDao,
+      entityType: DynamoEntityType.ProposalTemplate,
+      entityId: buildEntityId(
+        DynamoEntityType.ProposalTemplate,
+        buildTemplateId(toDao),
+      ),
+      daoCount: existingTemplate.daoCount + 1,
     };
 
     await this.dynamoDbService.saveItem<ProposalTemplateModel>(newTemplate);
