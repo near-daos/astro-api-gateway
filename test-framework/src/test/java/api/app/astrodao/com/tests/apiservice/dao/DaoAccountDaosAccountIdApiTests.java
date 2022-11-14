@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
-import java.util.Arrays;
 import java.util.List;
 
 import static api.app.astrodao.com.core.Constants.Variables.EMPTY_STRING;
@@ -50,11 +49,12 @@ public class DaoAccountDaosAccountIdApiTests extends BaseTest {
 				"autotest-dao-1.sputnikv2.testnet",
 				"test-dao-1640080131167.sputnikv2.testnet",
 				"test-dao-1640080006438.sputnikv2.testnet",
-				"test-dao-for-ui-uno.sputnikv2.testnet");
+				"test-dao-for-ui-uno.sputnikv2.testnet",
+				"test-dao-1640251360528.sputnikv2.testnet");
 
-		daoApiSteps.assertCollectionHasCorrectSize(accountDaos, 9);
+		daoApiSteps.assertCollectionHasCorrectSize(accountDaos, 10);
 		daoApiSteps.assertCollectionHasSameElementsAs(accountDaos, Dao::getId, expectedDaoIds, "id");
-		daoApiSteps.assertCollectionContainsExactlyInAnyOrder(accountDaos, Dao::getStatus, "Inactive", "Active");
+		daoApiSteps.assertCollectionContainsExactlyInAnyOrder(accountDaos, Dao::getStatus, "Inactive");
 	}
 
 	@Test

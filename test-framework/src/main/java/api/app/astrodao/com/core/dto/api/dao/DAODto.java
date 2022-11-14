@@ -6,6 +6,7 @@ import java.util.List;
 
 @Data
 public class DAODto {
+	private Boolean isArchived;
 	private String stakingContract;
 	private double totalDaoFunds;
 	private Metadata metadata;

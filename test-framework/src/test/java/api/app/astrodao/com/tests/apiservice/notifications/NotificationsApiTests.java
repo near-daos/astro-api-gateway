@@ -132,7 +132,6 @@ public class NotificationsApiTests extends BaseTest {
         notificationsApiSteps.assertCollectionElementsHasValue(notifications.getData(), r -> r.getCreatedAt() != null, "data/createdAt");
         notificationsApiSteps.assertCollectionElementsHasValue(notifications.getData(), r -> r.getId() != null, "data/id");
         notificationsApiSteps.assertCollectionElementsHasValue(notifications.getData(), r -> r.getMetadata() != null, "data/metadata");
-        //TODO: Ask a question why we get dao field in response
         notificationsApiSteps.assertCollectionElementsHasValue(notifications.getData(), r -> r.getDao() != null, "data/dao");
 
         notificationsApiSteps.assertCollectionElementsHasNoValue(notifications.getData(), r -> r.getDaoId() == null, "data/daoId");
