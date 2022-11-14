@@ -87,6 +87,14 @@ export class DynamoSharedProposalTemplateService {
         proposalTemplateId,
       );
 
+    if (!existingTemplate) {
+      this.logger.log(
+        `Cant find Shared Proposal Template ${proposalTemplateId} in Dynamo`,
+      );
+
+      return;
+    }
+
     const newTemplate = {
       partitionId: toDao,
       daoCount: existingTemplate.daoCount + 1,
