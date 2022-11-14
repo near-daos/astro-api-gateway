@@ -116,7 +116,7 @@ export class SharedProposalTemplateController {
   })
   @ApiBearerAuth()
   @UseGuards(AccountAccessGuard, CouncilMemberGuard)
-  @Post('/templates/:id/clone/:dao')
+  @Post('/templates/:id/clone/:daoId')
   async createProposalTemplate(
     @Param('id') id: string,
     @Param('daoId') daoId: string,
