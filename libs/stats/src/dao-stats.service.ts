@@ -1,7 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DaoDynamoService } from '@sputnik-v2/dao';
-import { DaoStatsDynamoService } from '@sputnik-v2/stats';
 import { Repository } from 'typeorm';
 import { BountyService } from '@sputnik-v2/bounty';
 import { DateTime } from 'luxon';
@@ -12,6 +11,7 @@ import { FeatureFlags, FeatureFlagsService } from '@sputnik-v2/feature-flags';
 import { NFTTokenService } from '@sputnik-v2/token';
 import { buildDaoStatsId, getGrowth } from '@sputnik-v2/utils';
 
+import { DaoStatsDynamoService } from './dao-stats-dynamo.service';
 import {
   DaoStatsDto,
   DaoStatsStateDto,

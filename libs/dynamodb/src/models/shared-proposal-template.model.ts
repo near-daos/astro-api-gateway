@@ -4,7 +4,7 @@ import {
 } from '@sputnik-v2/proposal-template';
 import { buildEntityId } from '@sputnik-v2/utils';
 import { BaseModel } from './base.model';
-import { DynamoEntityType } from '@sputnik-v2/dynamodb/types';
+import { DynamoEntityType } from '../types';
 
 export class SharedProposalTemplateModel extends BaseModel {
   id: string;

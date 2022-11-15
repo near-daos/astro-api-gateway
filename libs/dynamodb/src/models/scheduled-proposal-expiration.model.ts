@@ -1,4 +1,4 @@
-import { BaseModel } from '@sputnik-v2/dynamodb';
+import { BaseModel } from '../models';
 
 export class ScheduledProposalExpirationEvent extends BaseModel {
   ttl: number;

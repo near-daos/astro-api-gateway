@@ -9,6 +9,7 @@ export * from './bounty.model';
 export * from './comment.model';
 export * from './darft-proposal.model';
 export * from './proposal-template.model';
+export * from './scheduled-proposal-expiration.model';
 export * from './shared-proposal-template.model';
 export * from './dao-stats.model';
 export * from './subscription.model';

@@ -30,7 +30,7 @@ import {
 } from '@sputnik-v2/notification/entities';
 import { Comment, CommentReport } from '@sputnik-v2/comment/entities';
 import { DaoStats } from '@sputnik-v2/stats/entities';
-import { DaoSettings } from '@sputnik-v2/dao-settings';
+import { DaoSettings } from '@sputnik-v2/dao-settings/entities';
 import { OTP } from '@sputnik-v2/otp';
 import {
   ProposalTemplate,

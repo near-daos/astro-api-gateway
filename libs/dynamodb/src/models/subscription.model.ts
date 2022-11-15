@@ -1,7 +1,7 @@
 import { Subscription } from '@sputnik-v2/subscription';
 import { buildEntityId } from '@sputnik-v2/utils';
 import { BaseModel } from './base.model';
-import { DynamoEntityType } from '@sputnik-v2/dynamodb/types';
+import { DynamoEntityType } from '../types';
 
 export class SubscriptionModel extends BaseModel {
   id: string;
