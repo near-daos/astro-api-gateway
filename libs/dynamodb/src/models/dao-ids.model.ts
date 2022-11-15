@@ -1,6 +1,6 @@
 import { buildEntityId } from '@sputnik-v2/utils';
 import { BaseModel } from './base.model';
-import { DynamoEntityType } from '@sputnik-v2/dynamodb';
+import { DynamoEntityType } from '../types';
 
 export class DaoIdsModel extends BaseModel {
   ids: string[];

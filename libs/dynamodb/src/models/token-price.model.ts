@@ -1,7 +1,7 @@
 import { Token } from '@sputnik-v2/token/entities';
 import { buildEntityId } from '@sputnik-v2/utils';
 import { BaseModel } from './base.model';
-import { DynamoEntityType } from '@sputnik-v2/dynamodb/types';
+import { DynamoEntityType } from '../types';
 
 export class TokenPriceModel extends BaseModel {
   price: string;
