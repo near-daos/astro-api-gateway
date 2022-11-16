@@ -13,7 +13,7 @@ export function mapTransactionActionToHandledReceiptActionModel(
     partitionId: action.transactionHash,
     entityId: buildEntityId(
       DynamoEntityType.HandledReceiptAction,
-      String(action.indexInReceipt),
+      `${action.receiptId}-${action.indexInReceipt}`,
     ),
     entityType: DynamoEntityType.HandledReceiptAction,
     processingTimestamp: Date.now(),
