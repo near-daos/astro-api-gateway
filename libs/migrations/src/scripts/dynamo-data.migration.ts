@@ -320,6 +320,7 @@ export class DynamoDataMigration implements Migration {
       {
         relations: ['actions'],
       },
+      5540,
     )) {
       await this.dynamodbService.batchPut(
         proposals.map((proposal) => mapProposalToProposalModel(proposal)),
@@ -402,13 +403,18 @@ export class DynamoDataMigration implements Migration {
     entity: string,
     repo: Repository<E> | MongoRepository<E>,
     findParams?: FindManyOptions<E>,
+    startFrom = 0,
   ): AsyncGenerator<E[]> {
     this.logger.log(`Migrating ${entity}...`);
 
     const totalCount = await repo.count();
 
-    let count = 0;
-    for await (const entities of this.getEntities(repo, findParams)) {
+    let count = startFrom;
+    for await (const entities of this.getEntities(
+      repo,
+      findParams,
+      startFrom,
+    )) {
       count += entities.length;
 
       this.logger.log(`Migrating ${entity}: chunk ${count}/${totalCount}`);
@@ -422,12 +428,13 @@ export class DynamoDataMigration implements Migration {
   private async *getEntities<E>(
     repo: Repository<E> | MongoRepository<E>,
     findParams?: FindManyOptions<E>,
+    startFrom = 0,
   ): AsyncGenerator<E[]> {
     const chunkSize = 20;
     const count = await repo.count();
     const chunkCount = getChunkCount(BigInt(count), chunkSize);
 
-    for (let i = 0; i < chunkCount; i++) {
+    for (let i = startFrom / chunkSize; i < chunkCount; i++) {
       const chunk = await repo.find({
         take: chunkSize,
         skip: chunkSize * i,
