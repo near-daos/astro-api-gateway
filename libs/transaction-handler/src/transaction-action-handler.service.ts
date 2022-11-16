@@ -1136,7 +1136,7 @@ export class TransactionActionHandlerService {
     return this.dynamodbService.getItemByType(
       action.transactionHash,
       DynamoEntityType.HandledReceiptAction,
-      String(action.indexInReceipt),
+      `${action.receiptId}-${action.indexInReceipt}`,
     );
   }
 }
