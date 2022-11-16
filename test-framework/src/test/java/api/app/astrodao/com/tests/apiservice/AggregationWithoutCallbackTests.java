@@ -2,6 +2,7 @@ package api.app.astrodao.com.tests.apiservice;
 
 import api.app.astrodao.com.core.dto.api.proposals.ProposalDto;
 import api.app.astrodao.com.core.dto.cli.AddProposalResponse;
+import api.app.astrodao.com.core.dto.cli.CLIResponse;
 import api.app.astrodao.com.core.dto.cli.dao.*;
 import api.app.astrodao.com.core.dto.cli.proposals.bounty.*;
 import api.app.astrodao.com.core.dto.cli.proposals.config.ChangeConfigDto;
@@ -107,7 +108,7 @@ public class AggregationWithoutCallbackTests extends BaseTest {
                 .setConfig(config);
 
         NewDAODto newDaoDto = NewDAODto.of(daoName, daoArgs);
-        nearCLISteps.createNewDao(newDaoDto, testAccountId, gasValue, deposit);
+        CLIResponse cliResponse = nearCLISteps.createNewDao(newDaoDto, testAccountId, gasValue, deposit);
 
         Response response = nearCLISteps.waitForAggregation(
                 aggregationTimeout, () -> daoApiSteps.getDAOByID(daoId)
@@ -117,18 +118,15 @@ public class AggregationWithoutCallbackTests extends BaseTest {
                 .statusCode(HTTP_OK)
                 .extract().as( Dao.class);
 
-        //daoApiSteps.assertDtoValue(daoDto, DAODto::getIsArchived, Boolean.FALSE, "isArchived");
+        daoApiSteps.assertDtoValue(daoDto, Dao::getIsArchived, Boolean.FALSE, "isArchived");
         daoApiSteps.assertDtoValue(daoDto, Dao::getId, daoId, "id");
-        //TODO: Ask a question or raise a bug, sometimes TransactionHash is not available after DAO creation
-        //daoApiSteps.assertDtoValue(daoDto, DAODto::getTransactionHash, cliResponse.getTransactionHash(), "transactionHash");
-        //daoApiSteps.assertDtoValue(daoDto, DAODto::getUpdateTransactionHash, cliResponse.getTransactionHash(), "updateTransactionHash");
+        daoApiSteps.assertDtoValue(daoDto, Dao::getTransactionHash, cliResponse.getTransactionHash(), "transactionHash");
+        daoApiSteps.assertDtoValue(daoDto, Dao::getUpdateTransactionHash, cliResponse.getTransactionHash(), "updateTransactionHash");
         daoApiSteps.assertDtoValue(daoDto, d -> d.getConfig().getName(), daoName, "config/name");
         daoApiSteps.assertDtoValue(daoDto, d -> d.getConfig().getPurpose(), daoPurpose, "config/purpose");
         daoApiSteps.assertDtoValue(daoDto, d -> d.getConfig().getMetadata(), config.getMetadata(), "config/metadata");
-        //TODO: Add verification for amount
-        //daoApiSteps.assertDtoValue(daoDto, DAODto::getAmount, "5000071399234288200000000", "amount");
-        //TODO: Ask a question or raise a bug, sometimes createdBy is not available after DAO creation
-        //daoApiSteps.assertDtoValue(daoDto, DAODto::getCreatedBy, testAccountId, "createdBy");
+        daoApiSteps.assertDtoHasValue(daoDto, dao -> !dao.getAmount().toString().isEmpty(), "amount");
+        daoApiSteps.assertDtoValue(daoDto, Dao::getCreatedBy, testAccountId, "createdBy");
         daoApiSteps.assertDtoValue(daoDto, Dao::getTotalSupply, "0", "totalSupply");
         daoApiSteps.assertDtoValue(daoDto, Dao::getNumberOfMembers, BigDecimal.valueOf(1), "numberOfMembers");
         daoApiSteps.assertDtoValue(daoDto, d -> d.getPolicy().getProposalBond(), bond, "policy/proposalBond");

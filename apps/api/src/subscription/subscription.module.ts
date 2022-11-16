@@ -1,14 +1,11 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { Subscription, SubscriptionService } from '@sputnik-v2/subscription';
+import { NearApiModule } from '@sputnik-v2/near-api';
+import { SubscriptionModule as SubscriptionModuleLib } from '@sputnik-v2/subscription';
 
-import { NearModule } from '../near/near.module';
 import { SubscriptionsController } from './subscription.controller';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Subscription]), NearModule],
+  imports: [NearApiModule, SubscriptionModuleLib],
   controllers: [SubscriptionsController],
-  providers: [SubscriptionService],
-  exports: [SubscriptionService],
 })
 export class SubscriptionModule {}

@@ -44,9 +44,7 @@ export class DaoAggregatorService {
       .process((dao) => this.daoService.updateDaoStatus(dao));
   }
 
-  public async aggregateDaoFunds(
-    daoIds?: string[],
-  ): Promise<ReturnValue<Dao, Dao>> {
+  public async aggregateDaoFunds(daoIds?: string[]) {
     const daos = await this.daoService.findByIds(daoIds);
 
     return PromisePool.withConcurrency(10)

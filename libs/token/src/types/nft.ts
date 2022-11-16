@@ -28,5 +28,6 @@ export function castNFT(
       ...camelcaseKeys(metadata),
     },
     updateTimestamp: timestamp,
+    createdAt: new Date(),
   };
 }

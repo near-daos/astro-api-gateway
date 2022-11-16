@@ -8,6 +8,11 @@ export class CreateDraftComment {
   @IsNotEmpty()
   contextId: string;
 
+  @ApiProperty({ required: true })
+  @IsString()
+  @IsNotEmpty()
+  daoId: string;
+
   @ApiProperty({
     enum: DraftCommentContextType,
     required: true,

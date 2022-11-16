@@ -7,6 +7,7 @@ import { Bounty } from '@sputnik-v2/bounty';
 import { Dao } from '@sputnik-v2/dao';
 import { Proposal } from '@sputnik-v2/proposal';
 import { DraftProposal } from '@sputnik-v2/draft-proposal';
+import { FeatureFlags, FeatureFlagsService } from '@sputnik-v2/feature-flags';
 
 import { BaseOpensearchDto } from './dto/base-opensearch.dto';
 import { mapProposalToOpensearchDto } from './dto/proposal-opensearch.dto';
@@ -23,9 +24,18 @@ export class OpensearchService {
   constructor(
     @InjectOpensearchClient()
     private readonly client: OpensearchClient,
+    private readonly featureFlagsService: FeatureFlagsService,
   ) {}
 
   async indexDao(id: string, dao: Dao): Promise<ApiResponse> {
+    if (
+      !(await this.featureFlagsService.check(
+        FeatureFlags.OpenSearchDaoIndexing,
+      ))
+    ) {
+      return;
+    }
+
     if (!dao) {
       return this.remove(Dao.name, id);
     }
@@ -33,7 +43,18 @@ export class OpensearchService {
     return this.index(Dao.name, mapDaoToOpensearchDto(dao));
   }
 
-  async indexProposal(id: string, proposal: Proposal): Promise<ApiResponse> {
+  async indexProposal(
+    id: string,
+    proposal: Proposal,
+  ): Promise<ApiResponse | undefined> {
+    if (
+      !(await this.featureFlagsService.check(
+        FeatureFlags.OpenSearchProposalIndexing,
+      ))
+    ) {
+      return;
+    }
+
     if (!proposal) {
       return this.remove(Proposal.name, id);
     }
@@ -53,6 +74,14 @@ export class OpensearchService {
     id: string,
     draftProposal: DraftProposal,
   ): Promise<ApiResponse> {
+    if (
+      !(await this.featureFlagsService.check(
+        FeatureFlags.OpenSearchDraftProposalIndexing,
+      ))
+    ) {
+      return;
+    }
+
     if (!draftProposal) {
       return this.remove(DraftProposal.name, id);
     }
@@ -64,6 +93,14 @@ export class OpensearchService {
   }
 
   async indexBounty(id: string, bounty: Bounty): Promise<ApiResponse> {
+    if (
+      !(await this.featureFlagsService.check(
+        FeatureFlags.OpenSearchBountyIndexing,
+      ))
+    ) {
+      return;
+    }
+
     if (!bounty) {
       return this.remove(Bounty.name, id);
     }
@@ -76,7 +113,7 @@ export class OpensearchService {
 
     let body = null;
     try {
-      let res = await this.client.get({
+      const res = await this.client.get({
         index: index.toLowerCase(),
         id,
       });
@@ -149,7 +186,7 @@ export class OpensearchService {
     }
   }
 
-  async createIndex(index: string): Promise<ApiResponse> {
+  async createIndex(index: string, settings?: any): Promise<ApiResponse> {
     this.logger.log(`[Opensearch] Index: ${index} | Creating`);
 
     const { body: exists } = await this.client.indices.exists({
@@ -164,7 +201,22 @@ export class OpensearchService {
       return;
     }
 
-    return this.client.indices.create({ index: index.toLowerCase() });
+    return this.client.indices.create({
+      index: index.toLowerCase(),
+      body: settings,
+    });
+  }
+
+  async reIndex(source: string, dest: string): Promise<ApiResponse> {
+    this.logger.log(`[Opensearch] Index: ${source} | ReIndexing to ${dest}`);
+
+    return this.client.reindex({
+      body: {
+        source: { index: source.toLowerCase() },
+        dest: { index: dest.toLowerCase() },
+      },
+      refresh: true,
+    });
   }
 
   async deleteIndexIfExists(index: string): Promise<ApiResponse> {
@@ -183,5 +235,10 @@ export class OpensearchService {
     }
 
     return this.client.indices.delete({ index: index.toLowerCase() });
+  }
+
+  async getIndexCount(index: string): Promise<number> {
+    const { body } = await this.client.count({ index: index.toLowerCase() });
+    return body.count;
   }
 }

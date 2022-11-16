@@ -39,6 +39,7 @@ import { EntityQueryWithJoin } from '@sputnik-v2/common/dto/EntityQueryWithJoin'
 
 import { CouncilMemberGuard } from '../guards/council-member.guard';
 import { SharedProposalTemplateCrudRequestInterceptor } from './interceptors/shared-proposal-template-crud.interceptor';
+import { DynamoSharedProposalTemplateService } from '@sputnik-v2/proposal-template/dynamo-shared-proposal-template.service';
 
 @Span()
 @ApiTags('Proposals')
@@ -46,6 +47,7 @@ import { SharedProposalTemplateCrudRequestInterceptor } from './interceptors/sha
 export class SharedProposalTemplateController {
   constructor(
     private readonly sharedProposalTemplateService: SharedProposalTemplateService,
+    private readonly dynamoSharedProposalTemplateService: DynamoSharedProposalTemplateService,
   ) {}
 
   @ApiQuery({ type: EntityQueryWithJoin })
@@ -119,6 +121,7 @@ export class SharedProposalTemplateController {
     @Param('id') id: string,
     @Param('daoId') daoId: string,
   ): Promise<ProposalTemplate> {
+    await this.dynamoSharedProposalTemplateService.cloneToDao(id, daoId);
     return this.sharedProposalTemplateService.cloneToDao(id, daoId);
   }
 }

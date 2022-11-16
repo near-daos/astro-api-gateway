@@ -27,12 +27,12 @@ import {
 } from '@sputnik-v2/subscription';
 import {
   AccountAccessGuard,
-  DeleteOneParams,
   DB_FOREIGN_KEY_VIOLATION,
   FindAccountParams,
   ValidAccountGuard,
   AuthorizedRequest,
 } from '@sputnik-v2/common';
+import { DeleteSubscriptionParams } from '@sputnik-v2/common/dto/DeleteSubscriptionParams';
 
 @Span()
 @ApiTags('Subscriptions')
@@ -95,7 +95,15 @@ export class SubscriptionsController {
   }
 
   @ApiParam({
-    name: 'id',
+    name: 'daoId',
+    type: String,
+  })
+  @ApiParam({
+    name: 'accountId',
+    type: String,
+  })
+  @ApiParam({
+    name: 'subscriptionId',
     type: String,
   })
   @ApiResponse({
@@ -111,8 +119,11 @@ export class SubscriptionsController {
   })
   @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
-  @Delete('/:id')
-  remove(@Param() { id }: DeleteOneParams): Promise<void> {
-    return this.subscriptionService.remove(id);
+  @Delete('/:daoId/:accountId/:subscriptionId')
+  remove(
+    @Param()
+    { daoId, accountId, subscriptionId }: DeleteSubscriptionParams,
+  ): Promise<void> {
+    return this.subscriptionService.remove(daoId, accountId, subscriptionId);
   }
 }

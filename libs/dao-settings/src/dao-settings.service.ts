@@ -1,6 +1,8 @@
-import { Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { DaoDynamoService } from '@sputnik-v2/dao';
+import { FeatureFlags, FeatureFlagsService } from '@sputnik-v2/feature-flags';
+import { Repository } from 'typeorm';
 import { DaoSettingsDto } from './dto';
 import { DaoSettings } from './entities';
 
@@ -9,27 +11,49 @@ export class DaoSettingsService {
   constructor(
     @InjectRepository(DaoSettings)
     private readonly daoSettingsRepository: Repository<DaoSettings>,
+    private readonly daoDynamoService: DaoDynamoService,
+    private readonly featureFlagsService: FeatureFlagsService,
   ) {}
 
-  getSettings(daoId: string) {
-    return this.daoSettingsRepository.findOne(daoId);
+  async useDynamoDB() {
+    return this.featureFlagsService.check(FeatureFlags.DaoSettingsDynamo);
   }
 
-  saveSettings(daoId: string, settings: DaoSettingsDto) {
-    return this.daoSettingsRepository.save({
+  async getSettings(daoId: string) {
+    if (await this.useDynamoDB()) {
+      const dao = await this.daoDynamoService.get(daoId);
+      return dao?.settings || {};
+    } else {
+      const entity = await this.daoSettingsRepository.findOne(daoId);
+      return entity?.settings || {};
+    }
+  }
+
+  async saveSettings(daoId: string, settings: DaoSettingsDto) {
+    const entity = this.daoSettingsRepository.create({
       daoId,
       settings,
     });
+
+    await this.daoSettingsRepository.save(entity);
+    await this.daoDynamoService.saveDaoSettings(entity);
+
+    return entity;
   }
 
   async saveSettingsParam(daoId: string, key: string, value: any) {
-    const settings = (await this.getSettings(daoId))?.settings || {};
-    return this.daoSettingsRepository.save({
+    const settings = (await this.getSettings(daoId)) || {};
+    const entity = this.daoSettingsRepository.create({
       daoId,
       settings: {
         ...settings,
         [key]: value,
       },
     });
+
+    await this.daoSettingsRepository.save(entity);
+    await this.daoDynamoService.saveDaoSettings(entity);
+
+    return entity;
   }
 }

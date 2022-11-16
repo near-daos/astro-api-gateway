@@ -1,8 +1,8 @@
 import { CacheModule, Module } from '@nestjs/common';
 import { DaoModule } from '@sputnik-v2/dao';
 import { CacheConfigService } from '@sputnik-v2/config/api-config';
+import { NearApiModule } from '@sputnik-v2/near-api';
 import { ProposalTemplateModule as ProposalTemplateModuleLib } from '@sputnik-v2/proposal-template';
-import { NearModule } from '../near/near.module';
 
 import { ProposalTemplateController } from './proposal-template.controller';
 import { SharedProposalTemplateController } from './shared-proposal-template.controller';
@@ -13,8 +13,8 @@ import { SharedProposalTemplateController } from './shared-proposal-template.con
       useClass: CacheConfigService,
     }),
     DaoModule,
+    NearApiModule,
     ProposalTemplateModuleLib,
-    NearModule,
   ],
   controllers: [ProposalTemplateController, SharedProposalTemplateController],
 })

@@ -21,9 +21,11 @@ import { Proposal, ProposalDto } from '@sputnik-v2/proposal';
 import { TransactionAction } from '@sputnik-v2/transaction-handler';
 import { AccountNotification, Notification } from '@sputnik-v2/notification';
 import { Comment } from '@sputnik-v2/comment';
+import { ProposalModel } from '@sputnik-v2/dynamodb';
 
 import { BaseMessage } from './messages/base.event';
 import { DraftCommentResponse } from '@sputnik-v2/draft-comment';
+import { CommentModel } from '@sputnik-v2/dynamodb';
 
 @Injectable()
 export class EventService {
@@ -52,7 +54,7 @@ export class EventService {
   }
 
   public async sendProposalUpdateNotificationEvent(
-    proposal: ProposalDto | Proposal,
+    proposal: ProposalDto | Proposal | ProposalModel,
     txAction: TransactionAction,
   ): Promise<any> {
     const message = new BaseMessage(EVENT_PROPOSAL_UPDATE_NOTIFICATION, {
@@ -100,31 +102,33 @@ export class EventService {
   }
 
   public async sendNewDraftCommentEvent(
-    comment: DraftCommentResponse,
+    comment: DraftCommentResponse | CommentModel,
   ): Promise<void> {
     const message = new BaseMessage(EVENT_DRAFT_NEW_COMMENT, { comment });
     return this.sendEvent(this.draftEventClient, message);
   }
 
   public async sendUpdateDraftCommentEvent(
-    comment: DraftCommentResponse,
+    comment: DraftCommentResponse | CommentModel,
   ): Promise<void> {
     const message = new BaseMessage(EVENT_DRAFT_UPDATE_COMMENT, { comment });
     return this.sendEvent(this.draftEventClient, message);
   }
 
   public async sendDeleteDraftCommentEvent(
-    comment: DraftCommentResponse,
+    comment: DraftCommentResponse | CommentModel,
   ): Promise<void> {
     const message = new BaseMessage(EVENT_DRAFT_DELETE_COMMENT, { comment });
     return this.sendEvent(this.draftEventClient, message);
   }
 
   public async sendCloseDraftProposalEvent(
+    daoId: string,
     draftId: string,
     proposalId: string,
   ): Promise<void> {
     const message = new BaseMessage(EVENT_DRAFT_PROPOSAL_CLOSE, {
+      daoId,
       draftId,
       proposalId,
     });

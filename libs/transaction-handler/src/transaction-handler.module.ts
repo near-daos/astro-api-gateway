@@ -11,6 +11,7 @@ import { EventModule } from '@sputnik-v2/event';
 import { TokenModule } from '@sputnik-v2/token';
 import { HttpCacheModule } from '@sputnik-v2/cache';
 import { OpenSearchModule } from '@sputnik-v2/opensearch';
+import { DynamodbModule } from '@sputnik-v2/dynamodb';
 
 import { TransactionHandlerService } from './transaction-handler.service';
 import { TransactionActionHandlerService } from './transaction-action-handler.service';
@@ -30,6 +31,7 @@ import { TransactionHandlerState } from './entities';
     TokenModule,
     HttpCacheModule,
     OpenSearchModule,
+    DynamodbModule,
   ],
   providers: [
     TransactionHandlerService,

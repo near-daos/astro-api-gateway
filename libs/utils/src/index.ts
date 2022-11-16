@@ -1,3 +1,4 @@
+import { DynamoEntityType, EntityId } from '@sputnik-v2/dynamodb';
 import Decimal from 'decimal.js';
 
 import { DaoDto } from '@sputnik-v2/dao/dto';
@@ -10,6 +11,7 @@ import {
 import { Proposal } from '@sputnik-v2/proposal/entities';
 import { ProposalDto } from '@sputnik-v2/proposal/dto';
 import { BaseResponse, PROPOSAL_DESC_SEPARATOR } from '@sputnik-v2/common';
+import { DaoModel } from '@sputnik-v2/dynamodb';
 
 export const formatTimestamp = (timestamp: number): string => {
   const seconds = Number(timestamp / 1e9);
@@ -60,6 +62,10 @@ export const buildBountyId = (daoId: string, bountyId: string): string => {
   return `${daoId}-${bountyId}`;
 };
 
+export const buildBountyDynamoId = (proposalId: string): string => {
+  return `b-${proposalId}`;
+};
+
 export const buildBountyClaimId = (
   daoId: string,
   bountyId: string,
@@ -79,8 +85,8 @@ export const buildSubscriptionId = (
   return `${daoId}-${accountId}`;
 };
 
-export const buildNotificationId = (txHash: string, type: string): string => {
-  return `${type.toLowerCase()}-${txHash.toLowerCase()}`;
+export const buildNotificationId = (type: string, txHash: string): string => {
+  return `${txHash.toLowerCase()}-${type.toLowerCase()}`;
 };
 
 export const buildAccountNotificationId = (
@@ -124,6 +130,13 @@ export const buildDelegationId = (daoId: string, accountId: string): string => {
   return `${daoId}-${accountId}`;
 };
 
+export const buildEntityId = (
+  entityType: DynamoEntityType,
+  id: string,
+): EntityId => {
+  return `${entityType}:${id}`;
+};
+
 export const decodeBase64 = (b: string) => {
   return Buffer.from(b, 'base64').toString('utf-8');
 };
@@ -136,7 +149,7 @@ export const btoaJSON = (b: string) => {
 
 export const calcProposalVotePeriodEnd = (
   proposal: Proposal | ProposalDto | { submissionTime: number },
-  dao: Dao | DaoDto,
+  dao: Dao | DaoDto | DaoModel,
 ): number => {
   try {
     return Decimal.sum(
@@ -201,7 +214,7 @@ export const filterProposalDesc = (description = '') => {
 };
 
 export const getAccountPermissions = (
-  roles: Role[],
+  roles: Partial<Role>[],
   type?: ProposalType,
   accountId?: string,
   accountBalance?: bigint,

@@ -91,14 +91,20 @@ public class Constants {
 	public class DraftServiceEndpoints {
 		public static final String DRAFT_PROPOSALS = "/api/v1/draft-proposals";
 		public static final String DRAFT_PROPOSALS_ID = "/api/v1/draft-proposals/{id}";
-		public static final String DRAFT_PROPOSALS_ID_VIEW = "/api/v1/draft-proposals/{id}/view";
-		public static final String DRAFT_PROPOSALS_ID_SAVE = "/api/v1/draft-proposals/{id}/save";
-		public static final String DRAFT_PROPOSALS_ID_CLOSE = "/api/v1/draft-proposals/{id}/close";
+		public static final String DRAFT_PROPOSALS_DAO_ID_ID = "/api/v1/draft-proposals/{daoId}/{id}";
+		public static final String DRAFT_PROPOSALS_DAO_ID_ID_VIEW = "/api/v1/draft-proposals/{daoId}/{id}/view";
+		public static final String DRAFT_PROPOSALS_DAO_ID_ID_SAVE = "/api/v1/draft-proposals/{daoId}/{id}/save";
+		public static final String DRAFT_PROPOSALS_DAO_ID_ID_CLOSE = "/api/v1/draft-proposals/{daoId}/{id}/close";
 
 		public static final String DRAFT_COMMENTS = "/api/v1/draft-comments";
-		public static final String DRAFT_COMMENTS_ID = "/api/v1/draft-comments/{id}";
-		public static final String DRAFT_COMMENTS_ID_LIKE = "/api/v1/draft-comments/{id}/like";
-		public static final String DRAFT_COMMENTS_ID_REMOVE_LIKE = "/api/v1/draft-comments/{id}/remove-like";
+		public static final String DRAFT_COMMENTS_DAO_ID_DRAFT_ID_COMMENT_ID = "/api/v1/draft-comments/{daoId}/{draftId}/{commentId}";
+		public static final String DRAFT_COMMENTS_DAO_ID_DRAFT_ID_COMMENT_ID_LIKE = "/api/v1/draft-comments/{daoId}/{draftId}/{commentId}/like";
+		public static final String DRAFT_COMMENTS_DAO_ID_DRAFT_ID_COMMENT_ID_REMOVE_LIKE = "/api/v1/draft-comments/{daoId}/{draftId}/{commentId}/remove-like";
 
+	}
+
+	@UtilityClass
+	public class NewSearchServiceEndpoints {
+		public static final String SEARCH = "/_search";
 	}
 }

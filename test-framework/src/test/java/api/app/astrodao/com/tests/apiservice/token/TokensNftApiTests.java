@@ -101,7 +101,6 @@ public class TokensNftApiTests extends BaseTest {
 		tokenApiSteps.assertDtoValueGreaterThanOrEqualTo(tokenResponse, r -> r.getPageCount().intValue(), 1, "pageCount");
 		tokenApiSteps.assertCollectionElementsHasValue(tokenResponse.getData(), r -> !r.getId().isBlank(), "id");
 		tokenApiSteps.assertCollectionElementsHasValue(tokenResponse.getData(), r -> !r.getOwnerId().isBlank(), "ownerId");
-		//TODO: add verification that other fields are null
 	}
 
 	@Test

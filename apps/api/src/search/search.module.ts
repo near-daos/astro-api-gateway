@@ -12,8 +12,7 @@ import { SearchService } from './search.service';
     CacheModule.registerAsync({
       useClass: CacheConfigService,
     }),
-    TypeOrmModule.forFeature([Proposal]),
-    TypeOrmModule.forFeature([Dao]),
+    TypeOrmModule.forFeature([Dao, Proposal]),
     DaoModule,
     ProposalModule,
   ],

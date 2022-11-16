@@ -2,4 +2,5 @@ export * from './entities';
 export * from './dto';
 export * from './types';
 export * from './dao-stats.service';
-export * from './stats.module';
+export * from './dao-stats-dynamo.service';
+export * from './dao-stats.module';

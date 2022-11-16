@@ -2,6 +2,7 @@ import { Account, Contract, Near } from 'near-api-js';
 import { Inject, Injectable } from '@nestjs/common';
 import { NEAR_API_PROVIDER } from '@sputnik-v2/common';
 import { NearApiContract, NearApiProvider } from '@sputnik-v2/config/near-api';
+import { decodeBase64 } from '@sputnik-v2/utils';
 
 import {
   NearAccountState,
@@ -49,6 +50,21 @@ export class NearApiService {
       castTransactionAction,
     );
     txStatus.receipts = txStatus.receipts.map(castTransactionReceipt);
+    txStatus.receiptSuccessValues = txStatus.receipts_outcome.reduce(
+      (values, value) => {
+        if (
+          typeof value.outcome?.status === 'object' &&
+          'SuccessValue' in value.outcome.status
+        ) {
+          return {
+            ...values,
+            [value.id]: decodeBase64(value.outcome.status.SuccessValue),
+          };
+        }
+        return values;
+      },
+      {},
+    );
 
     return txStatus;
   }

@@ -9,7 +9,6 @@ import {
 } from '@sputnik-v2/proposal';
 import { Migration } from '..';
 import { IsNull } from 'typeorm';
-import { buildBountyId } from '@sputnik-v2/utils';
 
 @Injectable()
 export class ProposalClaimIdMigration implements Migration {
@@ -44,7 +43,8 @@ export class ProposalClaimIdMigration implements Migration {
   public async migrateProposalClaimId(proposal: Proposal): Promise<Proposal> {
     const proposalKind = proposal.kind as ProposalKindBountyDone;
     const bountyClaim = await this.bountyService.getLastBountyClaim(
-      buildBountyId(proposal.daoId, proposalKind.bountyId),
+      proposal.daoId,
+      proposalKind.bountyId,
       proposalKind.receiverId,
       proposal.createTimestamp,
     );

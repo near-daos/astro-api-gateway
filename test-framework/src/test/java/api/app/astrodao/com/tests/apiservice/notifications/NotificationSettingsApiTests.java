@@ -555,5 +555,4 @@ public class NotificationSettingsApiTests extends BaseTest {
 				      "error", equalTo("Bad Request"));
 	}
 
-	//TODO: add new tests for new feature - daoId is null and empty string. Should be 201. Settings applied to all user DAOs
 }

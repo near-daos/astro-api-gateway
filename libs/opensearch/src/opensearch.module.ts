@@ -2,6 +2,7 @@ import { OpensearchModule } from 'nestjs-opensearch';
 
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { FeatureFlagsModule } from '@sputnik-v2/feature-flags';
 
 import { OpensearchService } from './opensearch.service';
 
@@ -21,6 +22,7 @@ import { OpensearchService } from './opensearch.service';
         };
       },
     }),
+    FeatureFlagsModule,
   ],
   controllers: [],
   providers: [OpensearchService],

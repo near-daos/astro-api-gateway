@@ -6,6 +6,8 @@ export { TypeOrmConfigService } from './typeorm-config.service';
 export { CacheConfigService } from './cache';
 import databaseNearIndexer from './database-near-indexer';
 import { default as nearConfig } from './near-config';
+import launchdarkly from './launchdarkly';
+import dynamodb from './dynamodb';
 
 export default [
   configuration,
@@ -13,4 +15,6 @@ export default [
   nearConfig,
   databaseNearIndexer,
   notifi,
+  dynamodb,
+  launchdarkly,
 ];

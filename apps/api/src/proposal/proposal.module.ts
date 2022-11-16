@@ -10,8 +10,8 @@ import { ProposalController } from './proposal.controller';
     CacheModule.registerAsync({
       useClass: CacheConfigService,
     }),
-    ProposalModuleLib,
     NearApiModule,
+    ProposalModuleLib,
   ],
   controllers: [ProposalController],
 })

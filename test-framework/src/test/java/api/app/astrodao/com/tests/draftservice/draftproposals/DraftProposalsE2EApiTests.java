@@ -46,8 +46,8 @@ public class DraftProposalsE2EApiTests extends BaseTest {
 	@DisplayName("CRUD operation for draft proposals endpoints")
 	@Description("Following 'Draft Proposals' endpoints were triggered: " +
 			"GET|POST /draft-proposals; " +
-			"POST|PATCH /draft-proposals/{id}; " +
-			"DELETE /draft-proposals/{id}")
+			"POST|PATCH /draft-proposals/{daoId}/{id}; " +
+			"DELETE /draft-proposals/{daoId}/{id}")
 	void crudOperationForDraftProposalsEndpoints() {
 		String title1 = "Test title. Created " + getLocalDateTime();
 		String description1 = "<p>" + faker.yoda().quote() + "</p>";
@@ -108,7 +108,7 @@ public class DraftProposalsE2EApiTests extends BaseTest {
 		createDraftProposal.setTitle(title2);
 		createDraftProposal.setDescription(description2);
 
-		String updatedDraftId = draftProposalsApiSteps.updateDraftProposal(createDraftProposal, createdDraftId, authToken).then()
+		String updatedDraftId = draftProposalsApiSteps.updateDraftProposal(createDraftProposal, testDao, createdDraftId, authToken).then()
 				.statusCode(HTTP_OK)
 				.extract().body().asString();
 
@@ -122,7 +122,7 @@ public class DraftProposalsE2EApiTests extends BaseTest {
 		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, DraftProposalResponse::getTitle, title2, "title");
 		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, DraftProposalResponse::getDescription, description2, "description");
 
-		draftProposalsApiSteps.deleteDraftProposal(createdDraftId, authToken).then()
+		draftProposalsApiSteps.deleteDraftProposal(testDao, createdDraftId, authToken).then()
 				.statusCode(HTTP_OK)
 				.body("id", equalTo(updatedDraftId),
 				      "deleted", equalTo(true));
@@ -134,10 +134,10 @@ public class DraftProposalsE2EApiTests extends BaseTest {
 	@DisplayName("Create, View, Save, remove Save and Close operations for draft proposal")
 	@Description("Following 'Draft Proposals' endpoints were triggered: " +
 			"GET|POST /draft-proposals; " +
-			"POST /draft-proposals/{id}/view; " +
-			"POST /draft-proposals/{id}/save; " +
-			"DELETE /draft-proposals/{id}/save; " +
-			"POST /draft-proposals/{id}/close")
+			"POST /draft-proposals/{daoId}/{id}/view; " +
+			"POST /draft-proposals/{daoId}/{id}/save; " +
+			"DELETE /draft-proposals/{daoId}/{id}/save; " +
+			"POST /draft-proposals/{daoId}/{id}/close")
 	void createViewSaveRemoveSaveCloseActionsForDraftProposals() {
 		String title = "Test title. Created " + getLocalDateTime();
 		String description = "<p>" + faker.yoda().quote() + "</p>";
@@ -191,7 +191,7 @@ public class DraftProposalsE2EApiTests extends BaseTest {
 		draftProposalsApiSteps.assertCollectionElementsHasValue(draftProposalResponse.getHistory(), draftProposalHistory -> !draftProposalHistory.getUpdatedAt().toString().isEmpty(), "history/updatedAt");
 
 
-		draftProposalsApiSteps.viewDraftProposal(createdDraftId, authToken).then()
+		draftProposalsApiSteps.viewDraftProposal(testDao, createdDraftId, authToken).then()
 				.statusCode(HTTP_CREATED)
 				.body(equalTo("true"));
 
@@ -202,7 +202,7 @@ public class DraftProposalsE2EApiTests extends BaseTest {
 		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, DraftProposalResponse::getIsRead, Boolean.TRUE, "isRead");
 
 
-		draftProposalsApiSteps.saveDraftProposal(createdDraftId, authToken).then()
+		draftProposalsApiSteps.saveDraftProposal(testDao, createdDraftId, authToken).then()
 				.statusCode(HTTP_CREATED)
 				.body(equalTo("true"));
 
@@ -213,7 +213,7 @@ public class DraftProposalsE2EApiTests extends BaseTest {
 		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, DraftProposalResponse::getIsSaved, Boolean.TRUE, "isSaved");
 
 
-		draftProposalsApiSteps.unsaveDraftProposal(createdDraftId, authToken).then()
+		draftProposalsApiSteps.unsaveDraftProposal(testDao, createdDraftId, authToken).then()
 				.statusCode(HTTP_OK)
 				.body(equalTo("true"));
 
@@ -224,7 +224,7 @@ public class DraftProposalsE2EApiTests extends BaseTest {
 		draftProposalsApiSteps.assertDtoValue(draftProposalResponse, DraftProposalResponse::getIsSaved, Boolean.FALSE, "isSaved");
 
 
-		draftProposalsApiSteps.closeDraftProposal(createdDraftId, authToken).then()
+		draftProposalsApiSteps.closeDraftProposal(testDao, createdDraftId, authToken).then()
 				.statusCode(HTTP_CREATED)
 				.body(equalTo("true"));
 

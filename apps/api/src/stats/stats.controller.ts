@@ -39,13 +39,8 @@ export class StatsController {
   async getDaoStatsState(
     @Param() { id }: FindOneParams,
   ): Promise<DaoStatsStateDto> {
-    const oneDayAgo = new Date();
-    oneDayAgo.setUTCHours(0, 0, 0, 0);
     const daoStats = await this.daoStatsService.getDaoStats(id);
-    const previousDaoStats = await this.daoStatsService.getLastDaoStats(
-      id,
-      oneDayAgo.getTime(),
-    );
+    const previousDaoStats = await this.daoStatsService.getLastDaoStats(id);
     return this.daoStatsService.getDaoStatsState(daoStats, previousDaoStats);
   }
 

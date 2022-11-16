@@ -16,6 +16,8 @@ import { Dao, Delegation, Role, RoleKindType } from '@sputnik-v2/dao/entities';
 import { Order, SearchQuery } from '@sputnik-v2/common';
 import {
   buildDelegationId,
+  buildEntityId,
+  buildProposalId,
   getAccountPermissions,
   getBlockTimestamp,
 } from '@sputnik-v2/utils';
@@ -31,7 +33,12 @@ import {
 } from './dto';
 import { Proposal } from './entities';
 import { ProposalStatus, ProposalVoteStatus } from './types';
-import { BountyContext } from '@sputnik-v2/bounty';
+import {
+  DynamodbService,
+  DynamoEntityType,
+  ProposalModel,
+} from '@sputnik-v2/dynamodb';
+import { FeatureFlags, FeatureFlagsService } from '@sputnik-v2/feature-flags';
 
 @Injectable()
 export class ProposalService extends BaseTypeOrmCrudService<Proposal> {
@@ -48,15 +55,43 @@ export class ProposalService extends BaseTypeOrmCrudService<Proposal> {
     private readonly daoRepository: Repository<Dao>,
     @InjectConnection()
     private connection: Connection,
+    private readonly dynamodbService: DynamodbService,
+    private readonly featureFlagsService: FeatureFlagsService,
   ) {
     super(proposalRepository);
   }
 
-  create(proposalDto: ProposalDto): Promise<Proposal> {
-    return this.proposalRepository.save({
+  async useDynamoDB() {
+    return this.featureFlagsService.check(FeatureFlags.ProposalDynamo);
+  }
+
+  async findById(
+    daoId: string,
+    proposalId: number,
+  ): Promise<Proposal | ProposalModel> {
+    if (await this.useDynamoDB()) {
+      return this.dynamodbService.getItemByType<ProposalModel>(
+        daoId,
+        DynamoEntityType.Proposal,
+        String(proposalId),
+      );
+    } else {
+      return this.proposalRepository.findOne(
+        buildProposalId(daoId, proposalId),
+      );
+    }
+  }
+
+  async create(proposalDto: ProposalDto): Promise<string> {
+    const entity = this.proposalRepository.create({
       ...proposalDto,
       kind: proposalDto.kind.kind,
     });
+
+    await this.dynamodbService.saveProposal(entity);
+    await this.proposalRepository.save(entity);
+
+    return entity.id;
   }
 
   createMultiple(proposalDtos: ProposalDto[]): Promise<Proposal[]> {
@@ -495,12 +530,22 @@ export class ProposalService extends BaseTypeOrmCrudService<Proposal> {
       .execute();
   }
 
-  async remove(id: string): Promise<DeleteResult> {
-    return await this.proposalRepository.delete({ id });
+  async remove(daoId: string, proposalId: number) {
+    await this.dynamodbService.saveItem<ProposalModel>({
+      partitionId: daoId,
+      entityId: buildEntityId(DynamoEntityType.Proposal, String(proposalId)),
+      entityType: DynamoEntityType.Proposal,
+      isArchived: true,
+    });
+    await this.proposalRepository.delete({
+      id: buildProposalId(daoId, proposalId),
+    });
   }
 
   async removeMultiple(proposalIds: string[]): Promise<DeleteResult[]> {
-    return Promise.all(proposalIds.map((id) => this.remove(id)));
+    return Promise.all(
+      proposalIds.map((id) => this.proposalRepository.delete(id)),
+    );
   }
 
   public async mapProposalFeed(

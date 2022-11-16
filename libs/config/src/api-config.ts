@@ -5,6 +5,8 @@ import databaseNearIndexer from './database-near-indexer';
 import { default as nearConfig } from './near-config';
 import { default as notifi } from './notifi';
 import opensearch from './opensearch';
+import dynamodb from './dynamodb';
+import launchdarkly from './launchdarkly';
 import { default as redis } from './redis';
 
 export { default as validate } from './validationSchema';
@@ -30,4 +32,6 @@ export default [
   databaseNearIndexer,
   notifi,
   opensearch,
+  dynamodb,
+  launchdarkly,
 ];

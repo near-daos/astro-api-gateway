@@ -1,14 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
-import { DeleteResult, Repository } from 'typeorm';
 import { CrudRequest } from '@nestjsx/crud';
+import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
+import { BountyDynamoService } from '@sputnik-v2/bounty/bounty-dynamo.service';
 import { ProposalService } from '@sputnik-v2/proposal';
+import { buildProposalId } from '@sputnik-v2/utils';
+import { Repository } from 'typeorm';
+import { UpdateResult } from 'typeorm/query-builder/result/UpdateResult';
+import { UpdateBountyContextDto } from '../../../apps/api/src/bounty/dto/update-bounty-context.dto';
 
 import { BountyContextDto, BountyContextResponse } from './dto';
 import { BountyContext } from './entities';
-import { UpdateBountyContextDto } from '../../../apps/api/src/bounty/dto/update-bounty-context.dto';
-import { UpdateResult } from 'typeorm/query-builder/result/UpdateResult';
 
 @Injectable()
 export class BountyContextService extends TypeOrmCrudService<BountyContext> {
@@ -16,21 +18,40 @@ export class BountyContextService extends TypeOrmCrudService<BountyContext> {
     @InjectRepository(BountyContext)
     private readonly bountyContextRepository: Repository<BountyContext>,
     private readonly proposalService: ProposalService,
+    private readonly bountyDynamoService: BountyDynamoService,
   ) {
     super(bountyContextRepository);
   }
 
-  async create(bountyContextDto: BountyContextDto): Promise<BountyContext> {
-    return this.bountyContextRepository.save(bountyContextDto);
+  async create(
+    bountyContextDto: BountyContextDto,
+    proposalId: number,
+  ): Promise<string> {
+    await this.bountyDynamoService.saveBounty(
+      {
+        proposalId: bountyContextDto.id,
+        daoId: bountyContextDto.daoId,
+        transactionHash: bountyContextDto.transactionHash,
+        createTimestamp: bountyContextDto.createTimestamp,
+      },
+      proposalId,
+    );
+    await this.bountyContextRepository.save(bountyContextDto);
+
+    return bountyContextDto.id;
   }
 
-  async remove(id: string): Promise<DeleteResult> {
-    return await this.bountyContextRepository.delete({ id });
+  async remove(daoId: string, proposalId: number) {
+    await this.bountyDynamoService.archive(daoId, proposalId);
+    await this.bountyContextRepository.delete({
+      id: buildProposalId(daoId, proposalId),
+    });
   }
 
   async createMultiple(
     bountyContextDtos: BountyContextDto[],
   ): Promise<BountyContext[]> {
+    await this.bountyDynamoService.saveMultipleBounties(bountyContextDtos);
     return this.bountyContextRepository.save(bountyContextDtos);
   }
 
@@ -39,6 +60,20 @@ export class BountyContextService extends TypeOrmCrudService<BountyContext> {
     ids,
     isArchived,
   }: UpdateBountyContextDto): Promise<UpdateResult> {
+    const existingItems = await this.bountyDynamoService.query(daoId, {
+      FilterExpression: 'contains(:id, id)',
+      ExpressionAttributeValues: {
+        ':id': ids,
+      },
+    });
+
+    const updatedItems = existingItems.map((item) => ({
+      ...item,
+      isArchived,
+    }));
+
+    await this.bountyDynamoService.saveMultiple(updatedItems);
+
     return this.bountyContextRepository
       .createQueryBuilder()
       .update(BountyContext)
@@ -50,6 +85,7 @@ export class BountyContextService extends TypeOrmCrudService<BountyContext> {
       .execute();
   }
 
+  // TODO: dynamo
   async updateCommentsCount(
     id: string,
     commentsCount: number,
@@ -64,6 +100,7 @@ export class BountyContextService extends TypeOrmCrudService<BountyContext> {
       .execute();
   }
 
+  // TODO: dynamo
   async getMany(
     req: CrudRequest,
     permissionsAccountId?: string,

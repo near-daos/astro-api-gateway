@@ -2,6 +2,7 @@ test:
   env: ${TEST_ENV:testnet}
   dao1: test-dao-1641395769436.sputnikv2.testnet
   dao2: test-dao-1647325144337.sputnikv2.testnet
+  dao3: testdao3-near-cli-example.sputnikv2.testnet
   proposal1: test-dao-1641395769436.sputnikv2.testnet-911
   approved.bounty.proposal1: test-dao-1641395769436.sputnikv2.testnet-2306
   approved.bounty.proposal2: test-dao-1641395769436.sputnikv2.testnet-2308
