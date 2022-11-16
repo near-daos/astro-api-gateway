@@ -64,7 +64,7 @@ export function mapDraftProposalToDraftProposalModel(
     updateTimestamp: new Date(draftProposal.updatedAt).getTime(),
     history: history?.length
       ? history.map(mapDraftProposalHistoryToDraftProposalHistoryModel)
-      : undefined,
+      : [],
   };
 }
 
