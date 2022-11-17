@@ -45,6 +45,7 @@ import {
   mapTokenToTokenPriceModel,
   ProposalModel,
   ProposalTemplateModel,
+  ScheduledProposalExpirationEvent,
   SharedProposalTemplateModel,
   SubscriptionModel,
   TokenPriceModel,
@@ -57,7 +58,6 @@ import {
   PartialEntity,
   QueryItemsQuery,
 } from './types';
-import { ScheduledProposalExpirationEvent } from '@sputnik-v2/dynamodb/models/scheduled-proposal-expiration.model';
 
 @Injectable()
 export class DynamodbService {

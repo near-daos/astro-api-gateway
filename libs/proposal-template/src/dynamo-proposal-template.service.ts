@@ -43,13 +43,12 @@ export class DynamoProposalTemplateService {
     id: string,
     proposalTemplate: ProposalTemplateDto,
   ): Promise<ProposalTemplate> {
-    const templateId = buildTemplateId(proposalTemplate.daoId);
     const newProposalTemplate: ProposalTemplate = {
       config: proposalTemplate.config,
       createdAt: new Date(),
       dao: undefined,
       daoId: proposalTemplate.daoId,
-      id: templateId,
+      id: id,
       isArchived: false,
       isEnabled: proposalTemplate.isEnabled,
       name: proposalTemplate.name,

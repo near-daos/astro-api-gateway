@@ -1,7 +1,6 @@
-import { DynamoEntityType } from '@sputnik-v2/dynamodb';
 import { TransactionAction } from '@sputnik-v2/transaction-handler';
 import { buildEntityId } from '@sputnik-v2/utils';
-import { BaseEntity } from '../types/base-entity';
+import { BaseEntity, DynamoEntityType } from '../types';
 
 export class HandledReceiptActionModel extends BaseEntity {}
 
@@ -12,7 +11,7 @@ export function mapTransactionActionToHandledReceiptActionModel(
     partitionId: action.transactionHash,
     entityId: buildEntityId(
       DynamoEntityType.HandledReceiptAction,
-      String(action.indexInReceipt),
+      `${action.receiptId}-${action.indexInReceipt}`,
     ),
     entityType: DynamoEntityType.HandledReceiptAction,
   };

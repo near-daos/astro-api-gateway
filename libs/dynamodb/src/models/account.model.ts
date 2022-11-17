@@ -1,7 +1,7 @@
 import { Account } from '@sputnik-v2/account';
 import { buildEntityId } from '@sputnik-v2/utils';
+import { DynamoEntityType } from '../types';
 import { BaseModel } from './base.model';
-import { DynamoEntityType } from '@sputnik-v2/dynamodb';
 
 export class AccountModel extends BaseModel {
   email?: string;

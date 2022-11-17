@@ -11,7 +11,7 @@ import { DaoSettingsDto } from '@sputnik-v2/dao-settings';
 import { buildEntityId } from '@sputnik-v2/utils';
 import { TransactionModel } from './transaction.model';
 import { DynamoEntityType } from '../types';
-import { TokenBalanceModel } from '@sputnik-v2/dynamodb/models/token-balance.model';
+import { TokenBalanceModel } from '../models';
 
 export class DaoModel extends TransactionModel {
   metadata: Record<string, any>;
