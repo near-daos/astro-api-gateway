@@ -22,7 +22,7 @@ import {
   DraftCommentService,
 } from '@sputnik-v2/draft-comment/types';
 import { BaseResponseDto, DeleteResponse } from '@sputnik-v2/common';
-import { getAccountPermissions } from '@sputnik-v2/utils';
+import { buildEntityId, getAccountPermissions } from '@sputnik-v2/utils';
 import { FeatureFlags, FeatureFlagsService } from '@sputnik-v2/feature-flags';
 
 @Injectable()
@@ -137,12 +137,15 @@ export class DynamoDraftCommentService implements DraftCommentService {
     commentId: string,
     comment: Partial<CommentModel>,
   ) {
-    await this.dynamodbService.saveItemByType<CommentModel>(
-      daoId,
-      DynamoEntityType.DraftProposalComment,
-      `${draftId}:${commentId}`,
-      comment,
-    );
+    await this.dynamodbService.saveItem<CommentModel>({
+      partitionId: daoId,
+      entityId: buildEntityId(
+        DynamoEntityType.DraftProposalComment,
+        `${draftId}:${commentId}`,
+      ),
+      entityType: DynamoEntityType.DraftProposalComment,
+      ...comment,
+    });
   }
 
   private async createDraftProposalCommentInDynamo(

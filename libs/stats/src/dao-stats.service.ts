@@ -2,11 +2,13 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DaoDynamoService } from '@sputnik-v2/dao';
 import { Repository } from 'typeorm';
+import { BountyService } from '@sputnik-v2/bounty';
 import { DateTime } from 'luxon';
 
 import { Dao, DaoService } from '@sputnik-v2/dao';
 import { DaoModel } from '@sputnik-v2/dynamodb';
 import { FeatureFlags, FeatureFlagsService } from '@sputnik-v2/feature-flags';
+import { NFTTokenService } from '@sputnik-v2/token';
 import { buildDaoStatsId, getGrowth } from '@sputnik-v2/utils';
 
 import { DaoStatsDynamoService } from './dao-stats-dynamo.service';
@@ -26,6 +28,8 @@ export class DaoStatsService {
     @InjectRepository(DaoStats)
     private readonly daoStatsRepository: Repository<DaoStats>,
     private readonly daoService: DaoService,
+    private readonly bountyService: BountyService,
+    private readonly nftTokenService: NFTTokenService,
     private readonly featureFlagsService: FeatureFlagsService,
     private readonly daoDynamoService: DaoDynamoService,
     private readonly daoStatsDynamoService: DaoStatsDynamoService,
@@ -59,6 +63,11 @@ export class DaoStatsService {
       throw new NotFoundException();
     }
 
+    const bountyCount = await this.bountyService.getDaoActiveBountiesCount(
+      daoId,
+    );
+    const nftCount = await this.nftTokenService.getAccountTokenCount(daoId);
+
     return {
       id: buildDaoStatsId(dao.id, timestamp),
       daoId,
@@ -66,8 +75,8 @@ export class DaoStatsService {
       totalDaoFunds: dao.totalDaoFunds,
       totalProposalCount: dao.totalProposalCount,
       activeProposalCount: dao.activeProposalCount,
-      bountyCount: dao.bountyCount,
-      nftCount: dao.nftCount,
+      bountyCount,
+      nftCount,
     };
   }
 

@@ -1,12 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { Dao, DaoVersion } from '@sputnik-v2/dao';
+import { Dao } from '@sputnik-v2/dao';
 import { DaoSettings } from '@sputnik-v2/dao-settings';
 import {
   DaoIdsModel,
   DynamoEntityType,
   mapDaoModelToDao,
+  mapDaoSettingsToDaoModel,
   mapDaoToDaoModel,
-  mapDaoVersionToDaoVersionModel,
+  PartialEntity,
 } from '@sputnik-v2/dynamodb';
 import { DynamodbService } from '@sputnik-v2/dynamodb/dynamodb.service';
 import { DaoModel } from '@sputnik-v2/dynamodb/models';
@@ -15,17 +16,12 @@ import { DaoModel } from '@sputnik-v2/dynamodb/models';
 export class DaoDynamoService {
   constructor(private readonly dynamoDbService: DynamodbService) {}
 
-  async save(id: string, dao: Partial<DaoModel> = {}) {
-    return this.dynamoDbService.saveItemByType<DaoModel>(
-      id,
-      DynamoEntityType.Dao,
-      id,
-      dao,
-    );
+  async save(dao: PartialEntity<DaoModel>) {
+    return this.dynamoDbService.saveItem<DaoModel>(dao);
   }
 
   async saveDao(dao: Dao) {
-    return this.dynamoDbService.saveItem<DaoModel>(mapDaoToDaoModel(dao));
+    return this.dynamoDbService.saveItem(mapDaoToDaoModel(dao));
   }
 
   async saveDaoId(daoId: string) {
@@ -41,13 +37,7 @@ export class DaoDynamoService {
   }
 
   async saveDaoSettings(daoSettings: DaoSettings) {
-    return this.save(daoSettings.daoId, { settings: daoSettings.settings });
-  }
-
-  async saveDaoVersion(id: string, version: DaoVersion) {
-    return this.save(id, {
-      daoVersion: mapDaoVersionToDaoVersionModel(version),
-    });
+    return this.save(mapDaoSettingsToDaoModel(daoSettings));
   }
 
   async get(daoId: string) {
@@ -61,16 +51,5 @@ export class DaoDynamoService {
   async getDao(daoId: string) {
     const dao = await this.get(daoId);
     return dao ? mapDaoModelToDao(dao) : undefined;
-  }
-
-  async increment(daoId: string, field: string, value = 1) {
-    const dao = await this.get(daoId);
-    await this.save(daoId, {
-      [field]: dao[field] ? Number(dao[field]) + value : value,
-    });
-  }
-
-  async decrement(daoId: string, field: string, value = -1) {
-    return this.increment(daoId, field, value);
   }
 }

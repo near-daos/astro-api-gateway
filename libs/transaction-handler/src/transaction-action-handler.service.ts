@@ -1,4 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
+import {
+  HandledReceiptActionModel,
+  mapTransactionActionToHandledReceiptActionModel,
+} from '@sputnik-v2/dynamodb/models/handled-receipt-action.model';
 import PromisePool from '@supercharge/promise-pool';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -9,7 +13,6 @@ import { NearApiService } from '@sputnik-v2/near-api';
 import { SputnikService } from '@sputnik-v2/sputnikdao';
 import { DaoDynamoService, DaoService } from '@sputnik-v2/dao';
 import {
-  ProposalDynamoService,
   ProposalKindBountyDone,
   ProposalService,
   ProposalStatus,
@@ -22,8 +25,7 @@ import { NFTTokenService, TokenService } from '@sputnik-v2/token';
 import { buildBountyId, buildDelegationId } from '@sputnik-v2/utils';
 import { CacheService } from '@sputnik-v2/cache';
 import { OpensearchService } from '@sputnik-v2/opensearch';
-
-import { HandledReceiptActionDynamoService } from './handled-receipt-action-dynamo.service';
+import { DynamodbService, DynamoEntityType } from '@sputnik-v2/dynamodb';
 
 import {
   castActProposal,
@@ -63,8 +65,7 @@ export class TransactionActionHandlerService {
     private readonly nftTokenService: NFTTokenService,
     private readonly cacheService: CacheService,
     private readonly opensearchService: OpensearchService,
-    private readonly proposalDynamoService: ProposalDynamoService,
-    private readonly handledReceiptActionDynamoService: HandledReceiptActionDynamoService,
+    private readonly dynamodbService: DynamodbService,
   ) {
     const { contractName } = this.configService.get('near');
     // TODO: Split on multiple handlers
@@ -162,7 +163,7 @@ export class TransactionActionHandlerService {
   async handleTransactionAction(
     action: TransactionAction,
   ): Promise<ContractHandlerResult[]> {
-    if (await this.handledReceiptActionDynamoService.check(action)) {
+    if (await this.checkHandledReceiptAction(action)) {
       this.logger.warn(
         `Already handled transaction: ${action.transactionHash}`,
       );
@@ -190,7 +191,7 @@ export class TransactionActionHandlerService {
       );
       throw new Error(errorMessages);
     } else {
-      await this.handledReceiptActionDynamoService.save(action);
+      await this.saveHandledReceiptAction(action);
 
       this.logger.log(
         `Transaction successfully handled: ${action.transactionHash}`,
@@ -312,8 +313,6 @@ export class TransactionActionHandlerService {
 
     this.logger.log(`Storing Proposal: ${proposal.id} due to transaction`);
     await this.proposalService.create(proposal);
-    await this.daoService.increment(dao.id, 'totalProposalCount');
-    await this.daoService.increment(dao.id, 'activeProposalCount');
     this.logger.log(`Successfully stored Proposal: ${proposal.id}`);
 
     if (proposal.type === ProposalType.AddBounty) {
@@ -345,8 +344,8 @@ export class TransactionActionHandlerService {
     });
     await this.opensearchService.indexProposal(proposal.id, proposalById);
     await this.opensearchService.indexDao(proposal.daoId, daoById);
-    await this.proposalDynamoService.saveProposal(proposalById);
-    await this.proposalDynamoService.saveScheduleProposalExpireEvent(
+    await this.dynamodbService.saveProposal(proposalById);
+    await this.dynamodbService.saveScheduleProposalExpireEvent(
       proposal.daoId,
       proposal.proposalId,
       dao.policy.proposalPeriod,
@@ -664,7 +663,6 @@ export class TransactionActionHandlerService {
           `Removing Bounty Context: ${proposalEntity?.id} due to transaction`,
         );
         await this.bountyContextService.remove(dao.id, proposal?.proposalId);
-        await this.daoService.decrement(dao.id, 'bountyCount');
       }
 
       this.logger.log(`Removing Proposal: ${args.id} due to transaction`);
@@ -726,7 +724,6 @@ export class TransactionActionHandlerService {
         }),
         proposal.proposalId,
       );
-      await this.daoService.increment(dao.id, 'bountyCount');
       this.logger.log('Successfully stored new Bounty');
     }
 
@@ -977,7 +974,7 @@ export class TransactionActionHandlerService {
       relations: ['delegations'],
     });
     await this.opensearchService.indexDao(dao.id, daoById);
-    await this.daoDynamoService.saveDao(daoById);
+    await this.dynamodbService.saveDao(daoById);
 
     return { type: ContractHandlerResultType.Delegate };
   }
@@ -1104,10 +1101,6 @@ export class TransactionActionHandlerService {
           accountId,
           txAction.timestamp,
         );
-        const nftCount = await this.nftTokenService.getAccountTokenCount(
-          accountId,
-        );
-        await this.daoService.save({ id: accountId, nftCount });
         this.logger.log(
           `NFT ${txAction.receiverId} for ${accountId} successfully updated`,
         );
@@ -1131,5 +1124,19 @@ export class TransactionActionHandlerService {
   private isDaoContract(receiverId: string): boolean {
     const { contractName } = this.configService.get('near');
     return receiverId.endsWith(contractName);
+  }
+
+  private async saveHandledReceiptAction(action: TransactionAction) {
+    await this.dynamodbService.saveItem<HandledReceiptActionModel>(
+      mapTransactionActionToHandledReceiptActionModel(action),
+    );
+  }
+
+  private async checkHandledReceiptAction(action: TransactionAction) {
+    return this.dynamodbService.getItemByType(
+      action.transactionHash,
+      DynamoEntityType.HandledReceiptAction,
+      `${action.receiptId}-${action.indexInReceipt}`,
+    );
   }
 }
