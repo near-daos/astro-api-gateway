@@ -45,7 +45,6 @@ import {
   mapTokenToTokenPriceModel,
   ProposalModel,
   ProposalTemplateModel,
-  ScheduledProposalExpirationEvent,
   SharedProposalTemplateModel,
   SubscriptionModel,
   TokenPriceModel,
@@ -429,31 +428,5 @@ export class DynamodbService {
         Key: { partitionId: data.partitionId, entityId: data.entityId },
       })
       .promise();
-  }
-
-  async saveScheduleProposalExpireEvent(
-    daoId: string,
-    proposalId: number,
-    proposalExpiration: number,
-  ) {
-    const secondsSinceEpoch = Math.round(Date.now() / 1000);
-    const proposalExpirationPeriod = proposalExpiration / 1000000000;
-    const ttl = secondsSinceEpoch + proposalExpirationPeriod;
-
-    const item: ScheduledProposalExpirationEvent = {
-      createTimestamp: new Date().getTime(),
-      entityId: buildEntityId(
-        DynamoEntityType.ScheduledProposalExpirationEvent,
-        String(proposalId),
-      ),
-      entityType: DynamoEntityType.ScheduledProposalExpirationEvent,
-      isArchived: false,
-      partitionId: daoId,
-      processingTimeStamp: new Date().getTime(),
-      proposalId: proposalId,
-      ttl,
-    };
-
-    return this.saveItem<ScheduledProposalExpirationEvent>(item);
   }
 }
