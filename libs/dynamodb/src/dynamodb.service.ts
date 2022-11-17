@@ -390,16 +390,31 @@ export class DynamodbService {
     }
   }
 
+  async saveItemByType<M extends BaseEntity>(
+    partitionId: string,
+    entityType: DynamoEntityType,
+    id: string,
+    data: any,
+    upsert = true,
+  ) {
+    return this.saveItem<M>(
+      {
+        partitionId,
+        entityId: buildEntityId(entityType, id),
+        entityType,
+        ...data,
+      },
+      upsert,
+    );
+  }
+
   async archiveItemByType(
     partitionId: string,
     entityType: DynamoEntityType,
     id: string,
     isArchived = true,
   ) {
-    return this.saveItem({
-      partitionId,
-      entityId: buildEntityId(entityType, id),
-      entityType: entityType,
+    return this.saveItemByType(partitionId, entityType, id, {
       isArchived,
     });
   }

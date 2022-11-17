@@ -7,7 +7,6 @@ import {
 } from '@sputnik-v2/dynamodb';
 import { DynamodbService } from '@sputnik-v2/dynamodb/dynamodb.service';
 import { Proposal } from '@sputnik-v2/proposal/entities';
-import { buildEntityId } from '@sputnik-v2/utils';
 
 @Injectable()
 export class ProposalDynamoService {
@@ -18,12 +17,12 @@ export class ProposalDynamoService {
     proposalId: string,
     proposal: Partial<ProposalModel> = {},
   ) {
-    return this.dynamoDbService.saveItem<ProposalModel>({
-      partitionId: daoId,
-      entityId: buildEntityId(DynamoEntityType.Proposal, proposalId),
-      entityType: DynamoEntityType.Proposal,
-      ...proposal,
-    });
+    return this.dynamoDbService.saveItemByType<ProposalModel>(
+      daoId,
+      DynamoEntityType.Proposal,
+      proposalId,
+      proposal,
+    );
   }
 
   async saveProposal(proposal: Proposal) {

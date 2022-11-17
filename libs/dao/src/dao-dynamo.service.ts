@@ -10,19 +10,18 @@ import {
 } from '@sputnik-v2/dynamodb';
 import { DynamodbService } from '@sputnik-v2/dynamodb/dynamodb.service';
 import { DaoModel } from '@sputnik-v2/dynamodb/models';
-import { buildEntityId } from '@sputnik-v2/utils';
 
 @Injectable()
 export class DaoDynamoService {
   constructor(private readonly dynamoDbService: DynamodbService) {}
 
   async save(id: string, dao: Partial<DaoModel> = {}) {
-    return this.dynamoDbService.saveItem<DaoModel>({
-      partitionId: id,
-      entityId: buildEntityId(DynamoEntityType.Dao, id),
-      entityType: DynamoEntityType.Dao,
-      ...dao,
-    });
+    return this.dynamoDbService.saveItemByType<DaoModel>(
+      id,
+      DynamoEntityType.Dao,
+      id,
+      dao,
+    );
   }
 
   async saveDao(dao: Dao) {
