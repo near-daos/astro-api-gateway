@@ -3,6 +3,7 @@ import DynamoDB, { DocumentClient } from 'aws-sdk/clients/dynamodb';
 import { ConfigService } from '@nestjs/config';
 import { Injectable } from '@nestjs/common';
 
+import { Dao } from '@sputnik-v2/dao/entities';
 import { Proposal } from '@sputnik-v2/proposal/entities';
 import { Account } from '@sputnik-v2/account/entities';
 import {
@@ -35,6 +36,7 @@ import {
   mapAccountNotificationToAccountNotificationModel,
   mapAccountToAccountModel,
   mapCommentToCommentModel,
+  mapDaoToDaoModel,
   mapDraftCommentToCommentModel,
   mapDraftProposalToDraftProposalModel,
   mapProposalTemplateToProposalTemplateModel,
@@ -45,6 +47,7 @@ import {
   mapTokenToTokenPriceModel,
   ProposalModel,
   ProposalTemplateModel,
+  ScheduledProposalExpirationEvent,
   SharedProposalTemplateModel,
   SubscriptionModel,
   TokenPriceModel,
@@ -135,6 +138,10 @@ export class DynamodbService {
 
   async saveDraftComment(comment: Partial<DraftComment>) {
     return this.saveItem<CommentModel>(mapDraftCommentToCommentModel(comment));
+  }
+
+  async saveDao(dao: Dao) {
+    return this.saveItem<DaoModel>(mapDaoToDaoModel(dao));
   }
 
   async saveDraftProposal(
@@ -360,6 +367,7 @@ export class DynamodbService {
 
   async saveItem<M extends BaseEntity>(data: PartialEntity<M>, upsert = true) {
     if (upsert) {
+      const processingTimeStamp = Date.now();
       const { partitionId, entityId } = data;
       const item = await this.getItemById(
         partitionId,
@@ -372,39 +380,22 @@ export class DynamodbService {
           Item: {
             ...(item || {}),
             ...data,
-            processingTimeStamp: Date.now(),
+            processingTimeStamp,
           },
         })
         .promise();
     } else {
+      const processingTimeStamp = Date.now();
       return this.client
         .put({
           TableName: this.tableName,
           Item: {
             ...data,
-            processingTimeStamp: Date.now(),
+            processingTimeStamp,
           },
         })
         .promise();
     }
-  }
-
-  async saveItemByType<M extends BaseEntity>(
-    partitionId: string,
-    entityType: DynamoEntityType,
-    id: string,
-    data: any,
-    upsert = true,
-  ) {
-    return this.saveItem<M>(
-      {
-        partitionId,
-        entityId: buildEntityId(entityType, id),
-        entityType,
-        ...data,
-      },
-      upsert,
-    );
   }
 
   async archiveItemByType(
@@ -413,7 +404,10 @@ export class DynamodbService {
     id: string,
     isArchived = true,
   ) {
-    return this.saveItemByType(partitionId, entityType, id, {
+    return this.saveItem({
+      partitionId,
+      entityId: buildEntityId(entityType, id),
+      entityType: entityType,
       isArchived,
     });
   }
@@ -428,5 +422,31 @@ export class DynamodbService {
         Key: { partitionId: data.partitionId, entityId: data.entityId },
       })
       .promise();
+  }
+
+  async saveScheduleProposalExpireEvent(
+    daoId: string,
+    proposalId: number,
+    proposalExpiration: number,
+  ) {
+    const secondsSinceEpoch = Math.round(Date.now() / 1000);
+    const proposalExpirationPeriod = proposalExpiration / 1000000000;
+    const ttl = secondsSinceEpoch + proposalExpirationPeriod;
+
+    const item: ScheduledProposalExpirationEvent = {
+      createTimestamp: new Date().getTime(),
+      entityId: buildEntityId(
+        DynamoEntityType.ScheduledProposalExpirationEvent,
+        String(proposalId),
+      ),
+      entityType: DynamoEntityType.ScheduledProposalExpirationEvent,
+      isArchived: false,
+      partitionId: daoId,
+      processingTimeStamp: new Date().getTime(),
+      proposalId: proposalId,
+      ttl,
+    };
+
+    return this.saveItem<ScheduledProposalExpirationEvent>(item);
   }
 }

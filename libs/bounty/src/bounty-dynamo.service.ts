@@ -11,13 +11,8 @@ import { DynamoEntityType, QueryItemsQuery } from '@sputnik-v2/dynamodb/types';
 export class BountyDynamoService {
   constructor(private readonly dynamoDbService: DynamodbService) {}
 
-  async save(daoId, bountyId, bounty: Partial<BountyModel>) {
-    return this.dynamoDbService.saveItemByType<BountyModel>(
-      daoId,
-      DynamoEntityType.Bounty,
-      bountyId,
-      bounty,
-    );
+  async save(bounty) {
+    return this.dynamoDbService.saveItem<BountyModel>(bounty);
   }
 
   async saveMultiple(bounty) {
@@ -25,15 +20,11 @@ export class BountyDynamoService {
   }
 
   async saveBounty(bounty: Partial<Bounty>, proposalId?: number) {
-    return this.dynamoDbService.saveItem<BountyModel>(
-      mapBountyToBountyModel(bounty, proposalId),
-    );
+    return this.save(mapBountyToBountyModel(bounty, proposalId));
   }
 
   async saveMultipleBounties(bounties: Partial<Bounty>[]) {
-    return this.dynamoDbService.batchPut(
-      bounties.map((bounty) => mapBountyToBountyModel(bounty)),
-    );
+    return this.save(bounties.map((bounty) => mapBountyToBountyModel(bounty)));
   }
 
   async archive(daoId: string, proposalId: number, isArchived = true) {
