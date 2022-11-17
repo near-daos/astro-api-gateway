@@ -76,6 +76,14 @@ export class NFTTokenService extends TypeOrmCrudService<NFTToken> {
     return super.getMany(req);
   }
 
+  async getAccountTokenCount(accountId: string): Promise<number> {
+    if (await this.useDynamoDB()) {
+      return this.nftTokenDynamoService.count(accountId);
+    } else {
+      return this.nftTokenRepository.count({ accountId });
+    }
+  }
+
   // TODO: dynamo
   async getTokenEvents(id: string): Promise<AssetsNftEvent[]> {
     const nftToken = await this.nftTokenRepository.findOne(id);
@@ -100,7 +108,6 @@ export class NFTTokenService extends TypeOrmCrudService<NFTToken> {
     const tokenIds = tokenDtos.map(({ id }) => id);
     await this.createMultiple(tokenDtos);
     await this.purge(accountId, nftContractId, tokenIds);
-    return tokenDtos;
   }
 
   private async getNfts(

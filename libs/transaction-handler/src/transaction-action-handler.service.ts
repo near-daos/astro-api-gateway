@@ -1100,12 +1100,15 @@ export class TransactionActionHandlerService {
         this.logger.log(
           `Updating NFT ${txAction.receiverId} for ${accountId} due to transaction: ${txAction.transactionHash}`,
         );
-        const nfts = await this.nftTokenService.loadNFT(
+        await this.nftTokenService.loadNFT(
           txAction.receiverId,
           accountId,
           txAction.timestamp,
         );
-        await this.daoService.save({ id: accountId, nftCount: nfts.length });
+        const nftCount = await this.nftTokenService.getAccountTokenCount(
+          accountId,
+        );
+        await this.daoService.save({ id: accountId, nftCount });
         this.logger.log(
           `NFT ${txAction.receiverId} for ${accountId} successfully updated`,
         );
