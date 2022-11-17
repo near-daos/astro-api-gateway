@@ -7,10 +7,10 @@ import {
   Role,
   RoleKindType,
 } from '@sputnik-v2/dao/entities';
-import { DaoSettings, DaoSettingsDto } from '@sputnik-v2/dao-settings';
+import { DaoSettingsDto } from '@sputnik-v2/dao-settings';
 import { buildEntityId } from '@sputnik-v2/utils';
 import { TransactionModel } from './transaction.model';
-import { DynamoEntityType, PartialEntity } from '../types';
+import { DynamoEntityType } from '../types';
 import { TokenBalanceModel } from '../models';
 
 export class DaoModel extends TransactionModel {
@@ -36,6 +36,8 @@ export class DaoModel extends TransactionModel {
   activeProposalCount: number;
   totalProposalCount: number;
   totalDaoFunds: number;
+  bountyCount: number;
+  nftCount: number;
   policy?: DaoPolicyModel;
   config?: DaoConfig;
   daoVersion?: DaoVersionModel;
@@ -109,6 +111,8 @@ export function mapDaoToDaoModel(dao: Dao): DaoModel {
     activeProposalCount: dao.activeProposalCount,
     totalProposalCount: dao.totalProposalCount,
     totalDaoFunds: dao.totalDaoFunds,
+    bountyCount: dao.bountyCount,
+    nftCount: dao.nftCount,
     policy: dao.policy ? mapPolicyToDaoPolicyModel(dao.policy) : undefined,
     config: dao.config,
     daoVersion: dao.daoVersion
@@ -148,6 +152,8 @@ export function mapDaoModelToDao(dao: DaoModel): Dao {
     activeProposalCount: dao.activeProposalCount,
     totalProposalCount: dao.totalProposalCount,
     totalDaoFunds: dao.totalDaoFunds,
+    bountyCount: dao.bountyCount,
+    nftCount: dao.nftCount,
     delegations: undefined,
     transactionHash: dao.transactionHash,
     updateTransactionHash: dao.updateTransactionHash,
@@ -284,16 +290,5 @@ export function mapDaoDelegationModelToDelegation(
     accountId: delegation.accountId,
     balance: delegation.balance,
     delegators: delegation.delegators,
-  };
-}
-
-export function mapDaoSettingsToDaoModel(
-  settings: DaoSettings,
-): PartialEntity<DaoModel> {
-  return {
-    partitionId: settings.daoId,
-    entityId: buildEntityId(DynamoEntityType.Dao, settings.daoId),
-    entityType: DynamoEntityType.Dao,
-    settings: settings.settings,
   };
 }
