@@ -4,11 +4,11 @@ const SnakeNamingStrategy =
 
 module.exports = {
   type: 'postgres',
-  host: 'localhost',
-  port: 5437,
-  username: 'sputnik',
-  password: 'sputnik',
-  database: 'sputnik-v2',
+  host: process.env.DATABASE_HOST,
+  port: process.env.DATABASE_PORT,
+  username: process.env.DATABASE_USERNAME,
+  password: process.env.DATABASE_PASSWORD,
+  database: process.env.DATABASE_NAME,
   synchronize: false,
   logging: false,
   namingStrategy: new SnakeNamingStrategy(),
