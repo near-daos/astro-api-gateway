@@ -1,4 +1,4 @@
- # Local Development Setup Guide (Testnet)
+# Local Development Setup Guide (Testnet)
 
 ### Initial Project Setup
 1. Install [node](https://nodejs.org/en/) and [yarn](https://classic.yarnpkg.com/lang/en/docs/install/#mac-stable).
