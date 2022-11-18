@@ -76,8 +76,11 @@ export class NFTTokenService extends TypeOrmCrudService<NFTToken> {
     return super.getMany(req);
   }
 
-  async getAccountTokenCount(accountId: string): Promise<number> {
-    if (await this.useDynamoDB()) {
+  async getAccountTokenCount(
+    accountId: string,
+    allowDynamo = true,
+  ): Promise<number> {
+    if (allowDynamo && (await this.useDynamoDB())) {
       return this.nftTokenDynamoService.count(accountId);
     } else {
       return this.nftTokenRepository.count({ accountId });

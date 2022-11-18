@@ -18,6 +18,7 @@ import {
   NFTTokenMetadata,
   Token,
   TokenBalance,
+  TokenModule,
 } from '@sputnik-v2/token';
 import { Dao, DaoModule } from '@sputnik-v2/dao';
 import {
@@ -117,6 +118,7 @@ import migrationScripts from './scripts';
     ProposalTemplateModule,
     OpenSearchModule,
     DynamodbModule,
+    TokenModule,
   ],
   providers: [...migrationScripts],
 })
