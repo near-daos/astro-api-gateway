@@ -217,6 +217,9 @@ export class DynamodbService {
     items: Partial<M>[],
     tableName = this.tableName,
   ) {
+    if (!items.length) {
+      return;
+    }
     return this.client
       .batchWrite({
         RequestItems: {

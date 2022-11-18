@@ -429,7 +429,7 @@ export class AggregatorService {
     );
     const lastTx = await this.transactionService.lastTransaction();
     const blockTimestamp =
-      handlerState?.lastBlockTimestamp || lastTx.blockTimestamp;
+      handlerState?.lastBlockTimestamp || lastTx?.blockTimestamp;
     const { contractName } = this.configService.get('near');
     const daoAccounts =
       await this.nearIndexerService.findAccountsByContractName(contractName);

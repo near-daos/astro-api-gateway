@@ -46,7 +46,7 @@ export class DaoDynamoService {
 
   async saveDaoVersion(id: string, version: DaoVersion) {
     return this.save(id, {
-      daoVersion: mapDaoVersionToDaoVersionModel(version),
+      daoVersion: version ? mapDaoVersionToDaoVersionModel(version) : undefined,
     });
   }
 
