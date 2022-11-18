@@ -25,6 +25,7 @@ export class BountyOpensearchDto extends BaseOpensearchDto {
   bountyClaims: string;
   transactionHash: string;
   createTimestamp: number;
+  tags?: string[];
 
   public static getMappings(): any {
     const { mappings } = super.getMappings();
@@ -40,6 +41,7 @@ export class BountyOpensearchDto extends BaseOpensearchDto {
           numberOfClaims: { type: 'integer' },
           bountyId: { type: 'integer' },
           proposalStatus: { type: 'keyword' },
+          tags: { type: 'text' },
         },
       },
     };
