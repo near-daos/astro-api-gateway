@@ -2,7 +2,7 @@ import { Account, Contract, Near } from 'near-api-js';
 import { Inject, Injectable } from '@nestjs/common';
 import { NEAR_API_PROVIDER } from '@sputnik-v2/common';
 import { NearApiContract, NearApiProvider } from '@sputnik-v2/config/near-api';
-import { decodeBase64 } from '@sputnik-v2/utils';
+import { BlockId } from 'near-api-js/lib/providers/provider';
 
 import {
   NearAccountState,
@@ -10,6 +10,7 @@ import {
   NearProvider,
   castTransactionAction,
   castTransactionReceipt,
+  castTransactionReceiptOutcome,
   castTransactionStatus,
   ViewCodeResponse,
 } from './types';
@@ -36,37 +37,31 @@ export class NearApiService {
     this.contracts = contracts;
   }
 
+  public async getBlock(blockId: BlockId) {
+    return this.provider.block({ blockId });
+  }
+
   public async getTxStatus(
     transactionHash: string,
     accountId: string,
   ): Promise<NearTransactionStatus> {
-    const txStatus = await this.provider.sendJsonRpc<NearTransactionStatus>(
-      'EXPERIMENTAL_tx_status',
-      [transactionHash, accountId],
+    const txStatus = await this.provider.txStatusReceipts(
+      transactionHash,
+      accountId,
     );
 
-    txStatus.status = castTransactionStatus(txStatus.status);
-    txStatus.transaction.actions = txStatus.transaction.actions.map(
-      castTransactionAction,
-    );
-    txStatus.receipts = txStatus.receipts.map(castTransactionReceipt);
-    txStatus.receiptSuccessValues = txStatus.receipts_outcome.reduce(
-      (values, value) => {
-        if (
-          typeof value.outcome?.status === 'object' &&
-          'SuccessValue' in value.outcome.status
-        ) {
-          return {
-            ...values,
-            [value.id]: decodeBase64(value.outcome.status.SuccessValue),
-          };
-        }
-        return values;
+    return {
+      status: castTransactionStatus(txStatus.status),
+      transaction: {
+        ...txStatus.transaction,
+        actions: txStatus.transaction.actions.map(castTransactionAction),
       },
-      {},
-    );
-
-    return txStatus;
+      transaction_outcome: txStatus.transaction_outcome,
+      receipts: txStatus.receipts.map(castTransactionReceipt),
+      receipts_outcome: txStatus.receipts_outcome.map(
+        castTransactionReceiptOutcome,
+      ),
+    };
   }
 
   public async getAccountState(accountId: string): Promise<NearAccountState> {

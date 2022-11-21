@@ -1,10 +1,11 @@
 import { FinalExecutionOutcome } from 'near-api-js/lib/providers';
+import { ExecutionOutcomeWithIdView } from 'near-api-js/lib/providers/provider';
 
-import { NearTransactionReceipt } from './near-transaction-receipt';
 import { NearTransaction } from './near-transaction';
+import { NearTransactionReceipt } from './near-transaction-receipt';
 
-export type NearTransactionStatus = {
+export interface NearTransactionStatus extends FinalExecutionOutcome {
   transaction: NearTransaction;
   receipts: NearTransactionReceipt[];
-  receiptSuccessValues: Record<string, any>;
-} & FinalExecutionOutcome;
+  receipts_outcome: ExecutionOutcomeWithIdView[];
+}
