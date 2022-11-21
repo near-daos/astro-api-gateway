@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { NearApiService, NearTransactionStatus } from '@sputnik-v2/near-api';
 import { Receipt, Transaction } from '@sputnik-v2/near-indexer';
-import { sleep } from '@sputnik-v2/utils';
+import { Retryable } from 'typescript-retry-decorator';
 
 import {
   castNearIndexerReceiptAction,
@@ -21,8 +21,8 @@ export class TransactionActionMapperService {
     transactionHash: string,
     accountId: string,
   ): Promise<TransactionAction[]> {
-    const txStatus = await this.getTxStatus(transactionHash, accountId);
-    return this.getActionsByTxStatus(transactionHash, txStatus);
+    const txStatus = await this.getTxStatusRetry(transactionHash, accountId);
+    return this.getActionsByTxStatus(txStatus);
   }
 
   async getActionsByReceipts(
@@ -59,7 +59,7 @@ export class TransactionActionMapperService {
       !receipt.receiptActions ||
       this.isActFunctionCall(originatedFromTransaction)
     ) {
-      const txStatus = await this.getTxStatus(
+      const txStatus = await this.getTxStatusRetry(
         originatedFromTransaction.transactionHash,
         originatedFromTransaction.signerAccountId,
       );
@@ -68,10 +68,7 @@ export class TransactionActionMapperService {
           ...originatedFromTransaction,
           transactionAction: castTransactionActionEntity(txStatus),
         },
-        actions: this.getActionsByTxStatus(
-          originatedFromTransaction.transactionHash,
-          txStatus,
-        ),
+        actions: this.getActionsByTxStatus(txStatus),
       };
     }
 
@@ -83,45 +80,69 @@ export class TransactionActionMapperService {
     };
   }
 
-  private async getTxStatus(
+  @Retryable({
+    maxAttempts: 5,
+    backOff: 1000,
+  })
+  private async getBlockRetry(blockHash: string) {
+    return this.nearApiService.getBlock(blockHash);
+  }
+
+  @Retryable({
+    maxAttempts: 5,
+    backOff: 1000,
+  })
+  private async getTxStatusRetry(
     transactionHash: string,
     accountId: string,
   ): Promise<NearTransactionStatus> {
-    let txStatus;
-
-    try {
-      txStatus = await this.nearApiService.getTxStatus(
-        transactionHash,
-        accountId,
-      );
-    } catch (error) {
-      // Wait 3 seconds before retry
-      await sleep(3000);
-      txStatus = await this.nearApiService.getTxStatus(
-        transactionHash,
-        accountId,
-      );
-    }
-
-    return txStatus;
+    return this.nearApiService.getTxStatus(transactionHash, accountId);
   }
 
-  private getActionsByTxStatus(
-    transactionHash: string,
+  private async getActionsByTxStatus(
     txStatus: NearTransactionStatus,
-  ): TransactionAction[] {
+  ): Promise<TransactionAction[]> {
+    const blockHashes = [
+      ...new Set(
+        txStatus.receipts_outcome.map((outcome) => outcome.block_hash),
+      ),
+    ];
+
+    const blocks = await Promise.all(
+      blockHashes.map((hash) => this.getBlockRetry(hash)),
+    );
+
     return txStatus.receipts
-      .map((receipt) =>
-        receipt.receipt.Action.actions.map((action, index) =>
+      .map((receipt) => {
+        const outcome = txStatus.receipts_outcome.find(
+          (outcome) => outcome.id === receipt.receipt_id,
+        );
+
+        if (!outcome) {
+          throw new Error(
+            `Unable to fund outcome for receipt ID: ${receipt.receipt_id}`,
+          );
+        }
+
+        const block = blocks.find(
+          (block) => block.header.hash === outcome.block_hash,
+        );
+
+        if (!block) {
+          throw new Error(`Unable to find block for outcome ID: ${outcome.id}`);
+        }
+
+        return receipt.receipt.Action.actions.map((action, index) =>
           castNearTransactionAction(
-            transactionHash,
-            txStatus.status,
+            txStatus,
+            block,
             receipt,
+            outcome,
             action,
             index,
           ),
-        ),
-      )
+        );
+      })
       .flat();
   }
 
