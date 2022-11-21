@@ -25,7 +25,7 @@ export type TransactionAction = {
   methodName?: string;
   args: any;
   deposit: string;
-  timestamp: number;
+  timestamp: number; // TODO: deprecated, use timestampNanosec
   timestampNanosec?: bigint;
   receiptId?: string;
   indexInReceipt: number;
