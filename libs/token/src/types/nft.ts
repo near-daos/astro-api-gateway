@@ -1,13 +1,13 @@
 import camelcaseKeys from 'camelcase-keys';
 import { NFTTokenDto } from '@sputnik-v2/token';
-import { buildNFTTokenId, getBlockTimestamp } from '@sputnik-v2/utils';
+import { buildNFTTokenId } from '@sputnik-v2/utils';
 
 export function castNFT(
   nftContractId: string,
   accountId: string,
   metadata,
   nft,
-  timestamp = getBlockTimestamp(),
+  timestamp,
 ): NFTTokenDto {
   const nftToken = camelcaseKeys(nft, { deep: true });
   const tokenId = nftToken.id || nftToken.tokenId || 0;
