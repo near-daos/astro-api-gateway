@@ -63,12 +63,13 @@ export class TransactionActionMapperService {
         originatedFromTransaction.transactionHash,
         originatedFromTransaction.signerAccountId,
       );
+      const actions = await this.getActionsByTxStatus(txStatus);
       return {
         transaction: {
           ...originatedFromTransaction,
           transactionAction: castTransactionActionEntity(txStatus),
         },
-        actions: this.getActionsByTxStatus(txStatus),
+        actions,
       };
     }
 
