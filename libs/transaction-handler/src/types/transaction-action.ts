@@ -8,8 +8,12 @@ import {
   ReceiptAction,
   TransactionAction as TransactionActionEntity,
 } from '@sputnik-v2/near-indexer/entities';
-import { getBlockTimestamp } from '@sputnik-v2/utils';
 import { ActionKind } from '@sputnik-v2/near-indexer';
+import {
+  BlockResult,
+  ExecutionOutcomeWithIdView,
+  ExecutionStatus,
+} from 'near-api-js/lib/providers/provider';
 
 export type TransactionAction = {
   receiverId: string;
@@ -21,31 +25,37 @@ export type TransactionAction = {
   methodName?: string;
   args: any;
   deposit: string;
-  timestamp: number;
+  timestamp: number; // TODO: deprecated, use timestampNanosec
+  timestampNanosec?: bigint;
   receiptId?: string;
   indexInReceipt: number;
   status?: any;
+  receiptSuccessValue?: string;
 };
 
 export function castNearTransactionAction(
-  transactionHash: string,
-  status,
+  txStatus: NearTransactionStatus,
+  block: BlockResult,
   receipt: NearTransactionReceipt,
+  outcome: ExecutionOutcomeWithIdView,
   action: NearTransactionAction,
   index: number,
-  timestamp = getBlockTimestamp(),
 ): TransactionAction {
   return {
-    transactionHash,
-    status,
+    transactionHash: txStatus.transaction.hash,
+    status: txStatus.status,
     receiverId: receipt.receiver_id,
+    predecessorId: receipt.predecessor_id,
     signerId: receipt.predecessor_id,
     methodName: action.FunctionCall?.methodName,
     args: action.FunctionCall?.args,
     deposit: action.Transfer?.deposit || action.FunctionCall?.deposit,
-    timestamp,
+    timestamp: block.header.timestamp,
+    timestampNanosec: BigInt(block.header.timestamp_nanosec),
     receiptId: receipt.receipt_id,
     indexInReceipt: index,
+    receiptSuccessValue: (outcome.outcome.status as ExecutionStatus)
+      ?.SuccessValue,
   };
 }
 

@@ -7,7 +7,6 @@ import PromisePool from '@supercharge/promise-pool';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { FinalExecutionStatus } from 'near-api-js/lib/providers';
 
 import { NearApiService } from '@sputnik-v2/near-api';
 import { SputnikService } from '@sputnik-v2/sputnikdao';
@@ -248,21 +247,14 @@ export class TransactionActionHandlerService {
       timestamp,
       args,
       receiptId,
+      receiptSuccessValue,
     } = txAction;
 
-    const txStatus = await this.nearApiService.getTxStatus(
-      transactionHash,
-      receiverId,
-    );
-
-    const lastProposalId = parseInt(
-      txStatus.receiptSuccessValues[receiptId] ||
-        (txStatus.status as FinalExecutionStatus)?.SuccessValue,
-    );
+    const lastProposalId = parseInt(receiptSuccessValue);
 
     if (isNaN(lastProposalId)) {
       this.logger.warn(
-        `Error getting Proposal ID from transaction: ${transactionHash}`,
+        `Error getting Proposal ID from receipt ID: ${receiptId}`,
       );
       return {
         type: ContractHandlerResultType.Unknown,
@@ -480,9 +472,6 @@ export class TransactionActionHandlerService {
     timestamp,
     status,
   }) {
-    const txStatus =
-      status ||
-      (await this.nearApiService.getTxStatus(transactionHash, receiverId));
     const state = await this.nearApiService.getAccountState(receiverId);
     const proposalKindType = proposal.kind?.kind.type;
     let config;
@@ -497,15 +486,20 @@ export class TransactionActionHandlerService {
         proposal.kind.kind.tokenId
       ) {
         const { contractName } = this.configService.get('near');
-        await this.tokenService.loadTokenById(proposal.kind.kind.tokenId);
+        await this.tokenService.loadTokenById(
+          proposal.kind.kind.tokenId,
+          timestamp,
+        );
         await this.tokenService.loadBalanceById(
           proposal.kind.kind.tokenId,
           dao.id,
+          timestamp,
         );
         if (proposal.kind.kind.receiverId.includes(contractName)) {
           await this.tokenService.loadBalanceById(
             proposal.kind.kind.tokenId,
             proposal.kind.kind.receiverId,
+            timestamp,
           );
         }
       }
@@ -568,7 +562,7 @@ export class TransactionActionHandlerService {
         }, 30000);
       }
 
-      proposal.failure = txStatus?.Failure;
+      proposal.failure = status?.Failure;
     }
 
     this.logger.log(`Updating Proposal: ${proposal.id} due to transaction`);
@@ -1078,7 +1072,11 @@ export class TransactionActionHandlerService {
         this.logger.log(
           `Updating Token ${txAction.receiverId} balance for ${accountId} due to transaction: ${txAction.transactionHash}`,
         );
-        await this.tokenService.loadBalanceById(txAction.receiverId, accountId);
+        await this.tokenService.loadBalanceById(
+          txAction.receiverId,
+          accountId,
+          txAction.timestamp,
+        );
         this.logger.log(
           `Token ${txAction.receiverId} balance for ${accountId} successfully updated`,
         );

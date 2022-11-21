@@ -10,6 +10,7 @@ import {
   TokenUpdateDto,
   castNearToken,
 } from '@sputnik-v2/token';
+import { getBlockTimestamp } from '@sputnik-v2/utils';
 
 @Injectable()
 export class TokenAggregatorService {
@@ -91,8 +92,9 @@ export class TokenAggregatorService {
   public async aggregateTokenBalance(
     tokenId: string,
     accountId: string,
+    timestamp = getBlockTimestamp(),
   ): Promise<void> {
-    await this.tokenService.loadBalanceById(tokenId, accountId);
+    await this.tokenService.loadBalanceById(tokenId, accountId, timestamp);
   }
 
   public async aggregateTokenPrices(): Promise<Token[]> {

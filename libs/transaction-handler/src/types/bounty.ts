@@ -4,7 +4,6 @@ import {
   buildBountyClaimId,
   buildBountyId,
   calculateClaimEndTime,
-  getBlockTimestamp,
 } from '@sputnik-v2/utils';
 
 export function castAddBounty({
@@ -13,7 +12,7 @@ export function castAddBounty({
   bounty,
   bountyId,
   transactionHash,
-  timestamp = getBlockTimestamp(),
+  timestamp,
 }): BountyDto {
   return {
     ...camelcaseKeys(bounty),
@@ -62,7 +61,7 @@ export function castClaimBounty({
   bountyClaims,
   numberOfClaims,
   removedClaim,
-  timestamp = getBlockTimestamp(),
+  timestamp,
 }): BountyDto {
   const claims = castBountyClaims({
     contractId: bounty.dao?.id || daoId,
@@ -92,7 +91,7 @@ export function castDoneBounty({
   numberOfClaims,
   bountyClaims,
   transactionHash,
-  timestamp = getBlockTimestamp(),
+  timestamp,
 }): BountyDto {
   const claims = castBountyClaims({
     contractId: dao.id,
