@@ -16,7 +16,6 @@ import {
   buildBountyId,
   buildProposalId,
   calcProposalVotePeriodEnd,
-  getBlockTimestamp,
 } from '@sputnik-v2/utils';
 
 export function castCreateProposal({
@@ -24,7 +23,7 @@ export function castCreateProposal({
   signerId,
   proposal,
   dao,
-  timestamp = getBlockTimestamp(),
+  timestamp,
 }): ProposalDto {
   const kind = castProposalKind(proposal.kind);
   const proposalDto = {
@@ -46,10 +45,10 @@ export function castCreateProposal({
     voteCounts: {},
     votes: {},
     votePeriodEnd: calcProposalVotePeriodEnd(
-      { submissionTime: timestamp },
+      { submissionTime: proposal.submission_time },
       dao,
     ),
-    submissionTime: timestamp,
+    submissionTime: proposal.submission_time,
     transactionHash: transactionHash,
     createTimestamp: timestamp,
   };
@@ -75,7 +74,7 @@ export function castActProposal({
   contractId,
   signerId,
   proposal,
-  timestamp = getBlockTimestamp(),
+  timestamp,
   action,
 }): ProposalDto {
   const kind = castProposalKind(proposal.kind);

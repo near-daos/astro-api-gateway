@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 import { BountyDynamoService } from '@sputnik-v2/bounty/bounty-dynamo.service';
 import { FindOneOptions, Not, Repository } from 'typeorm';
-import { buildBountyId, getBlockTimestamp } from '@sputnik-v2/utils';
+import { buildBountyId } from '@sputnik-v2/utils';
 import { FeatureFlags, FeatureFlagsService } from '@sputnik-v2/feature-flags';
 import { BountyClaimModel } from '@sputnik-v2/dynamodb';
 
@@ -79,7 +79,7 @@ export class BountyService extends TypeOrmCrudService<Bounty> {
     daoId,
     bountyId,
     accountId: string,
-    untilTimestamp?: number,
+    untilTimestamp: number,
   ): Promise<BountyClaim | BountyClaimModel | null> {
     if (await this.useDynamoDB()) {
       const bounty = await this.findById(daoId, bountyId);
@@ -103,7 +103,7 @@ export class BountyService extends TypeOrmCrudService<Bounty> {
   findLastClaim(
     claims: Array<BountyClaim | BountyClaimModel>,
     accountId: string,
-    untilTimestamp = getBlockTimestamp(),
+    untilTimestamp,
   ): BountyClaim | BountyClaimModel | null {
     return claims.reduce((lastClaim, currentClaim) => {
       const currentClaimTimestamp = Number(currentClaim.startTime);

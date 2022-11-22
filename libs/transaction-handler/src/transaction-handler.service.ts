@@ -32,7 +32,11 @@ export class TransactionHandlerService {
   }
 
   async getStateBlock(id: string) {
-    const { lastBlockHash } = await this.getState(id);
+    const state = await this.getState(id);
+    if (!state) {
+      return;
+    }
+    const { lastBlockHash } = state;
     return this.nearIndexerService.findBlockByHash(lastBlockHash);
   }
 
@@ -44,30 +48,30 @@ export class TransactionHandlerService {
       const lastAccountChange =
         await this.nearIndexerService.lastAccountChange();
       const lastAstroBlock = await this.nearIndexerService.findBlockByTimestamp(
-        lastAccountChange.changedInBlockTimestamp,
+        lastAccountChange?.changedInBlockTimestamp,
       );
       const lastNearLakeBlock =
         await this.nearIndexerService.lastNearLakeBlock();
       const lastHandledBlock =
-        processorBlock.blockTimestamp > lastAstroBlock.blockTimestamp
+        processorBlock?.blockTimestamp > lastAstroBlock?.blockTimestamp
           ? lastAstroBlock
           : processorBlock;
       return {
         lastBlock: {
-          height: lastNearLakeBlock.blockHeight,
-          timestamp: lastNearLakeBlock.blockTimestamp,
+          height: lastNearLakeBlock?.blockHeight,
+          timestamp: lastNearLakeBlock?.blockTimestamp,
         },
         lastAstroBlock: {
-          height: lastAstroBlock.blockHeight,
-          timestamp: lastAstroBlock.blockTimestamp,
+          height: lastAstroBlock?.blockHeight,
+          timestamp: lastAstroBlock?.blockTimestamp,
         },
         lastHandledBlock: {
-          height: lastHandledBlock.blockHeight,
-          timestamp: lastHandledBlock.blockTimestamp,
+          height: lastHandledBlock?.blockHeight,
+          timestamp: lastHandledBlock?.blockTimestamp,
         },
         lastProcessedBlock: {
-          height: processorBlock.blockHeight,
-          timestamp: processorBlock.blockTimestamp,
+          height: processorBlock?.blockHeight,
+          timestamp: processorBlock?.blockTimestamp,
         },
       };
       // Fallback flow in case of using public indexer database

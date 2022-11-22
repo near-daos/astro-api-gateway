@@ -1,14 +1,13 @@
 import camelcaseKeys from 'camelcase-keys';
 import Decimal from 'decimal.js';
 import { TokenDto } from '@sputnik-v2/token';
-import { getBlockTimestamp } from '@sputnik-v2/utils';
 import { yoktoNear } from '@sputnik-v2/sputnikdao';
 
 export function castToken(
   tokenId: string,
   tokenMetadata,
   totalSupply,
-  timestamp = getBlockTimestamp(),
+  timestamp,
 ): TokenDto {
   return {
     id: tokenId,
