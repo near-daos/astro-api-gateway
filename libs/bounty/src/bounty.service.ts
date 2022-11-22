@@ -35,7 +35,7 @@ export class BountyService extends TypeOrmCrudService<Bounty> {
         })
       )[0];
     } else {
-      return this.findOne(buildBountyId(daoId, bountyId), options);
+      return this.findOne(id, options);
     }
   }
 
@@ -51,9 +51,11 @@ export class BountyService extends TypeOrmCrudService<Bounty> {
     return bountyDto;
   }
 
-  // TODO: dynamo
   async createMultiple(bountyDtos: BountyDto[]): Promise<Bounty[]> {
-    return this.bountyRepository.save(bountyDtos);
+    const entities = this.bountyRepository.create(bountyDtos);
+    await this.bountyDynamoService.saveMultipleBounties(entities);
+    await this.bountyRepository.save(entities);
+    return entities;
   }
 
   async getDaoActiveBountiesCount(
