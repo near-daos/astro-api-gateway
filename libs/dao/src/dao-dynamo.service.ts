@@ -66,15 +66,4 @@ export class DaoDynamoService {
     );
     return daoIdsModel?.ids || [];
   }
-
-  async increment(daoId: string, field: string, value = 1) {
-    const dao = await this.get(daoId);
-    await this.save(daoId, {
-      [field]: dao[field] ? Number(dao[field]) + value : value,
-    });
-  }
-
-  async decrement(daoId: string, field: string, value = -1) {
-    return this.increment(daoId, field, value);
-  }
 }

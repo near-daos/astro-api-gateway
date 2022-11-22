@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 import { CrudRequest } from '@nestjsx/crud';
+import { BountyService } from '@sputnik-v2/bounty';
 import { DaoDynamoService } from '@sputnik-v2/dao/dao-dynamo.service';
 import { Connection, In, Not, Repository } from 'typeorm';
 import {
@@ -17,7 +18,7 @@ import {
   getBlockTimestamp,
   paginate,
 } from '@sputnik-v2/utils';
-import { TokenService } from '@sputnik-v2/token';
+import { NFTTokenService, TokenService } from '@sputnik-v2/token';
 import { SearchQuery } from '@sputnik-v2/common';
 import { NearApiService } from '@sputnik-v2/near-api';
 import { DaoModel, TokenBalanceModel } from '@sputnik-v2/dynamodb';
@@ -37,6 +38,13 @@ import {
 import { Dao, DaoVersion, Delegation, RoleKindType } from './entities';
 import { DaoStatus, DaoVariant, WeightKind } from './types';
 
+export interface DaoSaveOptions {
+  updateProposalsCount?: boolean;
+  updateTotalDaoFunds?: boolean;
+  updateBountiesCount?: boolean;
+  updateNftsCount?: boolean;
+}
+
 @Injectable()
 export class DaoService extends TypeOrmCrudService<Dao> {
   constructor(
@@ -49,7 +57,9 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     @InjectConnection()
     private connection: Connection,
     private readonly proposalService: ProposalService,
+    private readonly bountyService: BountyService,
     private readonly tokenService: TokenService,
+    private readonly nftTokenService: NFTTokenService,
     private readonly nearApiService: NearApiService,
     private readonly daoDynamoService: DaoDynamoService,
     private readonly featureFlagsService: FeatureFlagsService,
@@ -284,57 +294,51 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     return DaoVariant.Custom;
   }
 
-  async increment(id: string, field: string, value = 1) {
-    await this.daoRepository.increment({ id }, field, value);
-    await this.daoDynamoService.increment(id, field, value);
-  }
+  async save(dao: Partial<DaoDto | DaoModel>, options: DaoSaveOptions = {}) {
+    const {
+      updateProposalsCount,
+      updateTotalDaoFunds,
+      updateBountiesCount,
+      updateNftsCount,
+    } = options;
 
-  async decrement(id: string, field: string, value = -1) {
-    return this.increment(id, field, value);
-  }
+    let entity = this.daoRepository.create(dao);
 
-  public async saveWithProposalCount(dao: Partial<DaoDto>) {
-    const entity = this.daoRepository.create({
-      ...dao,
-      totalProposalCount: await this.proposalService.getDaoProposalCount(
-        dao.id,
-      ),
-      activeProposalCount: await this.proposalService.getDaoActiveProposalCount(
-        dao.id,
-      ),
-    });
+    if (updateProposalsCount) {
+      const [totalProposalCount, activeProposalCount] = await Promise.all([
+        this.proposalService.getDaoProposalCount(entity.id),
+        this.proposalService.getDaoActiveProposalCount(entity.id),
+      ]);
 
-    await this.daoDynamoService.saveDao({ ...entity, id: dao.id });
-    await this.daoRepository.save({ ...entity, id: dao.id });
-  }
+      entity = { totalProposalCount, activeProposalCount, ...entity };
+    }
 
-  async save(dao: Partial<DaoDto | DaoModel>) {
-    const entity = this.daoRepository.create(dao);
+    if (updateTotalDaoFunds) {
+      const totalDaoFunds = await this.calculateDaoFunds(dao.id, dao.amount);
+
+      entity = { totalDaoFunds, ...entity };
+    }
+
+    if (updateBountiesCount) {
+      const bountyCount = await this.bountyService.getDaoActiveBountiesCount(
+        entity.id,
+      );
+
+      entity = { bountyCount, ...entity };
+    }
+
+    if (updateNftsCount) {
+      const nftCount = await this.nftTokenService.getAccountTokenCount(
+        entity.id,
+      );
+
+      entity = { nftCount, ...entity };
+    }
+
     await this.daoDynamoService.saveDao(entity);
     await this.daoRepository.save(entity);
-  }
 
-  public async saveWithFunds(dao: Partial<DaoDto | DaoModel>) {
-    const totalDaoFunds = await this.calculateDaoFunds(dao.id, dao.amount);
-    const entity = this.daoRepository.create({ ...dao, totalDaoFunds });
-    await this.daoDynamoService.saveDao({ ...entity, id: dao.id });
-    await this.daoRepository.save({ ...entity, id: dao.id });
-  }
-
-  public async saveWithAdditionalFields(dao: Partial<DaoDto>) {
-    const entity = this.daoRepository.create({
-      ...dao,
-      totalProposalCount: await this.proposalService.getDaoProposalCount(
-        dao.id,
-      ),
-      activeProposalCount: await this.proposalService.getDaoActiveProposalCount(
-        dao.id,
-      ),
-      totalDaoFunds: await this.calculateDaoFunds(dao.id, dao.amount),
-    });
-
-    await this.daoDynamoService.saveDao({ ...entity, id: dao.id });
-    await this.daoRepository.save({ ...entity, id: dao.id });
+    return entity;
   }
 
   public async updateDaoStatus(dao: Dao): Promise<Dao> {

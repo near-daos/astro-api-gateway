@@ -61,7 +61,7 @@ export class ProposalAggregatorService {
       await PromisePool.withConcurrency(10)
         .for(daoIds)
         .process((daoId) =>
-          this.daoService.saveWithProposalCount({ id: daoId }),
+          this.daoService.save({ id: daoId }, { updateProposalsCount: true }),
         );
     }
   }

@@ -1,8 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import PromisePool from '@supercharge/promise-pool';
 import { ConfigService } from '@nestjs/config';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 
 import { NearApiService } from '@sputnik-v2/near-api';
 import { SputnikService } from '@sputnik-v2/sputnikdao';
@@ -14,7 +12,6 @@ import {
   ProposalStatus,
   ProposalType,
 } from '@sputnik-v2/proposal';
-import { Transaction } from '@sputnik-v2/near-indexer';
 import { BountyContextService, BountyService } from '@sputnik-v2/bounty';
 import { EventService } from '@sputnik-v2/event';
 import { NFTTokenService, TokenService } from '@sputnik-v2/token';
@@ -47,8 +44,6 @@ export class TransactionActionHandlerService {
   private contractHandlers: ContractHandler[];
 
   constructor(
-    @InjectRepository(Transaction)
-    private readonly transactionRepository: Repository<Transaction>,
     private readonly configService: ConfigService,
     private readonly nearApiService: NearApiService,
     private readonly sputnikService: SputnikService,
@@ -218,7 +213,7 @@ export class TransactionActionHandlerService {
     });
 
     this.logger.log(`Storing new DAO: ${daoId} due to transaction`);
-    await this.daoService.saveWithFunds(dao);
+    await this.daoService.save(dao, { updateTotalDaoFunds: true });
     await this.daoService.setDaoVersion(daoId);
     await this.daoDynamoService.saveDaoId(daoId);
     this.logger.log(`Successfully stored new DAO: ${daoId}`);
@@ -304,8 +299,6 @@ export class TransactionActionHandlerService {
 
     this.logger.log(`Storing Proposal: ${proposal.id} due to transaction`);
     await this.proposalService.create(proposal);
-    await this.daoService.increment(dao.id, 'totalProposalCount');
-    await this.daoService.increment(dao.id, 'activeProposalCount');
     this.logger.log(`Successfully stored Proposal: ${proposal.id}`);
 
     if (proposal.type === ProposalType.AddBounty) {
@@ -325,7 +318,7 @@ export class TransactionActionHandlerService {
     }
 
     this.logger.log(`Updating DAO: ${receiverId} due to transaction`);
-    await this.daoService.saveWithProposalCount(dao);
+    await this.daoService.save(dao, { updateProposalsCount: true });
     this.logger.log(`DAO successfully updated: ${receiverId}`);
 
     const proposalById = await this.proposalService.findOne(proposal.id, {
@@ -571,7 +564,7 @@ export class TransactionActionHandlerService {
     this.logger.log(`Proposal successfully updated: ${proposal.id}`);
 
     this.logger.log(`Updating DAO: ${receiverId} due to transaction`);
-    await this.daoService.saveWithAdditionalFields(
+    await this.daoService.save(
       castActProposalDao({
         dao,
         amount: state.amount,
@@ -583,6 +576,11 @@ export class TransactionActionHandlerService {
         transactionHash,
         timestamp,
       }),
+      {
+        updateProposalsCount: true,
+        updateTotalDaoFunds: true,
+        updateBountiesCount: true,
+      },
     );
     this.logger.log(`DAO successfully updated: ${receiverId}`);
   }
@@ -617,13 +615,14 @@ export class TransactionActionHandlerService {
     this.logger.log(`Proposal successfully updated: ${proposal.id}`);
 
     this.logger.log(`Updating DAO: ${receiverId} due to transaction`);
-    await this.daoService.saveWithProposalCount(
+    await this.daoService.save(
       castActProposalDao({
         dao,
         amount: state.amount,
         transactionHash,
         timestamp,
       }),
+      { updateProposalsCount: true },
     );
     this.logger.log(`DAO successfully updated: ${receiverId}`);
   }
@@ -658,7 +657,6 @@ export class TransactionActionHandlerService {
           `Removing Bounty Context: ${proposalEntity?.id} due to transaction`,
         );
         await this.bountyContextService.remove(dao.id, proposal?.proposalId);
-        await this.daoService.decrement(dao.id, 'bountyCount');
       }
 
       this.logger.log(`Removing Proposal: ${args.id} due to transaction`);
@@ -670,13 +668,14 @@ export class TransactionActionHandlerService {
     }
 
     this.logger.log(`Updating DAO: ${receiverId} due to transaction`);
-    await this.daoService.saveWithProposalCount(
+    await this.daoService.save(
       castActProposalDao({
         dao,
         amount: state.amount,
         transactionHash,
         timestamp,
       }),
+      { updateProposalsCount: true },
     );
     this.logger.log(`DAO successfully updated: ${receiverId}`);
   }
@@ -720,7 +719,6 @@ export class TransactionActionHandlerService {
         }),
         proposal.proposalId,
       );
-      await this.daoService.increment(dao.id, 'bountyCount');
       this.logger.log('Successfully stored new Bounty');
     }
 
@@ -874,7 +872,7 @@ export class TransactionActionHandlerService {
     dao.amount = Number(state.amount);
 
     this.logger.log(`Updating DAO: ${receiverId} due to transaction`);
-    await this.daoService.saveWithFunds({ ...dao });
+    await this.daoService.save(dao, { updateTotalDaoFunds: true });
     this.logger.log(`DAO successfully updated: ${receiverId}`);
 
     const daoById = await this.daoService.findOne(dao.id, {
@@ -1102,10 +1100,10 @@ export class TransactionActionHandlerService {
           accountId,
           txAction.timestamp,
         );
-        const nftCount = await this.nftTokenService.getAccountTokenCount(
-          accountId,
+        await this.daoService.save(
+          { id: accountId },
+          { updateNftsCount: true },
         );
-        await this.daoService.save({ id: accountId, nftCount });
         this.logger.log(
           `NFT ${txAction.receiverId} for ${accountId} successfully updated`,
         );
