@@ -1,7 +1,7 @@
-import { Bounty, BountyClaim } from '@sputnik-v2/bounty';
+import { Bounty, BountyClaim, BountyContextDto } from '@sputnik-v2/bounty';
 import { buildEntityId } from '@sputnik-v2/utils';
-import { TransactionModel } from './transaction.model';
 import { DynamoEntityType } from '../types';
+import { TransactionModel } from './transaction.model';
 
 export class BountyModel extends TransactionModel {
   bountyId: number;
@@ -27,6 +27,16 @@ export class BountyClaimModel {
   deadline: string;
   completed: boolean;
   endTime: string;
+}
+
+export function mapBountyContextToBountyModel(
+  bountyContext: BountyContextDto,
+): Partial<BountyModel> {
+  return {
+    partitionId: bountyContext.daoId,
+    entityId: buildEntityId(DynamoEntityType.Bounty, bountyContext.id),
+    entityType: DynamoEntityType.Bounty,
+  };
 }
 
 export function mapBountyToBountyModel(

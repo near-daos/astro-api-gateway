@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { DaoService } from '@sputnik-v2/dao';
 
 import { NFTTokenService, NFTTokenUpdateDto } from '@sputnik-v2/token';
 import PromisePool from '@supercharge/promise-pool';
@@ -7,7 +8,10 @@ import PromisePool from '@supercharge/promise-pool';
 export class NFTAggregatorService {
   private readonly logger = new Logger(NFTAggregatorService.name);
 
-  constructor(private readonly nftTokenService: NFTTokenService) {}
+  constructor(
+    private readonly daoService: DaoService,
+    private readonly nftTokenService: NFTTokenService,
+  ) {}
 
   public async aggregateDaoNFTUpdates(
     tokenUpdates: NFTTokenUpdateDto[],
@@ -16,6 +20,14 @@ export class NFTAggregatorService {
       .for(tokenUpdates)
       .process(async ({ nft, account, timestamp }) =>
         this.nftTokenService.loadNFT(nft, account, timestamp),
+      );
+
+    const daoIds = [...new Set(tokenUpdates.map(({ account }) => account))];
+
+    await PromisePool.withConcurrency(5)
+      .for(daoIds)
+      .process(async (id) =>
+        this.daoService.save({ id }, { updateNftsCount: true }),
       );
 
     errors.forEach((error) => {
@@ -35,6 +47,8 @@ export class NFTAggregatorService {
       .process(async (nftId) =>
         this.nftTokenService.loadNFT(nftId, daoId, timestamp),
       );
+
+    await this.daoService.save({ id: daoId }, { updateNftsCount: true });
 
     errors.forEach((error) => {
       this.logger.error(

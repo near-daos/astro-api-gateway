@@ -2,6 +2,8 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 import { CrudRequest } from '@nestjsx/crud';
+import { BountyService } from '@sputnik-v2/bounty';
+import { DaoDynamoService } from '@sputnik-v2/dao/dao-dynamo.service';
 import { Connection, In, Not, Repository } from 'typeorm';
 import {
   Action,
@@ -12,21 +14,14 @@ import {
 } from '@sputnik-v2/proposal';
 import {
   buildDelegationId,
-  buildEntityId,
   calculateFunds,
   getBlockTimestamp,
   paginate,
 } from '@sputnik-v2/utils';
-import { TokenService } from '@sputnik-v2/token';
+import { NFTTokenService, TokenService } from '@sputnik-v2/token';
 import { SearchQuery } from '@sputnik-v2/common';
 import { NearApiService } from '@sputnik-v2/near-api';
-import {
-  DaoModel,
-  DynamodbService,
-  DynamoEntityType,
-  mapDaoVersionToDaoVersionModel,
-  TokenBalanceModel,
-} from '@sputnik-v2/dynamodb';
+import { DaoModel, TokenBalanceModel } from '@sputnik-v2/dynamodb';
 import { FeatureFlags, FeatureFlagsService } from '@sputnik-v2/feature-flags';
 
 import {
@@ -43,6 +38,15 @@ import {
 import { Dao, DaoVersion, Delegation, RoleKindType } from './entities';
 import { DaoStatus, DaoVariant, WeightKind } from './types';
 
+export interface DaoSaveOptions {
+  updateProposalsCount?: boolean;
+  updateTotalDaoFunds?: boolean;
+  updateBountiesCount?: boolean;
+  updateNftsCount?: boolean;
+  // TODO: use only for migration
+  allowDynamo?: boolean;
+}
+
 @Injectable()
 export class DaoService extends TypeOrmCrudService<Dao> {
   constructor(
@@ -55,9 +59,11 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     @InjectConnection()
     private connection: Connection,
     private readonly proposalService: ProposalService,
+    private readonly bountyService: BountyService,
     private readonly tokenService: TokenService,
+    private readonly nftTokenService: NFTTokenService,
     private readonly nearApiService: NearApiService,
-    private readonly dynamodbService: DynamodbService,
+    private readonly daoDynamoService: DaoDynamoService,
     private readonly featureFlagsService: FeatureFlagsService,
   ) {
     super(daoRepository);
@@ -89,11 +95,7 @@ export class DaoService extends TypeOrmCrudService<Dao> {
 
   async findById(id: string): Promise<Dao | DaoModel> {
     if (await this.useDynamoDB()) {
-      return this.dynamodbService.getItemByType<DaoModel>(
-        id,
-        DynamoEntityType.Dao,
-        id,
-      );
+      return this.daoDynamoService.get(id);
     } else {
       return this.daoRepository.findOne({
         id,
@@ -294,42 +296,54 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     return DaoVariant.Custom;
   }
 
-  public async saveWithProposalCount(dao: Partial<DaoDto>) {
-    const entity = this.daoRepository.create({
-      ...dao,
-      totalProposalCount: await this.proposalService.getDaoProposalCount(
-        dao.id,
-      ),
-      activeProposalCount: await this.proposalService.getDaoActiveProposalCount(
-        dao.id,
-      ),
-    });
+  async save(dao: Partial<DaoDto | DaoModel>, options: DaoSaveOptions = {}) {
+    const {
+      updateProposalsCount,
+      updateTotalDaoFunds,
+      updateBountiesCount,
+      updateNftsCount,
+      allowDynamo,
+    } = options;
 
-    await this.dynamodbService.saveDao({ ...entity, id: dao.id });
-    await this.daoRepository.save({ ...entity, id: dao.id });
-  }
+    let entity = this.daoRepository.create(dao);
 
-  public async saveWithFunds(dao: Partial<DaoDto | DaoModel>) {
-    const totalDaoFunds = await this.calculateDaoFunds(dao.id, dao.amount);
-    const entity = this.daoRepository.create({ ...dao, totalDaoFunds });
-    await this.dynamodbService.saveDao({ ...entity, id: dao.id });
-    await this.daoRepository.save({ ...entity, id: dao.id });
-  }
+    if (updateProposalsCount) {
+      const [totalProposalCount, activeProposalCount] = await Promise.all([
+        this.proposalService.getDaoProposalCount(entity.id),
+        this.proposalService.getDaoActiveProposalCount(entity.id),
+      ]);
 
-  public async saveWithAdditionalFields(dao: Partial<DaoDto>) {
-    const entity = this.daoRepository.create({
-      ...dao,
-      totalProposalCount: await this.proposalService.getDaoProposalCount(
-        dao.id,
-      ),
-      activeProposalCount: await this.proposalService.getDaoActiveProposalCount(
-        dao.id,
-      ),
-      totalDaoFunds: await this.calculateDaoFunds(dao.id, dao.amount),
-    });
+      entity = { totalProposalCount, activeProposalCount, ...entity };
+    }
 
-    await this.dynamodbService.saveDao({ ...entity, id: dao.id });
-    await this.daoRepository.save({ ...entity, id: dao.id });
+    if (updateTotalDaoFunds) {
+      const totalDaoFunds = await this.calculateDaoFunds(dao.id, dao.amount);
+
+      entity = { totalDaoFunds, ...entity };
+    }
+
+    if (updateBountiesCount) {
+      const bountyCount = await this.bountyService.getDaoActiveBountiesCount(
+        entity.id,
+        allowDynamo,
+      );
+
+      entity = { bountyCount, ...entity };
+    }
+
+    if (updateNftsCount) {
+      const nftCount = await this.nftTokenService.getAccountTokenCount(
+        entity.id,
+        allowDynamo,
+      );
+
+      entity = { nftCount, ...entity };
+    }
+
+    await this.daoDynamoService.saveDao(entity);
+    await this.daoRepository.save(entity);
+
+    return entity;
   }
 
   public async updateDaoStatus(dao: Dao): Promise<Dao> {
@@ -458,12 +472,7 @@ export class DaoService extends TypeOrmCrudService<Dao> {
 
   async setDaoVersion(id: string): Promise<string> {
     const version = await this.getDaoVersionById(id);
-    await this.dynamodbService.saveItem<DaoModel>({
-      partitionId: id,
-      entityId: buildEntityId(DynamoEntityType.Dao, id),
-      entityType: DynamoEntityType.Dao,
-      daoVersion: mapDaoVersionToDaoVersionModel(version),
-    });
+    await this.daoDynamoService.saveDaoVersion(id, version);
     await this.daoRepository.save({
       id,
       daoVersionHash: version?.hash,
@@ -488,11 +497,7 @@ export class DaoService extends TypeOrmCrudService<Dao> {
 
   async getDelegationAccountsByDaoId(daoId: string): Promise<string[]> {
     if (await this.useDynamoDB()) {
-      const dao = await this.dynamodbService.getItemByType<DaoModel>(
-        daoId,
-        DynamoEntityType.Dao,
-        daoId,
-      );
+      const dao = await this.daoDynamoService.get(daoId);
       return dao?.delegations?.map(({ accountId }) => accountId) || [];
     } else {
       return (
