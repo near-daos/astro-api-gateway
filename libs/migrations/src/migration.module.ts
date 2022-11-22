@@ -1,7 +1,7 @@
 import { OpensearchModule } from 'nestjs-opensearch';
 
 import { getConnection } from 'typeorm';
-import { Module, OnApplicationShutdown } from '@nestjs/common';
+import { forwardRef, Module, OnApplicationShutdown } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { Proposal, ProposalAction, ProposalModule } from '@sputnik-v2/proposal';
@@ -18,7 +18,6 @@ import {
   NFTTokenMetadata,
   Token,
   TokenBalance,
-  TokenModule,
 } from '@sputnik-v2/token';
 import { Dao, DaoModule } from '@sputnik-v2/dao';
 import {
@@ -108,9 +107,9 @@ import migrationScripts from './scripts';
         node: process.env.OPENSEARCH_NODE_URL,
       }),
     }),
-    DaoModule,
+    forwardRef(() => DaoModule),
     ProposalModule,
-    BountyModule,
+    forwardRef(() => BountyModule),
     NearIndexerModule,
     NearApiModule,
     SputnikModule,
@@ -118,7 +117,6 @@ import migrationScripts from './scripts';
     ProposalTemplateModule,
     OpenSearchModule,
     DynamodbModule,
-    TokenModule,
   ],
   providers: [...migrationScripts],
 })

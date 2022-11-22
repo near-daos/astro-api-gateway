@@ -1,9 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { BountyService } from '@sputnik-v2/bounty';
-import { Dao } from '@sputnik-v2/dao';
-import { NFTTokenService } from '@sputnik-v2/token';
-import { Repository } from 'typeorm';
+import { DaoService } from '@sputnik-v2/dao';
+import PromisePool from '@supercharge/promise-pool';
 
 import { Migration } from '..';
 
@@ -11,37 +8,32 @@ import { Migration } from '..';
 export class DaoCountsMigration implements Migration {
   private readonly logger = new Logger(DaoCountsMigration.name);
 
-  constructor(
-    @InjectRepository(Dao)
-    private readonly daoRepository: Repository<Dao>,
-    private readonly bountyService: BountyService,
-    private readonly nftTokenService: NFTTokenService,
-  ) {}
+  constructor(private readonly daoService: DaoService) {}
 
   async migrate(): Promise<void> {
     this.logger.log('Starting DAO Counts migration...');
 
     this.logger.log('Collecting DAOs...');
-    const daos = await this.daoRepository.find();
+    const daoIds = await this.daoService.findDaoIds();
 
-    this.logger.log(`Updating DAOs counts...`);
+    this.logger.log(`Updating DAOs (${daoIds.length}) counts...`);
 
-    const entities = await Promise.all(
-      daos.map(async (dao) => {
-        const [bountyCount, nftCount] = await Promise.all([
-          this.bountyService.getDaoActiveBountiesCount(dao.id, false),
-          this.nftTokenService.getAccountTokenCount(dao.id, false),
-        ]);
-        return {
-          ...dao,
-          bountyCount,
-          nftCount,
-        };
-      }),
-    );
+    await PromisePool.withConcurrency(10)
+      .for(daoIds)
+      .handleError((err) => {
+        throw err;
+      })
+      .process((id) =>
+        this.daoService.save(
+          { id },
+          {
+            updateBountiesCount: true,
+            updateNftsCount: true,
+            allowDynamo: false,
+          },
+        ),
+      );
 
-    await this.daoRepository.save(entities);
-
-    this.logger.log(' DAO Counts migration finished.');
+    this.logger.log('DAO Counts migration finished.');
   }
 }

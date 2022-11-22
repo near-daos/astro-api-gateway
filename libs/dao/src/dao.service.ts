@@ -43,6 +43,8 @@ export interface DaoSaveOptions {
   updateTotalDaoFunds?: boolean;
   updateBountiesCount?: boolean;
   updateNftsCount?: boolean;
+  // TODO: use only for migration
+  allowDynamo?: boolean;
 }
 
 @Injectable()
@@ -300,6 +302,7 @@ export class DaoService extends TypeOrmCrudService<Dao> {
       updateTotalDaoFunds,
       updateBountiesCount,
       updateNftsCount,
+      allowDynamo,
     } = options;
 
     let entity = this.daoRepository.create(dao);
@@ -322,6 +325,7 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     if (updateBountiesCount) {
       const bountyCount = await this.bountyService.getDaoActiveBountiesCount(
         entity.id,
+        allowDynamo,
       );
 
       entity = { bountyCount, ...entity };
@@ -330,6 +334,7 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     if (updateNftsCount) {
       const nftCount = await this.nftTokenService.getAccountTokenCount(
         entity.id,
+        allowDynamo,
       );
 
       entity = { nftCount, ...entity };
