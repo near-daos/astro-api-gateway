@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BountyDynamoService } from '@sputnik-v2/bounty/bounty-dynamo.service';
 import { DaoModule } from '@sputnik-v2/dao';
@@ -13,7 +13,7 @@ import { Bounty, BountyContext } from './entities';
 @Module({
   imports: [
     TypeOrmModule.forFeature([Bounty, BountyContext]),
-    DaoModule,
+    forwardRef(() => DaoModule),
     ProposalModule,
     FeatureFlagsModule,
     DynamodbModule,

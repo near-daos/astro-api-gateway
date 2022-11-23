@@ -1,6 +1,7 @@
 import { OpensearchModule } from 'nestjs-opensearch';
 
-import { Module } from '@nestjs/common';
+import { getConnection } from 'typeorm';
+import { forwardRef, Module, OnApplicationShutdown } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { Proposal, ProposalAction, ProposalModule } from '@sputnik-v2/proposal';
@@ -107,10 +108,11 @@ import migrationScripts from './scripts';
         node: process.env.OPENSEARCH_NODE_URL,
       }),
     }),
-    DaoModule,
+    forwardRef(() => DaoModule),
     ProposalModule,
     BountyModule,
     NotificationModule,
+    forwardRef(() => BountyModule),
     NearIndexerModule,
     NearApiModule,
     SputnikModule,
@@ -121,4 +123,8 @@ import migrationScripts from './scripts';
   ],
   providers: [...migrationScripts],
 })
-export class MigrationModule {}
+export class MigrationModule implements OnApplicationShutdown {
+  async onApplicationShutdown() {
+    await getConnection(DRAFT_DB_CONNECTION).close();
+  }
+}

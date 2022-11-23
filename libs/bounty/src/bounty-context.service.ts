@@ -51,7 +51,9 @@ export class BountyContextService extends TypeOrmCrudService<BountyContext> {
   async createMultiple(
     bountyContextDtos: BountyContextDto[],
   ): Promise<BountyContext[]> {
-    await this.bountyDynamoService.saveMultipleBounties(bountyContextDtos);
+    await this.bountyDynamoService.saveMultipleBountyContexts(
+      bountyContextDtos,
+    );
     return this.bountyContextRepository.save(bountyContextDtos);
   }
 

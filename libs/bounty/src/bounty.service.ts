@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 import { BountyDynamoService } from '@sputnik-v2/bounty/bounty-dynamo.service';
-import { FindOneOptions, Repository } from 'typeorm';
-import { buildBountyId, getBlockTimestamp } from '@sputnik-v2/utils';
+import { FindOneOptions, Not, Repository } from 'typeorm';
+import { buildBountyId } from '@sputnik-v2/utils';
 import { FeatureFlags, FeatureFlagsService } from '@sputnik-v2/feature-flags';
 import { BountyClaimModel } from '@sputnik-v2/dynamodb';
 
@@ -35,7 +35,7 @@ export class BountyService extends TypeOrmCrudService<Bounty> {
         })
       )[0];
     } else {
-      return this.findOne(buildBountyId(daoId, bountyId), options);
+      return this.findOne(id, options);
     }
   }
 
@@ -51,16 +51,37 @@ export class BountyService extends TypeOrmCrudService<Bounty> {
     return bountyDto;
   }
 
-  // TODO: dynamo
   async createMultiple(bountyDtos: BountyDto[]): Promise<Bounty[]> {
-    return this.bountyRepository.save(bountyDtos);
+    const entities = this.bountyRepository.create(bountyDtos);
+    await this.bountyDynamoService.saveMultipleBounties(entities);
+    await this.bountyRepository.save(entities);
+    return entities;
+  }
+
+  async getDaoActiveBountiesCount(
+    daoId: string,
+    allowDynamo = true,
+  ): Promise<number> {
+    if (allowDynamo && (await this.useDynamoDB())) {
+      return this.bountyDynamoService.count(daoId, {
+        FilterExpression: 'times > :times',
+        ExpressionAttributeValues: {
+          ':times': 0,
+        },
+      });
+    } else {
+      return this.bountyRepository.count({
+        daoId,
+        times: Not('0'),
+      });
+    }
   }
 
   async getLastBountyClaim(
     daoId,
     bountyId,
     accountId: string,
-    untilTimestamp?: number,
+    untilTimestamp: number,
   ): Promise<BountyClaim | BountyClaimModel | null> {
     if (await this.useDynamoDB()) {
       const bounty = await this.findById(daoId, bountyId);
@@ -84,7 +105,7 @@ export class BountyService extends TypeOrmCrudService<Bounty> {
   findLastClaim(
     claims: Array<BountyClaim | BountyClaimModel>,
     accountId: string,
-    untilTimestamp = getBlockTimestamp(),
+    untilTimestamp,
   ): BountyClaim | BountyClaimModel | null {
     return claims.reduce((lastClaim, currentClaim) => {
       const currentClaimTimestamp = Number(currentClaim.startTime);

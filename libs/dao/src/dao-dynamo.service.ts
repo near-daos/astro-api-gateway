@@ -4,6 +4,7 @@ import { DaoSettings } from '@sputnik-v2/dao-settings';
 import {
   DaoIdsModel,
   DynamoEntityType,
+  mapDaoIdsToDaoIdsModel,
   mapDaoModelToDao,
   mapDaoToDaoModel,
   mapDaoVersionToDaoVersionModel,
@@ -29,15 +30,9 @@ export class DaoDynamoService {
   }
 
   async saveDaoId(daoId: string) {
-    const daoIdsModel = await this.dynamoDbService.getItemByType<DaoIdsModel>(
-      DynamoEntityType.DaoIds,
-      DynamoEntityType.DaoIds,
-      '1',
-    );
-    if (!daoIdsModel.ids?.includes(daoId)) {
-      daoIdsModel.ids.push(daoId);
-      await this.dynamoDbService.saveItem(daoIdsModel);
-    }
+    const daoIds = await this.getDaoIds();
+    daoIds.push(daoId);
+    await this.dynamoDbService.saveItem(mapDaoIdsToDaoIdsModel(daoIds));
   }
 
   async saveDaoSettings(daoSettings: DaoSettings) {
@@ -46,7 +41,7 @@ export class DaoDynamoService {
 
   async saveDaoVersion(id: string, version: DaoVersion) {
     return this.save(id, {
-      daoVersion: mapDaoVersionToDaoVersionModel(version),
+      daoVersion: version ? mapDaoVersionToDaoVersionModel(version) : undefined,
     });
   }
 
@@ -63,14 +58,12 @@ export class DaoDynamoService {
     return dao ? mapDaoModelToDao(dao) : undefined;
   }
 
-  async increment(daoId: string, field: string, value = 1) {
-    const dao = await this.get(daoId);
-    await this.save(daoId, {
-      [field]: dao[field] ? Number(dao[field]) + value : value,
-    });
-  }
-
-  async decrement(daoId: string, field: string, value = -1) {
-    return this.increment(daoId, field, value);
+  async getDaoIds() {
+    const daoIdsModel = await this.dynamoDbService.getItemByType<DaoIdsModel>(
+      DynamoEntityType.DaoIds,
+      DynamoEntityType.DaoIds,
+      '1',
+    );
+    return daoIdsModel?.ids || [];
   }
 }

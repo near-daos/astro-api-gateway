@@ -249,6 +249,9 @@ export class DynamodbService {
     items: Partial<M>[],
     tableName = this.tableName,
   ) {
+    if (!items.length) {
+      return;
+    }
     const chunkSize = 24;
     for (let i = 0; i < items.length; i += chunkSize) {
       const chunk = items.slice(i, i + chunkSize).map((Item) => ({

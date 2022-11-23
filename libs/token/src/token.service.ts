@@ -48,18 +48,14 @@ export class TokenService {
     return this.tokenRepository.save(tokenDto);
   }
 
-  async loadTokenById(tokenId: string, timestamp?: number) {
+  async loadTokenById(tokenId: string, timestamp: number) {
     const contract = this.nearApiService.getContract('fToken', tokenId);
     const metadata = await contract.ft_metadata();
     const totalSupply = await contract.ft_total_supply();
     await this.create(castToken(tokenId, metadata, totalSupply, timestamp));
   }
 
-  async loadBalanceById(
-    tokenId: string,
-    accountId: string,
-    timestamp?: number,
-  ) {
+  async loadBalanceById(tokenId: string, accountId: string, timestamp: number) {
     const contract = this.nearApiService.getContract('fToken', tokenId);
     const metadata = await contract.ft_metadata();
     const totalSupply = await contract.ft_total_supply();

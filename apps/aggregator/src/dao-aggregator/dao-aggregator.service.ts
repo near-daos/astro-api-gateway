@@ -49,13 +49,24 @@ export class DaoAggregatorService {
 
     return PromisePool.withConcurrency(10)
       .for(daos)
-      .process((dao) => this.daoService.saveWithFunds(dao));
+      .process((dao) =>
+        this.daoService.save(dao, { updateTotalDaoFunds: true }),
+      );
   }
 
   public async aggregateDaoAdditionalFields(dao: Dao): Promise<void> {
-    await this.daoService.saveWithAdditionalFields({
-      ...dao,
-      status: await this.daoService.getDaoStatus(dao),
-    });
+    const status = await this.daoService.getDaoStatus(dao);
+
+    await this.daoService.save(
+      {
+        ...dao,
+        status,
+      },
+      {
+        updateProposalsCount: true,
+        updateTotalDaoFunds: true,
+        updateBountiesCount: true,
+      },
+    );
   }
 }
