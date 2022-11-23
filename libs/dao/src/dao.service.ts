@@ -305,45 +305,43 @@ export class DaoService extends TypeOrmCrudService<Dao> {
       allowDynamo,
     } = options;
 
-    let entity = this.daoRepository.create(dao);
+    let data: Partial<DaoDto | DaoModel> = { ...dao };
 
     if (updateProposalsCount) {
       const [totalProposalCount, activeProposalCount] = await Promise.all([
-        this.proposalService.getDaoProposalCount(entity.id),
-        this.proposalService.getDaoActiveProposalCount(entity.id),
+        this.proposalService.getDaoProposalCount(dao.id),
+        this.proposalService.getDaoActiveProposalCount(dao.id),
       ]);
 
-      entity = { totalProposalCount, activeProposalCount, ...entity };
+      data = { ...data, totalProposalCount, activeProposalCount };
     }
 
     if (updateTotalDaoFunds) {
       const totalDaoFunds = await this.calculateDaoFunds(dao.id, dao.amount);
 
-      entity = { totalDaoFunds, ...entity };
+      data = { ...data, totalDaoFunds };
     }
 
     if (updateBountiesCount) {
       const bountyCount = await this.bountyService.getDaoActiveBountiesCount(
-        entity.id,
+        dao.id,
         allowDynamo,
       );
 
-      entity = { bountyCount, ...entity };
+      data = { ...data, bountyCount };
     }
 
     if (updateNftsCount) {
       const nftCount = await this.nftTokenService.getAccountTokenCount(
-        entity.id,
+        dao.id,
         allowDynamo,
       );
 
-      entity = { nftCount, ...entity };
+      data = { ...data, nftCount };
     }
 
-    await this.daoDynamoService.saveDao(entity);
-    await this.daoRepository.save(entity);
-
-    return entity;
+    await this.daoDynamoService.save(dao.id, data);
+    await this.daoRepository.save(data);
   }
 
   public async updateDaoStatus(dao: Dao): Promise<Dao> {
