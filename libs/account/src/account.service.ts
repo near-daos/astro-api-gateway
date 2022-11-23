@@ -21,6 +21,11 @@ import {
   VerificationStatus,
 } from './types';
 import { AccountNotification } from '@sputnik-v2/notification';
+import { DynamodbService } from '@sputnik-v2/dynamodb/dynamodb.service';
+import { DynamoEntityType } from '@sputnik-v2/dynamodb/types';
+import { AccountModel } from '@sputnik-v2/dynamodb/models';
+import { FeatureFlagsService } from '@sputnik-v2/feature-flags/feature-flags.service';
+import { FeatureFlags } from '@sputnik-v2/feature-flags/types';
 
 @Injectable()
 export class AccountService {
@@ -30,9 +35,16 @@ export class AccountService {
     private readonly accountRepository: Repository<Account>,
     private readonly notifiClientService: NotifiClientService,
     private readonly otpService: OtpService,
+    private readonly dynamoDbService: DynamodbService,
+    private readonly featureFlagsService: FeatureFlagsService,
   ) {}
 
+  async useDynamoDB() {
+    return this.featureFlagsService.check(FeatureFlags.NotificationDynamo);
+  }
+
   async create(addAccountDto: AccountDto): Promise<Account> {
+    await this.dynamoDbService.saveAccount(addAccountDto);
     return this.accountRepository.save(addAccountDto);
   }
 
@@ -46,8 +58,20 @@ export class AccountService {
     }
   }
 
+  async findById(accountId: string): Promise<Account | AccountModel> {
+    if (await this.useDynamoDB()) {
+      return this.dynamoDbService.getItemByType<AccountModel>(
+        accountId,
+        DynamoEntityType.Account,
+        accountId,
+      );
+    } else {
+      return this.accountRepository.findOne(accountId);
+    }
+  }
+
   async getAccount(accountId: string): Promise<AccountResponse> {
-    const account = await this.accountRepository.findOne(accountId);
+    const account = await this.findById(accountId);
     return castAccountResponse(accountId, account);
   }
 
@@ -55,7 +79,7 @@ export class AccountService {
     accountId: string,
     accountEmailDto: AccountEmailDto,
   ): Promise<AccountResponse> {
-    await this.accountRepository.save({
+    await this.create({
       ...accountEmailDto,
       accountId,
       isEmailVerified: false,
@@ -68,7 +92,7 @@ export class AccountService {
     accountId: string,
     accountPhoneDto: AccountPhoneDto,
   ): Promise<AccountResponse> {
-    await this.accountRepository.save({
+    await this.create({
       ...accountPhoneDto,
       accountId,
       isPhoneVerified: false,
@@ -82,7 +106,7 @@ export class AccountService {
 
     if (!account?.notifiUserId) {
       const notifiUserId = await this.notifiClientService.createUser(accountId);
-      account = await this.accountRepository.save({
+      account = await this.create({
         ...account,
         notifiUserId,
       });
@@ -90,7 +114,7 @@ export class AccountService {
 
     if (account.notifiAlertId) {
       await this.notifiClientService.deleteAlert(account.notifiAlertId);
-      await this.accountRepository.save({
+      await this.create({
         ...account,
         notifiAlertId: '',
       });
@@ -102,7 +126,7 @@ export class AccountService {
       account.phoneNumber,
     );
 
-    return this.accountRepository.save({
+    return this.create({
       ...account,
       notifiAlertId,
     });
@@ -112,9 +136,7 @@ export class AccountService {
     accountNotification: AccountNotification,
     template: NotifiTemplateMessageDto,
   ) {
-    const account = await this.accountRepository.findOne(
-      accountNotification.accountId,
-    );
+    const account = await this.findById(accountNotification.accountId);
     const isEmail = accountNotification.isEmail && account?.isEmailVerified;
     const isPhone = accountNotification.isPhone && account?.isPhoneVerified;
 
@@ -132,7 +154,7 @@ export class AccountService {
   }
 
   async sendEmailVerification(accountId: string): Promise<VerificationStatus> {
-    const account = await this.accountRepository.findOne(accountId);
+    const account = await this.findById(accountId);
 
     if (!account?.email) {
       throw new BadRequestException(`No email found for account: ${accountId}`);
@@ -152,7 +174,7 @@ export class AccountService {
 
     const code = await this.otpService.createOtp(account.email);
 
-    await this.notifiClientService.sendTemplateMessage(accountId, otp.hash, {
+    await this.notifiClientService.sendTemplateMessage(accountId, code, {
       emailTemplate: NotifiTemplate.Verification,
       variables: { code },
     });
@@ -163,7 +185,7 @@ export class AccountService {
   async getEmailVerificationStatus(
     accountId: string,
   ): Promise<VerificationStatus> {
-    const account = await this.accountRepository.findOne(accountId);
+    const account = await this.findById(accountId);
 
     if (!account?.email) {
       throw new BadRequestException(`No email found for account: ${accountId}`);
@@ -184,7 +206,7 @@ export class AccountService {
   }
 
   async verifyEmail(accountId: string, code: string): Promise<void> {
-    const account = await this.accountRepository.findOne(accountId);
+    const account = await this.findById(accountId);
 
     if (!account?.email) {
       throw new BadRequestException(`No email found for account: ${accountId}`);
@@ -196,14 +218,14 @@ export class AccountService {
       throw new BadRequestException(`Invalid verification code: ${code}`);
     }
 
-    await this.accountRepository.save({
+    await this.create({
       ...account,
       isEmailVerified: isVerified,
     });
   }
 
   async sendPhoneVerification(accountId: string): Promise<VerificationStatus> {
-    const account = await this.accountRepository.findOne(accountId);
+    const account = await this.findById(accountId);
 
     if (!account?.phoneNumber) {
       throw new BadRequestException(
@@ -236,7 +258,7 @@ export class AccountService {
   async getPhoneVerificationStatus(
     accountId: string,
   ): Promise<VerificationStatus> {
-    const account = await this.accountRepository.findOne(accountId);
+    const account = await this.findById(accountId);
 
     if (!account?.phoneNumber) {
       throw new BadRequestException(
@@ -259,7 +281,7 @@ export class AccountService {
   }
 
   async verifyPhone(accountId: string, code: string): Promise<void> {
-    const account = await this.accountRepository.findOne(accountId);
+    const account = await this.findById(accountId);
 
     if (!account?.phoneNumber) {
       throw new BadRequestException(
@@ -276,7 +298,7 @@ export class AccountService {
       throw new BadRequestException(`Invalid verification code: ${code}`);
     }
 
-    await this.accountRepository.save({
+    await this.create({
       ...account,
       isPhoneVerified: isVerified,
     });

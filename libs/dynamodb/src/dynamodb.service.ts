@@ -31,7 +31,8 @@ import {
   CommentModel,
   DaoModel,
   DraftProposalModel,
-  mapAccountNotificationSettingsToAccountNotificationSettingsModel,
+  mapAccountNotificationSettingsModel,
+  mapAccountNotificationSettingsToAccountNotificationSettingsItemModel,
   mapAccountNotificationToAccountNotificationModel,
   mapAccountToAccountModel,
   mapCommentToCommentModel,
@@ -122,11 +123,42 @@ export class DynamodbService {
   async saveAccountNotificationSettings(
     accountNotificationSettings: Partial<AccountNotificationSettings>,
   ) {
-    return this.saveItem<AccountNotificationSettingsModel>(
-      mapAccountNotificationSettingsToAccountNotificationSettingsModel(
-        accountNotificationSettings,
-      ),
+    const item = await this.getItemByType<AccountNotificationSettingsModel>(
+      accountNotificationSettings.accountId,
+      DynamoEntityType.AccountNotificationSettings,
+      accountNotificationSettings.accountId,
     );
+    const model =
+      item ||
+      mapAccountNotificationSettingsModel(
+        accountNotificationSettings.accountId,
+        [],
+      );
+    const updatedSettings =
+      mapAccountNotificationSettingsToAccountNotificationSettingsItemModel(
+        accountNotificationSettings,
+      );
+
+    const settingsIndex = model.settings.findIndex(
+      ({ daoId }) => daoId === accountNotificationSettings.daoId,
+    );
+
+    if (settingsIndex >= 0) {
+      model.settings[settingsIndex] = updatedSettings;
+    } else {
+      model.settings.push(updatedSettings);
+    }
+
+    return item
+      ? await this.updateItem(
+          accountNotificationSettings.accountId,
+          buildEntityId(
+            DynamoEntityType.AccountNotificationSettings,
+            accountNotificationSettings.accountId,
+          ),
+          { settings: model.settings, processingTimeStamp: Date.now() },
+        )
+      : await this.saveItem(model, false);
   }
 
   async saveComment(comment: Partial<Comment>) {
@@ -217,15 +249,19 @@ export class DynamodbService {
     items: Partial<M>[],
     tableName = this.tableName,
   ) {
-    return this.client
-      .batchWrite({
-        RequestItems: {
-          [tableName]: items.map((Item) => ({
-            PutRequest: { Item },
-          })),
-        },
-      })
-      .promise();
+    const chunkSize = 24;
+    for (let i = 0; i < items.length; i += chunkSize) {
+      const chunk = items.slice(i, i + chunkSize).map((Item) => ({
+        PutRequest: { Item },
+      }));
+      await this.client
+        .batchWrite({
+          RequestItems: {
+            [tableName]: chunk,
+          },
+        })
+        .promise();
+    }
   }
 
   async updateItem(

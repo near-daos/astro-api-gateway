@@ -175,12 +175,17 @@ export class NotificationController {
   })
   @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
-  @Patch('/account-notifications/:id')
+  @Patch('/account-notifications/:accountId/:id')
   async updateAccountNotification(
-    @Param() { id }: FindOneParams,
+    @Param('accountId') accountId: string,
+    @Param('id') id: string,
     @Body() body: UpdateAccountNotificationDto,
   ): Promise<AccountNotification> {
-    return this.accountNotificationService.updateAccountNotification(id, body);
+    return this.accountNotificationService.updateAccountNotification(
+      accountId,
+      id,
+      body,
+    );
   }
 
   @ApiResponse({

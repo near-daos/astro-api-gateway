@@ -41,4 +41,5 @@ export const PROPOSAL_DESC_SEPARATOR = '$$$$';
 
 export const COMMENT_DELETE_VOTES_REQUIRED = 3;
 
-export const OTP_TTL = 900000; // 15 minutes
+export const OTP_TTL = 900; // 15 minutes in seconds
+export const NOTIFICATION_TTL = 900000; // 2 weeks in seconds

@@ -151,12 +151,14 @@ export class TokenService {
   ): Promise<Array<TokenBalance | TokenBalanceModel>> {
     if (await this.useDynamoDB()) {
       return (
-        await this.dynamodbService.getItemByType<DaoModel>(
-          accountId,
-          DynamoEntityType.Dao,
-          accountId,
-        )
-      ).tokens;
+        (
+          await this.dynamodbService.getItemByType<DaoModel>(
+            accountId,
+            DynamoEntityType.Dao,
+            accountId,
+          )
+        )?.tokens || []
+      );
     } else {
       return this.tokenBalanceRepository.find({
         where: { accountId },
