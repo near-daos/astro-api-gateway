@@ -21,7 +21,7 @@ import {
   SharedProposalTemplate,
 } from '@sputnik-v2/proposal-template/entities';
 import { Subscription } from '@sputnik-v2/subscription/entities';
-import { buildEntityId } from '@sputnik-v2/utils';
+import { buildEntityId, getChunks } from '@sputnik-v2/utils';
 
 import {
   AccountModel,
@@ -244,21 +244,29 @@ export class DynamodbService {
       .promise();
   }
 
+  async batchPutChunked<M>(
+      items: PartialEntity<M>[],
+      tableName = this.tableName,
+  ): Promise<DocumentClient.BatchWriteItemOutput[]> {
+    if (!items.length) {
+      return;
+    }
+    const chunks = getChunks(items, 24);
+    return await Promise.all(chunks.map(chunk => this.batchPut<M>(chunk, tableName));
+  }
+
   async batchPut<M>(
-    items: PartialEntity<M>[],
-    tableName = this.tableName,
-  ): Promise<undefined> {
+      items: PartialEntity<M>[],
+      tableName = this.tableName,
+  ): Promise<DocumentClient.BatchWriteItemOutput> {
     if (!items.length) {
       return;
     }
     const timestamp = Date.now();
-
-    const chunkSize = 24;
-    for (let i = 0; i < items.length; i += chunkSize) {
-      await this.client
+    return this.client
         .batchWrite({
           RequestItems: {
-            [tableName]: items.slice(i, i + chunkSize).map((item) => ({
+            [tableName]: items.map((item) => ({
               PutRequest: {
                 Item: {
                   createTimestamp: timestamp,
@@ -270,7 +278,6 @@ export class DynamodbService {
           },
         })
         .promise();
-    }
   }
 
   async batchGet<M>(

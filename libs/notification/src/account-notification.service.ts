@@ -43,7 +43,7 @@ export class AccountNotificationService extends TypeOrmCrudService<AccountNotifi
     const models = accountNotificationsDto.map((accountNotification) =>
       mapAccountNotificationToAccountNotificationModel(accountNotification),
     );
-    await this.dynamoDbService.batchPut(models);
+    await this.dynamoDbService.batchPutChunked(models);
     await this.accountNotificationIdsDynamoService.setAccountsNotificationIds(
       models,
     );

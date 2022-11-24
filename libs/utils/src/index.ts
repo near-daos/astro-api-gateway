@@ -280,3 +280,13 @@ export const getChunkCount = (total: BigInt, chunkSize: number): number => {
 export const stringToBoolean = (value?: string): boolean | undefined => {
   return typeof value === 'string' ? value === 'true' : undefined;
 };
+
+export const getChunks = (arr: Array<any>, chunkSize: number) => {
+  const chunks = [];
+
+  for (let i = 0; i < arr.length; i += chunkSize) {
+    chunks.push(arr.slice(i, i + chunkSize));
+  }
+
+  return chunks;
+};
