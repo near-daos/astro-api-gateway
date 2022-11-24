@@ -20,7 +20,7 @@ export class DraftProposalModel extends BaseModel {
   viewAccounts: string[];
   saveAccounts: string[];
   replies: number;
-  history: DraftProposalHistoryModel[];
+  history: Partial<DraftProposalHistoryModel>[];
   createTimestamp: number;
   updateTimestamp: number;
 }
@@ -70,7 +70,7 @@ export function mapDraftProposalToDraftProposalModel(
 
 export function mapDraftProposalHistoryToDraftProposalHistoryModel(
   draftProposalHistory: DraftProposalHistory,
-): DraftProposalHistoryModel {
+): Partial<DraftProposalHistoryModel> {
   return {
     id: draftProposalHistory.id.toString(),
     daoId: draftProposalHistory.daoId,

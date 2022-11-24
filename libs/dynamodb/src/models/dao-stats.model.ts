@@ -1,7 +1,7 @@
 import { DaoStats } from '@sputnik-v2/stats';
 import { buildEntityId } from '@sputnik-v2/utils';
 import { BaseModel } from './base.model';
-import { DynamoEntityType } from '../types';
+import { DynamoEntityType, PartialEntity } from '../types';
 
 export class DaoStatsModel extends BaseModel {
   id: string;
@@ -33,7 +33,9 @@ export function mapDaoStatsToDaoStatsModel(stats: DaoStats): DaoStatsModel {
   };
 }
 
-export function mapDaoStatsModelToDaoStats(stats: DaoStatsModel): DaoStats {
+export function mapDaoStatsModelToDaoStats(
+  stats: PartialEntity<DaoStatsModel>,
+): DaoStats {
   return {
     id: stats.id,
     daoId: stats.partitionId,

@@ -21,7 +21,7 @@ import { Proposal, ProposalDto } from '@sputnik-v2/proposal';
 import { TransactionAction } from '@sputnik-v2/transaction-handler';
 import { AccountNotification, Notification } from '@sputnik-v2/notification';
 import { Comment } from '@sputnik-v2/comment';
-import { ProposalModel } from '@sputnik-v2/dynamodb';
+import { PartialEntity, ProposalModel } from '@sputnik-v2/dynamodb';
 
 import { BaseMessage } from './messages/base.event';
 import { DraftCommentResponse } from '@sputnik-v2/draft-comment';
@@ -54,7 +54,7 @@ export class EventService {
   }
 
   public async sendProposalUpdateNotificationEvent(
-    proposal: ProposalDto | Proposal | ProposalModel,
+    proposal: ProposalDto | Proposal | PartialEntity<ProposalModel>,
     txAction: TransactionAction,
   ): Promise<any> {
     const message = new BaseMessage(EVENT_PROPOSAL_UPDATE_NOTIFICATION, {
@@ -109,14 +109,14 @@ export class EventService {
   }
 
   public async sendUpdateDraftCommentEvent(
-    comment: DraftCommentResponse | CommentModel,
+    comment: DraftCommentResponse | PartialEntity<CommentModel>,
   ): Promise<void> {
     const message = new BaseMessage(EVENT_DRAFT_UPDATE_COMMENT, { comment });
     return this.sendEvent(this.draftEventClient, message);
   }
 
   public async sendDeleteDraftCommentEvent(
-    comment: DraftCommentResponse | CommentModel,
+    comment: DraftCommentResponse | PartialEntity<CommentModel>,
   ): Promise<void> {
     const message = new BaseMessage(EVENT_DRAFT_DELETE_COMMENT, { comment });
     return this.sendEvent(this.draftEventClient, message);

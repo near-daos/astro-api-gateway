@@ -10,7 +10,7 @@ import {
 import { DaoSettingsDto } from '@sputnik-v2/dao-settings';
 import { buildEntityId } from '@sputnik-v2/utils';
 import { TransactionModel } from './transaction.model';
-import { DynamoEntityType } from '../types';
+import { DynamoEntityType, PartialEntity } from '../types';
 import { TokenBalanceModel } from '../models';
 
 export class DaoModel extends TransactionModel {
@@ -122,7 +122,7 @@ export function mapDaoToDaoModel(dao: Dao): DaoModel {
   };
 }
 
-export function mapDaoModelToDao(dao: DaoModel): Dao {
+export function mapDaoModelToDao(dao: PartialEntity<DaoModel>): Dao {
   const daoEntity = {
     id: dao.partitionId,
     config: dao.config,

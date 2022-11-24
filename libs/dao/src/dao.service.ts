@@ -21,7 +21,11 @@ import {
 import { NFTTokenService, TokenService } from '@sputnik-v2/token';
 import { SearchQuery } from '@sputnik-v2/common';
 import { NearApiService } from '@sputnik-v2/near-api';
-import { DaoModel, TokenBalanceModel } from '@sputnik-v2/dynamodb';
+import {
+  DaoModel,
+  PartialEntity,
+  TokenBalanceModel,
+} from '@sputnik-v2/dynamodb';
 import { FeatureFlags, FeatureFlagsService } from '@sputnik-v2/feature-flags';
 
 import {
@@ -93,7 +97,7 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     }));
   }
 
-  async findById(id: string): Promise<Dao | DaoModel> {
+  async findById(id: string): Promise<Dao | PartialEntity<DaoModel>> {
     if (await this.useDynamoDB()) {
       return this.daoDynamoService.get(id);
     } else {
