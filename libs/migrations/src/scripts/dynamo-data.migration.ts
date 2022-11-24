@@ -1,7 +1,12 @@
 import { DateTime } from 'luxon';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindManyOptions, MongoRepository, Repository } from 'typeorm';
+import {
+  FindManyOptions,
+  MongoRepository,
+  MoreThan,
+  Repository,
+} from 'typeorm';
 import PromisePool from '@supercharge/promise-pool';
 import {
   DaoIdsModel,
@@ -163,10 +168,13 @@ export class DynamoDataMigration implements Migration {
   }
 
   public async migrateAccountNotifications(): Promise<void> {
+    const twoWeeksAgo = new Date();
+    twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
     for await (const accountNotifications of this.migrateEntity<AccountNotification>(
       AccountNotification.name,
       this.accountNotificationRepository,
       {
+        where: { createdAt: MoreThan(twoWeeksAgo) },
         relations: ['notification'],
       },
     )) {
