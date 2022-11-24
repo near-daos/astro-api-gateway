@@ -32,7 +32,7 @@ import {
 } from './dto';
 import { Proposal } from './entities';
 import { ProposalStatus, ProposalVoteStatus } from './types';
-import { ProposalModel } from '@sputnik-v2/dynamodb';
+import { PartialEntity, ProposalModel } from '@sputnik-v2/dynamodb';
 import { FeatureFlags, FeatureFlagsService } from '@sputnik-v2/feature-flags';
 import { ProposalDynamoService } from './proposal-dynamo.service';
 
@@ -62,7 +62,7 @@ export class ProposalService extends BaseTypeOrmCrudService<Proposal> {
   async findById(
     daoId: string,
     proposalId: number,
-  ): Promise<Proposal | ProposalModel> {
+  ): Promise<Proposal | PartialEntity<ProposalModel>> {
     if (await this.useDynamoDB()) {
       return this.proposalDynamoService.get(daoId, String(proposalId));
     } else {

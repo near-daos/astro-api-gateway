@@ -9,6 +9,7 @@ import {
   DaoModel,
   DynamodbService,
   DynamoEntityType,
+  PartialEntity,
   TokenBalanceModel,
   TokenPriceModel,
 } from '@sputnik-v2/dynamodb';
@@ -115,7 +116,9 @@ export class TokenService {
     };
   }
 
-  async getNearToken(): Promise<TokenResponse | TokenPriceModel> {
+  async getNearToken(): Promise<
+    TokenResponse | PartialEntity<TokenPriceModel>
+  > {
     if (await this.useDynamoDB()) {
       return this.dynamodbService.getItemByType<TokenPriceModel>(
         'NEAR',

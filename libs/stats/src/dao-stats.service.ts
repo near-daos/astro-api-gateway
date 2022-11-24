@@ -5,7 +5,7 @@ import { Repository } from 'typeorm';
 import { DateTime } from 'luxon';
 
 import { Dao, DaoService } from '@sputnik-v2/dao';
-import { DaoModel } from '@sputnik-v2/dynamodb';
+import { DaoModel, PartialEntity } from '@sputnik-v2/dynamodb';
 import { FeatureFlags, FeatureFlagsService } from '@sputnik-v2/feature-flags';
 import { buildDaoStatsId, getGrowth } from '@sputnik-v2/utils';
 
@@ -47,7 +47,7 @@ export class DaoStatsService {
   async getDaoStats(daoId: string): Promise<DaoStatsDto> {
     const timestamp = DateTime.now().startOf('day').toMillis();
 
-    let dao: Dao | DaoModel;
+    let dao: Dao | PartialEntity<DaoModel>;
 
     if (await this.useDynamoDB()) {
       dao = await this.daoDynamoService.getDao(daoId);
