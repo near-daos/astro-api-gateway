@@ -1,7 +1,6 @@
-import { DynamoEntityType, EntityId } from '.';
+import { DynamoEntityType } from './dynamo-entity-type';
+import { EntityKey } from './entity-key';
 
-export class BaseEntity {
-  partitionId: string;
-  entityId: EntityId;
+export class BaseEntity extends EntityKey {
   entityType: DynamoEntityType;
 }

@@ -52,6 +52,7 @@ import {
   CountItemsQuery,
   DynamoEntityType,
   EntityId,
+  EntityKey,
   PartialEntity,
   QueryItemsQuery,
 } from './types';
@@ -233,6 +234,28 @@ export class DynamodbService {
         },
       })
       .promise();
+  }
+
+  async batchGet<M>(
+    keys: EntityKey[],
+    tableName = this.tableName,
+  ): Promise<PartialEntity<M>[]> {
+    if (!keys.length) {
+      return [];
+    }
+    return this.client
+      .batchGet({
+        RequestItems: {
+          [tableName]: {
+            Keys: keys.map(({ partitionId, entityId }) => ({
+              partitionId,
+              entityId,
+            })),
+          },
+        },
+      })
+      .promise()
+      .then(({ Responses }) => Responses[tableName] as PartialEntity<M>[]);
   }
 
   async updateItem<M>(
