@@ -7,11 +7,10 @@ import {
   AccountNotificationModel,
   mapAccountNotificationToAccountNotificationModel,
 } from '@sputnik-v2/dynamodb/models';
-import { DynamoEntityType } from '@sputnik-v2/dynamodb/types';
+import { DynamoEntityType, PartialEntity } from '@sputnik-v2/dynamodb/types';
 import { FeatureFlagsService } from '@sputnik-v2/feature-flags/feature-flags.service';
 import { FeatureFlags } from '@sputnik-v2/feature-flags/types';
 import { UpdateResult } from 'typeorm/query-builder/result/UpdateResult';
-import { buildEntityId } from '@sputnik-v2/utils';
 
 import {
   AccountNotificationDto,
@@ -43,7 +42,7 @@ export class AccountNotificationService extends TypeOrmCrudService<AccountNotifi
     const models = accountNotificationsDto.map((accountNotification) =>
       mapAccountNotificationToAccountNotificationModel(accountNotification),
     );
-    await this.dynamoDbService.batchPutChunked(models);
+    await this.dynamoDbService.batchPut(models);
     await this.accountNotificationIdsDynamoService.setAccountsNotificationIds(
       models,
     );
@@ -53,7 +52,7 @@ export class AccountNotificationService extends TypeOrmCrudService<AccountNotifi
   async findById(
     accountId: string,
     id: string,
-  ): Promise<AccountNotification | AccountNotificationModel> {
+  ): Promise<AccountNotification | PartialEntity<AccountNotificationModel>> {
     if (await this.useDynamoDB()) {
       return this.dynamoDbService.getItemByType<AccountNotificationModel>(
         accountId,
@@ -82,10 +81,7 @@ export class AccountNotificationService extends TypeOrmCrudService<AccountNotifi
       isRead: updateDto.isRead,
       isArchived: updateDto.isArchived,
     };
-    await this.dynamoDbService.saveItem<AccountNotificationModel>(
-      updatedModel,
-      false,
-    );
+    await this.dynamoDbService.saveItem<AccountNotificationModel>(updatedModel);
     await this.accountNotificationIdsDynamoService.setAccountNotificationIds(
       updatedModel.partitionId,
       [updatedModel],
@@ -106,9 +102,10 @@ export class AccountNotificationService extends TypeOrmCrudService<AccountNotifi
 
     if (accountNotificationIds) {
       for (const id of accountNotificationIds.notReadIds) {
-        await this.dynamoDbService.updateItem(
+        await this.dynamoDbService.updateItemByType<AccountNotificationModel>(
           accountId,
-          buildEntityId(DynamoEntityType.AccountNotification, id),
+          DynamoEntityType.AccountNotification,
+          id,
           { isRead: true },
         );
         await this.accountNotificationIdsDynamoService.readAll(accountId);
@@ -134,9 +131,10 @@ export class AccountNotificationService extends TypeOrmCrudService<AccountNotifi
 
     if (accountNotificationIds) {
       for (const id of accountNotificationIds.notReadIds) {
-        await this.dynamoDbService.updateItem(
+        await this.dynamoDbService.updateItemByType<AccountNotificationModel>(
           accountId,
-          buildEntityId(DynamoEntityType.AccountNotification, id),
+          DynamoEntityType.AccountNotification,
+          id,
           { isArchived: true },
         );
         await this.accountNotificationIdsDynamoService.archiveAll(accountId);

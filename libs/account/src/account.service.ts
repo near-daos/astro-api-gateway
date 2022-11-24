@@ -60,11 +60,11 @@ export class AccountService {
 
   async findById(accountId: string): Promise<Account | AccountModel> {
     if (await this.useDynamoDB()) {
-      return this.dynamoDbService.getItemByType<AccountModel>(
+      return (await this.dynamoDbService.getItemByType<AccountModel>(
         accountId,
         DynamoEntityType.Account,
         accountId,
-      );
+      )) as AccountModel;
     } else {
       return this.accountRepository.findOne(accountId);
     }

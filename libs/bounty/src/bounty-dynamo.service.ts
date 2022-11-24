@@ -23,7 +23,7 @@ export class BountyDynamoService {
   }
 
   async saveMultiple(bounty) {
-    return this.dynamoDbService.batchPutChunked<BountyModel>(bounty);
+    return this.dynamoDbService.batchPut<BountyModel>(bounty);
   }
 
   async saveBounty(bounty: Partial<Bounty>, proposalId?: number) {
@@ -33,13 +33,13 @@ export class BountyDynamoService {
   }
 
   async saveMultipleBounties(bounties: Partial<Bounty>[], proposalId?: number) {
-    return this.dynamoDbService.batchPutChunked<BountyModel>(
+    return this.dynamoDbService.batchPut<BountyModel>(
       bounties.map((bounty) => mapBountyToBountyModel(bounty, proposalId)),
     );
   }
 
   async saveMultipleBountyContexts(bountyContexts: BountyContextDto[]) {
-    return this.dynamoDbService.batchPutChunked(
+    return this.dynamoDbService.batchPut(
       bountyContexts.map((bountyContext) =>
         mapBountyContextToBountyModel(bountyContext),
       ),

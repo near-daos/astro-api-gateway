@@ -18,7 +18,7 @@ export class NFTTokenDynamoService {
   }
 
   async saveMultiple(nfts: (NFTToken | NFTTokenDto)[]) {
-    return this.dynamoDbService.batchPutChunked<NftModel>(
+    return this.dynamoDbService.batchPut<NftModel>(
       nfts.map((nft) => mapNftTokenToNftModel(nft)),
     );
   }

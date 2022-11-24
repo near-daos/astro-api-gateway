@@ -60,7 +60,7 @@ export class OtpService {
         DynamoEntityType.Otp,
         id,
       );
-      return otp?.createdAt > expireTime ? otp : null;
+      return otp?.createdAt > expireTime ? (otp as OtpItem) : null;
     } else {
       return this.otpRepository.findOne({
         key: id,

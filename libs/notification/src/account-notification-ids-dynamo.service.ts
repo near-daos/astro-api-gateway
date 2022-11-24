@@ -7,8 +7,7 @@ import {
   AccountNotificationModel,
   mapAccountNotificationIdsModel,
 } from '@sputnik-v2/dynamodb/models';
-import { DynamoEntityType } from '@sputnik-v2/dynamodb/types';
-import { buildEntityId } from '@sputnik-v2/utils';
+import { DynamoEntityType, PartialEntity } from '@sputnik-v2/dynamodb/types';
 
 @Injectable()
 export class AccountNotificationIdsDynamoService {
@@ -20,7 +19,7 @@ export class AccountNotificationIdsDynamoService {
 
   async getAccountsNotificationIds(
     accountId: string,
-  ): Promise<AccountNotificationIdsModel | null> {
+  ): Promise<PartialEntity<AccountNotificationIdsModel> | undefined> {
     return this.dynamoDbService.getItemByType<AccountNotificationIdsModel>(
       accountId,
       DynamoEntityType.AccountNotificationIds,
@@ -29,9 +28,10 @@ export class AccountNotificationIdsDynamoService {
   }
 
   async readAll(accountId: string) {
-    await this.dynamoDbService.updateItem(
+    await this.dynamoDbService.updateItemByType<AccountNotificationIdsModel>(
       accountId,
-      buildEntityId(DynamoEntityType.AccountNotificationIds, accountId),
+      DynamoEntityType.AccountNotificationIds,
+      accountId,
       {
         notReadIds: [],
       },
@@ -39,9 +39,10 @@ export class AccountNotificationIdsDynamoService {
   }
 
   async archiveAll(accountId: string) {
-    await this.dynamoDbService.updateItem(
+    await this.dynamoDbService.updateItemByType<AccountNotificationIdsModel>(
       accountId,
-      buildEntityId(DynamoEntityType.AccountNotificationIds, accountId),
+      DynamoEntityType.AccountNotificationIds,
+      accountId,
       {
         notArchivedIds: [],
       },
@@ -97,11 +98,11 @@ export class AccountNotificationIdsDynamoService {
       model = this.setAccountNotificationId(model, accountNotification);
     }
 
-    await this.dynamoDbService.saveItem(model, false);
+    await this.dynamoDbService.saveItem(model);
   }
 
   private setAccountNotificationId(
-    item: AccountNotificationIdsModel,
+    item: PartialEntity<AccountNotificationIdsModel>,
     accountNotification: Partial<AccountNotificationModel>,
   ) {
     let { notReadIds, notArchivedIds } = item;

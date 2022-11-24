@@ -140,16 +140,7 @@ export class DynamodbService {
       model.settings.push(updatedSettings);
     }
 
-    return item
-      ? await this.updateItem(
-          accountNotificationSettings.accountId,
-          buildEntityId(
-            DynamoEntityType.AccountNotificationSettings,
-            accountNotificationSettings.accountId,
-          ),
-          { settings: model.settings, processingTimeStamp: Date.now() },
-        )
-      : await this.saveItem(model, false);
+    return this.saveItem<AccountNotificationSettingsModel>(model);
   }
 
   async saveComment(comment: Partial<Comment>) {
@@ -244,40 +235,42 @@ export class DynamodbService {
       .promise();
   }
 
-  async batchPutChunked<M>(
-      items: PartialEntity<M>[],
-      tableName = this.tableName,
+  async batchPut<M>(
+    items: PartialEntity<M>[],
+    tableName = this.tableName,
   ): Promise<DocumentClient.BatchWriteItemOutput[]> {
     if (!items.length) {
       return;
     }
-    const chunks = getChunks(items, 24);
-    return await Promise.all(chunks.map(chunk => this.batchPut<M>(chunk, tableName));
+    const chunks = getChunks(items, 25);
+    return Promise.all(
+      chunks.map((chunk) => this._batchPut<M>(chunk, tableName)),
+    );
   }
 
-  async batchPut<M>(
-      items: PartialEntity<M>[],
-      tableName = this.tableName,
+  private async _batchPut<M>(
+    items: PartialEntity<M>[],
+    tableName = this.tableName,
   ): Promise<DocumentClient.BatchWriteItemOutput> {
     if (!items.length) {
       return;
     }
     const timestamp = Date.now();
     return this.client
-        .batchWrite({
-          RequestItems: {
-            [tableName]: items.map((item) => ({
-              PutRequest: {
-                Item: {
-                  createTimestamp: timestamp,
-                  processingTimeStamp: timestamp,
-                  ...item,
-                },
+      .batchWrite({
+        RequestItems: {
+          [tableName]: items.map((item) => ({
+            PutRequest: {
+              Item: {
+                createTimestamp: timestamp,
+                processingTimeStamp: timestamp,
+                ...item,
               },
-            })),
-          },
-        })
-        .promise();
+            },
+          })),
+        },
+      })
+      .promise();
   }
 
   async batchGet<M>(
@@ -373,7 +366,7 @@ export class DynamodbService {
     entityType: DynamoEntityType,
     id: string,
     tableName = this.tableName,
-  ): Promise<PartialEntity<M> | null> {
+  ): Promise<PartialEntity<M> | undefined> {
     return this.getItemById(
       partitionId,
       buildEntityId(entityType, id),
