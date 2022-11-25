@@ -35,8 +35,8 @@ export function mapAccountNotificationSettingsModel(
       accountId,
     ),
     entityType: DynamoEntityType.AccountNotificationSettings,
-    processingTimeStamp: Date.now(),
     createTimestamp: Date.now(),
+    processingTimeStamp: Date.now(),
     isArchived: false,
     accountId,
     settings: accountNotificationSettings.map((setting) =>
@@ -48,7 +48,7 @@ export function mapAccountNotificationSettingsModel(
 }
 
 export function mapAccountNotificationSettingsToAccountNotificationSettingsItemModel(
-  accountNotificationSettings: Partial<AccountNotificationSettings>,
+  accountNotificationSettings: AccountNotificationSettings,
 ): AccountNotificationSettingsItemModel {
   return {
     id: accountNotificationSettings.id,

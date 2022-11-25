@@ -9,17 +9,18 @@ import {
 export function castAddBounty({
   dao,
   proposal,
-  bounty,
+  bountyData,
   bountyId,
   transactionHash,
   timestamp,
 }): BountyDto {
   return {
-    ...camelcaseKeys(bounty),
+    ...camelcaseKeys(bountyData),
     id: buildBountyId(dao.id, bountyId),
     bountyId: bountyId,
     daoId: dao.id,
     proposalId: proposal.id,
+    proposalIndex: proposal.proposalId,
     dao: { id: dao.id },
     numberOfClaims: 0,
     bountyClaims: [],

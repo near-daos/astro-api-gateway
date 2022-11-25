@@ -4,6 +4,7 @@ export * from './dao-response.dto';
 export * from './dao-page-response.dto';
 export * from './account-dao-response.dto';
 export * from './dao-sputnik.dto';
+export * from './dao-version.dto';
 export * from './policy.dto';
 export * from './role.dto';
 export * from './search-member.dto';

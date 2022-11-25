@@ -13,19 +13,33 @@ export class AccountModel extends BaseModel {
   notifiAlertId?: string;
 }
 
-export function mapAccountToAccountModel(
-  account: Partial<Account> | AccountDto,
-): AccountModel {
+export function mapAccountDtoToAccountModel(account: AccountDto): AccountModel {
+  return {
+    partitionId: account.accountId,
+    entityId: buildEntityId(DynamoEntityType.Account, account.accountId),
+    entityType: DynamoEntityType.Account,
+    accountId: account.accountId,
+    isArchived: false,
+    createTimestamp: Date.now(),
+    processingTimeStamp: Date.now(),
+    email: account.email,
+    isEmailVerified: account.isEmailVerified,
+    phoneNumber: account.phoneNumber,
+    isPhoneVerified: account.isPhoneVerified,
+    notifiUserId: account.notifiUserId,
+    notifiAlertId: account.notifiAlertId,
+  };
+}
+
+export function mapAccountToAccountModel(account: Account): AccountModel {
   return {
     partitionId: account.accountId,
     entityId: buildEntityId(DynamoEntityType.Account, account.accountId),
     entityType: DynamoEntityType.Account,
     accountId: account.accountId,
     isArchived: !!account.isArchived,
-    processingTimeStamp: Date.now(),
-    createTimestamp: account.createdAt
-      ? new Date(account.createdAt).getTime()
-      : undefined,
+    createTimestamp: account.updatedAt.getTime(),
+    processingTimeStamp: account.createdAt.getTime(),
     email: account.email,
     isEmailVerified: account.isEmailVerified,
     phoneNumber: account.phoneNumber,

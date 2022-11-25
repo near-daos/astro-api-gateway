@@ -1,11 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { BountyContextDto } from '@sputnik-v2/bounty/dto';
-import { Bounty } from '@sputnik-v2/bounty/entities';
+import { BountyContextDto, BountyDto } from '@sputnik-v2/bounty/dto';
 import { DynamodbService } from '@sputnik-v2/dynamodb/dynamodb.service';
 import {
   BountyModel,
-  mapBountyContextToBountyModel,
-  mapBountyToBountyModel,
+  mapBountyContextDtoToBountyModel,
+  mapBountyDtoToBountyModel,
 } from '@sputnik-v2/dynamodb/models';
 import { DynamoEntityType, QueryItemsQuery } from '@sputnik-v2/dynamodb/types';
 
@@ -26,28 +25,23 @@ export class BountyDynamoService {
     return this.dynamoDbService.batchPut<BountyModel>(bounty);
   }
 
-  async saveBounty(bounty: Partial<Bounty>, proposalId?: number) {
+  async saveBounty(bountyDto: BountyDto) {
     return this.dynamoDbService.saveItem<BountyModel>(
-      mapBountyToBountyModel(bounty, proposalId),
+      mapBountyDtoToBountyModel(bountyDto),
     );
   }
 
-  async saveMultipleBounties(bounties: Partial<Bounty>[], proposalId?: number) {
-    return this.dynamoDbService.batchPut<BountyModel>(
-      bounties.map((bounty) => mapBountyToBountyModel(bounty, proposalId)),
-    );
-  }
-
-  async saveMultipleBountyContexts(bountyContexts: BountyContextDto[]) {
-    return this.dynamoDbService.batchPut(
-      bountyContexts.map((bountyContext) =>
-        mapBountyContextToBountyModel(bountyContext),
-      ),
+  async saveBountyContext(
+    bountyContext: BountyContextDto,
+    proposalIndex: number,
+  ) {
+    return this.dynamoDbService.saveItem<BountyModel>(
+      mapBountyContextDtoToBountyModel(bountyContext, proposalIndex),
     );
   }
 
   async archive(daoId: string, proposalId: number, isArchived = true) {
-    return this.dynamoDbService.archiveItemByType(
+    return this.dynamoDbService.archiveItemByType<BountyModel>(
       daoId,
       DynamoEntityType.Bounty,
       String(proposalId),

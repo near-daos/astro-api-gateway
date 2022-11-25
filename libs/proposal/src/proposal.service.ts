@@ -72,16 +72,12 @@ export class ProposalService extends BaseTypeOrmCrudService<Proposal> {
     }
   }
 
-  async create(proposalDto: ProposalDto): Promise<string> {
-    const entity = this.proposalRepository.create({
+  async create(proposalDto: ProposalDto): Promise<void> {
+    await this.proposalDynamoService.saveProposalDto(proposalDto);
+    await this.proposalRepository.save({
       ...proposalDto,
       kind: proposalDto.kind.kind,
     });
-
-    await this.proposalDynamoService.saveProposal(entity);
-    await this.proposalRepository.save(entity);
-
-    return entity.id;
   }
 
   createMultiple(proposalDtos: ProposalDto[]): Promise<Proposal[]> {

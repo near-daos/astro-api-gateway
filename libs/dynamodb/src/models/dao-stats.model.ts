@@ -20,7 +20,8 @@ export function mapDaoStatsToDaoStatsModel(stats: DaoStats): DaoStatsModel {
     entityId: buildEntityId(DynamoEntityType.DaoStats, stats.id),
     entityType: DynamoEntityType.DaoStats,
     isArchived: stats.isArchived,
-    processingTimeStamp: Date.now(),
+    createTimestamp: stats.createdAt.getTime(),
+    processingTimeStamp: stats.updatedAt.getTime(),
     id: stats.id,
     timestamp: stats.timestamp,
     totalDaoFunds: stats.totalDaoFunds,
@@ -29,7 +30,6 @@ export function mapDaoStatsToDaoStatsModel(stats: DaoStats): DaoStatsModel {
     nftCount: stats.nftCount,
     activeProposalCount: stats.activeProposalCount,
     totalProposalCount: stats.totalProposalCount,
-    createTimestamp: stats.createdAt.getTime(),
   };
 }
 

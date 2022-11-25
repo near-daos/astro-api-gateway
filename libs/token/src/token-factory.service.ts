@@ -1,4 +1,9 @@
 import { Account, Contract } from 'near-api-js';
+import {
+  NearFTokenContract,
+  NearNfTokenContract,
+  NearTokenFactoryContract,
+} from '@sputnik-v2/near-api';
 import camelcaseKeys from 'camelcase-keys';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import PromisePool from '@supercharge/promise-pool';
@@ -12,7 +17,7 @@ import { TokenMetadataDto, NFTTokenDto } from './dto';
 export class TokenFactoryService {
   private readonly logger = new Logger(TokenFactoryService.name);
 
-  private factoryContract!: Contract & any;
+  private factoryContract!: NearTokenFactoryContract;
 
   private account!: Account;
 
@@ -100,17 +105,17 @@ export class TokenFactoryService {
     );
   }
 
-  private getFTContract(contractId: string): Contract & any {
+  private getFTContract(contractId: string): NearFTokenContract {
     return new Contract(this.account, contractId, {
       viewMethods: ['ft_balance_of', 'ft_metadata'],
       changeMethods: [],
-    });
+    }) as NearFTokenContract;
   }
 
-  private getNFTContract(contractId: string): Contract & any {
+  private getNFTContract(contractId: string): NearNfTokenContract {
     return new Contract(this.account, contractId, {
       viewMethods: ['nft_tokens_for_owner', 'nft_metadata'],
       changeMethods: [],
-    });
+    }) as NearNfTokenContract;
   }
 }

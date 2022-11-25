@@ -1,5 +1,6 @@
 import {
   AccountNotification,
+  AccountNotificationDto,
   Notification,
   NotificationStatus,
   NotificationType,
@@ -7,7 +8,7 @@ import {
 import { buildEntityId } from '@sputnik-v2/utils';
 import { NOTIFICATION_TTL } from '@sputnik-v2/common';
 import { BaseModel } from './base.model';
-import { BaseEntity, DynamoEntityType } from '../types';
+import { DynamoEntityType } from '../types';
 
 export class AccountNotificationModel extends BaseModel {
   id: string;
@@ -17,7 +18,7 @@ export class AccountNotificationModel extends BaseModel {
   isEmail: boolean;
   isMuted: boolean;
   isRead: boolean;
-  ttl?: number;
+  ttl: number;
 }
 
 export class NotificationModel {
@@ -30,23 +31,18 @@ export class NotificationModel {
   timestamp: number;
 }
 
-export function mapAccountNotificationToAccountNotificationModel(
-  accountNotification: Partial<AccountNotification | AccountNotificationModel>,
-): Partial<AccountNotificationModel> & BaseEntity {
-  const partitionId =
-    (accountNotification as AccountNotificationModel).partitionId ||
-    accountNotification.accountId;
-  const ttl =
-    (accountNotification as AccountNotificationModel).ttl ||
-    Math.round(Date.now() / 1000) + NOTIFICATION_TTL; // expires after 2 weeks
+export function mapAccountNotificationDtoToAccountNotificationModel(
+  accountNotification: AccountNotificationDto,
+): AccountNotificationModel {
   return {
-    partitionId,
+    partitionId: accountNotification.accountId,
     entityId: buildEntityId(
       DynamoEntityType.AccountNotification,
       accountNotification.id,
     ),
     entityType: DynamoEntityType.AccountNotification,
-    isArchived: !!accountNotification.isArchived,
+    isArchived: false,
+    createTimestamp: Date.now(),
     processingTimeStamp: Date.now(),
     accountId: accountNotification.accountId,
     id: accountNotification.id,
@@ -57,12 +53,38 @@ export function mapAccountNotificationToAccountNotificationModel(
     isEmail: accountNotification.isEmail,
     isMuted: accountNotification.isMuted,
     isRead: accountNotification.isRead,
-    ttl,
+    ttl: Math.round(Date.now() / 1000) + NOTIFICATION_TTL,
+  };
+}
+
+export function mapAccountNotificationToAccountNotificationModel(
+  accountNotification: AccountNotification,
+): AccountNotificationModel {
+  return {
+    partitionId: accountNotification.accountId,
+    entityId: buildEntityId(
+      DynamoEntityType.AccountNotification,
+      accountNotification.id,
+    ),
+    entityType: DynamoEntityType.AccountNotification,
+    isArchived: !!accountNotification.isArchived,
+    createTimestamp: accountNotification.createdAt.getTime(),
+    processingTimeStamp: accountNotification.updatedAt.getTime(),
+    accountId: accountNotification.accountId,
+    id: accountNotification.id,
+    notification: mapNotificationToNotificationModel(
+      accountNotification.notification,
+    ),
+    isPhone: accountNotification.isPhone,
+    isEmail: accountNotification.isEmail,
+    isMuted: accountNotification.isMuted,
+    isRead: accountNotification.isRead,
+    ttl: Math.round(Date.now() / 1000) + NOTIFICATION_TTL,
   };
 }
 
 export function mapNotificationToNotificationModel(
-  notification: Notification | NotificationModel,
+  notification: Notification,
 ): NotificationModel {
   return {
     id: notification.id,

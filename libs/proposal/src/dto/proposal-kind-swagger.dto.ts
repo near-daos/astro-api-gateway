@@ -91,7 +91,7 @@ export class ProposalKindSwaggerDto {
   @ApiProperty({
     description: `For type: ${ProposalType.BountyDone}`,
   })
-  bountyId: string;
+  bountyId: number;
 
   @ApiProperty({
     description: `For type: ${ProposalType.Transfer}`,

@@ -2,12 +2,14 @@ import { Injectable } from '@nestjs/common';
 import {
   CountItemsQuery,
   DynamoEntityType,
+  mapProposalDtoToProposalModel,
   mapProposalToProposalModel,
   ProposalModel,
   ScheduledProposalExpirationEvent,
 } from '@sputnik-v2/dynamodb';
 import { DynamodbService } from '@sputnik-v2/dynamodb/dynamodb.service';
 import { Proposal } from '@sputnik-v2/proposal/entities';
+import { ProposalDto } from './dto/proposal.dto';
 
 @Injectable()
 export class ProposalDynamoService {
@@ -29,6 +31,12 @@ export class ProposalDynamoService {
   async saveProposal(proposal: Proposal) {
     return this.dynamoDbService.saveItem<ProposalModel>(
       mapProposalToProposalModel(proposal),
+    );
+  }
+
+  async saveProposalDto(proposal: ProposalDto) {
+    return this.dynamoDbService.saveItem<ProposalModel>(
+      mapProposalDtoToProposalModel(proposal),
     );
   }
 

@@ -1,16 +1,16 @@
 import { DaoConfig, DaoStatus, VotePolicy } from '@sputnik-v2/dao/types';
 import {
   Dao,
-  DaoVersion,
+  DaoVersionDto,
   Delegation,
   Policy,
   Role,
   RoleKindType,
-} from '@sputnik-v2/dao/entities';
+} from '@sputnik-v2/dao';
 import { DaoSettingsDto } from '@sputnik-v2/dao-settings';
 import { buildEntityId } from '@sputnik-v2/utils';
 import { TransactionModel } from './transaction.model';
-import { DynamoEntityType, PartialEntity } from '../types';
+import { DynamoEntityType } from '../types';
 import { TokenBalanceModel } from '../models';
 
 export class DaoModel extends TransactionModel {
@@ -84,12 +84,13 @@ export function mapDaoToDaoModel(dao: Dao): DaoModel {
     entityId: buildEntityId(DynamoEntityType.Dao, dao.id),
     entityType: DynamoEntityType.Dao,
     isArchived: dao.isArchived,
-    processingTimeStamp: Date.now(),
+    createTimestamp: dao.createdAt.getTime(),
+    processingTimeStamp: dao.updatedAt.getTime(),
     id: dao.id,
     transactionHash: dao.transactionHash,
     updateTransactionHash: dao.updateTransactionHash,
-    createTimestamp: dao.createTimestamp,
-    updateTimestamp: dao.updateTimestamp,
+    createBlockTimestamp: dao.createTimestamp,
+    updateBlockTimestamp: dao.updateTimestamp,
     metadata: dao.metadata,
     amount: dao.amount,
     totalSupply: dao.totalSupply,
@@ -122,58 +123,6 @@ export function mapDaoToDaoModel(dao: Dao): DaoModel {
   };
 }
 
-export function mapDaoModelToDao(dao: PartialEntity<DaoModel>): Dao {
-  const daoEntity = {
-    id: dao.partitionId,
-    config: dao.config,
-    metadata: dao.metadata,
-    amount: dao.amount,
-    totalSupply: dao.totalSupply,
-    lastBountyId: dao.lastBountyId,
-    lastProposalId: dao.lastProposalId,
-    stakingContract: dao.stakingContract,
-    numberOfAssociates: dao.numberOfAssociates,
-    numberOfMembers: dao.numberOfMembers,
-    numberOfGroups: dao.numberOfGroups,
-    council: dao.council,
-    accountIds: dao.accountIds,
-    councilSeats: dao.councilSeats,
-    policy: dao.policy
-      ? mapDaoPolicyModelToDaoPolicy(dao.partitionId, dao.policy)
-      : undefined,
-    link: dao.link,
-    description: dao.description,
-    createdBy: dao.createdBy,
-    daoVersionHash: dao.daoVersion ? dao.daoVersion.hash : undefined,
-    daoVersion: dao.daoVersion
-      ? mapDaoVersionModelToDaoVersion(dao.daoVersion)
-      : undefined,
-    status: dao.status,
-    activeProposalCount: dao.activeProposalCount,
-    totalProposalCount: dao.totalProposalCount,
-    totalDaoFunds: dao.totalDaoFunds,
-    bountyCount: dao.bountyCount,
-    nftCount: dao.nftCount,
-    delegations: undefined,
-    transactionHash: dao.transactionHash,
-    updateTransactionHash: dao.updateTransactionHash,
-    createTimestamp: dao.createTimestamp,
-    updateTimestamp: dao.updateTimestamp,
-    isArchived: dao.isArchived,
-    // TODO
-    createdAt: undefined,
-    updatedAt: undefined,
-  };
-
-  daoEntity.delegations = dao.delegations
-    ? dao.delegations.map((delegation) =>
-        mapDaoDelegationModelToDelegation(daoEntity, delegation),
-      )
-    : undefined;
-
-  return daoEntity;
-}
-
 export function mapPolicyToDaoPolicyModel(policy: Policy): DaoPolicyModel {
   return {
     proposalBond: policy.proposalBond,
@@ -183,31 +132,6 @@ export function mapPolicyToDaoPolicyModel(policy: Policy): DaoPolicyModel {
     defaultVotePolicy: policy.defaultVotePolicy,
     roles: policy.roles.map(mapRoleToDaoRoleModel),
   };
-}
-
-export function mapDaoPolicyModelToDaoPolicy(
-  daoId: string,
-  policy: DaoPolicyModel,
-): Policy {
-  const policyEntity = {
-    daoId,
-    proposalBond: policy.proposalBond,
-    bountyBond: policy.bountyBond,
-    proposalPeriod: policy.proposalPeriod,
-    bountyForgivenessPeriod: policy.bountyForgivenessPeriod,
-    defaultVotePolicy: policy.defaultVotePolicy,
-    roles: undefined,
-    // TODO
-    isArchived: false,
-    createdAt: undefined,
-    updatedAt: undefined,
-  };
-
-  policyEntity.roles = policy.roles.map((role) =>
-    mapDaoRoleModelToRole(policyEntity, role),
-  );
-
-  return policyEntity;
 }
 
 export function mapRoleToDaoRoleModel(role: Role): DaoRoleModel {
@@ -222,28 +146,8 @@ export function mapRoleToDaoRoleModel(role: Role): DaoRoleModel {
   };
 }
 
-export function mapDaoRoleModelToRole(
-  policy: Policy,
-  role: DaoRoleModel,
-): Role {
-  return {
-    id: role.id,
-    policy,
-    name: role.name,
-    kind: role.kind,
-    balance: role.balance,
-    accountIds: role.accountIds,
-    permissions: role.permissions,
-    votePolicy: role.votePolicy,
-    // TODO
-    isArchived: false,
-    createdAt: undefined,
-    updatedAt: undefined,
-  };
-}
-
 export function mapDaoVersionToDaoVersionModel(
-  version: DaoVersion,
+  version: DaoVersionDto,
 ): DaoVersionModel {
   return {
     hash: version.hash,
@@ -253,40 +157,11 @@ export function mapDaoVersionToDaoVersionModel(
   };
 }
 
-export function mapDaoVersionModelToDaoVersion(
-  version: DaoVersionModel,
-): DaoVersion {
-  return {
-    hash: version.hash,
-    version: version.version,
-    commitId: version.commitId,
-    changelogUrl: version.changelogUrl,
-    // TODO
-    isArchived: false,
-    createdAt: undefined,
-    updatedAt: undefined,
-  };
-}
-
 export function mapDelegationToDaoDelegationModel(
   delegation: Delegation,
 ): DaoDelegationModel {
   return {
     id: delegation.id,
-    accountId: delegation.accountId,
-    balance: delegation.balance,
-    delegators: delegation.delegators,
-  };
-}
-
-export function mapDaoDelegationModelToDelegation(
-  dao: Dao,
-  delegation: DaoDelegationModel,
-): Delegation {
-  return {
-    id: delegation.id,
-    daoId: dao.id,
-    dao,
     accountId: delegation.accountId,
     balance: delegation.balance,
     delegators: delegation.delegators,

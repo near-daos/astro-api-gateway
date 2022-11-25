@@ -58,17 +58,17 @@ export const buildDaoId = (name: string, contractName: string): string => {
   return `${name}.${contractName}`;
 };
 
-export const buildBountyId = (daoId: string, bountyId: string): string => {
+export const buildBountyId = (daoId: string, bountyId: number): string => {
   return `${daoId}-${bountyId}`;
 };
 
-export const buildBountyDynamoId = (proposalId: string): string => {
+export const buildBountyDynamoId = (proposalId: number): string => {
   return `b-${proposalId}`;
 };
 
 export const buildBountyClaimId = (
   daoId: string,
-  bountyId: string,
+  bountyId: number,
   bountyClaimId: number,
 ): string => {
   return `${daoId}-${bountyId}-${bountyClaimId}`;

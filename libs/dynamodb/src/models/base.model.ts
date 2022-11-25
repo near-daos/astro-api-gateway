@@ -2,7 +2,7 @@ import { BaseEntity } from '../types';
 
 export class BaseModel extends BaseEntity {
   isArchived: boolean;
-  // TODO: use bigint and timestamp with nanoseconds
   createTimestamp: number;
+  // TODO: rename to processingTimestamp or updateTimestamp
   processingTimeStamp: number;
 }

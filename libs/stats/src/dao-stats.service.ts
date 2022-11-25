@@ -4,8 +4,7 @@ import { DaoDynamoService } from '@sputnik-v2/dao';
 import { Repository } from 'typeorm';
 import { DateTime } from 'luxon';
 
-import { Dao, DaoService } from '@sputnik-v2/dao';
-import { DaoModel, PartialEntity } from '@sputnik-v2/dynamodb';
+import { DaoService } from '@sputnik-v2/dao';
 import { FeatureFlags, FeatureFlagsService } from '@sputnik-v2/feature-flags';
 import { buildDaoStatsId, getGrowth } from '@sputnik-v2/utils';
 
@@ -46,14 +45,7 @@ export class DaoStatsService {
 
   async getDaoStats(daoId: string): Promise<DaoStatsDto> {
     const timestamp = DateTime.now().startOf('day').toMillis();
-
-    let dao: Dao | PartialEntity<DaoModel>;
-
-    if (await this.useDynamoDB()) {
-      dao = await this.daoDynamoService.getDao(daoId);
-    } else {
-      dao = await this.daoService.findById(daoId);
-    }
+    const dao = await this.daoService.findById(daoId);
 
     if (!dao) {
       throw new NotFoundException();

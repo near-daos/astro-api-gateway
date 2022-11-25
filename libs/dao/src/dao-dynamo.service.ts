@@ -1,11 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { Dao, DaoVersion } from '@sputnik-v2/dao';
+import { Dao, DaoVersionDto } from '@sputnik-v2/dao';
 import { DaoSettings } from '@sputnik-v2/dao-settings';
 import {
   DaoIdsModel,
   DynamoEntityType,
   mapDaoIdsToDaoIdsModel,
-  mapDaoModelToDao,
   mapDaoToDaoModel,
   mapDaoVersionToDaoVersionModel,
 } from '@sputnik-v2/dynamodb';
@@ -39,7 +38,7 @@ export class DaoDynamoService {
     return this.save(daoSettings.daoId, { settings: daoSettings.settings });
   }
 
-  async saveDaoVersion(id: string, version: DaoVersion) {
+  async saveDaoVersion(id: string, version: DaoVersionDto) {
     return this.save(id, {
       daoVersion: version ? mapDaoVersionToDaoVersionModel(version) : undefined,
     });
@@ -51,11 +50,6 @@ export class DaoDynamoService {
       DynamoEntityType.Dao,
       daoId,
     );
-  }
-
-  async getDao(daoId: string) {
-    const dao = await this.get(daoId);
-    return dao ? mapDaoModelToDao(dao) : undefined;
   }
 
   async getDaoIds() {

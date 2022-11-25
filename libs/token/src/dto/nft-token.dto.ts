@@ -107,8 +107,4 @@ export class NFTTokenDto extends TransactionInfo {
 
   @ApiProperty()
   metadata: NFTTokenMetadataDto;
-
-  isArchived?: boolean;
-
-  createdAt?: Date;
 }

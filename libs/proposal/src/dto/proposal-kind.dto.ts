@@ -93,7 +93,7 @@ export type ProposalKindAddBounty = {
 /// Indicates that given bounty is done by given user.
 export type ProposalKindBountyDone = {
   type: ProposalType.BountyDone;
-  bountyId: string;
+  bountyId: number;
   receiverId: string;
 };
 

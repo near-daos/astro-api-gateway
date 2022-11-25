@@ -8,6 +8,7 @@ import { EventService } from '@sputnik-v2/event';
 import {
   CommentModel,
   DaoModel,
+  DraftProposalModel,
   DynamodbService,
   DynamoEntityType,
 } from '@sputnik-v2/dynamodb';
@@ -62,11 +63,7 @@ export class DynamoDraftCommentService implements DraftCommentService {
       draftCommentDto,
     );
 
-    await this.dynamodbService.updateDraftProposalReplies(
-      daoId,
-      draftCommentDto.contextId,
-      1,
-    );
+    await this.incrementDraftProposalReplies(daoId, draftCommentDto.contextId);
 
     if (await this.useDynamo()) {
       await this.eventService.sendNewDraftCommentEvent(comment);
@@ -78,6 +75,20 @@ export class DynamoDraftCommentService implements DraftCommentService {
   private async useDynamo() {
     return await this.featureFlagService.check(
       FeatureFlags.DraftCommentsDynamo,
+    );
+  }
+
+  async incrementDraftProposalReplies(
+    daoId: string,
+    draftId: string,
+    value = 1,
+  ) {
+    await this.dynamodbService.incrementByType<DraftProposalModel>(
+      daoId,
+      DynamoEntityType.DraftProposal,
+      draftId,
+      'replies',
+      value,
     );
   }
 
@@ -94,11 +105,7 @@ export class DynamoDraftCommentService implements DraftCommentService {
       draftCommentDto,
     );
 
-    await this.dynamodbService.updateDraftProposalReplies(
-      daoId,
-      draftCommentDto.contextId,
-      1,
-    );
+    await this.incrementDraftProposalReplies(daoId, draftCommentDto.contextId);
 
     if (await this.useDynamo()) {
       await this.eventService.sendNewDraftCommentEvent(reply);
@@ -152,12 +159,12 @@ export class DynamoDraftCommentService implements DraftCommentService {
     comment: CreateDraftComment,
   ) {
     const model: CommentModel = {
-      processingTimeStamp: Date.now(),
       partitionId: daoId,
       entityId: `${DynamoEntityType.DraftProposalComment}:${comment.contextId}:${commentId}`,
       entityType: DynamoEntityType.DraftProposalComment,
       isArchived: false,
       createTimestamp: Date.now(),
+      processingTimeStamp: Date.now(),
       id: commentId,
       contextId: comment.contextId,
       contextType: DraftCommentContextType.DraftProposal,
@@ -361,6 +368,8 @@ export class DynamoDraftCommentService implements DraftCommentService {
       draftComment.id,
       { isArchived: true },
     );
+
+    await this.incrementDraftProposalReplies(daoId, draftComment.contextId, -1);
 
     if (await this.useDynamo()) {
       await this.eventService.sendDeleteDraftCommentEvent(draftComment);

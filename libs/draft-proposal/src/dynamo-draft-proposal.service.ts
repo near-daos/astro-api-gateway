@@ -174,7 +174,6 @@ export class DynamoDraftProposalService implements DraftProposalService {
       await this.dynamodbService.saveItem<DraftProposalModel>({
         ...draftProposal,
         viewAccounts,
-        updateTimestamp: Date.now(),
       });
     }
 

@@ -56,6 +56,6 @@ export function mapCreateDraftProposalToDraftProposalModel(
     viewAccounts: [],
     saveAccounts: [],
     createTimestamp: Date.now(),
-    updateTimestamp: Date.now(),
+    processingTimeStamp: Date.now(),
   };
 }
