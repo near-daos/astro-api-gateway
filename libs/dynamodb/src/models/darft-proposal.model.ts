@@ -22,7 +22,7 @@ export class DraftProposalModel extends BaseModel {
   replies: number;
   history: Partial<DraftProposalHistoryModel>[];
   createTimestamp: number;
-  updateTimestamp: number;
+  processingTimeStamp: number;
 }
 
 export class DraftProposalHistoryModel {
@@ -48,7 +48,8 @@ export function mapDraftProposalToDraftProposalModel(
     ),
     entityType: DynamoEntityType.DraftProposal,
     isArchived: draftProposal.isArchived,
-    processingTimeStamp: Date.now(),
+    createTimestamp: draftProposal.createdAt.getTime(),
+    processingTimeStamp: draftProposal.updatedAt.getTime(),
     id: draftProposal.id.toString(),
     proposalId: draftProposal.proposalId,
     proposer: draftProposal.proposer,
@@ -60,8 +61,6 @@ export function mapDraftProposalToDraftProposalModel(
     viewAccounts: draftProposal.viewAccounts,
     saveAccounts: draftProposal.saveAccounts,
     replies: draftProposal.replies,
-    createTimestamp: new Date(draftProposal.createdAt).getTime(),
-    updateTimestamp: new Date(draftProposal.updatedAt).getTime(),
     history: history?.length
       ? history.map(mapDraftProposalHistoryToDraftProposalHistoryModel)
       : [],

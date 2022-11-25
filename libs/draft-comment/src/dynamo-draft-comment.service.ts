@@ -159,12 +159,12 @@ export class DynamoDraftCommentService implements DraftCommentService {
     comment: CreateDraftComment,
   ) {
     const model: CommentModel = {
-      processingTimeStamp: Date.now(),
       partitionId: daoId,
       entityId: `${DynamoEntityType.DraftProposalComment}:${comment.contextId}:${commentId}`,
       entityType: DynamoEntityType.DraftProposalComment,
       isArchived: false,
       createTimestamp: Date.now(),
+      processingTimeStamp: Date.now(),
       id: commentId,
       contextId: comment.contextId,
       contextType: DraftCommentContextType.DraftProposal,

@@ -3,23 +3,25 @@ import {
   DaoStatsModel,
   DynamodbService,
   DynamoEntityType,
-  mapNftTokenToNftModel,
+  mapNftTokenDtoToNftModel,
   NftModel,
   QueryItemsQuery,
 } from '@sputnik-v2/dynamodb';
-import { NFTToken, NFTTokenDto } from '@sputnik-v2/token';
+import { NFTTokenDto } from '@sputnik-v2/token';
 
 @Injectable()
 export class NFTTokenDynamoService {
   constructor(private readonly dynamoDbService: DynamodbService) {}
 
-  async save(nft: NFTToken | NFTTokenDto) {
-    return this.dynamoDbService.saveItem<NftModel>(mapNftTokenToNftModel(nft));
+  async save(nft: NFTTokenDto) {
+    return this.dynamoDbService.saveItem<NftModel>(
+      mapNftTokenDtoToNftModel(nft),
+    );
   }
 
-  async saveMultiple(nfts: (NFTToken | NFTTokenDto)[]) {
+  async saveMultiple(nfts: NFTTokenDto[]) {
     return this.dynamoDbService.batchPut<NftModel>(
-      nfts.map((nft) => mapNftTokenToNftModel(nft)),
+      nfts.map((nft) => mapNftTokenDtoToNftModel(nft)),
     );
   }
 

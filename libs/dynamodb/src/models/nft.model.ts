@@ -51,12 +51,13 @@ export class NftMetadataModel {
   approvedAccountIds: string[];
 }
 
-export function mapNftTokenToNftModel(nft: NFTToken | NFTTokenDto): NftModel {
+export function mapNftTokenDtoToNftModel(nft: NFTTokenDto): NftModel {
   return {
     partitionId: nft.accountId,
     entityId: buildEntityId(DynamoEntityType.Nft, nft.id),
     entityType: DynamoEntityType.Nft,
-    isArchived: !!nft.isArchived,
+    isArchived: false,
+    createTimestamp: Date.now(),
     processingTimeStamp: Date.now(),
     id: nft.id,
     ownerId: nft.ownerId,
@@ -66,7 +67,25 @@ export function mapNftTokenToNftModel(nft: NFTToken | NFTTokenDto): NftModel {
     contractId: nft.contractId,
     contract: mapNftContractToNftContractModel(nft.contract),
     metadata: mapNftMetadataToNftMetadataModel(nft.metadata),
+  };
+}
+
+export function mapNftTokenToNftModel(nft: NFTToken): NftModel {
+  return {
+    partitionId: nft.accountId,
+    entityId: buildEntityId(DynamoEntityType.Nft, nft.id),
+    entityType: DynamoEntityType.Nft,
+    isArchived: !!nft.isArchived,
     createTimestamp: nft.createdAt.getTime(),
+    processingTimeStamp: nft.updatedAt.getTime(),
+    id: nft.id,
+    ownerId: nft.ownerId,
+    tokenId: nft.tokenId,
+    accountId: nft.accountId,
+    minter: nft.minter,
+    contractId: nft.contractId,
+    contract: mapNftContractToNftContractModel(nft.contract),
+    metadata: mapNftMetadataToNftMetadataModel(nft.metadata),
   };
 }
 
