@@ -1,12 +1,12 @@
 import { DaoConfig, DaoStatus, VotePolicy } from '@sputnik-v2/dao/types';
 import {
   Dao,
-  DaoVersion,
+  DaoVersionDto,
   Delegation,
   Policy,
   Role,
   RoleKindType,
-} from '@sputnik-v2/dao/entities';
+} from '@sputnik-v2/dao';
 import { DaoSettingsDto } from '@sputnik-v2/dao-settings';
 import { buildEntityId } from '@sputnik-v2/utils';
 import { TransactionModel } from './transaction.model';
@@ -147,7 +147,7 @@ export function mapRoleToDaoRoleModel(role: Role): DaoRoleModel {
 }
 
 export function mapDaoVersionToDaoVersionModel(
-  version: DaoVersion,
+  version: DaoVersionDto,
 ): DaoVersionModel {
   return {
     hash: version.hash,

@@ -38,6 +38,7 @@ import {
   DaoMemberVote,
   DaoPageResponse,
   DaoResponseV2,
+  DaoVersionDto,
   DelegationDto,
   SearchMemberDto,
   SearchMemberResponse,
@@ -452,7 +453,7 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     );
   }
 
-  async getDaoVersionById(id: string): Promise<DaoVersion> {
+  async getDaoVersionById(id: string): Promise<DaoVersionDto> {
     if (await this.useDynamoDB()) {
       const sputnikDaoFactory =
         this.nearApiService.getContract<NearSputnikDaoFactoryContract>(

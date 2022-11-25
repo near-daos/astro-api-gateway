@@ -1,12 +1,16 @@
 import { Contract } from 'near-api-js/lib/contract';
 
-// TODO add return types
+export interface SputnikDaoVersion {
+  version: number[];
+  commit_id: string;
+  changelog_url: string | null;
+}
+
 export declare class NearSputnikDaoFactoryContract extends Contract {
   get_dao_list(): Promise<string[]>;
   get_number_daos(): Promise<number>;
-  get_daos(): Promise<Array<any>>;
-  tx_status(): Promise<any>;
-  get_contracts_metadata(): Promise<any>;
+  get_daos(params: { from_index: number; limit: number }): Promise<string[]>;
+  get_contracts_metadata(): Promise<[string, SputnikDaoVersion][]>;
 }
 
 // TODO add return types

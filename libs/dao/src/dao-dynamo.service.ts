@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Dao, DaoVersion } from '@sputnik-v2/dao';
+import { Dao, DaoVersionDto } from '@sputnik-v2/dao';
 import { DaoSettings } from '@sputnik-v2/dao-settings';
 import {
   DaoIdsModel,
@@ -38,7 +38,7 @@ export class DaoDynamoService {
     return this.save(daoSettings.daoId, { settings: daoSettings.settings });
   }
 
-  async saveDaoVersion(id: string, version: DaoVersion) {
+  async saveDaoVersion(id: string, version: DaoVersionDto) {
     return this.save(id, {
       daoVersion: version ? mapDaoVersionToDaoVersionModel(version) : undefined,
     });
