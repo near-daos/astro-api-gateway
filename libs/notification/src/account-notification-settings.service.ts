@@ -8,6 +8,8 @@ import { DynamodbService } from '@sputnik-v2/dynamodb/dynamodb.service';
 import {
   AccountNotificationSettingsItemModel,
   AccountNotificationSettingsModel,
+  mapAccountNotificationSettingsModel,
+  mapAccountNotificationSettingsToAccountNotificationSettingsItemModel,
 } from '@sputnik-v2/dynamodb/models';
 import { DynamoEntityType } from '@sputnik-v2/dynamodb/types';
 import PromisePool from '@supercharge/promise-pool';
@@ -55,8 +57,43 @@ export class AccountNotificationSettingsService extends TypeOrmCrudService<Accou
       actionRequiredOnly: !!dto.actionRequiredOnly,
       createdAt: new Date(),
     });
-    await this.dynamoDbService.saveAccountNotificationSettings(entity);
+    await this.saveAccountNotificationSettings(entity);
     return this.accountNotificationSettingsRepository.save(entity);
+  }
+
+  async saveAccountNotificationSettings(
+    accountNotificationSettings: AccountNotificationSettings,
+  ) {
+    const item =
+      await this.dynamoDbService.getItemByType<AccountNotificationSettingsModel>(
+        accountNotificationSettings.accountId,
+        DynamoEntityType.AccountNotificationSettings,
+        accountNotificationSettings.accountId,
+      );
+    const model =
+      item ||
+      mapAccountNotificationSettingsModel(
+        accountNotificationSettings.accountId,
+        [],
+      );
+    const updatedSettings =
+      mapAccountNotificationSettingsToAccountNotificationSettingsItemModel(
+        accountNotificationSettings,
+      );
+
+    const settingsIndex = model.settings.findIndex(
+      ({ daoId }) => daoId === accountNotificationSettings.daoId,
+    );
+
+    if (settingsIndex >= 0) {
+      model.settings[settingsIndex] = updatedSettings;
+    } else {
+      model.settings.push(updatedSettings);
+    }
+
+    return this.dynamoDbService.saveItem<AccountNotificationSettingsModel>(
+      model,
+    );
   }
 
   async getAccountsNotificationSettings(

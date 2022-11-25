@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ILike, IsNull, Not, Repository } from 'typeorm';
-import { NearApiService } from '@sputnik-v2/near-api';
+import { NearApiService, NearFTokenContract } from '@sputnik-v2/near-api';
 import { BaseResponseDto, Order } from '@sputnik-v2/common';
 import { Dao } from '@sputnik-v2/dao/entities';
 import { FeatureFlags, FeatureFlagsService } from '@sputnik-v2/feature-flags';
@@ -9,6 +9,7 @@ import {
   DaoModel,
   DynamodbService,
   DynamoEntityType,
+  mapTokenBalanceToTokenBalanceModel,
   PartialEntity,
   TokenBalanceModel,
   TokenPriceModel,
@@ -50,24 +51,59 @@ export class TokenService {
   }
 
   async loadTokenById(tokenId: string, timestamp: number) {
-    const contract = this.nearApiService.getContract('fToken', tokenId);
+    const contract = this.nearApiService.getContract<NearFTokenContract>(
+      'fToken',
+      tokenId,
+    );
     const metadata = await contract.ft_metadata();
     const totalSupply = await contract.ft_total_supply();
     await this.create(castToken(tokenId, metadata, totalSupply, timestamp));
   }
 
   async loadBalanceById(tokenId: string, accountId: string, timestamp: number) {
-    const contract = this.nearApiService.getContract('fToken', tokenId);
+    const contract = this.nearApiService.getContract<NearFTokenContract>(
+      'fToken',
+      tokenId,
+    );
     const metadata = await contract.ft_metadata();
     const totalSupply = await contract.ft_total_supply();
     const balance = await contract.ft_balance_of({ account_id: accountId });
 
-    await this.dynamodbService.saveTokenBalanceToDao({
+    await this.saveTokenBalanceToDao({
       ...castTokenBalance(tokenId, accountId, balance),
       token: castToken(tokenId, metadata, totalSupply, timestamp) as Token,
     });
     await this.tokenBalanceRepository.save(
       castTokenBalance(tokenId, accountId, balance),
+    );
+  }
+
+  async saveTokenBalanceToDao(tokenBalance: TokenBalance) {
+    const { accountId: daoId } = tokenBalance;
+    const updatedToken = mapTokenBalanceToTokenBalanceModel(tokenBalance);
+
+    const dao = await this.dynamodbService.getItemByType<DaoModel>(
+      daoId,
+      DynamoEntityType.Dao,
+      daoId,
+    );
+    const tokenIndex = dao.tokens.findIndex(
+      (token) => token.tokenId === updatedToken.tokenId,
+    );
+
+    if (tokenIndex >= 0) {
+      dao.tokens[tokenIndex] = updatedToken;
+    } else {
+      dao.tokens.push(updatedToken);
+    }
+
+    return this.dynamodbService.updateItemByType<DaoModel>(
+      daoId,
+      DynamoEntityType.Dao,
+      daoId,
+      {
+        tokens: dao.tokens,
+      },
     );
   }
 

@@ -20,7 +20,10 @@ import {
 } from '@sputnik-v2/utils';
 import { NFTTokenService, TokenService } from '@sputnik-v2/token';
 import { SearchQuery } from '@sputnik-v2/common';
-import { NearApiService } from '@sputnik-v2/near-api';
+import {
+  NearApiService,
+  NearSputnikDaoFactoryContract,
+} from '@sputnik-v2/near-api';
 import {
   DaoModel,
   PartialEntity,
@@ -435,7 +438,9 @@ export class DaoService extends TypeOrmCrudService<Dao> {
 
   async loadDaoVersions(): Promise<DaoVersion[]> {
     const sputnikDaoFactory =
-      this.nearApiService.getContract('sputnikDaoFactory');
+      this.nearApiService.getContract<NearSputnikDaoFactoryContract>(
+        'sputnikDaoFactory',
+      );
     const daoVersions = await sputnikDaoFactory.get_contracts_metadata();
     return this.daoVersionRepository.save(
       daoVersions.map(([hash, { version, commit_id, changelog_url }]) => ({
@@ -450,7 +455,9 @@ export class DaoService extends TypeOrmCrudService<Dao> {
   async getDaoVersionById(id: string): Promise<DaoVersion> {
     if (await this.useDynamoDB()) {
       const sputnikDaoFactory =
-        this.nearApiService.getContract('sputnikDaoFactory');
+        this.nearApiService.getContract<NearSputnikDaoFactoryContract>(
+          'sputnikDaoFactory',
+        );
       const daoVersions = await sputnikDaoFactory.get_contracts_metadata();
       const daoVersionHash = await this.nearApiService.getContractVersionHash(
         id,

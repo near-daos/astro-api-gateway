@@ -40,6 +40,7 @@ export class ProposalDto extends TransactionInfo {
   };
   actions: ProposalActionDto[];
   votePeriodEnd: number;
+  failure: Record<string, any>;
 }
 
 export class ProposalKindDto {

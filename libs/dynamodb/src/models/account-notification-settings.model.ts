@@ -48,7 +48,7 @@ export function mapAccountNotificationSettingsModel(
 }
 
 export function mapAccountNotificationSettingsToAccountNotificationSettingsItemModel(
-  accountNotificationSettings: Partial<AccountNotificationSettings>,
+  accountNotificationSettings: AccountNotificationSettings,
 ): AccountNotificationSettingsItemModel {
   return {
     id: accountNotificationSettings.id,

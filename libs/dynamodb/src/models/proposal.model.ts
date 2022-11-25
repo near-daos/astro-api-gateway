@@ -2,6 +2,7 @@ import {
   Action,
   Proposal,
   ProposalAction,
+  ProposalDto,
   ProposalKind,
   ProposalPolicyLabel,
   ProposalStatus,
@@ -43,6 +44,46 @@ export class ProposalActionModel {
   timestamp: number;
 }
 
+export function mapProposalDtoToProposalModel(
+  proposal: ProposalDto,
+): ProposalModel {
+  return {
+    partitionId: proposal.daoId,
+    entityId: buildEntityId(
+      DynamoEntityType.Proposal,
+      String(proposal.proposalId),
+    ),
+    entityType: DynamoEntityType.Proposal,
+    isArchived: false,
+    createTimestamp: Date.now(),
+    processingTimeStamp: Date.now(),
+    transactionHash: proposal.transactionHash,
+    updateTransactionHash: proposal.updateTransactionHash,
+    createBlockTimestamp: proposal.createTimestamp,
+    updateBlockTimestamp: proposal.updateTimestamp,
+    id: proposal.id,
+    proposalId: proposal.proposalId,
+    proposer: proposal.proposer,
+    description: proposal.description,
+    status: proposal.status,
+    voteStatus: ProposalVoteStatus.Active,
+    kind: proposal.kind.kind,
+    type: proposal.type,
+    policyLabel: proposal.policyLabel,
+    submissionTime: proposal.submissionTime,
+    voteCounts: proposal.voteCounts,
+    votes: proposal.votes,
+    failure: proposal.failure,
+    actions: proposal.actions
+      ? proposal.actions.map(mapProposalActionToProposalActionModel)
+      : [],
+    votePeriodEnd: proposal.votePeriodEnd,
+    commentsCount: 0,
+    bountyDoneId: proposal.bountyDoneId,
+    bountyClaimId: proposal.bountyClaimId,
+  };
+}
+
 export function mapProposalToProposalModel(proposal: Proposal): ProposalModel {
   return {
     partitionId: proposal.daoId,
@@ -52,11 +93,12 @@ export function mapProposalToProposalModel(proposal: Proposal): ProposalModel {
     ),
     entityType: DynamoEntityType.Proposal,
     isArchived: proposal.isArchived,
-    processingTimeStamp: Date.now(),
+    createTimestamp: proposal.createdAt.getTime(),
+    processingTimeStamp: proposal.updatedAt.getTime(),
     transactionHash: proposal.transactionHash,
     updateTransactionHash: proposal.updateTransactionHash,
-    createTimestamp: proposal.createTimestamp,
-    updateTimestamp: proposal.updateTimestamp,
+    createBlockTimestamp: proposal.createTimestamp,
+    updateBlockTimestamp: proposal.updateTimestamp,
     id: proposal.id,
     proposalId: proposal.proposalId,
     proposer: proposal.proposer,
@@ -72,7 +114,7 @@ export function mapProposalToProposalModel(proposal: Proposal): ProposalModel {
     failure: proposal.failure,
     actions: proposal.actions
       ? proposal.actions.map(mapProposalActionToProposalActionModel)
-      : undefined,
+      : [],
     votePeriodEnd: proposal.votePeriodEnd,
     commentsCount: proposal.commentsCount,
     bountyDoneId: proposal.bountyDoneId,

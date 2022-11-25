@@ -1,7 +1,10 @@
-import { Contract } from 'near-api-js';
 import { Injectable, Logger } from '@nestjs/common';
 
-import { NearApiService } from '@sputnik-v2/near-api';
+import {
+  NearApiService,
+  NearSputnikDaoContract,
+  NearSputnikDaoFactoryContract,
+} from '@sputnik-v2/near-api';
 import PromisePool from '@supercharge/promise-pool';
 import { castProposalKind } from '@sputnik-v2/proposal/dto';
 
@@ -15,14 +18,20 @@ import {
 export class SputnikService {
   private readonly logger = new Logger(SputnikService.name);
 
-  private factoryContract!: Contract & any;
+  private factoryContract!: NearSputnikDaoFactoryContract;
 
   constructor(private readonly nearApiService: NearApiService) {
-    this.factoryContract = nearApiService.getContract('sputnikDaoFactory');
+    this.factoryContract =
+      nearApiService.getContract<NearSputnikDaoFactoryContract>(
+        'sputnikDaoFactory',
+      );
   }
 
   public async getDaoInfo(daoId: string): Promise<DaoInfo> {
-    const daoContract = this.nearApiService.getContract('sputnikDao', daoId);
+    const daoContract = this.nearApiService.getContract<NearSputnikDaoContract>(
+      'sputnikDao',
+      daoId,
+    );
     const config = await daoContract.get_config();
     const policy = await daoContract.get_policy();
     const stakingContract = await daoContract.get_staking_contract();
@@ -42,7 +51,10 @@ export class SputnikService {
   }
 
   public async getProposalsByDaoId(daoId: string, lastProposalId: number) {
-    const daoContract = this.nearApiService.getContract('sputnikDao', daoId);
+    const daoContract = this.nearApiService.getContract<NearSputnikDaoContract>(
+      'sputnikDao',
+      daoId,
+    );
     const chunkSize = PROPOSAL_REQUEST_CHUNK_SIZE;
     const chunkCount =
       (lastProposalId - (lastProposalId % chunkSize)) / chunkSize + 1;
@@ -61,7 +73,10 @@ export class SputnikService {
   }
 
   public async getProposal(daoId: string, proposalId: number) {
-    const daoContract = this.nearApiService.getContract('sputnikDao', daoId);
+    const daoContract = this.nearApiService.getContract<NearSputnikDaoContract>(
+      'sputnikDao',
+      daoId,
+    );
     try {
       return await daoContract.get_proposal({ id: proposalId });
     } catch (err) {
@@ -89,7 +104,10 @@ export class SputnikService {
   }
 
   public async getBountiesByDaoId(daoId: string, lastBountyId: number) {
-    const daoContract = this.nearApiService.getContract('sputnikDao', daoId);
+    const daoContract = this.nearApiService.getContract<NearSputnikDaoContract>(
+      'sputnikDao',
+      daoId,
+    );
     const chunkSize = BOUNTY_REQUEST_CHUNK_SIZE;
     const chunkCount =
       (lastBountyId - (lastBountyId % chunkSize)) / chunkSize + 1;
@@ -116,7 +134,10 @@ export class SputnikService {
   }
 
   public async getBountyClaims(daoId: string, accountIds: string[]) {
-    const daoContract = this.nearApiService.getContract('sputnikDao', daoId);
+    const daoContract = this.nearApiService.getContract<NearSputnikDaoContract>(
+      'sputnikDao',
+      daoId,
+    );
     const { results: claims } = await PromisePool.withConcurrency(2)
       .for(accountIds)
       .process(async (accountId) => {

@@ -23,7 +23,10 @@ import {
 import { AccountNotification } from '@sputnik-v2/notification';
 import { DynamodbService } from '@sputnik-v2/dynamodb/dynamodb.service';
 import { DynamoEntityType } from '@sputnik-v2/dynamodb/types';
-import { AccountModel } from '@sputnik-v2/dynamodb/models';
+import {
+  AccountModel,
+  mapAccountDtoToAccountModel,
+} from '@sputnik-v2/dynamodb/models';
 import { FeatureFlagsService } from '@sputnik-v2/feature-flags/feature-flags.service';
 import { FeatureFlags } from '@sputnik-v2/feature-flags/types';
 
@@ -44,7 +47,9 @@ export class AccountService {
   }
 
   async create(addAccountDto: AccountDto): Promise<Account> {
-    await this.dynamoDbService.saveAccount(addAccountDto);
+    await this.dynamoDbService.saveItem<AccountModel>(
+      mapAccountDtoToAccountModel(addAccountDto),
+    );
     return this.accountRepository.save(addAccountDto);
   }
 

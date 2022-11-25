@@ -25,7 +25,7 @@ export class BountyService extends TypeOrmCrudService<Bounty> {
     return this.featureFlagsService.check(FeatureFlags.BountyDynamo);
   }
 
-  async findById(daoId: string, bountyId: string, options?: FindOneOptions) {
+  async findById(daoId: string, bountyId: number, options?: FindOneOptions) {
     const id = buildBountyId(daoId, bountyId);
     if (await this.useDynamoDB()) {
       return (
@@ -39,23 +39,14 @@ export class BountyService extends TypeOrmCrudService<Bounty> {
     }
   }
 
-  async create(bountyDto: BountyDto, proposalIndex?: number) {
-    const entity = this.bountyRepository.create(bountyDto);
-
-    await this.bountyDynamoService.saveBounty(
-      { ...entity, id: bountyDto.id },
-      proposalIndex || bountyDto.proposalIndex,
-    );
-    await this.bountyRepository.save({ ...entity, id: bountyDto.id });
-
-    return bountyDto;
+  async create(bountyDto: BountyDto) {
+    await this.bountyDynamoService.saveBounty(bountyDto);
+    await this.bountyRepository.save(bountyDto);
   }
 
+  // TODO: deprecated
   async createMultiple(bountyDtos: BountyDto[]): Promise<Bounty[]> {
-    const entities = this.bountyRepository.create(bountyDtos);
-    await this.bountyDynamoService.saveMultipleBounties(entities);
-    await this.bountyRepository.save(entities);
-    return entities;
+    return this.bountyRepository.save(bountyDtos);
   }
 
   async getDaoActiveBountiesCount(

@@ -5,7 +5,7 @@ import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 import { DynamodbService } from '@sputnik-v2/dynamodb/dynamodb.service';
 import {
   AccountNotificationModel,
-  mapAccountNotificationToAccountNotificationModel,
+  mapAccountNotificationDtoToAccountNotificationModel,
 } from '@sputnik-v2/dynamodb/models';
 import { DynamoEntityType, PartialEntity } from '@sputnik-v2/dynamodb/types';
 import { FeatureFlagsService } from '@sputnik-v2/feature-flags/feature-flags.service';
@@ -40,7 +40,7 @@ export class AccountNotificationService extends TypeOrmCrudService<AccountNotifi
     accountNotificationsDto: AccountNotificationDto[],
   ): Promise<AccountNotification[]> {
     const models = accountNotificationsDto.map((accountNotification) =>
-      mapAccountNotificationToAccountNotificationModel(accountNotification),
+      mapAccountNotificationDtoToAccountNotificationModel(accountNotification),
     );
     await this.dynamoDbService.batchPut(models);
     await this.accountNotificationIdsDynamoService.setAccountsNotificationIds(
@@ -75,15 +75,19 @@ export class AccountNotificationService extends TypeOrmCrudService<AccountNotifi
       throw new BadRequestException(`Invalid Account Notification ID ${id}`);
     }
 
-    const updatedModel = {
-      ...mapAccountNotificationToAccountNotificationModel(accountNotification),
-      isMuted: updateDto.isMuted,
-      isRead: updateDto.isRead,
-      isArchived: updateDto.isArchived,
-    };
-    await this.dynamoDbService.saveItem<AccountNotificationModel>(updatedModel);
+    const updatedModel =
+      await this.dynamoDbService.saveItemByType<AccountNotificationModel>(
+        accountId,
+        DynamoEntityType.AccountNotification,
+        accountNotification.id,
+        {
+          isMuted: updateDto.isMuted,
+          isRead: updateDto.isRead,
+          isArchived: updateDto.isArchived,
+        },
+      );
     await this.accountNotificationIdsDynamoService.setAccountNotificationIds(
-      updatedModel.partitionId,
+      updatedModel.accountId,
       [updatedModel],
     );
     return this.accountNotificationRepository.save({

@@ -70,7 +70,7 @@ export class ProposalOpensearchDto extends BaseOpensearchDto {
   msg?: string;
   stakingId?: string;
   bounty?: BountyProposalOpensearchDto;
-  bountyId?: string;
+  bountyId?: number;
 
   public static getMappings(): any {
     const { mappings } = super.getMappings();

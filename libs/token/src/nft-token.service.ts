@@ -8,7 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 import { In, IsNull, Not, Repository } from 'typeorm';
 import { CrudRequest } from '@nestjsx/crud';
-import { NearApiService } from '@sputnik-v2/near-api';
+import { NearApiService, NearNfTokenContract } from '@sputnik-v2/near-api';
 import { FeatureFlags, FeatureFlagsService } from '@sputnik-v2/feature-flags';
 
 import { AssetsNftEvent, NearIndexerService } from '@sputnik-v2/near-indexer';
@@ -102,7 +102,10 @@ export class NFTTokenService extends TypeOrmCrudService<NFTToken> {
   }
 
   async loadNFT(nftContractId: string, accountId: string, timestamp: number) {
-    const contract = this.nearApiService.getContract('nft', nftContractId);
+    const contract = this.nearApiService.getContract<NearNfTokenContract>(
+      'nft',
+      nftContractId,
+    );
     const metadata = await contract.nft_metadata();
     const nfts = await this.getNfts(nftContractId, accountId);
     const tokenDtos = nfts.map((nft) =>
@@ -117,7 +120,10 @@ export class NFTTokenService extends TypeOrmCrudService<NFTToken> {
     nftContractId: string,
     accountId: string,
   ): Promise<Array<any>> {
-    const contract = this.nearApiService.getContract('nft', nftContractId);
+    const contract = this.nearApiService.getContract<NearNfTokenContract>(
+      'nft',
+      nftContractId,
+    );
     const chunkSize = 50;
     let nfts = [];
     let chunk = [];

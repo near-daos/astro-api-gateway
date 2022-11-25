@@ -5,7 +5,6 @@ import {
   DaoIdsModel,
   DynamoEntityType,
   mapDaoIdsToDaoIdsModel,
-  mapDaoModelToDao,
   mapDaoToDaoModel,
   mapDaoVersionToDaoVersionModel,
 } from '@sputnik-v2/dynamodb';
@@ -51,11 +50,6 @@ export class DaoDynamoService {
       DynamoEntityType.Dao,
       daoId,
     );
-  }
-
-  async getDao(daoId: string) {
-    const dao = await this.get(daoId);
-    return dao ? mapDaoModelToDao(dao) : undefined;
   }
 
   async getDaoIds() {

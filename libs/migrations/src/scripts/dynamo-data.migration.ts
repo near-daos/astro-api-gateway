@@ -9,7 +9,13 @@ import {
 } from 'typeorm';
 import PromisePool from '@supercharge/promise-pool';
 import {
+  AccountModel,
+  AccountNotificationModel,
+  BountyModel,
+  CommentModel,
   DaoIdsModel,
+  DaoModel,
+  DraftProposalModel,
   mapAccountNotificationToAccountNotificationModel,
   mapAccountToAccountModel,
   mapBountyToBountyModel,
@@ -18,14 +24,22 @@ import {
   mapDaoStatsToDaoStatsModel,
   mapDaoToDaoModel,
   mapDraftCommentToCommentModel,
+  mapDraftProposalToDraftProposalModel,
   mapNftTokenToNftModel,
   mapProposalTemplateToProposalTemplateModel,
   mapProposalToProposalModel,
   mapSharedProposalTemplateToSharedProposalTemplateModel,
   mapSubscriptionToSubscriptionModel,
   mapTokenToTokenPriceModel,
+  NftModel,
+  ProposalModel,
+  ProposalTemplateModel,
+  SharedProposalTemplateModel,
+  SubscriptionModel,
+  TokenPriceModel,
 } from '@sputnik-v2/dynamodb/models';
 import { DynamodbService } from '@sputnik-v2/dynamodb/dynamodb.service';
+import { TokenService } from '@sputnik-v2/token/token.service';
 import { Account } from '@sputnik-v2/account/entities';
 import {
   AccountNotification,
@@ -51,7 +65,10 @@ import {
 import { Subscription } from '@sputnik-v2/subscription/entities';
 
 import { Migration } from '..';
-import { AccountNotificationIdsDynamoService } from '@sputnik-v2/notification';
+import {
+  AccountNotificationIdsDynamoService,
+  AccountNotificationSettingsService,
+} from '@sputnik-v2/notification';
 
 @Injectable()
 export class DynamoDataMigration implements Migration {
@@ -68,6 +85,7 @@ export class DynamoDataMigration implements Migration {
 
     @InjectRepository(AccountNotificationSettings)
     private readonly accountNotificationSettingsRepository: Repository<AccountNotificationSettings>,
+    private readonly accountNotificationSettingsService: AccountNotificationSettingsService,
 
     @InjectRepository(Bounty)
     private readonly bountyRepository: Repository<Bounty>,
@@ -110,6 +128,7 @@ export class DynamoDataMigration implements Migration {
 
     @InjectRepository(Token)
     private readonly tokenRepository: Repository<Token>,
+    private readonly tokenService: TokenService,
 
     private readonly accountNotificationIdsDynamoService: AccountNotificationIdsDynamoService,
   ) {}
@@ -161,7 +180,7 @@ export class DynamoDataMigration implements Migration {
       Account.name,
       this.accountRepository,
     )) {
-      await this.dynamodbService.batchPut(
+      await this.dynamodbService.batchPut<AccountModel>(
         accounts.map((account) => mapAccountToAccountModel(account)),
       );
     }
@@ -170,6 +189,7 @@ export class DynamoDataMigration implements Migration {
   public async migrateAccountNotifications(): Promise<void> {
     const twoWeeksAgo = new Date();
     twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+
     for await (const accountNotifications of this.migrateEntity<AccountNotification>(
       AccountNotification.name,
       this.accountNotificationRepository,
@@ -178,7 +198,7 @@ export class DynamoDataMigration implements Migration {
         relations: ['notification'],
       },
     )) {
-      await this.dynamodbService.batchPut(
+      await this.dynamodbService.batchPut<AccountNotificationModel>(
         accountNotifications.map((accountNotification) =>
           mapAccountNotificationToAccountNotificationModel(accountNotification),
         ),
@@ -197,7 +217,7 @@ export class DynamoDataMigration implements Migration {
       await PromisePool.withConcurrency(5)
         .for(accountNotificationSettings)
         .process(async (setting) => {
-          return await this.dynamodbService.saveAccountNotificationSettings(
+          return this.accountNotificationSettingsService.saveAccountNotificationSettings(
             setting,
           );
         });
@@ -217,10 +237,15 @@ export class DynamoDataMigration implements Migration {
         ],
       },
     )) {
-      await this.dynamodbService.batchPut(
+      await this.dynamodbService.batchPut<BountyModel>(
         bounties
           .filter((bounty) => bounty.bountyContext)
-          .map((bounty) => mapBountyToBountyModel(bounty)),
+          .map((bounty) =>
+            mapBountyToBountyModel(
+              bounty,
+              bounty.bountyContext.proposal.proposalId,
+            ),
+          ),
       );
     }
   }
@@ -233,7 +258,7 @@ export class DynamoDataMigration implements Migration {
         relations: ['reports'],
       },
     )) {
-      await this.dynamodbService.batchPut(
+      await this.dynamodbService.batchPut<CommentModel>(
         comments.map((comment) => mapCommentToCommentModel(comment)),
       );
     }
@@ -244,7 +269,7 @@ export class DynamoDataMigration implements Migration {
       DraftComment.name,
       this.draftCommentRepository,
     )) {
-      await this.dynamodbService.batchPut(
+      await this.dynamodbService.batchPut<CommentModel>(
         comments.map((comment) => mapDraftCommentToCommentModel(comment)),
       );
     }
@@ -258,7 +283,7 @@ export class DynamoDataMigration implements Migration {
         relations: ['delegations', 'daoVersion', 'policy'],
       },
     )) {
-      await this.dynamodbService.batchPut(
+      await this.dynamodbService.batchPut<DaoModel>(
         daos.map((dao) => mapDaoToDaoModel(dao)),
       );
     }
@@ -279,7 +304,7 @@ export class DynamoDataMigration implements Migration {
       DaoStats.name,
       this.daoStatsRepository,
     )) {
-      await this.dynamodbService.batchPut(
+      await this.dynamodbService.batchPut<DaoStats>(
         daoStats.map((stats) =>
           mapDaoStatsToDaoStatsModel({
             ...stats,
@@ -304,9 +329,8 @@ export class DynamoDataMigration implements Migration {
           const history = await this.draftProposalHistoryRepository.find({
             where: { draftProposalId: { $eq: draftProposal.id } },
           });
-          return await this.dynamodbService.saveDraftProposal(
-            draftProposal,
-            history,
+          return this.dynamodbService.saveItem<DraftProposalModel>(
+            mapDraftProposalToDraftProposalModel(draftProposal, history),
           );
         });
     }
@@ -320,7 +344,7 @@ export class DynamoDataMigration implements Migration {
         relations: ['contract', 'metadata'],
       },
     )) {
-      await this.dynamodbService.batchPut(
+      await this.dynamodbService.batchPut<NftModel>(
         nfts.map((nft) => mapNftTokenToNftModel(nft)),
       );
     }
@@ -335,7 +359,7 @@ export class DynamoDataMigration implements Migration {
       },
       5540,
     )) {
-      await this.dynamodbService.batchPut(
+      await this.dynamodbService.batchPut<ProposalModel>(
         proposals.map((proposal) => mapProposalToProposalModel(proposal)),
       );
     }
@@ -346,7 +370,7 @@ export class DynamoDataMigration implements Migration {
       ProposalTemplate.name,
       this.proposalTemplateRepository,
     )) {
-      await this.dynamodbService.batchPut(
+      await this.dynamodbService.batchPut<ProposalTemplateModel>(
         proposalTemplates.map((proposalTemplate) =>
           mapProposalTemplateToProposalTemplateModel(proposalTemplate),
         ),
@@ -362,7 +386,7 @@ export class DynamoDataMigration implements Migration {
         relations: ['daos'],
       },
     )) {
-      await this.dynamodbService.batchPut(
+      await this.dynamodbService.batchPut<SharedProposalTemplateModel>(
         sharedProposalTemplates.map((sharedProposalTemplate) =>
           mapSharedProposalTemplateToSharedProposalTemplateModel(
             sharedProposalTemplate,
@@ -377,7 +401,7 @@ export class DynamoDataMigration implements Migration {
       Subscription.name,
       this.subscriptionRepository,
     )) {
-      await this.dynamodbService.batchPut(
+      await this.dynamodbService.batchPut<SubscriptionModel>(
         subscriptions.map((subscription) =>
           mapSubscriptionToSubscriptionModel(subscription),
         ),
@@ -396,7 +420,7 @@ export class DynamoDataMigration implements Migration {
       await PromisePool.withConcurrency(1)
         .for(tokenBalances)
         .process(async (tokenBalance) => {
-          return await this.dynamodbService.saveTokenBalanceToDao(tokenBalance);
+          return this.tokenService.saveTokenBalanceToDao(tokenBalance);
         });
     }
   }
@@ -406,7 +430,7 @@ export class DynamoDataMigration implements Migration {
       Token.name,
       this.tokenRepository,
     )) {
-      await this.dynamodbService.batchPut(
+      await this.dynamodbService.batchPut<TokenPriceModel>(
         tokens.map((token) => mapTokenToTokenPriceModel(token)),
       );
     }

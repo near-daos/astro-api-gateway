@@ -41,9 +41,4 @@ export class AccountDto {
   @IsString()
   @IsOptional()
   notifiAlertId?: string;
-
-  @ApiProperty()
-  isArchived?: boolean;
-
-  createdAt?: Date;
 }

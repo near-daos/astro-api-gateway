@@ -85,7 +85,7 @@ export class AccountNotificationIdsDynamoService {
 
   async setAccountNotificationIds(
     accountId: string,
-    accountNotifications: Partial<AccountNotificationModel>[],
+    accountNotifications: PartialEntity<AccountNotificationModel>[],
   ) {
     let model =
       (await this.dynamoDbService.getItemByType<AccountNotificationIdsModel>(
@@ -98,12 +98,12 @@ export class AccountNotificationIdsDynamoService {
       model = this.setAccountNotificationId(model, accountNotification);
     }
 
-    await this.dynamoDbService.saveItem(model);
+    await this.dynamoDbService.saveItem<AccountNotificationIdsModel>(model);
   }
 
   private setAccountNotificationId(
     item: PartialEntity<AccountNotificationIdsModel>,
-    accountNotification: Partial<AccountNotificationModel>,
+    accountNotification: PartialEntity<AccountNotificationModel>,
   ) {
     let { notReadIds, notArchivedIds } = item;
     const { id, isRead, isArchived } = accountNotification;

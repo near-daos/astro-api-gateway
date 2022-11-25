@@ -13,16 +13,14 @@ import {
   castTransactionReceiptOutcome,
   castTransactionStatus,
   ViewCodeResponse,
+  NearStakingContract,
 } from './types';
 
 @Injectable()
 export class NearApiService {
   private near!: Near;
-
   private contracts: Record<string, NearApiContract>;
-
   private account: Account;
-
   private provider: NearProvider;
 
   constructor(
@@ -73,23 +71,25 @@ export class NearApiService {
     return (await this.getAccountState(accountId)).amount;
   }
 
-  public getContract(key: string, id?: string): Contract & any {
+  public getContract<T extends Contract>(key: string, id?: string): T {
     const contract = this.contracts[key];
     const contractId = id || contract?.contractId;
 
     return new Contract(this.account, contractId, {
       viewMethods: contract.viewMethods,
       changeMethods: contract.changeMethods,
-    });
+    }) as T;
   }
 
-  public async getStakingContract(contractId: string): Promise<Contract & any> {
+  public async getStakingContract(
+    contractId: string,
+  ): Promise<NearStakingContract> {
     const account = await this.near.account(contractId);
 
     return new Contract(account, contractId, {
       viewMethods: ['ft_total_supply', 'ft_balance_of', 'get_user'],
       changeMethods: ['delegate', 'undelegate', 'withdraw'],
-    });
+    }) as NearStakingContract;
   }
 
   public async getContractVersionHash(id: string): Promise<string> {
