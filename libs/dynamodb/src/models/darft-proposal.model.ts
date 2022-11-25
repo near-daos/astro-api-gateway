@@ -21,8 +21,6 @@ export class DraftProposalModel extends BaseModel {
   saveAccounts: string[];
   replies: number;
   history: Partial<DraftProposalHistoryModel>[];
-  createTimestamp: number;
-  processingTimeStamp: number;
 }
 
 export class DraftProposalHistoryModel {
