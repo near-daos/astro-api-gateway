@@ -1,4 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { PartialEntity } from '@sputnik-v2/dynamodb';
+import { AccountModel } from '@sputnik-v2/dynamodb/models';
 import { Account } from '../entities';
 
 export class AccountResponse {
@@ -18,7 +20,10 @@ export class AccountResponse {
   isPhoneVerified: boolean;
 }
 
-export function castAccountResponse(accountId: string, account?: Account) {
+export function castAccountResponse(
+  accountId: string,
+  account?: Account | PartialEntity<AccountModel>,
+) {
   if (!account) {
     return {
       accountId,

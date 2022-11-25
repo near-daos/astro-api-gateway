@@ -1,11 +1,15 @@
 import { DateTime } from 'luxon';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindManyOptions, MongoRepository, Repository } from 'typeorm';
+import {
+  FindManyOptions,
+  MongoRepository,
+  MoreThan,
+  Repository,
+} from 'typeorm';
 import PromisePool from '@supercharge/promise-pool';
 import {
   DaoIdsModel,
-  mapAccountNotificationSettingsToAccountNotificationSettingsModel,
   mapAccountNotificationToAccountNotificationModel,
   mapAccountToAccountModel,
   mapBountyToBountyModel,
@@ -47,6 +51,7 @@ import {
 import { Subscription } from '@sputnik-v2/subscription/entities';
 
 import { Migration } from '..';
+import { AccountNotificationIdsDynamoService } from '@sputnik-v2/notification';
 
 @Injectable()
 export class DynamoDataMigration implements Migration {
@@ -105,6 +110,8 @@ export class DynamoDataMigration implements Migration {
 
     @InjectRepository(Token)
     private readonly tokenRepository: Repository<Token>,
+
+    private readonly accountNotificationIdsDynamoService: AccountNotificationIdsDynamoService,
   ) {}
 
   public async migrate(): Promise<void> {
@@ -161,10 +168,13 @@ export class DynamoDataMigration implements Migration {
   }
 
   public async migrateAccountNotifications(): Promise<void> {
+    const twoWeeksAgo = new Date();
+    twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
     for await (const accountNotifications of this.migrateEntity<AccountNotification>(
       AccountNotification.name,
       this.accountNotificationRepository,
       {
+        where: { createdAt: MoreThan(twoWeeksAgo) },
         relations: ['notification'],
       },
     )) {
@@ -172,6 +182,9 @@ export class DynamoDataMigration implements Migration {
         accountNotifications.map((accountNotification) =>
           mapAccountNotificationToAccountNotificationModel(accountNotification),
         ),
+      );
+      await this.accountNotificationIdsDynamoService.setAccountsNotificationIds(
+        accountNotifications,
       );
     }
   }
@@ -181,13 +194,13 @@ export class DynamoDataMigration implements Migration {
       AccountNotificationSettings.name,
       this.accountNotificationSettingsRepository,
     )) {
-      await this.dynamodbService.batchPut(
-        accountNotificationSettings.map((setting) =>
-          mapAccountNotificationSettingsToAccountNotificationSettingsModel(
+      await PromisePool.withConcurrency(5)
+        .for(accountNotificationSettings)
+        .process(async (setting) => {
+          return await this.dynamodbService.saveAccountNotificationSettings(
             setting,
-          ),
-        ),
-      );
+          );
+        });
     }
   }
 

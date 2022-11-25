@@ -21,7 +21,7 @@ import {
   SharedProposalTemplate,
 } from '@sputnik-v2/proposal-template/entities';
 import { Subscription } from '@sputnik-v2/subscription/entities';
-import { buildEntityId } from '@sputnik-v2/utils';
+import { buildEntityId, getChunks } from '@sputnik-v2/utils';
 
 import {
   AccountModel,
@@ -30,7 +30,8 @@ import {
   CommentModel,
   DaoModel,
   DraftProposalModel,
-  mapAccountNotificationSettingsToAccountNotificationSettingsModel,
+  mapAccountNotificationSettingsModel,
+  mapAccountNotificationSettingsToAccountNotificationSettingsItemModel,
   mapAccountNotificationToAccountNotificationModel,
   mapAccountToAccountModel,
   mapCommentToCommentModel,
@@ -113,11 +114,33 @@ export class DynamodbService {
   async saveAccountNotificationSettings(
     accountNotificationSettings: Partial<AccountNotificationSettings>,
   ) {
-    return this.saveItem<AccountNotificationSettingsModel>(
-      mapAccountNotificationSettingsToAccountNotificationSettingsModel(
-        accountNotificationSettings,
-      ),
+    const item = await this.getItemByType<AccountNotificationSettingsModel>(
+      accountNotificationSettings.accountId,
+      DynamoEntityType.AccountNotificationSettings,
+      accountNotificationSettings.accountId,
     );
+    const model =
+      item ||
+      mapAccountNotificationSettingsModel(
+        accountNotificationSettings.accountId,
+        [],
+      );
+    const updatedSettings =
+      mapAccountNotificationSettingsToAccountNotificationSettingsItemModel(
+        accountNotificationSettings,
+      );
+
+    const settingsIndex = model.settings.findIndex(
+      ({ daoId }) => daoId === accountNotificationSettings.daoId,
+    );
+
+    if (settingsIndex >= 0) {
+      model.settings[settingsIndex] = updatedSettings;
+    } else {
+      model.settings.push(updatedSettings);
+    }
+
+    return this.saveItem<AccountNotificationSettingsModel>(model);
   }
 
   async saveComment(comment: Partial<Comment>) {
@@ -198,6 +221,7 @@ export class DynamodbService {
     if (!items.length) {
       return;
     }
+
     return this.client
       .batchWrite({
         RequestItems: {
@@ -212,6 +236,19 @@ export class DynamodbService {
   }
 
   async batchPut<M>(
+    items: PartialEntity<M>[],
+    tableName = this.tableName,
+  ): Promise<DocumentClient.BatchWriteItemOutput[]> {
+    if (!items.length) {
+      return;
+    }
+    const chunks = getChunks(items, 25);
+    return Promise.all(
+      chunks.map((chunk) => this._batchPut<M>(chunk, tableName)),
+    );
+  }
+
+  private async _batchPut<M>(
     items: PartialEntity<M>[],
     tableName = this.tableName,
   ): Promise<DocumentClient.BatchWriteItemOutput> {
@@ -329,7 +366,7 @@ export class DynamodbService {
     entityType: DynamoEntityType,
     id: string,
     tableName = this.tableName,
-  ): Promise<PartialEntity<M> | null> {
+  ): Promise<PartialEntity<M> | undefined> {
     return this.getItemById(
       partitionId,
       buildEntityId(entityType, id),

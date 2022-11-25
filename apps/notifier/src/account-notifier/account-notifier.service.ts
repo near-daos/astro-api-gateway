@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { In } from 'typeorm';
 
 import {
   AccountNotification,
@@ -28,6 +27,10 @@ import {
   NotifiTemplateMessageDto,
 } from '@sputnik-v2/notifi-client';
 import { ConfigService } from '@nestjs/config';
+import {
+  AccountNotificationSettingsItemModel,
+  DaoModel,
+} from '@sputnik-v2/dynamodb';
 
 @Injectable()
 export class AccountNotifierService {
@@ -71,9 +74,9 @@ export class AccountNotifierService {
   ): Promise<AccountNotification[]> {
     const daoSubscribers = await this.getDaoSubscribers(notification.daoId);
     const notificationSettings =
-      await this.accountNotificationSettingsService.find({
-        accountId: In(daoSubscribers),
-      });
+      await this.accountNotificationSettingsService.getAccountsNotificationSettings(
+        daoSubscribers,
+      );
     const accountsNotifications = daoSubscribers.reduce(
       (accountsNotifications, accountId) => {
         const status = this.getNotifyAccountStatus(
@@ -105,19 +108,28 @@ export class AccountNotifierService {
   }
 
   private async getDaoSubscribers(daoId: string): Promise<string[]> {
-    const daoSubscribers = await this.subscriptionService.getDaoSubscribers(
-      daoId,
-    );
-    const daoMembers = await this.daoService.getDaoMembers(daoId);
-    return [...new Set(daoSubscribers.concat(daoMembers))].filter(
-      (member) => !!member,
-    );
+    if (await this.daoService.useDynamoDB()) {
+      const daoModel = (await this.daoService.findById(daoId)) as DaoModel;
+      return [
+        ...new Set(daoModel.accountIds.concat(daoModel.followers)),
+      ].filter((member) => !!member);
+    } else {
+      const daoSubscribers = await this.subscriptionService.getDaoSubscribers(
+        daoId,
+      );
+      const daoMembers = await this.daoService.getDaoMembers(daoId);
+      return [...new Set(daoSubscribers.concat(daoMembers))].filter(
+        (member) => !!member,
+      );
+    }
   }
 
   private getNotifyAccountStatus(
     accountId: string,
     notification: Notification,
-    notificationSettings: AccountNotificationSettings[],
+    notificationSettings: Array<
+      AccountNotificationSettings | AccountNotificationSettingsItemModel
+    >,
   ): {
     isDisabled: boolean;
     shouldNotify: boolean;

@@ -30,6 +30,7 @@ import {
   AccountNotification,
   AccountNotificationSettings,
   Notification,
+  NotificationModule,
 } from '@sputnik-v2/notification';
 import { Comment, CommentModule } from '@sputnik-v2/comment';
 import {
@@ -109,6 +110,8 @@ import migrationScripts from './scripts';
     }),
     forwardRef(() => DaoModule),
     ProposalModule,
+    BountyModule,
+    NotificationModule,
     forwardRef(() => BountyModule),
     NearIndexerModule,
     NearApiModule,
