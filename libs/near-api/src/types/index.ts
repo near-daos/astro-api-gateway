@@ -1,5 +1,4 @@
 export * from './near-account-state';
-export * from './near-contracts';
 export * from './near-provider';
 export * from './near-transaction';
 export * from './near-transaction-action';

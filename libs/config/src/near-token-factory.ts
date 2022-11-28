@@ -1,5 +1,5 @@
 import { ConfigService } from '@nestjs/config';
-import { NearTokenFactoryContract } from '@sputnik-v2/near-api/types';
+import { TokenFactoryContract } from '@sputnik-v2/near-api/contracts';
 import { Account, Contract, Near } from 'near-api-js';
 
 import { NEAR_PROVIDER, NEAR_TOKEN_FACTORY_PROVIDER } from '@sputnik-v2/common';
@@ -7,7 +7,7 @@ import { NEAR_PROVIDER, NEAR_TOKEN_FACTORY_PROVIDER } from '@sputnik-v2/common';
 export type NearTokenFactoryProvider = {
   near: Near;
   account: Account;
-  factoryContract: NearTokenFactoryContract;
+  factoryContract: TokenFactoryContract;
 };
 
 export const nearTokenFactoryProvider = {
@@ -28,7 +28,7 @@ export const nearTokenFactoryProvider = {
         'get_token',
       ],
       changeMethods: ['create_token', 'storage_deposit'],
-    }) as NearTokenFactoryContract;
+    }) as TokenFactoryContract;
 
     return { account, factoryContract, near };
   },

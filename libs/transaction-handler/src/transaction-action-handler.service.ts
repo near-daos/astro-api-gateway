@@ -5,9 +5,9 @@ import { ConfigService } from '@nestjs/config';
 
 import {
   NearApiService,
-  NearFTokenContract,
-  NearNfTokenContract,
-  NearSputnikDaoContract,
+  FTokenContract,
+  NFTokenContract,
+  SputnikDaoContract,
 } from '@sputnik-v2/near-api';
 import { SputnikService } from '@sputnik-v2/sputnikdao';
 import { Dao, DaoDynamoService, DaoService } from '@sputnik-v2/dao';
@@ -374,7 +374,7 @@ export class TransactionActionHandlerService {
     const { receiverId, signerId, transactionHash, args, timestamp, status } =
       txAction;
     const dao = await this.daoService.findById(receiverId);
-    const daoContract = this.nearApiService.getContract<NearSputnikDaoContract>(
+    const daoContract = this.nearApiService.getContract<SputnikDaoContract>(
       'sputnikDao',
       receiverId,
     );
@@ -469,7 +469,7 @@ export class TransactionActionHandlerService {
 
   async handleApproveProposal(
     dao: Dao | PartialEntity<DaoModel>,
-    daoContract: NearSputnikDaoContract,
+    daoContract: SputnikDaoContract,
     proposal: ProposalDto,
     receiverId: string,
     transactionHash: string,
@@ -589,7 +589,7 @@ export class TransactionActionHandlerService {
 
   async handleRejectProposal(
     dao: Dao | PartialEntity<DaoModel>,
-    daoContract: NearSputnikDaoContract,
+    daoContract: SputnikDaoContract,
     proposal: ProposalDto,
     receiverId: string,
     transactionHash: string,
@@ -631,7 +631,7 @@ export class TransactionActionHandlerService {
 
   async handleRemoveProposal(
     dao: Dao | PartialEntity<DaoModel>,
-    daoContract: NearSputnikDaoContract,
+    daoContract: SputnikDaoContract,
     proposal: ProposalDto,
     proposalEntity: Proposal | PartialEntity<ProposalModel>,
     receiverId: string,
@@ -739,7 +739,7 @@ export class TransactionActionHandlerService {
 
   async handleDoneBounty(
     dao: Dao | PartialEntity<DaoModel>,
-    daoContract: NearSputnikDaoContract,
+    daoContract: SputnikDaoContract,
     proposalKind: ProposalKindBountyDone,
     transactionHash: string,
     timestamp: number,
@@ -800,7 +800,7 @@ export class TransactionActionHandlerService {
     args,
     timestamp,
   }: TransactionAction): Promise<ContractHandlerResult> {
-    const daoContract = this.nearApiService.getContract<NearSputnikDaoContract>(
+    const daoContract = this.nearApiService.getContract<SputnikDaoContract>(
       'sputnikDao',
       receiverId,
     );
@@ -893,7 +893,7 @@ export class TransactionActionHandlerService {
     const { txSignerId, receiverId: daoId, args } = txAction;
     const { account_id: accountId } = args;
 
-    const daoContract = this.nearApiService.getContract<NearSputnikDaoContract>(
+    const daoContract = this.nearApiService.getContract<SputnikDaoContract>(
       'sputnikDao',
       daoId,
     );
@@ -987,7 +987,7 @@ export class TransactionActionHandlerService {
 
     try {
       this.logger.log(`Checking if ${txAction.receiverId} is Fungible Token`);
-      const ftContract = this.nearApiService.getContract<NearFTokenContract>(
+      const ftContract = this.nearApiService.getContract<FTokenContract>(
         'fToken',
         txAction.receiverId,
       );
@@ -999,7 +999,7 @@ export class TransactionActionHandlerService {
     }
 
     try {
-      const nftContract = this.nearApiService.getContract<NearNfTokenContract>(
+      const nftContract = this.nearApiService.getContract<NFTokenContract>(
         'nft',
         txAction.receiverId,
       );

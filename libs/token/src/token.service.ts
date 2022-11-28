@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ILike, IsNull, Not, Repository } from 'typeorm';
-import { NearApiService, NearFTokenContract } from '@sputnik-v2/near-api';
+import { NearApiService, FTokenContract } from '@sputnik-v2/near-api';
 import { BaseResponseDto, Order } from '@sputnik-v2/common';
 import { Dao } from '@sputnik-v2/dao/entities';
 import { FeatureFlags, FeatureFlagsService } from '@sputnik-v2/feature-flags';
@@ -51,7 +51,7 @@ export class TokenService {
   }
 
   async loadTokenById(tokenId: string, timestamp: number) {
-    const contract = this.nearApiService.getContract<NearFTokenContract>(
+    const contract = this.nearApiService.getContract<FTokenContract>(
       'fToken',
       tokenId,
     );
@@ -61,7 +61,7 @@ export class TokenService {
   }
 
   async loadBalanceById(tokenId: string, accountId: string, timestamp: number) {
-    const contract = this.nearApiService.getContract<NearFTokenContract>(
+    const contract = this.nearApiService.getContract<FTokenContract>(
       'fToken',
       tokenId,
     );

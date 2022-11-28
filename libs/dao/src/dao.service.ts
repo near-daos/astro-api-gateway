@@ -22,7 +22,7 @@ import { NFTTokenService, TokenService } from '@sputnik-v2/token';
 import { SearchQuery } from '@sputnik-v2/common';
 import {
   NearApiService,
-  NearSputnikDaoFactoryContract,
+  SputnikDaoFactoryContract,
 } from '@sputnik-v2/near-api';
 import {
   DaoModel,
@@ -439,7 +439,7 @@ export class DaoService extends TypeOrmCrudService<Dao> {
 
   async loadDaoVersions(): Promise<DaoVersion[]> {
     const sputnikDaoFactory =
-      this.nearApiService.getContract<NearSputnikDaoFactoryContract>(
+      this.nearApiService.getContract<SputnikDaoFactoryContract>(
         'sputnikDaoFactory',
       );
     const daoVersions = await sputnikDaoFactory.get_contracts_metadata();
@@ -456,7 +456,7 @@ export class DaoService extends TypeOrmCrudService<Dao> {
   async getDaoVersionById(id: string): Promise<DaoVersionDto> {
     if (await this.useDynamoDB()) {
       const sputnikDaoFactory =
-        this.nearApiService.getContract<NearSputnikDaoFactoryContract>(
+        this.nearApiService.getContract<SputnikDaoFactoryContract>(
           'sputnikDaoFactory',
         );
       const daoVersions = await sputnikDaoFactory.get_contracts_metadata();

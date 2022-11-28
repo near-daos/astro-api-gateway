@@ -2,8 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 
 import {
   NearApiService,
-  NearSputnikDaoContract,
-  NearSputnikDaoFactoryContract,
+  SputnikDaoContract,
+  SputnikDaoFactoryContract,
 } from '@sputnik-v2/near-api';
 import PromisePool from '@supercharge/promise-pool';
 import { castProposalKind } from '@sputnik-v2/proposal/dto';
@@ -18,17 +18,17 @@ import {
 export class SputnikService {
   private readonly logger = new Logger(SputnikService.name);
 
-  private factoryContract!: NearSputnikDaoFactoryContract;
+  private factoryContract!: SputnikDaoFactoryContract;
 
   constructor(private readonly nearApiService: NearApiService) {
     this.factoryContract =
-      nearApiService.getContract<NearSputnikDaoFactoryContract>(
+      nearApiService.getContract<SputnikDaoFactoryContract>(
         'sputnikDaoFactory',
       );
   }
 
   public async getDaoInfo(daoId: string): Promise<DaoInfo> {
-    const daoContract = this.nearApiService.getContract<NearSputnikDaoContract>(
+    const daoContract = this.nearApiService.getContract<SputnikDaoContract>(
       'sputnikDao',
       daoId,
     );
@@ -51,7 +51,7 @@ export class SputnikService {
   }
 
   public async getProposalsByDaoId(daoId: string, lastProposalId: number) {
-    const daoContract = this.nearApiService.getContract<NearSputnikDaoContract>(
+    const daoContract = this.nearApiService.getContract<SputnikDaoContract>(
       'sputnikDao',
       daoId,
     );
@@ -73,7 +73,7 @@ export class SputnikService {
   }
 
   public async getProposal(daoId: string, proposalId: number) {
-    const daoContract = this.nearApiService.getContract<NearSputnikDaoContract>(
+    const daoContract = this.nearApiService.getContract<SputnikDaoContract>(
       'sputnikDao',
       daoId,
     );
@@ -104,7 +104,7 @@ export class SputnikService {
   }
 
   public async getBountiesByDaoId(daoId: string, lastBountyId: number) {
-    const daoContract = this.nearApiService.getContract<NearSputnikDaoContract>(
+    const daoContract = this.nearApiService.getContract<SputnikDaoContract>(
       'sputnikDao',
       daoId,
     );
@@ -134,7 +134,7 @@ export class SputnikService {
   }
 
   public async getBountyClaims(daoId: string, accountIds: string[]) {
-    const daoContract = this.nearApiService.getContract<NearSputnikDaoContract>(
+    const daoContract = this.nearApiService.getContract<SputnikDaoContract>(
       'sputnikDao',
       daoId,
     );

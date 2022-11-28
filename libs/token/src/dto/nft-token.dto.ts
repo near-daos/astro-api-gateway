@@ -1,5 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { TransactionInfo } from '@sputnik-v2/common';
 
 export interface NFTTokenUpdateDto {
   account: string;
@@ -18,19 +17,13 @@ export class NFTTokenContractDto {
   spec: string;
 
   @ApiProperty()
-  ownerId: string;
-
-  @ApiProperty()
-  minter: string;
+  icon: string;
 
   @ApiProperty()
   baseUri: string;
 
   @ApiProperty()
   symbol: string;
-
-  @ApiProperty()
-  icon: string;
 
   @ApiProperty()
   reference: string;
@@ -83,7 +76,7 @@ export class NFTTokenMetadataDto {
   approvedAccountIds: string[];
 }
 
-export class NFTTokenDto extends TransactionInfo {
+export class NFTTokenDto {
   @ApiProperty()
   id: string;
 
@@ -107,4 +100,18 @@ export class NFTTokenDto extends TransactionInfo {
 
   @ApiProperty()
   metadata: NFTTokenMetadataDto;
+
+  @ApiProperty()
+  transactionHash?: string;
+
+  @ApiProperty()
+  updateTransactionHash?: string;
+
+  @ApiProperty()
+  // TODO: use bigint
+  createTimestamp?: number;
+
+  @ApiProperty()
+  // TODO: use bigint
+  updateTimestamp?: number;
 }

@@ -4,6 +4,7 @@ import { NEAR_API_PROVIDER } from '@sputnik-v2/common';
 import { NearApiContract, NearApiProvider } from '@sputnik-v2/config/near-api';
 import { BlockId } from 'near-api-js/lib/providers/provider';
 
+import { StakingContract } from './contracts';
 import {
   NearAccountState,
   NearTransactionStatus,
@@ -13,7 +14,6 @@ import {
   castTransactionReceiptOutcome,
   castTransactionStatus,
   ViewCodeResponse,
-  NearStakingContract,
 } from './types';
 
 @Injectable()
@@ -83,13 +83,13 @@ export class NearApiService {
 
   public async getStakingContract(
     contractId: string,
-  ): Promise<NearStakingContract> {
+  ): Promise<StakingContract> {
     const account = await this.near.account(contractId);
 
     return new Contract(account, contractId, {
       viewMethods: ['ft_total_supply', 'ft_balance_of', 'get_user'],
       changeMethods: ['delegate', 'undelegate', 'withdraw'],
-    }) as NearStakingContract;
+    }) as StakingContract;
   }
 
   public async getContractVersionHash(id: string): Promise<string> {
