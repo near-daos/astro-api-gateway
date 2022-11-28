@@ -12,7 +12,7 @@ export class Token extends TransactionEntity {
 
   @ApiProperty()
   @Column()
-  ownerId: string; // TODO drop
+  ownerId: string;
 
   @ApiProperty()
   @Column()

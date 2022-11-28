@@ -19,7 +19,7 @@ export function castToken(
     reference: tokenMetadata.reference,
     referenceHash: tokenMetadata.reference_hash,
     decimals: tokenMetadata.decimals,
-    ownerId: '', // TODO: drop
+    ownerId: '',
     updateTimestamp: timestamp,
   };
 }
@@ -30,7 +30,7 @@ export function castNearToken(price?: string) {
     symbol: 'NEAR',
     decimals: new Decimal(yoktoNear).toFixed().length - 1,
     price,
-    ownerId: '', // TODO: drop
+    ownerId: '',
     totalSupply: '',
   };
 }
