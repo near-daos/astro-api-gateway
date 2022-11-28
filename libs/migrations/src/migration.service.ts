@@ -2,7 +2,6 @@ import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { Migration } from './interfaces';
 import { DynamoDataMigration } from './scripts/dynamo-data.migration';
 import { OpensearchIndexMappingMigration } from './scripts/opensearch-index-mapping.migration';
-import { OpensearchIndexMigration } from './scripts/opensearch-index.migration';
 
 @Injectable()
 export class MigrationService {
@@ -12,7 +11,6 @@ export class MigrationService {
   constructor(
     private dynamoDataMigration: DynamoDataMigration,
     private opensearchIndexMappingMigration: OpensearchIndexMappingMigration,
-    private opensearchIndexMigration: OpensearchIndexMigration,
   ) {}
 
   async runMigration(
@@ -52,8 +50,6 @@ export class MigrationService {
         return this.dynamoDataMigration;
       case OpensearchIndexMappingMigration.name:
         return this.opensearchIndexMappingMigration;
-      case OpensearchIndexMigration.name:
-        return this.opensearchIndexMigration;
     }
   }
 }
