@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
-import { MigrationModule } from '.';
+import { parseJSON } from '@sputnik-v2/utils';
+import { Migration, MigrationModule } from '.';
 import migrationScripts from './scripts';
 
 export default class MigrationRunner {
@@ -9,17 +10,21 @@ export default class MigrationRunner {
     const targetMigrations = (process.env.DATABASE_MIGRATIONS_LIST || '').split(
       ',',
     );
+    const targetOptions = parseJSON(
+      process.env.DATABASE_MIGRATIONS_OPTIONS || '',
+    );
 
-    for (const migration of targetMigrations) {
+    for (const migrationName of targetMigrations) {
       const script = migrationScripts.find(
-        (script) => script.name === migration,
+        (script) => script.name === migrationName,
       );
 
       if (!script) {
-        throw new Error(`Invalid migration: ${migration}`);
+        throw new Error(`Invalid migration: ${migrationName}`);
       }
 
-      await app.get(script).migrate();
+      const migration: Migration = app.get(script);
+      await migration.migrate(targetOptions);
     }
 
     await app.close();
