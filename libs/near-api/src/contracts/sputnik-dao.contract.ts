@@ -217,7 +217,7 @@ export declare class SputnikDaoContract extends Contract {
     limit: number;
   }): Promise<SputnikDaoBountyOutput[]>;
 
-  get_bounty(params: { id: number }): Promise<SputnikDaoBounty>;
+  get_bounty(params: { id: number }): Promise<SputnikDaoBountyOutput>;
 
   get_bounty_claims(params: {
     account_id: string;

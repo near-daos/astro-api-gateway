@@ -711,14 +711,14 @@ export class TransactionActionHandlerService {
     } else {
       this.logger.log('Storing new Bounty due to transaction');
       await this.bountyService.create(
-        castAddBounty({
+        castAddBounty(
           dao,
           proposal,
           bountyData,
           bountyId,
           transactionHash,
           timestamp,
-        }),
+        ),
       );
       this.logger.log('Successfully stored new Bounty');
     }
@@ -768,16 +768,16 @@ export class TransactionActionHandlerService {
 
     this.logger.log(`Updating Bounty: ${bounty.id} due to transaction`);
     await this.bountyService.create(
-      castDoneBounty({
+      castDoneBounty(
         dao,
-        accountId: receiverId,
+        receiverId,
         bounty,
         bountyData,
         numberOfClaims,
         bountyClaims,
         transactionHash,
         timestamp,
-      }),
+      ),
     );
     this.logger.log(`Bounty successfully updated: ${bounty.id}`);
 
@@ -823,7 +823,7 @@ export class TransactionActionHandlerService {
       id: bounty.bountyId,
     });
 
-    const getRemovedClaim = () =>
+    const removedClaim =
       methodName === 'bounty_giveup'
         ? this.bountyService.findLastClaim(
             bounty.bountyClaims,
@@ -834,16 +834,16 @@ export class TransactionActionHandlerService {
 
     this.logger.log(`Updating Bounty: ${bounty.id} due to transaction`);
     await this.bountyService.create(
-      castClaimBounty({
+      castClaimBounty(
         bounty,
-        accountId: signerId,
-        daoId: receiverId,
+        signerId,
+        receiverId,
         transactionHash,
         bountyClaims,
         numberOfClaims,
-        removedClaim: getRemovedClaim(),
+        removedClaim,
         timestamp,
-      }),
+      ),
     );
     this.logger.log(`Bounty successfully updated: ${bounty.id}`);
 

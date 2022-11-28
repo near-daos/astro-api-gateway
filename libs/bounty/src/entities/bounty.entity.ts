@@ -69,7 +69,7 @@ export class Bounty extends TransactionEntity {
 
   @ApiProperty()
   @Column()
-  times: string;
+  times: number;
 
   @ApiProperty()
   @Column()

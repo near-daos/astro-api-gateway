@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 
 import {
   NearApiService,
+  SputnikDaoBountyOutput,
   SputnikDaoContract,
   SputnikDaoFactoryContract,
 } from '@sputnik-v2/near-api';
@@ -103,7 +104,10 @@ export class SputnikService {
     return null;
   }
 
-  public async getBountiesByDaoId(daoId: string, lastBountyId: number) {
+  public async getBountiesByDaoId(
+    daoId: string,
+    lastBountyId: number,
+  ): Promise<(SputnikDaoBountyOutput & { numberOfClaims: number })[]> {
     const daoContract = this.nearApiService.getContract<SputnikDaoContract>(
       'sputnikDao',
       daoId,
@@ -111,7 +115,7 @@ export class SputnikService {
     const chunkSize = BOUNTY_REQUEST_CHUNK_SIZE;
     const chunkCount =
       (lastBountyId - (lastBountyId % chunkSize)) / chunkSize + 1;
-    let bounties = [];
+    let bounties: SputnikDaoBountyOutput[] = [];
 
     // Load all bounties by chunks
     for (let i = 0; i < chunkCount; i++) {
@@ -122,15 +126,21 @@ export class SputnikService {
       bounties = bounties.concat(bountiesChunk);
     }
 
-    await PromisePool.withConcurrency(5)
+    const { results } = await PromisePool.withConcurrency(5)
       .for(bounties)
+      .handleError((err) => {
+        throw err;
+      })
       .process(async (bounty) => {
-        bounty.numberOfClaims = await daoContract.get_bounty_number_of_claims({
-          id: bounty.id,
-        });
+        return {
+          ...bounty,
+          numberOfClaims: await daoContract.get_bounty_number_of_claims({
+            id: bounty.id,
+          }),
+        };
       });
 
-    return bounties;
+    return results;
   }
 
   public async getBountyClaims(daoId: string, accountIds: string[]) {

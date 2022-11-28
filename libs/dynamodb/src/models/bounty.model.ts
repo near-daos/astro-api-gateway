@@ -18,7 +18,7 @@ export class BountyModel extends TransactionModel {
   description: string;
   token: string;
   amount: string;
-  times: string;
+  times: number;
   maxDeadline: string;
   numberOfClaims: number;
   commentsCount: number;

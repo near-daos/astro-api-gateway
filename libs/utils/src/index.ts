@@ -69,9 +69,9 @@ export const buildBountyDynamoId = (proposalId: number): string => {
 export const buildBountyClaimId = (
   daoId: string,
   bountyId: number,
-  bountyClaimId: number,
+  startTime: string,
 ): string => {
-  return `${daoId}-${bountyId}-${bountyClaimId}`;
+  return `${daoId}-${bountyId}-${startTime}`;
 };
 
 export const buildRoleId = (daoId: string, name: string): string => {
@@ -290,3 +290,10 @@ export const getChunks = (arr: Array<any>, chunkSize: number) => {
 
   return chunks;
 };
+
+export function arrayUniqueBy<T>(array: T[], key: keyof T): T[] {
+  return array.filter(
+    (item, index, self) =>
+      index === self.findIndex((t) => t[key] === item[key]),
+  );
+}

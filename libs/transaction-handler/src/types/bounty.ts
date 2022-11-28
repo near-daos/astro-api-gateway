@@ -1,27 +1,43 @@
-import camelcaseKeys from 'camelcase-keys';
+import { Bounty, BountyClaim } from '@sputnik-v2/bounty';
+import { Dao } from '@sputnik-v2/dao';
+import {
+  BountyClaimModel,
+  BountyModel,
+  DaoModel,
+  PartialEntity,
+} from '@sputnik-v2/dynamodb';
+import {
+  SputnikDaoBountyClaim,
+  SputnikDaoBountyOutput,
+} from '@sputnik-v2/near-api';
+import { ProposalDto } from '@sputnik-v2/proposal';
 import { BountyDto, BountyClaimDto } from '@sputnik-v2/bounty/dto';
 import {
+  arrayUniqueBy,
   buildBountyClaimId,
   buildBountyId,
   calculateClaimEndTime,
 } from '@sputnik-v2/utils';
 
-export function castAddBounty({
-  dao,
-  proposal,
-  bountyData,
-  bountyId,
-  transactionHash,
-  timestamp,
-}): BountyDto {
+export function castAddBounty(
+  dao: Dao | PartialEntity<DaoModel>,
+  proposal: ProposalDto,
+  bountyData: Bounty,
+  bountyId: number,
+  transactionHash: string,
+  timestamp: number,
+): BountyDto {
   return {
-    ...camelcaseKeys(bountyData),
     id: buildBountyId(dao.id, bountyId),
-    bountyId: bountyId,
     daoId: dao.id,
+    bountyId: bountyId,
     proposalId: proposal.id,
     proposalIndex: proposal.proposalId,
-    dao: { id: dao.id },
+    description: bountyData.description,
+    token: bountyData.token,
+    amount: bountyData.amount,
+    times: bountyData.times,
+    maxDeadline: bountyData.maxDeadline,
     numberOfClaims: 0,
     bountyClaims: [],
     transactionHash: transactionHash,
@@ -31,83 +47,126 @@ export function castAddBounty({
   };
 }
 
-export function castBountyClaims({
-  contractId,
-  accountId,
-  bountyId,
-  bountyClaims,
-}): BountyClaimDto[] {
+export function castBountyClaims(
+  daoId: string,
+  accountId: string,
+  bountyId: number,
+  bountyClaims: SputnikDaoBountyClaim[],
+): BountyClaimDto[] {
   return bountyClaims
-    .map((bountyClaim) => {
-      const claim = camelcaseKeys(bountyClaim);
+    .filter((claim) => bountyId === claim.bounty_id)
+    .map((claim) => {
       return {
-        ...claim,
-        endTime: calculateClaimEndTime(claim.startTime, claim.deadline),
-        id: buildBountyClaimId(contractId, claim.bountyId, claim.startTime),
+        id: buildBountyClaimId(daoId, claim.bounty_id, claim.start_time),
+        bountyId: buildBountyId(daoId, claim.bounty_id),
         accountId,
-        bounty: {
-          id: buildBountyId(contractId, claim.bountyId),
-          bountyId: claim.bountyId,
-        },
+        deadline: claim.deadline,
+        startTime: claim.start_time,
+        endTime: calculateClaimEndTime(claim.start_time, claim.deadline),
+        completed: claim.completed,
       };
-    })
-    .filter((claim) => bountyId === claim.bountyId);
+    });
 }
 
-export function castClaimBounty({
-  bounty,
-  accountId,
-  daoId,
-  transactionHash,
-  bountyClaims,
-  numberOfClaims,
-  removedClaim,
-  timestamp,
-}): BountyDto {
-  const claims = castBountyClaims({
-    contractId: bounty.dao?.id || daoId,
+export function castClaimBounty(
+  bounty: Bounty | PartialEntity<BountyModel>,
+  accountId: string,
+  daoId: string,
+  transactionHash: string,
+  bountyClaims: SputnikDaoBountyClaim[],
+  numberOfClaims: number,
+  removedClaim: BountyClaim | BountyClaimModel | undefined,
+  timestamp: number,
+): BountyDto {
+  const claims = castBountyClaims(
+    daoId,
     accountId,
-    bountyId: bounty.bountyId,
+    bounty.bountyId,
     bountyClaims,
-  });
+  );
+  const bountyClaimDtos = (bounty.bountyClaims || [])
+    .map((claim) => castBountyClaim(bounty.id, claim))
+    .concat(claims);
+
   const filteredClaims = removedClaim
-    ? bounty.bountyClaims.filter((claim) => claim.id !== removedClaim?.id)
-    : bounty.bountyClaims;
+    ? bountyClaimDtos.filter((claim) => claim.id !== removedClaim?.id)
+    : bountyClaimDtos;
 
   return {
-    ...bounty,
-    daoId: bounty.dao?.id || daoId,
-    bountyClaims: filteredClaims ? filteredClaims.concat(claims) : claims,
+    id: bounty.id,
+    daoId: bounty.daoId || daoId,
+    bountyId: bounty.bountyId,
+    proposalId: bounty.proposalId,
+    proposalIndex: parseProposalIndex(bounty.proposalId),
+    description: bounty.description,
+    token: bounty.token,
+    amount: bounty.amount,
+    times: bounty.times,
+    maxDeadline: bounty.maxDeadline,
     numberOfClaims: numberOfClaims,
+    bountyClaims: arrayUniqueBy<BountyClaimDto>(filteredClaims, 'id'),
+    createTimestamp: bounty.createTimestamp,
+    transactionHash: bounty.transactionHash,
     updateTransactionHash: transactionHash,
     updateTimestamp: timestamp,
   };
 }
 
-export function castDoneBounty({
-  dao,
-  accountId,
-  bounty,
-  bountyData,
-  numberOfClaims,
-  bountyClaims,
-  transactionHash,
-  timestamp,
-}): BountyDto {
-  const claims = castBountyClaims({
-    contractId: dao.id,
+export function castDoneBounty(
+  dao: Dao | PartialEntity<DaoModel>,
+  accountId: string,
+  bounty: Bounty | PartialEntity<BountyModel>,
+  bountyData: SputnikDaoBountyOutput,
+  numberOfClaims: number,
+  bountyClaims: SputnikDaoBountyClaim[],
+  transactionHash: string,
+  timestamp: number,
+): BountyDto {
+  const claims = castBountyClaims(
+    dao.id,
     accountId,
-    bountyId: bounty.bountyId,
+    bounty.bountyId,
     bountyClaims,
-  });
+  );
+  const bountyClaimDtos = (bounty.bountyClaims || [])
+    .map((claim) => castBountyClaim(bounty.id, claim))
+    .concat(claims);
   return {
-    ...bounty,
+    id: bounty.id,
+    daoId: bounty.daoId || dao.id,
+    bountyId: bounty.bountyId,
+    proposalId: bounty.proposalId,
+    proposalIndex: parseProposalIndex(bounty.proposalId),
+    description: bounty.description,
+    token: bounty.token,
+    amount: bounty.amount,
     times: bountyData.times,
-    bountyClaims: bounty.bountyClaims
-      ? bounty.bountyClaims.concat(claims)
-      : claims,
+    maxDeadline: bounty.maxDeadline,
     numberOfClaims: numberOfClaims,
-    updateTransactionHash: transactionHash,
+    bountyClaims: arrayUniqueBy<BountyClaimDto>(bountyClaimDtos, 'id'),
+    createTimestamp: bounty.createTimestamp,
     updateTimestamp: timestamp,
+    transactionHash: bounty.transactionHash,
+    updateTransactionHash: transactionHash,
+  };
+}
+
+// dynamo compatibility
+export function parseProposalIndex(proposalId: string): number {
+  const [, proposalIndex] = proposalId.split('-');
+  if (!proposalIndex) {
+    throw new Error(`Invalid proposal ID format: ${proposalId}`);
+  }
+  return Number(proposalIndex);
+}
+
+// dynamo compatibility
+export function castBountyClaim(
+  bountyId: string,
+  bountyClaim: BountyClaim | BountyClaimModel,
+): BountyClaimDto {
+  return {
+    ...bountyClaim,
+    bountyId,
   };
 }
