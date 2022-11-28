@@ -1,3 +1,5 @@
+import { TransactionInfo } from '@sputnik-v2/common';
+
 export interface TokenUpdateDto {
   account: string;
   token: string;
@@ -14,15 +16,9 @@ export interface TokenMetadataDto {
   symbol: string;
 }
 
-export interface TokenDto extends TokenMetadataDto {
+export interface TokenDto extends TransactionInfo, TokenMetadataDto {
   id: string;
   ownerId: string;
   totalSupply: string;
   price?: string;
-
-  transactionHash?: string;
-  updateTransactionHash?: string;
-  // TODO: use bigint
-  createTimestamp?: number;
-  updateTimestamp?: number;
 }

@@ -63,7 +63,7 @@ export class BountyService extends TypeOrmCrudService<Bounty> {
     } else {
       return this.bountyRepository.count({
         daoId,
-        times: Not('0'),
+        times: Not(0),
       });
     }
   }
