@@ -68,14 +68,14 @@ export class TokenService {
     const metadata = await contract.ft_metadata();
     const totalSupply = await contract.ft_total_supply();
     const balance = await contract.ft_balance_of({ account_id: accountId });
+    const token = castToken(tokenId, metadata, totalSupply, timestamp);
+    const tokenBalance = castTokenBalance(tokenId, accountId, balance);
 
     await this.saveTokenBalanceToDao({
-      ...castTokenBalance(tokenId, accountId, balance),
-      token: castToken(tokenId, metadata, totalSupply, timestamp) as Token,
+      ...tokenBalance,
+      token: token as Token,
     });
-    await this.tokenBalanceRepository.save(
-      castTokenBalance(tokenId, accountId, balance),
-    );
+    await this.tokenBalanceRepository.save(tokenBalance);
   }
 
   async saveTokenBalanceToDao(tokenBalance: TokenBalance) {

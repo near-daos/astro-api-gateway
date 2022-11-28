@@ -26,7 +26,7 @@ export function mapTokenBalanceToTokenBalanceModel(
     accountId: balance.accountId,
     balance: balance.balance,
     id: token.id,
-    ownerId: token.ownerId,
+    ownerId: token.ownerId, // TODO drop
     totalSupply: token.totalSupply,
     decimals: token.decimals,
     icon: token.icon,

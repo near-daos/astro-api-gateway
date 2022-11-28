@@ -12,7 +12,7 @@ export class Token extends TransactionEntity {
 
   @ApiProperty()
   @Column()
-  ownerId: string;
+  ownerId: string; // TODO drop
 
   @ApiProperty()
   @Column()
@@ -51,12 +51,6 @@ export class Token extends TransactionEntity {
   @ApiProperty()
   @Column({ nullable: true })
   price: string;
-
-  @ApiProperty()
-  tokenId?: string;
-
-  @ApiProperty()
-  balance?: string;
 
   @ApiProperty({ type: [TokenBalance] })
   @OneToMany(() => TokenBalance, (token) => token.tokenId, {

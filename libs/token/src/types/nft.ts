@@ -13,7 +13,7 @@ export function castNFT(
   const id = buildNFTTokenId(nftContractId, tokenId);
   const { metadata } = nft;
   return {
-    id: id,
+    id,
     tokenId: tokenId,
     accountId: accountId,
     ownerId:
