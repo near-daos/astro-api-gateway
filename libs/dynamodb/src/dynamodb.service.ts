@@ -127,7 +127,9 @@ export class DynamodbService {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { partitionId, entityId, entityType, ...rest } = data;
     const dataToUpdate = { processingTimeStamp: Date.now(), ...rest };
-    const keys = Object.keys(dataToUpdate);
+    const keys = Object.keys(dataToUpdate).filter(
+      (k) => dataToUpdate[k] !== undefined,
+    );
 
     return this.client
       .update({
