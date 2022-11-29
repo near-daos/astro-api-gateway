@@ -148,7 +148,8 @@ export class DynamodbService {
         ExpressionAttributeValues: keys.reduce(
           (accumulator, k, index) => ({
             ...accumulator,
-            [`:value${index}`]: dataToUpdate[k],
+            [`:value${index}`]:
+              dataToUpdate[k] === undefined ? null : dataToUpdate[k],
           }),
           {},
         ),
