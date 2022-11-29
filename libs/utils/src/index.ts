@@ -1,17 +1,11 @@
 import { DynamoEntityType, EntityId } from '@sputnik-v2/dynamodb';
-import Decimal from 'decimal.js';
-
-import { DaoDto } from '@sputnik-v2/dao/dto';
-import { Dao, Role, RoleKindType } from '@sputnik-v2/dao/entities';
+import { Role, RoleKindType } from '@sputnik-v2/dao/entities';
 import {
   ProposalType,
   ProposalPermissions,
   ProposalTypeToPolicyLabel,
 } from '@sputnik-v2/proposal/types';
-import { Proposal } from '@sputnik-v2/proposal/entities';
-import { ProposalDto } from '@sputnik-v2/proposal/dto';
 import { BaseResponse, PROPOSAL_DESC_SEPARATOR } from '@sputnik-v2/common';
-import { DaoModel } from '@sputnik-v2/dynamodb';
 
 export const formatTimestamp = (timestamp: number): string => {
   const seconds = Number(timestamp / 1e9);
@@ -147,16 +141,12 @@ export const btoaJSON = (b: string) => {
   } catch (e) {}
 };
 
+// TODO: bigints
 export const calcProposalVotePeriodEnd = (
-  proposal: Proposal | ProposalDto | { submissionTime: number },
-  dao: Dao | DaoDto | DaoModel,
-): number => {
-  try {
-    return Decimal.sum(
-      new Decimal(proposal.submissionTime),
-      new Decimal(dao?.policy?.proposalPeriod),
-    ).toNumber();
-  } catch (e) {}
+  submissionTime: string,
+  proposalPeriod: string,
+): string => {
+  return String(BigInt(submissionTime) + BigInt(proposalPeriod));
 };
 
 export function isNotNull<T>(arg: T): arg is Exclude<T, null> {

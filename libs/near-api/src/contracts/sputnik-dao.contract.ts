@@ -170,13 +170,18 @@ export enum SputnikDaoProposalStatus {
   Failed = 'Failed',
 }
 
+export enum SputnikDaoProposalVote {
+  Approve = 'Approve',
+  Reject = 'Reject',
+}
+
 export interface SputnikDaoProposal {
   proposer: string;
   description: string;
   kind: SputnikDaoProposalKind;
   status: SputnikDaoProposalStatus;
-  vote_counts: string;
-  votes: Record<string, 'Approve' | 'Reject'>;
+  vote_counts: Record<string, number[]>;
+  votes: Record<string, SputnikDaoProposalVote>;
   submission_time: string;
 }
 

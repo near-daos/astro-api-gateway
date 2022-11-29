@@ -282,13 +282,13 @@ export class TransactionActionHandlerService {
       };
     }
 
-    const proposal = castCreateProposal({
+    const proposal = castCreateProposal(
       transactionHash,
       signerId,
-      proposal: daoProposal,
-      dao: daoEntity,
+      daoProposal,
+      daoEntity,
       timestamp,
-    });
+    );
     const dao = castAddProposalDao(
       daoEntity,
       lastProposalId,
@@ -378,23 +378,24 @@ export class TransactionActionHandlerService {
       'sputnikDao',
       receiverId,
     );
+    const proposalEntity = await this.proposalService.findById(
+      receiverId,
+      args.id,
+    );
     const proposalResponse = await daoContract
       .get_proposal({ id: args.id })
       .catch(() => null);
     const proposal =
       proposalResponse &&
-      castActProposal({
+      castActProposal(
         transactionHash,
-        contractId: receiverId,
+        receiverId,
         signerId,
-        proposal: proposalResponse,
+        proposalEntity,
+        proposalResponse,
         timestamp,
-        action: args.action,
-      });
-    const proposalEntity = await this.proposalService.findById(
-      receiverId,
-      args.id,
-    );
+        args.action,
+      );
 
     switch (args.action) {
       case VoteAction.VoteApprove:
@@ -632,7 +633,7 @@ export class TransactionActionHandlerService {
   async handleRemoveProposal(
     dao: Dao | PartialEntity<DaoModel>,
     daoContract: SputnikDaoContract,
-    proposal: ProposalDto,
+    proposal: ProposalDto | null,
     proposalEntity: Proposal | PartialEntity<ProposalModel>,
     receiverId: string,
     transactionHash: string,

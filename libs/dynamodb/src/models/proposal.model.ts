@@ -24,12 +24,12 @@ export class ProposalModel extends TransactionModel {
   kind: ProposalKind;
   type: ProposalType;
   policyLabel: ProposalPolicyLabel;
-  submissionTime: number;
+  submissionTime: string;
   voteCounts: Record<string, number[]>;
   votes: Record<string, Vote>;
   failure: Record<string, any>;
   actions: ProposalActionModel[];
-  votePeriodEnd: number;
+  votePeriodEnd: string;
   commentsCount: number;
   bountyDoneId?: string;
   bountyClaimId?: string;

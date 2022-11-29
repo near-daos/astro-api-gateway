@@ -101,3 +101,9 @@ export type ProposalKindBountyDone = {
 export type ProposalKindVote = {
   type: ProposalType.Vote;
 };
+
+export function isProposalKind(
+  proposalKind: any,
+): proposalKind is ProposalKind {
+  return proposalKind.hasOwnProperty('type');
+}

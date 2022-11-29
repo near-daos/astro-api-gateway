@@ -1,4 +1,7 @@
-import camelcaseKeys from 'camelcase-keys';
+import { Dao } from '@sputnik-v2/dao';
+import { DaoModel, PartialEntity, ProposalModel } from '@sputnik-v2/dynamodb';
+import { SputnikDaoProposalOutput } from '@sputnik-v2/near-api';
+import { Proposal, ProposalActionDto } from '@sputnik-v2/proposal';
 import {
   buildProposalAction,
   castProposalKind,
@@ -11,28 +14,30 @@ import {
   ProposalTypeToPolicyLabel,
   ProposalVoteStatus,
 } from '@sputnik-v2/proposal/types';
+import { Vote } from '@sputnik-v2/sputnikdao';
 
 import {
+  arrayUniqueBy,
   buildBountyId,
   buildProposalId,
   calcProposalVotePeriodEnd,
 } from '@sputnik-v2/utils';
 
-export function castCreateProposal({
-  transactionHash,
-  signerId,
-  proposal,
-  dao,
-  timestamp,
-}): ProposalDto {
+export function castCreateProposal(
+  transactionHash: string,
+  signerId: string,
+  proposal: SputnikDaoProposalOutput,
+  dao: Dao | PartialEntity<DaoModel>,
+  timestamp: number,
+): ProposalDto {
   const kind = castProposalKind(proposal.kind);
-  const proposalDto = {
-    ...camelcaseKeys(proposal),
-    id: buildProposalId(dao.id, proposal.id),
+  const id = buildProposalId(dao.id, proposal.id);
+  return {
+    id,
     proposalId: proposal.id,
     daoId: dao.id,
-    dao: { id: dao.id },
     proposer: signerId,
+    description: proposal.description,
     kind,
     type: kind.kind.type,
     policyLabel: ProposalTypeToPolicyLabel[kind.kind.type],
@@ -45,19 +50,15 @@ export function castCreateProposal({
     voteCounts: {},
     votes: {},
     votePeriodEnd: calcProposalVotePeriodEnd(
-      { submissionTime: proposal.submission_time },
-      dao,
+      proposal.submission_time,
+      dao.policy.proposalPeriod,
     ),
     submissionTime: proposal.submission_time,
     transactionHash: transactionHash,
     createTimestamp: timestamp,
-  };
-
-  return {
-    ...proposalDto,
     actions: [
       buildProposalAction(
-        proposalDto.id,
+        id,
         {
           accountId: signerId,
           transactionHash,
@@ -69,35 +70,44 @@ export function castCreateProposal({
   };
 }
 
-export function castActProposal({
-  transactionHash,
-  contractId,
-  signerId,
-  proposal,
-  timestamp,
-  action,
-}): ProposalDto {
+export function castActProposal(
+  transactionHash: string,
+  daoId: string,
+  signerId: string,
+  proposal: Proposal | PartialEntity<ProposalModel>,
+  proposalData: SputnikDaoProposalOutput,
+  timestamp: number,
+  action: Action,
+): ProposalDto {
   const kind = castProposalKind(proposal.kind);
-  const proposalDto = {
-    ...camelcaseKeys(proposal),
-    id: buildProposalId(contractId, proposal.id),
-    proposalId: proposal.id,
-    daoId: contractId,
-    dao: { id: contractId },
-    type: kind.kind.type,
-    kind,
-    updateTransactionHash: transactionHash,
-    updateTimestamp: timestamp,
-  };
-
   return {
-    ...proposalDto,
-    actions: [
-      buildProposalAction(
-        proposalDto.id,
-        { accountId: signerId, transactionHash, blockTimestamp: timestamp },
-        action,
-      ),
-    ],
+    id: proposal.id,
+    daoId: daoId,
+    proposalId: proposal.proposalId,
+    proposer: proposal.proposer,
+    description: proposal.description,
+    kind,
+    type: proposal.type,
+    status: proposal.status as unknown as ProposalStatus,
+    votes: proposal.votes as unknown as Record<string, Vote>,
+    voteCounts: proposalData.vote_counts,
+    voteStatus: proposal.voteStatus,
+    votePeriodEnd: proposal.votePeriodEnd,
+    submissionTime: proposal.submissionTime,
+    transactionHash: proposal.transactionHash,
+    updateTransactionHash: transactionHash,
+    createTimestamp: proposal.createTimestamp,
+    updateTimestamp: timestamp,
+    actions: arrayUniqueBy<ProposalActionDto>(
+      [
+        ...proposal.actions,
+        buildProposalAction(
+          proposal.id,
+          { accountId: signerId, transactionHash, blockTimestamp: timestamp },
+          action,
+        ),
+      ],
+      'id',
+    ),
   };
 }
