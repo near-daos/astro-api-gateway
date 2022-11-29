@@ -28,7 +28,7 @@ export function castDao(
     totalSupply,
     lastProposalId,
     lastBountyId,
-    amount: Number(amount),
+    amount,
     link: '',
     description: '',
     transactionHash:
@@ -65,6 +65,6 @@ export function castDaoById(
     totalSupply,
     lastProposalId,
     lastBountyId,
-    amount: Number(amount),
+    amount,
   };
 }
