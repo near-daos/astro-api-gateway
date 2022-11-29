@@ -45,10 +45,10 @@ export class ProposalOpensearchDto extends BaseOpensearchDto {
   voteStatus: ProposalVoteStatus;
   type: ProposalType;
   policyLabel: ProposalPolicyLabel;
-  submissionTime: number;
+  submissionTime: string;
   votes: string;
   failure: Record<string, any>;
-  votePeriodEnd: number;
+  votePeriodEnd: string;
   bountyDoneId: string;
   bountyClaimId: string;
   commentsCount: number;
