@@ -348,8 +348,11 @@ export class DaoService extends TypeOrmCrudService<Dao> {
       data = { ...data, nftCount };
     }
 
-    await this.daoDynamoService.save(dao.id, data);
-    await this.daoRepository.save(data);
+    const daoEntity = this.daoRepository.create(data);
+
+    // TODO: cast daoModel from DTO not from entity
+    await this.daoDynamoService.saveDao(daoEntity);
+    await this.daoRepository.save(daoEntity);
   }
 
   public async updateDaoStatus(dao: Dao): Promise<Dao> {
