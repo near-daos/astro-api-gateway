@@ -423,10 +423,14 @@ export class ProposalService extends BaseTypeOrmCrudService<Proposal> {
   public async getDaoActiveProposalCount(daoId: string): Promise<number> {
     if (await this.useDynamoDB()) {
       return this.proposalDynamoService.count(daoId, {
-        FilterExpression: 'status = :status and voteStatus != :voteStatus',
+        FilterExpression:
+          '#proposalStatus = :proposalStatus and voteStatus <> :voteStatus',
         ExpressionAttributeValues: {
-          ':status': ProposalStatus.InProgress,
-          ':voteStatus': Not(ProposalVoteStatus.Expired),
+          ':proposalStatus': ProposalStatus.InProgress,
+          ':voteStatus': ProposalVoteStatus.Expired,
+        },
+        ExpressionAttributeNames: {
+          '#proposalStatus': 'status',
         },
       });
     } else {
