@@ -18,6 +18,7 @@ import {
   NFTTokenMetadata,
   Token,
   TokenBalance,
+  TokenModule,
 } from '@sputnik-v2/token';
 import { Dao, DaoModule } from '@sputnik-v2/dao';
 import {
@@ -55,6 +56,7 @@ import { DaoStats } from '@sputnik-v2/stats';
 import { Subscription } from '@sputnik-v2/subscription';
 import { TransactionHandlerState } from '@sputnik-v2/transaction-handler';
 
+import { MigrationService } from './migration.service';
 import migrationScripts from './scripts';
 
 @Module({
@@ -118,10 +120,12 @@ import migrationScripts from './scripts';
     SputnikModule,
     CommentModule,
     ProposalTemplateModule,
+    TokenModule,
     OpenSearchModule,
     DynamodbModule,
   ],
-  providers: [...migrationScripts],
+  exports: [MigrationService, ...migrationScripts],
+  providers: [MigrationService, ...migrationScripts],
 })
 export class MigrationModule implements OnApplicationShutdown {
   async onApplicationShutdown() {

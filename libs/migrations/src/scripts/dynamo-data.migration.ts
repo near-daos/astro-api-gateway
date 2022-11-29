@@ -64,15 +64,39 @@ import {
 } from '@sputnik-v2/proposal-template/entities';
 import { Subscription } from '@sputnik-v2/subscription/entities';
 
-import { Migration } from '..';
+import { Migration } from '../interfaces';
+import { DynamoDataOptionsDto } from '../dto';
 import {
   AccountNotificationIdsDynamoService,
   AccountNotificationSettingsService,
 } from '@sputnik-v2/notification';
+import { DynamoEntityType } from '@sputnik-v2/dynamodb';
 
 @Injectable()
 export class DynamoDataMigration implements Migration {
   private readonly logger = new Logger(DynamoDataMigration.name);
+  // TODO: Migrate ErrorEntity, TransactionHandlerState
+  private readonly migrationMap = {
+    [DynamoEntityType.Account]: this.migrateAccounts,
+    [DynamoEntityType.AccountNotificationSettings]:
+      this.migrateAccountNotificationSettings,
+    [DynamoEntityType.AccountNotification]: this.migrateAccountNotifications,
+    [DynamoEntityType.ProposalComment]: this.migrateComments,
+    [DynamoEntityType.DraftProposalComment]: this.migrateDraftComments,
+    [DynamoEntityType.Dao]: this.migrateDaos,
+    [DynamoEntityType.DaoIds]: this.migrateDaoIds,
+    [DynamoEntityType.Proposal]: this.migrateProposals,
+    [DynamoEntityType.Bounty]: this.migrateBounties,
+    [DynamoEntityType.DaoStats]: this.migrateDaoStats,
+    [DynamoEntityType.Nft]: this.migrateNfts,
+    [DynamoEntityType.ProposalTemplate]: this.migrateProposalTemplates,
+    [DynamoEntityType.SharedProposalTemplate]:
+      this.migrateSharedProposalTemplates,
+    [DynamoEntityType.Subscription]: this.migrateSubscription,
+    [DynamoEntityType.TokenBalance]: this.migrateTokenBalances,
+    [DynamoEntityType.TokenPrice]: this.migrateTokenPrices,
+    [DynamoEntityType.DraftProposal]: this.migrateDraftProposals,
+  };
 
   constructor(
     private readonly dynamodbService: DynamodbService,
@@ -133,46 +157,16 @@ export class DynamoDataMigration implements Migration {
     private readonly accountNotificationIdsDynamoService: AccountNotificationIdsDynamoService,
   ) {}
 
-  public async migrate(): Promise<void> {
+  public async migrate(options?: DynamoDataOptionsDto): Promise<void> {
     this.logger.log('Starting Dynamo Data migration...');
 
-    await this.migrateAccounts();
+    const entityTypes = options?.entityTypes || [];
 
-    await this.migrateAccountNotificationSettings();
+    for (const entityType of entityTypes) {
+      await this.migrationMap[entityType].call(this);
+    }
 
-    await this.migrateComments();
-
-    await this.migrateDaos();
-
-    await this.migrateDaoIds();
-
-    await this.migrateProposals();
-
-    await this.migrateBounties();
-
-    await this.migrateDaoStats();
-
-    await this.migrateNfts();
-
-    await this.migrateProposalTemplates();
-
-    await this.migrateSharedProposalTemplates();
-
-    await this.migrateSubscription();
-
-    await this.migrateTokenBalances();
-
-    await this.migrateTokenPrices();
-
-    await this.migrateDraftComments();
-
-    await this.migrateDraftProposals();
-
-    await this.migrateAccountNotifications();
-
-    // TODO: Migrate ErrorEntity, OTP, TransactionHandlerState
-
-    this.logger.log('Starting Dynamo Data migration finished.');
+    this.logger.log('Dynamo Data migration finished.');
   }
 
   public async migrateAccounts(): Promise<void> {

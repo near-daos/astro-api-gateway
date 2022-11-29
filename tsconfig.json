@@ -207,6 +207,12 @@
       ],
       "@sputnik-v2/feature-flags/*": [
         "libs/feature-flags/src/*"
+      ],
+      "@sputnik-v2/migrations": [
+        "libs/migrations/src"
+      ],
+      "@sputnik-v2/migrations/*": [
+        "libs/migrations/src/*"
       ]
     }
   }
