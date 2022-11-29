@@ -15,7 +15,7 @@ import { TokenBalanceModel } from '../models';
 
 export class DaoModel extends TransactionModel {
   metadata: Record<string, any>;
-  amount: number;
+  amount: string;
   id: string;
   totalSupply: string;
   lastBountyId: number;

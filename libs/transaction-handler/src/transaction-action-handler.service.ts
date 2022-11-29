@@ -871,7 +871,7 @@ export class TransactionActionHandlerService {
     const dao = await this.daoService.findById(receiverId);
     const state = await this.nearApiService.getAccountState(receiverId);
 
-    dao.amount = Number(state.amount);
+    dao.amount = state.amount;
 
     this.logger.log(`Updating DAO: ${receiverId} due to transaction`);
     await this.daoService.save(dao, { updateTotalDaoFunds: true });

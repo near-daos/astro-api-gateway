@@ -405,26 +405,29 @@ export class DaoService extends TypeOrmCrudService<Dao> {
 
   public async calculateDaoFunds(
     daoId: string,
-    nearAmount: number,
+    nearAmount: string,
   ): Promise<number> {
     const tokenBalances = await this.tokenService.tokenBalancesByAccount(daoId);
     const nearToken = await this.tokenService.getNearToken();
     const nearBalance =
       nearToken && nearAmount
         ? calculateFunds(nearAmount, nearToken.price, nearToken.decimals)
-        : 0;
+        : '0';
     const tokenBalance = tokenBalances.reduce((balance, tokenBalance) => {
       const { price, decimals } =
         tokenBalance instanceof TokenBalanceModel
           ? tokenBalance
           : tokenBalance.token;
       if (tokenBalance.balance && price && decimals) {
-        return balance + calculateFunds(tokenBalance.balance, price, decimals);
+        return String(
+          BigInt(balance) +
+            BigInt(calculateFunds(tokenBalance.balance, price, decimals)),
+        );
       }
       return balance;
-    }, 0);
+    }, '0');
 
-    return Number(nearBalance) + Number(tokenBalance);
+    return Number(BigInt(nearBalance) + BigInt(tokenBalance));
   }
 
   public async getDaoMemberVotes(daoId: string): Promise<DaoMemberVote[]> {
