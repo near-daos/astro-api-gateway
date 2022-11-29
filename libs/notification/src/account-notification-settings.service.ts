@@ -50,7 +50,7 @@ export class AccountNotificationSettingsService extends TypeOrmCrudService<Accou
       accountId,
       daoId: dto.daoId,
       types: dto.types,
-      mutedUntilTimestamp: Number(dto.mutedUntilTimestamp),
+      mutedUntilTimestamp: dto.mutedUntilTimestamp,
       isAllMuted: dto.isAllMuted,
       enableSms: !!dto.enableSms,
       enableEmail: !!dto.enableEmail,
