@@ -8,5 +8,5 @@ export interface NotificationDto {
   type: NotificationType;
   status?: NotificationStatus;
   metadata: Record<string, unknown>;
-  timestamp: number;
+  timestamp: string; // nanoseconds
 }

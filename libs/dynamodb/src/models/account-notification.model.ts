@@ -28,7 +28,7 @@ export class NotificationModel {
   type: NotificationType;
   status: NotificationStatus;
   metadata: Record<string, any>;
-  timestamp: number;
+  timestamp: string; // nanoseconds
 }
 
 export function mapAccountNotificationDtoToAccountNotificationModel(

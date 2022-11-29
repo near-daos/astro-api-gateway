@@ -2,6 +2,7 @@ export * from './dto';
 export * from './filters';
 export * from './guards';
 export * from './interceptors';
+export * from './transformers/transformers';
 export * from './types';
 export * from './constants';
 export * from './services';

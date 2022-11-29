@@ -40,20 +40,20 @@ export class ProposalActionsMigration implements Migration {
     const { blockTimestamp: nearBlockTimestamp } =
       await this.nearIndexerService.lastTransaction();
     this.logger.log(
-      `Lst available indexer transaction timestamp: ${nearBlockTimestamp}`,
+      `Last available indexer transaction timestamp: ${nearBlockTimestamp}`,
     );
 
     const chunkSize = 7 * 24 * 60 * 60 * 1000 * 1000 * 1000; // a week
-    const chunks = [];
-    let from = new Decimal(blockTimestamp).toNumber();
-    while (true) {
-      const to = Math.min(
-        Decimal.sum(from, chunkSize).toNumber(),
-        nearBlockTimestamp,
-      );
-      chunks.push({ from, to });
+    const chunks: { from: string; to: string }[] = [];
 
-      if (to >= nearBlockTimestamp) {
+    let from = new Decimal(blockTimestamp);
+
+    while (true) {
+      const to = Decimal.min(Decimal.sum(from, chunkSize), nearBlockTimestamp);
+
+      chunks.push({ from: from.toString(), to: to.toString() });
+
+      if (to.gte(nearBlockTimestamp)) {
         break;
       }
 
@@ -65,7 +65,7 @@ export class ProposalActionsMigration implements Migration {
       await PromisePool.withConcurrency(2)
         .for(chunks)
         .process(async ({ from, to }) => {
-          return await this.nearIndexerService.findTransactionsByAccountIds(
+          return this.nearIndexerService.findTransactionsByAccountIds(
             contractName,
             from,
             to,

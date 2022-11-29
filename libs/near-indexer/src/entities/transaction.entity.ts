@@ -77,5 +77,5 @@ export class Transaction {
 
   @ApiProperty()
   @Column({ type: 'bigint' })
-  blockTimestamp: string;
+  blockTimestamp: string; // nanoseconds
 }

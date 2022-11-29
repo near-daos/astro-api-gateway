@@ -42,5 +42,5 @@ export class Notification extends BaseEntity {
 
   @ApiProperty()
   @Column({ type: 'bigint', nullable: true })
-  timestamp: number;
+  timestamp: string; // nanoseconds
 }

@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Column, Entity, Index, PrimaryColumn } from 'typeorm';
-import { BaseEntity } from '@sputnik-v2/common';
+import { BaseEntity, numberTransformer } from '@sputnik-v2/common';
 
 @Entity()
 export class DaoStats extends BaseEntity {
@@ -14,13 +14,7 @@ export class DaoStats extends BaseEntity {
   daoId: string;
 
   @ApiProperty()
-  @Column({
-    type: 'bigint',
-    transformer: {
-      to: (value) => String(value),
-      from: (value) => Number(value),
-    },
-  })
+  @Column({ type: 'bigint', transformer: numberTransformer() })
   timestamp: number; // milliseconds
 
   @ApiProperty()
