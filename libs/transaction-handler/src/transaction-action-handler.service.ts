@@ -8,9 +8,11 @@ import {
   FTokenContract,
   NFTokenContract,
   SputnikDaoContract,
+  SputnikDaoConfig,
+  SputnikDaoPolicy,
 } from '@sputnik-v2/near-api';
 import { SputnikService } from '@sputnik-v2/sputnikdao';
-import { Dao, DaoDynamoService, DaoService } from '@sputnik-v2/dao';
+import { Dao, DaoDynamoService, DaoService, VoteAction } from '@sputnik-v2/dao';
 import {
   Proposal,
   ProposalDto,
@@ -30,7 +32,6 @@ import { CacheService } from '@sputnik-v2/cache';
 import { OpensearchService } from '@sputnik-v2/opensearch';
 
 import { HandledReceiptActionDynamoService } from './handled-receipt-action-dynamo.service';
-
 import {
   castActProposal,
   castActProposalDao,
@@ -44,7 +45,6 @@ import {
   ContractHandlerResult,
   ContractHandlerResultType,
   TransactionAction,
-  VoteAction,
 } from './types';
 
 @Injectable()
@@ -213,14 +213,14 @@ export class TransactionActionHandlerService {
     const daoInfo = await this.sputnikService.getDaoInfo(daoId);
     const delegationAccounts =
       await this.daoService.getDelegationAccountsByDaoId(daoId);
-    const dao = castCreateDao({
+    const dao = castCreateDao(
       signerId,
       transactionHash,
       daoId,
       daoInfo,
       delegationAccounts,
       timestamp,
-    });
+    );
 
     this.logger.log(`Storing new DAO: ${daoId} due to transaction`);
     await this.daoService.save(dao, { updateTotalDaoFunds: true });
@@ -289,12 +289,12 @@ export class TransactionActionHandlerService {
       dao: daoEntity,
       timestamp,
     });
-    const dao = castAddProposalDao({
-      dao: daoEntity,
+    const dao = castAddProposalDao(
+      daoEntity,
       lastProposalId,
       transactionHash,
       timestamp,
-    });
+    );
 
     if (proposal.type === ProposalType.BountyDone) {
       const proposalKind = proposal.kind.kind as ProposalKindBountyDone;
@@ -478,11 +478,11 @@ export class TransactionActionHandlerService {
   ) {
     const state = await this.nearApiService.getAccountState(receiverId);
     const proposalKindType = proposal.kind?.kind.type;
-    let config;
-    let policy;
-    let delegationAccounts;
-    let stakingContract;
-    let lastBountyId;
+    let config: SputnikDaoConfig;
+    let policy: SputnikDaoPolicy;
+    let delegationAccounts: string[];
+    let stakingContract: string;
+    let lastBountyId: number;
 
     if (proposal.status === ProposalStatus.Approved) {
       const { tokenId, receiverId } = proposal.kind

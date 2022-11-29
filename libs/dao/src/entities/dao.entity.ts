@@ -29,6 +29,7 @@ export class Dao extends TransactionEntity {
   @Column({ nullable: true, type: 'jsonb' })
   metadata: Record<string, any>;
 
+  // TODO: amount is bigint or string
   @ApiProperty()
   @Column({ type: 'numeric' })
   amount: number;

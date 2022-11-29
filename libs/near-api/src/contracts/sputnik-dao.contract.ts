@@ -6,16 +6,17 @@ export interface SputnikDaoConfig {
   metadata: string;
 }
 
-export type SputnikDaoVotePolicyWeightKind = 'TokenWeight' | 'RoleWeight';
+export enum SputnikDaoVotePolicyWeightKind {
+  TokenWeight = 'TokenWeight',
+  RoleWeight = 'RoleWeight',
+}
 
-export type SputnikDaoVotePolicyKind = 'Weight' | 'Ratio';
+export type SputnikDaoVotePolicyWeightOrRatio = string | [number, number];
 
 export interface SputnikDaoVotePolicy {
-  weightKind: SputnikDaoVotePolicyWeightKind;
-  quorum: number;
-  kind: SputnikDaoVotePolicyKind;
-  weight?: number;
-  ratio?: number[];
+  weight_kind: SputnikDaoVotePolicyWeightKind;
+  quorum: string;
+  threshold: SputnikDaoVotePolicyWeightOrRatio;
 }
 
 export interface SputnikDaoRoleKindGroup {
@@ -33,6 +34,21 @@ export type SputnikDaoRoleKind =
   | SputnikDaoRoleKindMember
   | SputnikDaoRoleKindEveryone;
 
+export const isSputnikDaoRoleKindGroup = (
+  kind: SputnikDaoRoleKind,
+): kind is SputnikDaoRoleKindGroup =>
+  (kind as SputnikDaoRoleKindGroup).Group !== undefined;
+
+export const isSputnikDaoRoleKindMember = (
+  kind: SputnikDaoRoleKind,
+): kind is SputnikDaoRoleKindMember =>
+  (kind as SputnikDaoRoleKindMember).Member !== undefined;
+
+export const isSputnikDaoRoleKindEveryone = (
+  kind: SputnikDaoRoleKind,
+): kind is SputnikDaoRoleKindEveryone =>
+  (kind as SputnikDaoRoleKindEveryone) === 'Everyone';
+
 export interface SputnikDaoRole {
   name: string;
   kind: SputnikDaoRoleKind;
@@ -40,13 +56,23 @@ export interface SputnikDaoRole {
   vote_policy: Record<string, SputnikDaoVotePolicy>;
 }
 
-export interface SputnikDaoPolicy {
+export type SputnikDaoPolicyV1 = string[]; // council
+
+export interface SputnikDaoPolicyV2 {
   roles: SputnikDaoRole[];
+  default_vote_policy: SputnikDaoVotePolicy;
   proposal_bond: string;
   proposal_period: string;
   bounty_bond: string;
   bounty_forgiveness_period: string;
 }
+
+export type SputnikDaoPolicy = SputnikDaoPolicyV1 | SputnikDaoPolicyV2;
+
+export const isSputnikDaoPolicyV2 = (
+  policy: SputnikDaoPolicy,
+): policy is SputnikDaoPolicyV2 =>
+  (policy as SputnikDaoPolicyV2).roles !== undefined;
 
 export interface SputnikDaoProposalKindChangeConfig {
   ChangeConfig: { config: SputnikDaoConfig };
@@ -134,14 +160,15 @@ export type SputnikDaoProposalKind =
   | SputnikDaoProposalKindBountyDone
   | SputnikDaoProposalKindVote;
 
-export type SputnikDaoProposalStatus =
-  | 'InProgress'
-  | 'Approved'
-  | 'Rejected'
-  | 'Removed'
-  | 'Expired'
-  | 'Moved'
-  | 'Failed';
+export enum SputnikDaoProposalStatus {
+  InProgress = 'InProgress',
+  Approved = 'Approved',
+  Rejected = 'Rejected',
+  Removed = 'Removed',
+  Expired = 'Expired',
+  Moved = 'Moved',
+  Failed = 'Failed',
+}
 
 export interface SputnikDaoProposal {
   proposer: string;

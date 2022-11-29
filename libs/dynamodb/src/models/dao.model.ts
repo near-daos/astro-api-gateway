@@ -48,8 +48,8 @@ export class DaoModel extends TransactionModel {
 export class DaoPolicyModel {
   proposalBond: string;
   bountyBond: string;
-  proposalPeriod: number;
-  bountyForgivenessPeriod: number;
+  proposalPeriod: string;
+  bountyForgivenessPeriod: string;
   defaultVotePolicy: VotePolicy;
   roles: DaoRoleModel[];
 }
@@ -58,8 +58,8 @@ export class DaoRoleModel {
   id: string;
   name: string;
   kind: RoleKindType;
-  balance: number;
-  accountIds: string[];
+  balance?: number;
+  accountIds?: string[];
   permissions: string[];
   votePolicy: Record<string, VotePolicy>;
 }

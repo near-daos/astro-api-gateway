@@ -16,11 +16,11 @@ class PolicyBaseDto {
 
   @ApiProperty()
   @IsNumber()
-  proposalPeriod: number;
+  proposalPeriod: string;
 
   @ApiProperty()
   @IsNumber()
-  bountyForgivenessPeriod: number;
+  bountyForgivenessPeriod: string;
 
   @ApiProperty()
   @IsObject()

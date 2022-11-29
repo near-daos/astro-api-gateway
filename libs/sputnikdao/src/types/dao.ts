@@ -1,10 +1,8 @@
+import { SputnikDaoConfig, SputnikDaoPolicy } from '@sputnik-v2/near-api';
+
 export interface DaoInfo {
-  config: {
-    metadata: string;
-    name: string;
-    purpose: string;
-  };
-  policy: unknown;
+  config: SputnikDaoConfig;
+  policy: SputnikDaoPolicy;
   totalSupply: string;
   lastBountyId: number;
   lastProposalId: number;

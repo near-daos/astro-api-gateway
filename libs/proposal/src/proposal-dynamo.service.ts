@@ -68,10 +68,12 @@ export class ProposalDynamoService {
   async saveScheduleProposalExpireEvent(
     daoId: string,
     proposalId: number,
-    proposalExpiration: number,
+    proposalExpiration: string,
   ) {
     const secondsSinceEpoch = Math.round(Date.now() / 1000);
-    const proposalExpirationPeriod = proposalExpiration / 1000000000;
+    const proposalExpirationPeriod = Number(
+      BigInt(proposalExpiration) / 1000000000n,
+    );
     const ttl = secondsSinceEpoch + proposalExpirationPeriod;
 
     return this.dynamoDbService.saveItemByType<ScheduledProposalExpirationEvent>(
