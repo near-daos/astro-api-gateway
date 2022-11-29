@@ -1,7 +1,7 @@
 import { getBlockTimestamp } from '@sputnik-v2/utils';
 
 export class AggregatorState {
-  aggregations: Record<string, { timestamp: number; isInProgress: boolean }> =
+  aggregations: Record<string, { timestamp: string; isInProgress: boolean }> =
     {};
 
   public startAggregation(name: string) {
@@ -31,7 +31,7 @@ export class AggregatorState {
     return !!this.aggregations[name] && this.aggregations[name].isInProgress;
   }
 
-  public getAggregationTimestamp(name: string): number | null {
+  public getAggregationTimestamp(name: string): string | null {
     return this.aggregations[name] ? this.aggregations[name].timestamp : null;
   }
 }

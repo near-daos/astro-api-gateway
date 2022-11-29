@@ -13,7 +13,7 @@ export function mapDaoIdsToDaoIdsModel(ids: string[]): DaoIdsModel {
     entityType: DynamoEntityType.DaoIds,
     ids,
     isArchived: false,
-    createTimestamp: Date.now(),
+    creatingTimeStamp: Date.now(),
     processingTimeStamp: Date.now(),
   };
 }

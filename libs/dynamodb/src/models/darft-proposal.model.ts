@@ -46,7 +46,7 @@ export function mapDraftProposalToDraftProposalModel(
     ),
     entityType: DynamoEntityType.DraftProposal,
     isArchived: draftProposal.isArchived,
-    createTimestamp: draftProposal.createdAt.getTime(),
+    creatingTimeStamp: draftProposal.createdAt.getTime(),
     processingTimeStamp: draftProposal.updatedAt.getTime(),
     id: draftProposal.id.toString(),
     proposalId: draftProposal.proposalId,

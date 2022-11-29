@@ -74,7 +74,7 @@ export function castCreateDao(
   daoId: string,
   daoInfo: DaoInfo,
   delegationAccounts: string[],
-  timestamp: number,
+  timestamp: string,
 ): SputnikDaoDto {
   return {
     id: daoId,
@@ -113,7 +113,7 @@ export function castAddProposalDao(
   dao: Dao | PartialEntity<DaoModel>,
   lastProposalId: number,
   transactionHash: string,
-  timestamp: number,
+  timestamp: string,
 ): SputnikDaoDto {
   return {
     id: dao.id,
@@ -161,7 +161,7 @@ export function castActProposalDao({
   lastBountyId?: number;
   stakingContract?: string;
   delegationAccounts?: string[];
-  timestamp: number;
+  timestamp: string;
 }): SputnikDaoDto {
   const daoPolicy = policy
     ? castDaoPolicy(dao.id, policy, delegationAccounts)

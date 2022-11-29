@@ -16,7 +16,7 @@ export function mapSubscriptionToSubscriptionModel(
     entityId: buildEntityId(DynamoEntityType.Subscription, subscription.id),
     entityType: DynamoEntityType.Subscription,
     isArchived: subscription.isArchived,
-    createTimestamp: subscription.createdAt.getTime(),
+    creatingTimeStamp: subscription.createdAt.getTime(),
     processingTimeStamp: subscription.updatedAt.getTime(),
     id: subscription.id,
     accountId: subscription.accountId,

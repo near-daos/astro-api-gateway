@@ -7,7 +7,7 @@ export function castNFT(
   accountId: string,
   contractMetadata: NFTokenContractMetadata,
   nft: NFTokenOutput,
-  timestamp: number,
+  timestamp: string,
 ): NFTTokenDto {
   const tokenId = nft.id || nft.token_id || '0';
   const id = buildNFTTokenId(nftContractId, tokenId);

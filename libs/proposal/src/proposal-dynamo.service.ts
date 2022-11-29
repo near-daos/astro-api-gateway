@@ -84,7 +84,7 @@ export class ProposalDynamoService {
         ttl,
         proposalId,
         isArchived: false,
-        createTimestamp: Date.now(),
+        creatingTimeStamp: Date.now(),
         processingTimeStamp: Date.now(),
       },
     );

@@ -10,7 +10,7 @@ export class TransactionHandlerState {
 
   @ApiProperty()
   @Column({ type: 'bigint' })
-  lastBlockTimestamp: number;
+  lastBlockTimestamp: string; // nanoseconds
 
   @ApiProperty()
   @Column()

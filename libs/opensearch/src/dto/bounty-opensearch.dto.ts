@@ -24,7 +24,7 @@ export class BountyOpensearchDto extends BaseOpensearchDto {
   bountyDoneProposals: string;
   bountyClaims: string;
   transactionHash: string;
-  createTimestamp: number;
+  createTimestamp: string; // nanoseconds
   tags?: string[];
 
   public static getMappings(): any {

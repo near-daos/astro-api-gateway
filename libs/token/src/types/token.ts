@@ -7,7 +7,7 @@ export function castToken(
   tokenId: string,
   tokenMetadata: FTokenMetadata,
   totalSupply: string,
-  timestamp: number,
+  timestamp: string,
 ): TokenDto {
   return {
     id: tokenId,

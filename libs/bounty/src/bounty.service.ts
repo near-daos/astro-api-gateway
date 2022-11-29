@@ -72,7 +72,7 @@ export class BountyService extends TypeOrmCrudService<Bounty> {
     daoId,
     bountyId,
     accountId: string,
-    untilTimestamp: number,
+    untilTimestamp: string,
   ): Promise<BountyClaim | BountyClaimModel | null> {
     if (await this.useDynamoDB()) {
       const bounty = await this.findById(daoId, bountyId);
@@ -96,14 +96,16 @@ export class BountyService extends TypeOrmCrudService<Bounty> {
   findLastClaim(
     claims: Array<BountyClaim | BountyClaimModel>,
     accountId: string,
-    untilTimestamp,
+    untilTimestamp: string,
   ): BountyClaim | BountyClaimModel | null {
+    const untilTimestampBigInt = BigInt(untilTimestamp);
+
     return claims.reduce((lastClaim, currentClaim) => {
-      const currentClaimTimestamp = Number(currentClaim.startTime);
-      const lastClaimTimestamp = Number(lastClaim?.startTime ?? 0);
+      const currentClaimTimestamp = BigInt(currentClaim.startTime);
+      const lastClaimTimestamp = BigInt(lastClaim?.startTime ?? 0);
 
       const isLastClaim = () =>
-        currentClaimTimestamp < untilTimestamp &&
+        currentClaimTimestamp < untilTimestampBigInt &&
         currentClaimTimestamp > lastClaimTimestamp;
 
       return currentClaim.accountId === accountId && isLastClaim()

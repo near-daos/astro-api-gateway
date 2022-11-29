@@ -474,7 +474,7 @@ export class TransactionActionHandlerService {
     proposal: ProposalDto,
     receiverId: string,
     transactionHash: string,
-    timestamp: number,
+    timestamp: string,
     status: any,
   ) {
     const state = await this.nearApiService.getAccountState(receiverId);
@@ -594,7 +594,7 @@ export class TransactionActionHandlerService {
     proposal: ProposalDto,
     receiverId: string,
     transactionHash: string,
-    timestamp: number,
+    timestamp: string,
   ) {
     const state = await this.nearApiService.getAccountState(receiverId);
     const proposalKindType = proposal.kind?.kind.type;
@@ -638,7 +638,7 @@ export class TransactionActionHandlerService {
     receiverId: string,
     transactionHash: string,
     args: any,
-    timestamp: number,
+    timestamp: string,
   ) {
     const state = await this.nearApiService.getAccountState(receiverId);
 
@@ -688,7 +688,7 @@ export class TransactionActionHandlerService {
     proposal: ProposalDto,
     lastBountyId: number,
     transactionHash: string,
-    timestamp: number,
+    timestamp: string,
   ) {
     const { bounty: bountyData } = proposal.kind?.kind as ProposalKindAddBounty;
     const daoBounty = await this.sputnikService.findLastBounty(
@@ -743,7 +743,7 @@ export class TransactionActionHandlerService {
     daoContract: SputnikDaoContract,
     proposalKind: ProposalKindBountyDone,
     transactionHash: string,
-    timestamp: number,
+    timestamp: string,
   ) {
     const { bountyId, receiverId } = proposalKind;
     const bounty = await this.bountyService.findById(dao.id, bountyId, {

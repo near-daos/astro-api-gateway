@@ -1,7 +1,6 @@
 export class TransactionInfo {
   transactionHash?: string;
   updateTransactionHash?: string;
-  // TODO: use bigint
-  createTimestamp?: number;
-  updateTimestamp?: number;
+  createTimestamp?: string; // nanoseconds
+  updateTimestamp?: string; // nanoseconds
 }

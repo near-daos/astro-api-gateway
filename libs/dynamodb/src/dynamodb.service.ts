@@ -86,7 +86,7 @@ export class DynamodbService {
           [tableName]: items.map((item) => ({
             PutRequest: {
               Item: {
-                createTimestamp: timestamp,
+                creatingTimeStamp: timestamp,
                 processingTimeStamp: timestamp,
                 ...item,
               },
@@ -292,7 +292,7 @@ export class DynamodbService {
   ): Promise<PartialEntity<M>> {
     const timestamp = Date.now();
     const dataToPut: PartialEntity<M> = {
-      createTimestamp: timestamp,
+      creatingTimeStamp: timestamp,
       processingTimeStamp: timestamp,
       ...data,
     };

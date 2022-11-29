@@ -4,7 +4,7 @@ import { TransactionInfo } from '@sputnik-v2/common';
 export interface NFTTokenUpdateDto {
   account: string;
   nft: string;
-  timestamp: number;
+  timestamp: string; // nanoseconds
 }
 
 export class NFTTokenContractDto {

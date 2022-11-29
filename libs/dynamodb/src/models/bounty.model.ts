@@ -44,7 +44,7 @@ export function mapBountyContextDtoToBountyModel(
     entityId: buildEntityId(DynamoEntityType.Bounty, String(proposalIndex)),
     entityType: DynamoEntityType.Bounty,
     transactionHash: bountyContext.transactionHash,
-    createBlockTimestamp: bountyContext.createTimestamp,
+    createTimestamp: bountyContext.createTimestamp,
     proposalIndex,
   };
 }
@@ -61,10 +61,10 @@ export function mapBountyDtoToBountyModel(bounty: BountyDto): BountyModel {
     transactionHash: bounty.transactionHash,
     updateTransactionHash:
       bounty.updateTransactionHash || bounty.transactionHash,
-    createTimestamp: Date.now(),
+    creatingTimeStamp: Date.now(),
     processingTimeStamp: Date.now(),
-    createBlockTimestamp: bounty.createTimestamp,
-    updateBlockTimestamp: bounty.updateTimestamp || bounty.createTimestamp,
+    createTimestamp: bounty.createTimestamp,
+    updateTimestamp: bounty.updateTimestamp || bounty.createTimestamp,
     id: bounty.id,
     daoId: bounty.daoId,
     bountyId: bounty.bountyId,
@@ -96,10 +96,10 @@ export function mapBountyToBountyModel(
     transactionHash: bounty.transactionHash,
     updateTransactionHash:
       bounty.updateTransactionHash || bounty.transactionHash,
-    createTimestamp: bounty.createdAt.getTime(),
+    creatingTimeStamp: bounty.createdAt.getTime(),
     processingTimeStamp: bounty.updatedAt.getTime(),
-    createBlockTimestamp: bounty.createTimestamp,
-    updateBlockTimestamp: bounty.updateTimestamp || bounty.createTimestamp,
+    createTimestamp: bounty.createTimestamp,
+    updateTimestamp: bounty.updateTimestamp || bounty.createTimestamp,
     id: bounty.id,
     daoId: bounty.daoId,
     bountyId: bounty.bountyId,

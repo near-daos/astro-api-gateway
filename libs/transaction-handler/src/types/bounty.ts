@@ -25,7 +25,7 @@ export function castAddBounty(
   bountyData: Bounty,
   bountyId: number,
   transactionHash: string,
-  timestamp: number,
+  timestamp: string,
 ): BountyDto {
   return {
     id: buildBountyId(dao.id, bountyId),
@@ -76,7 +76,7 @@ export function castClaimBounty(
   bountyClaims: SputnikDaoBountyClaim[],
   numberOfClaims: number,
   removedClaim: BountyClaim | BountyClaimModel | undefined,
-  timestamp: number,
+  timestamp: string,
 ): BountyDto {
   const claims = castBountyClaims(
     daoId,
@@ -120,7 +120,7 @@ export function castDoneBounty(
   numberOfClaims: number,
   bountyClaims: SputnikDaoBountyClaim[],
   transactionHash: string,
-  timestamp: number,
+  timestamp: string,
 ): BountyDto {
   const claims = castBountyClaims(
     dao.id,

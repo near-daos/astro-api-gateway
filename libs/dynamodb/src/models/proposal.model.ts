@@ -41,7 +41,7 @@ export class ProposalActionModel {
   accountId: string;
   action: Action;
   transactionHash: string;
-  timestamp: number;
+  timestamp: string; // nanoseconds
 }
 
 export function mapProposalDtoToProposalModel(
@@ -55,12 +55,12 @@ export function mapProposalDtoToProposalModel(
     ),
     entityType: DynamoEntityType.Proposal,
     isArchived: false,
-    createTimestamp: Date.now(),
+    creatingTimeStamp: Date.now(),
     processingTimeStamp: Date.now(),
     transactionHash: proposal.transactionHash,
     updateTransactionHash: proposal.updateTransactionHash,
-    createBlockTimestamp: proposal.createTimestamp,
-    updateBlockTimestamp: proposal.updateTimestamp,
+    createTimestamp: proposal.createTimestamp,
+    updateTimestamp: proposal.updateTimestamp,
     id: proposal.id,
     proposalId: proposal.proposalId,
     proposer: proposal.proposer,
@@ -93,12 +93,12 @@ export function mapProposalToProposalModel(proposal: Proposal): ProposalModel {
     ),
     entityType: DynamoEntityType.Proposal,
     isArchived: proposal.isArchived,
-    createTimestamp: proposal.createdAt.getTime(),
+    creatingTimeStamp: proposal.createdAt.getTime(),
     processingTimeStamp: proposal.updatedAt.getTime(),
     transactionHash: proposal.transactionHash,
     updateTransactionHash: proposal.updateTransactionHash,
-    createBlockTimestamp: proposal.createTimestamp,
-    updateBlockTimestamp: proposal.updateTimestamp,
+    createTimestamp: proposal.createTimestamp,
+    updateTimestamp: proposal.updateTimestamp,
     id: proposal.id,
     proposalId: proposal.proposalId,
     proposer: proposal.proposer,

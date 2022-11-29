@@ -34,7 +34,7 @@ export function castEmptyTransaction(
     convertedIntoReceiptId: '',
     receiptConversionGasBurnt: '',
     receiptConversionTokensBurnt: '',
-    blockTimestamp: 0,
+    blockTimestamp: '0',
     transactionAction: castEmptyTransactionAction(transactionHash),
     receipts: [],
   };

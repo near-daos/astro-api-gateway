@@ -104,7 +104,7 @@ export class NFTTokenService extends TypeOrmCrudService<NFTToken> {
     );
   }
 
-  async loadNFT(nftContractId: string, accountId: string, timestamp: number) {
+  async loadNFT(nftContractId: string, accountId: string, timestamp: string) {
     const contract = this.nearApiService.getContract<NFTokenContract>(
       'nft',
       nftContractId,

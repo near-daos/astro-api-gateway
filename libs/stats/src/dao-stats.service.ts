@@ -63,7 +63,10 @@ export class DaoStatsService {
     };
   }
 
-  async getLastDaoStats(daoId: string, timestamp?: number): Promise<DaoStats> {
+  async getLastDaoStats(
+    daoId: string,
+    timestamp?: number,
+  ): Promise<DaoStatsDto> {
     if (!timestamp) {
       timestamp = DateTime.now().minus({ day: 1 }).startOf('day').toMillis();
     }

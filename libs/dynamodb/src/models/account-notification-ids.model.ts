@@ -18,7 +18,7 @@ export function mapAccountNotificationIdsModel(
     entityId: buildEntityId(DynamoEntityType.AccountNotificationIds, accountId),
     entityType: DynamoEntityType.AccountNotificationIds,
     isArchived: false,
-    createTimestamp: Date.now(),
+    creatingTimeStamp: Date.now(),
     processingTimeStamp: Date.now(),
     accountId,
     notReadIds,

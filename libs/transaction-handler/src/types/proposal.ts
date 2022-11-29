@@ -28,7 +28,7 @@ export function castCreateProposal(
   signerId: string,
   proposal: SputnikDaoProposalOutput,
   dao: Dao | PartialEntity<DaoModel>,
-  timestamp: number,
+  timestamp: string,
 ): ProposalDto {
   const kind = castProposalKind(proposal.kind);
   const id = buildProposalId(dao.id, proposal.id);
@@ -76,7 +76,7 @@ export function castActProposal(
   signerId: string,
   proposal: Proposal | PartialEntity<ProposalModel>,
   proposalData: SputnikDaoProposalOutput,
-  timestamp: number,
+  timestamp: string,
   action: Action,
 ): ProposalDto {
   const kind = castProposalKind(proposal.kind);

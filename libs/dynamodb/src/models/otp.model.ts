@@ -16,7 +16,7 @@ export function mapOtpToOtpModel(otp: OTP): OtpModel {
     entityId: buildEntityId(DynamoEntityType.Otp, otp.key),
     entityType: DynamoEntityType.Otp,
     isArchived: false,
-    createTimestamp: Date.now(),
+    creatingTimeStamp: Date.now(),
     processingTimeStamp: Date.now(),
     key: otp.key,
     hash: otp.hash,

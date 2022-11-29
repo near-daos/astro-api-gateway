@@ -11,13 +11,11 @@ export abstract class TransactionEntity extends BaseEntity {
   @Column({ nullable: true })
   updateTransactionHash: string;
 
-  // TODO: use bigint
   @ApiProperty()
   @Column({ type: 'bigint', nullable: true })
-  createTimestamp: number;
+  createTimestamp: string; // nanoseconds
 
-  // TODO: use bigint
   @ApiProperty()
   @Column({ type: 'bigint', nullable: true })
-  updateTimestamp: number;
+  updateTimestamp: string; // nanoseconds
 }

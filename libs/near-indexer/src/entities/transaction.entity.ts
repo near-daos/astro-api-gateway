@@ -8,7 +8,7 @@ import {
   PrimaryColumn,
 } from 'typeorm';
 
-import { ExecutionOutcomeStatus } from '../types/execution-outcome-status';
+import { ExecutionOutcomeStatus } from '../types';
 import { Receipt } from './receipt.entity';
 import { TransactionAction } from './transaction-action.entity';
 
@@ -77,5 +77,5 @@ export class Transaction {
 
   @ApiProperty()
   @Column({ type: 'bigint' })
-  blockTimestamp: number;
+  blockTimestamp: string;
 }

@@ -54,7 +54,7 @@ export class ProposalOpensearchDto extends BaseOpensearchDto {
   commentsCount: number;
   permissions?: ProposalPermissions;
   transactionHash: string;
-  createTimestamp: number;
+  createTimestamp: string; // nanoseconds
 
   // optional fields depending on the kind
   config?: DaoConfig;
