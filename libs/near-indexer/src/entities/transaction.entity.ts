@@ -50,7 +50,7 @@ export class Transaction {
   signerPublicKey: string;
 
   @Column({ type: 'bigint' })
-  nonce: number;
+  nonce: string;
 
   @Column()
   signature: string;

@@ -92,10 +92,9 @@ export class Proposal extends TransactionEntity {
   })
   policyLabel: ProposalPolicyLabel;
 
-  // TODO: bigint
   @ApiProperty()
   @Column({ type: 'bigint' })
-  submissionTime: string;
+  submissionTime: string; // nanoseconds
 
   @ApiProperty({ type: 'object' })
   @Column({ type: 'simple-json' })
@@ -117,10 +116,9 @@ export class Proposal extends TransactionEntity {
   })
   actions: ProposalAction[];
 
-  // TODO: bigint
   @ApiProperty()
   @Column({ type: 'bigint', nullable: true })
-  votePeriodEnd: string;
+  votePeriodEnd: string; // nanoseconds
 
   @ApiProperty()
   @Column({ nullable: true })

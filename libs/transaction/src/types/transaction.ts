@@ -29,7 +29,7 @@ export function castEmptyTransaction(
     receiverAccountId: '',
     signerPublicKey: '',
     signature: '',
-    nonce: 0,
+    nonce: '0',
     status: ExecutionOutcomeStatus.Unknown,
     convertedIntoReceiptId: '',
     receiptConversionGasBurnt: '',

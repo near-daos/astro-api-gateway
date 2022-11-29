@@ -10,11 +10,11 @@ export class AssetsNftEvent {
 
   @ApiProperty()
   @PrimaryColumn({ type: 'bigint' })
-  emittedAtBlockTimestamp: number;
+  emittedAtBlockTimestamp: string; // nanoseconds
 
   @ApiProperty()
   @PrimaryColumn({ type: 'bigint' })
-  emittedInShardId: number;
+  emittedInShardId: string;
 
   @ApiProperty()
   @PrimaryColumn()

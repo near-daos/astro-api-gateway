@@ -5,7 +5,7 @@ import { Column, Entity, PrimaryColumn } from 'typeorm';
 export class LastBlock {
   @ApiProperty()
   @PrimaryColumn({ type: 'bigint' })
-  blockHeight: number;
+  blockHeight: string;
 
   @ApiProperty()
   @Column({ type: 'timestamp without time zone' })
@@ -13,5 +13,5 @@ export class LastBlock {
 
   @ApiProperty()
   @Column()
-  blockTimestamp: number;
+  blockTimestamp: string;
 }

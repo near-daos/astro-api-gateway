@@ -4,7 +4,7 @@ import { Column, Entity, Index, PrimaryColumn } from 'typeorm';
 export class Block {
   @Column({ type: 'int' })
   @Index()
-  blockHeight: number;
+  blockHeight: string;
 
   @PrimaryColumn('text')
   blockHash: string;
@@ -15,13 +15,13 @@ export class Block {
 
   @Column({ type: 'bigint' })
   @Index()
-  blockTimestamp: bigint;
+  blockTimestamp: string; // nanoseconds
 
   @Column({ type: 'bigint' })
-  totalSupply: bigint;
+  totalSupply: string;
 
   @Column({ type: 'bigint' })
-  gasPrice: bigint;
+  gasPrice: string;
 
   @Column('text')
   authorAccountId: string;
