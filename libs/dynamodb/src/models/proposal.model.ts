@@ -93,8 +93,12 @@ export function mapProposalToProposalModel(proposal: Proposal): ProposalModel {
     ),
     entityType: DynamoEntityType.Proposal,
     isArchived: proposal.isArchived,
-    creatingTimeStamp: proposal.createdAt.getTime(),
-    processingTimeStamp: proposal.updatedAt.getTime(),
+    creatingTimeStamp: proposal.createdAt
+      ? proposal.createdAt.getTime()
+      : undefined,
+    processingTimeStamp: proposal.updatedAt
+      ? proposal.updatedAt.getTime()
+      : undefined,
     transactionHash: proposal.transactionHash,
     updateTransactionHash: proposal.updateTransactionHash,
     createTimestamp: proposal.createTimestamp,

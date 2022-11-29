@@ -60,6 +60,8 @@ export function mapAccountNotificationSettingsToAccountNotificationSettingsItemM
     enableSms: accountNotificationSettings.enableSms,
     enableEmail: accountNotificationSettings.enableEmail,
     actionRequiredOnly: accountNotificationSettings.actionRequiredOnly,
-    creatingTimeStamp: accountNotificationSettings.createdAt.getTime(),
+    creatingTimeStamp: accountNotificationSettings.createdAt
+      ? accountNotificationSettings.createdAt.getTime()
+      : undefined,
   };
 }

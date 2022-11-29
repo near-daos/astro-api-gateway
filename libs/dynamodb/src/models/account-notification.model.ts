@@ -68,8 +68,12 @@ export function mapAccountNotificationToAccountNotificationModel(
     ),
     entityType: DynamoEntityType.AccountNotification,
     isArchived: !!accountNotification.isArchived,
-    creatingTimeStamp: accountNotification.createdAt.getTime(),
-    processingTimeStamp: accountNotification.updatedAt.getTime(),
+    creatingTimeStamp: accountNotification.createdAt
+      ? accountNotification.createdAt.getTime()
+      : undefined,
+    processingTimeStamp: accountNotification.updatedAt
+      ? accountNotification.updatedAt.getTime()
+      : undefined,
     accountId: accountNotification.accountId,
     id: accountNotification.id,
     notification: mapNotificationToNotificationModel(

@@ -16,8 +16,12 @@ export function mapSubscriptionToSubscriptionModel(
     entityId: buildEntityId(DynamoEntityType.Subscription, subscription.id),
     entityType: DynamoEntityType.Subscription,
     isArchived: subscription.isArchived,
-    creatingTimeStamp: subscription.createdAt.getTime(),
-    processingTimeStamp: subscription.updatedAt.getTime(),
+    creatingTimeStamp: subscription.createdAt
+      ? subscription.createdAt.getTime()
+      : undefined,
+    processingTimeStamp: subscription.updatedAt
+      ? subscription.updatedAt.getTime()
+      : undefined,
     id: subscription.id,
     accountId: subscription.accountId,
   };

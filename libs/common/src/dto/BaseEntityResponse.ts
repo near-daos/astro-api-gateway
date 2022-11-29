@@ -2,10 +2,10 @@ import { ApiProperty } from '@nestjsx/crud/lib/crud';
 
 export class BaseEntityResponseDto {
   @ApiProperty()
-  createdAt: Date;
+  createdAt?: Date;
 
   @ApiProperty()
-  updatedAt: Date;
+  updatedAt?: Date;
 
   @ApiProperty()
   isArchived: boolean;
