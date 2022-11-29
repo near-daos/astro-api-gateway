@@ -127,9 +127,7 @@ export class DynamodbService {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { partitionId, entityId, entityType, ...rest } = data;
     const dataToUpdate = { processingTimeStamp: Date.now(), ...rest };
-    const keys = Object.keys(dataToUpdate).filter(
-      (k) => dataToUpdate[k] !== undefined,
-    );
+    const keys = Object.keys(dataToUpdate);
 
     return this.client
       .update({
@@ -150,7 +148,8 @@ export class DynamodbService {
         ExpressionAttributeValues: keys.reduce(
           (accumulator, k, index) => ({
             ...accumulator,
-            [`:value${index}`]: dataToUpdate[k],
+            [`:value${index}`]:
+              dataToUpdate[k] === undefined ? null : dataToUpdate[k],
           }),
           {},
         ),
