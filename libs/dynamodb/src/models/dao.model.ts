@@ -141,8 +141,8 @@ export function mapRoleToDaoRoleModel(role: Role): DaoRoleModel {
     id: role.id,
     name: role.name,
     kind: role.kind,
-    ...(role.balance ? { balance: role.balance } : {}),
-    ...(role.accountIds ? { accountIds: role.accountIds } : {}),
+    balance: role.balance,
+    accountIds: role.accountIds,
     permissions: role.permissions,
     votePolicy: role.votePolicy,
   };
