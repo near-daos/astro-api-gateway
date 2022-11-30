@@ -1,7 +1,7 @@
 import * as AWS from 'aws-sdk';
 import DynamoDB, { DocumentClient } from 'aws-sdk/clients/dynamodb';
 import { ConfigService } from '@nestjs/config';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { buildEntityId, deepFilter, getChunks } from '@sputnik-v2/utils';
 import {
   CountItemsQuery,
@@ -14,8 +14,11 @@ import {
 
 @Injectable()
 export class DynamodbService {
+  private readonly logger = new Logger(DynamodbService.name);
+
   private client: AWS.DynamoDB.DocumentClient;
   private tableName: string;
+  private logging = false;
 
   constructor(private readonly configService: ConfigService) {
     const { region, endpoint, tableName, accessKeyId, secretAccessKey } =
@@ -34,7 +37,14 @@ export class DynamodbService {
       options = { ...options, endpoint };
     }
 
-    this.client = new AWS.DynamoDB.DocumentClient({ ...options });
+    const logger = this.logging
+      ? { log: this.logger.verbose.bind(this.logger) }
+      : undefined;
+
+    this.client = new AWS.DynamoDB.DocumentClient({
+      ...options,
+      logger,
+    });
     this.tableName = tableName;
   }
 
