@@ -6,7 +6,7 @@ import {
 } from '@sputnik-v2/draft-proposal';
 import { buildEntityId } from '@sputnik-v2/utils';
 import { BaseModel } from './base.model';
-import { DynamoEntityType } from '../types';
+import { DynamoEntityType, PartialEntity } from '../types';
 
 export class DraftProposalModel extends BaseModel {
   id: string;
@@ -35,9 +35,9 @@ export class DraftProposalHistoryModel {
 }
 
 export function mapDraftProposalToDraftProposalModel(
-  draftProposal: DraftProposal,
+  draftProposal: Partial<DraftProposal>,
   history?: DraftProposalHistory[],
-): DraftProposalModel {
+): PartialEntity<DraftProposalModel> {
   return {
     partitionId: draftProposal.daoId,
     entityId: buildEntityId(
@@ -45,7 +45,7 @@ export function mapDraftProposalToDraftProposalModel(
       String(draftProposal.id),
     ),
     entityType: DynamoEntityType.DraftProposal,
-    isArchived: draftProposal.isArchived,
+    isArchived: !!draftProposal.isArchived,
     creatingTimeStamp: draftProposal.createdAt
       ? draftProposal.createdAt.getTime()
       : undefined,

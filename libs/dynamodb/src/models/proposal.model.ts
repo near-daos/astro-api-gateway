@@ -12,7 +12,7 @@ import {
 import { Vote } from '@sputnik-v2/sputnikdao';
 import { buildEntityId } from '@sputnik-v2/utils';
 import { TransactionModel } from './transaction.model';
-import { DynamoEntityType } from '../types';
+import { DynamoEntityType, PartialEntity } from '../types';
 
 export class ProposalModel extends TransactionModel {
   id: string;
@@ -45,8 +45,8 @@ export class ProposalActionModel {
 }
 
 export function mapProposalDtoToProposalModel(
-  proposal: ProposalDto,
-): ProposalModel {
+  proposal: Partial<ProposalDto>,
+): PartialEntity<ProposalModel> {
   return {
     partitionId: proposal.daoId,
     entityId: buildEntityId(
@@ -84,7 +84,9 @@ export function mapProposalDtoToProposalModel(
   };
 }
 
-export function mapProposalToProposalModel(proposal: Proposal): ProposalModel {
+export function mapProposalToProposalModel(
+  proposal: Partial<Proposal>,
+): PartialEntity<ProposalModel> {
   return {
     partitionId: proposal.daoId,
     entityId: buildEntityId(
@@ -92,7 +94,7 @@ export function mapProposalToProposalModel(proposal: Proposal): ProposalModel {
       String(proposal.proposalId),
     ),
     entityType: DynamoEntityType.Proposal,
-    isArchived: proposal.isArchived,
+    isArchived: !!proposal.isArchived,
     creatingTimeStamp: proposal.createdAt
       ? proposal.createdAt.getTime()
       : undefined,
@@ -100,9 +102,9 @@ export function mapProposalToProposalModel(proposal: Proposal): ProposalModel {
       ? proposal.updatedAt.getTime()
       : undefined,
     transactionHash: proposal.transactionHash,
-    updateTransactionHash: proposal.updateTransactionHash,
+    updateTransactionHash: proposal.updateTransactionHash ?? proposal.transactionHash,
     createTimestamp: proposal.createTimestamp,
-    updateTimestamp: proposal.updateTimestamp,
+    updateTimestamp: proposal.updateTimestamp ?? proposal.createTimestamp,
     id: proposal.id,
     proposalId: proposal.proposalId,
     proposer: proposal.proposer,

@@ -14,12 +14,14 @@ export class DaoStatsModel extends BaseModel {
   totalProposalCount: number;
 }
 
-export function mapDaoStatsToDaoStatsModel(stats: DaoStats): DaoStatsModel {
+export function mapDaoStatsToDaoStatsModel(
+  stats: Partial<DaoStats>,
+): PartialEntity<DaoStatsModel> {
   return {
     partitionId: stats.daoId,
     entityId: buildEntityId(DynamoEntityType.DaoStats, stats.id),
     entityType: DynamoEntityType.DaoStats,
-    isArchived: stats.isArchived,
+    isArchived: !!stats.isArchived,
     creatingTimeStamp: stats.createdAt ? stats.createdAt.getTime() : undefined,
     processingTimeStamp: stats.updatedAt
       ? stats.updatedAt.getTime()
@@ -37,7 +39,7 @@ export function mapDaoStatsToDaoStatsModel(stats: DaoStats): DaoStatsModel {
 
 export function mapDaoStatsModelToDaoStats(
   stats: PartialEntity<DaoStatsModel>,
-): DaoStats {
+): Partial<DaoStats> {
   return {
     id: stats.id,
     daoId: stats.partitionId,
@@ -48,8 +50,12 @@ export function mapDaoStatsModelToDaoStats(
     nftCount: stats.nftCount,
     activeProposalCount: stats.activeProposalCount,
     totalProposalCount: stats.totalProposalCount,
-    isArchived: stats.isArchived,
-    createdAt: new Date(stats.creatingTimeStamp),
-    updatedAt: new Date(stats.processingTimeStamp),
+    isArchived: !!stats.isArchived,
+    createdAt: stats.creatingTimeStamp
+      ? new Date(stats.creatingTimeStamp)
+      : undefined,
+    updatedAt: stats.processingTimeStamp
+      ? new Date(stats.processingTimeStamp)
+      : undefined,
   };
 }

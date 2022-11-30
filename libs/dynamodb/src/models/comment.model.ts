@@ -4,7 +4,7 @@ import { DraftComment } from '@sputnik-v2/draft-comment/entities';
 import { DraftCommentContextType } from '@sputnik-v2/draft-comment/types';
 import { buildEntityId } from '@sputnik-v2/utils';
 import { BaseModel } from './base.model';
-import { DynamoEntityType } from '../types';
+import { DynamoEntityType, PartialEntity } from '../types';
 
 export class CommentModel extends BaseModel {
   id: string;
@@ -26,13 +26,13 @@ export class CommentReportModel {
 
 export function mapCommentToCommentModel(
   comment: Partial<Comment>,
-): CommentModel {
+): PartialEntity<CommentModel> {
   const entityType = mapCommentContextTypeToEntityType(comment.contextType);
   return {
     partitionId: comment.daoId,
     entityId: buildEntityId(entityType, `${comment.contextId}:${comment.id}`),
     entityType,
-    isArchived: comment.isArchived,
+    isArchived: !!comment.isArchived,
     creatingTimeStamp: comment.createdAt
       ? comment.createdAt.getTime()
       : undefined,
@@ -53,13 +53,13 @@ export function mapCommentToCommentModel(
 
 export function mapDraftCommentToCommentModel(
   comment: Partial<DraftComment>,
-): CommentModel {
+): PartialEntity<CommentModel> {
   const entityType = mapCommentContextTypeToEntityType(comment.contextType);
   return {
     partitionId: comment.daoId,
     entityId: buildEntityId(entityType, `${comment.contextId}:${comment.id}`),
     entityType,
-    isArchived: comment.isArchived,
+    isArchived: !!comment.isArchived,
     creatingTimeStamp: comment.createdAt
       ? comment.createdAt.getTime()
       : undefined,

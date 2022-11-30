@@ -49,7 +49,9 @@ export function mapBountyContextDtoToBountyModel(
   };
 }
 
-export function mapBountyDtoToBountyModel(bounty: BountyDto): BountyModel {
+export function mapBountyDtoToBountyModel(
+  bounty: Partial<BountyDto>,
+): PartialEntity<BountyModel> {
   return {
     partitionId: bounty.daoId,
     entityId: buildEntityId(
@@ -85,9 +87,9 @@ export function mapBountyDtoToBountyModel(bounty: BountyDto): BountyModel {
 }
 
 export function mapBountyToBountyModel(
-  bounty: Bounty,
+  bounty: Partial<Bounty>,
   proposalIndex: number,
-): BountyModel {
+): PartialEntity<BountyModel> {
   return {
     partitionId: bounty.daoId,
     entityId: buildEntityId(DynamoEntityType.Bounty, String(proposalIndex)),

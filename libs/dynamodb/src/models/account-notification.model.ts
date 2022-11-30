@@ -8,7 +8,7 @@ import {
 import { buildEntityId } from '@sputnik-v2/utils';
 import { NOTIFICATION_TTL } from '@sputnik-v2/common';
 import { BaseModel } from './base.model';
-import { DynamoEntityType } from '../types';
+import { DynamoEntityType, PartialEntity } from '../types';
 
 export class AccountNotificationModel extends BaseModel {
   id: string;
@@ -32,8 +32,8 @@ export class NotificationModel {
 }
 
 export function mapAccountNotificationDtoToAccountNotificationModel(
-  accountNotification: AccountNotificationDto,
-): AccountNotificationModel {
+  accountNotification: Partial<AccountNotificationDto>,
+): PartialEntity<AccountNotificationModel> {
   return {
     partitionId: accountNotification.accountId,
     entityId: buildEntityId(
@@ -58,8 +58,8 @@ export function mapAccountNotificationDtoToAccountNotificationModel(
 }
 
 export function mapAccountNotificationToAccountNotificationModel(
-  accountNotification: AccountNotification,
-): AccountNotificationModel {
+  accountNotification: Partial<AccountNotification>,
+): PartialEntity<AccountNotificationModel> {
   return {
     partitionId: accountNotification.accountId,
     entityId: buildEntityId(

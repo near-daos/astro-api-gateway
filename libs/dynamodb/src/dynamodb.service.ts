@@ -2,7 +2,7 @@ import * as AWS from 'aws-sdk';
 import DynamoDB, { DocumentClient } from 'aws-sdk/clients/dynamodb';
 import { ConfigService } from '@nestjs/config';
 import { Injectable } from '@nestjs/common';
-import { buildEntityId, getChunks } from '@sputnik-v2/utils';
+import { buildEntityId, deepFilter, getChunks } from '@sputnik-v2/utils';
 import {
   CountItemsQuery,
   DynamoEntityType,
@@ -126,7 +126,13 @@ export class DynamodbService {
   ): Promise<PartialEntity<M> | undefined> {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { partitionId, entityId, entityType, ...rest } = data;
-    const dataToUpdate = { processingTimeStamp: Date.now(), ...rest };
+    const dataToUpdate = deepFilter(
+      {
+        processingTimeStamp: Date.now(),
+        ...rest,
+      },
+      ([, value]) => value !== undefined,
+    );
     const keys = Object.keys(dataToUpdate);
 
     return this.client
@@ -148,8 +154,7 @@ export class DynamodbService {
         ExpressionAttributeValues: keys.reduce(
           (accumulator, k, index) => ({
             ...accumulator,
-            [`:value${index}`]:
-              dataToUpdate[k] === undefined ? null : dataToUpdate[k],
+            [`:value${index}`]: dataToUpdate[k],
           }),
           {},
         ),
@@ -292,11 +297,14 @@ export class DynamodbService {
     tableName = this.tableName,
   ): Promise<PartialEntity<M>> {
     const timestamp = Date.now();
-    const dataToPut: PartialEntity<M> = {
-      creatingTimeStamp: timestamp,
-      processingTimeStamp: timestamp,
-      ...data,
-    };
+    const dataToPut = deepFilter(
+      {
+        creatingTimeStamp: timestamp,
+        processingTimeStamp: timestamp,
+        ...data,
+      },
+      ([, value]) => value !== undefined,
+    );
     return this.client
       .put({
         TableName: tableName,

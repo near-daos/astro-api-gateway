@@ -1,6 +1,6 @@
 import { Account, AccountDto } from '@sputnik-v2/account';
 import { buildEntityId } from '@sputnik-v2/utils';
-import { DynamoEntityType } from '../types';
+import { DynamoEntityType, PartialEntity } from '../types';
 import { BaseModel } from './base.model';
 
 export class AccountModel extends BaseModel {
@@ -13,7 +13,9 @@ export class AccountModel extends BaseModel {
   notifiAlertId?: string;
 }
 
-export function mapAccountDtoToAccountModel(account: AccountDto): AccountModel {
+export function mapAccountDtoToAccountModel(
+  account: Partial<AccountDto>,
+): PartialEntity<AccountModel> {
   return {
     partitionId: account.accountId,
     entityId: buildEntityId(DynamoEntityType.Account, account.accountId),
@@ -31,7 +33,9 @@ export function mapAccountDtoToAccountModel(account: AccountDto): AccountModel {
   };
 }
 
-export function mapAccountToAccountModel(account: Account): AccountModel {
+export function mapAccountToAccountModel(
+  account: Partial<Account>,
+): PartialEntity<AccountModel> {
   return {
     partitionId: account.accountId,
     entityId: buildEntityId(DynamoEntityType.Account, account.accountId),

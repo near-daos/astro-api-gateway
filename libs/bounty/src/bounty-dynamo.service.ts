@@ -25,7 +25,7 @@ export class BountyDynamoService {
     return this.dynamoDbService.batchPut<BountyModel>(bounty);
   }
 
-  async saveBounty(bountyDto: BountyDto) {
+  async saveBounty(bountyDto: Partial<BountyDto>) {
     return this.dynamoDbService.saveItem<BountyModel>(
       mapBountyDtoToBountyModel(bountyDto),
     );

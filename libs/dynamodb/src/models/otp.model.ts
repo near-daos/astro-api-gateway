@@ -1,6 +1,6 @@
 import { OTP } from '@sputnik-v2/otp/entities/OTP.entity';
 import { buildEntityId } from '@sputnik-v2/utils';
-import { DynamoEntityType } from '../types';
+import { DynamoEntityType, PartialEntity } from '../types';
 import { BaseModel } from './base.model';
 
 export class OtpModel extends BaseModel {
@@ -10,7 +10,7 @@ export class OtpModel extends BaseModel {
   ttl: number;
 }
 
-export function mapOtpToOtpModel(otp: OTP): OtpModel {
+export function mapOtpToOtpModel(otp: Partial<OTP>): PartialEntity<OtpModel> {
   return {
     partitionId: DynamoEntityType.Otp,
     entityId: buildEntityId(DynamoEntityType.Otp, otp.key),

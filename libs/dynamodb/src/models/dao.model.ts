@@ -10,7 +10,7 @@ import {
 import { DaoSettingsDto } from '@sputnik-v2/dao-settings';
 import { buildEntityId } from '@sputnik-v2/utils';
 import { TransactionModel } from './transaction.model';
-import { DynamoEntityType } from '../types';
+import { DynamoEntityType, PartialEntity } from '../types';
 import { TokenBalanceModel } from '../models';
 
 export class DaoModel extends TransactionModel {
@@ -78,19 +78,19 @@ export class DaoDelegationModel {
   delegators: Record<string, any>;
 }
 
-export function mapDaoToDaoModel(dao: Dao): DaoModel {
+export function mapDaoToDaoModel(dao: Partial<Dao>): PartialEntity<DaoModel> {
   return {
     partitionId: dao.id,
     entityId: buildEntityId(DynamoEntityType.Dao, dao.id),
     entityType: DynamoEntityType.Dao,
-    isArchived: dao.isArchived,
+    isArchived: !!dao.isArchived,
     creatingTimeStamp: dao.createdAt ? dao.createdAt.getTime() : undefined,
     processingTimeStamp: dao.updatedAt ? dao.updatedAt.getTime() : undefined,
     id: dao.id,
     transactionHash: dao.transactionHash,
-    updateTransactionHash: dao.updateTransactionHash,
+    updateTransactionHash: dao.updateTransactionHash ?? dao.transactionHash,
     createTimestamp: dao.createTimestamp,
-    updateTimestamp: dao.updateTimestamp,
+    updateTimestamp: dao.updateTimestamp ?? dao.createTimestamp,
     metadata: dao.metadata,
     amount: dao.amount,
     totalSupply: dao.totalSupply,
@@ -119,7 +119,9 @@ export function mapDaoToDaoModel(dao: Dao): DaoModel {
     daoVersion: dao.daoVersion
       ? mapDaoVersionToDaoVersionModel(dao.daoVersion)
       : undefined,
-    delegations: dao.delegations?.map(mapDelegationToDaoDelegationModel),
+    delegations: dao.delegations
+      ? dao.delegations.map(mapDelegationToDaoDelegationModel)
+      : [],
   };
 }
 
