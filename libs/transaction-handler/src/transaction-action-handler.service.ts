@@ -192,14 +192,14 @@ export class TransactionActionHandlerService {
     if (errors.length > 0) {
       const errorMessages = errors.map((error) => error.toString()).join('; ');
       this.logger.error(
-        `Handling transaction ${action.transactionHash} failed with errors: ${errorMessages}`,
+        `Handling transaction action ${action.transactionHash}:${action.receiptId}:${action.indexInReceipt} failed with errors: ${errorMessages}`,
       );
       throw new Error(errorMessages);
     } else {
       await this.handledReceiptActionDynamoService.save(action);
 
       this.logger.log(
-        `Transaction successfully handled: ${action.transactionHash}`,
+        `Transaction action successfully handled: ${action.transactionHash}:${action.receiptId}:${action.indexInReceipt}`,
       );
     }
 
