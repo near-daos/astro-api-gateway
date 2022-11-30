@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Dao, DaoVersionDto } from '@sputnik-v2/dao';
 import { DaoSettings } from '@sputnik-v2/dao-settings';
 import {
+  DaoDelegationModel,
   DaoIdsModel,
   DynamoEntityType,
   mapDaoIdsToDaoIdsModel,
@@ -44,6 +45,34 @@ export class DaoDynamoService {
     });
   }
 
+  async saveDelegation(delegation: DaoDelegationModel) {
+    const dao = await this.get(delegation.daoId);
+
+    if (dao) {
+      const delegations = dao.delegations;
+      const index = delegations.findIndex((d) => d.id === delegation.id);
+
+      if (index >= 0) {
+        delegations[index] = {
+          ...delegations[index],
+          ...delegation,
+        };
+      } else {
+        delegations.push(delegation);
+      }
+      const delegationAccounts = delegations.map(({ accountId }) => accountId);
+      const accountIds = [
+        ...new Set(dao.accountIds.concat(delegationAccounts)),
+      ].filter((accountId) => accountId);
+
+      await this.save(delegation.daoId, {
+        delegations,
+        accountIds,
+        numberOfMembers: accountIds.length,
+      });
+    }
+  }
+
   async get(daoId: string) {
     return this.dynamoDbService.getItemByType<DaoModel>(
       daoId,
@@ -59,5 +88,15 @@ export class DaoDynamoService {
       '1',
     );
     return daoIdsModel?.ids || [];
+  }
+
+  async getDelegations(daoId: string): Promise<DaoDelegationModel[]> {
+    return (
+      await this.dynamoDbService.getItemByType<DaoModel>(
+        daoId,
+        DynamoEntityType.Dao,
+        daoId,
+      )
+    ).delegations;
   }
 }

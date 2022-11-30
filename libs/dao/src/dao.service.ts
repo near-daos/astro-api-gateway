@@ -25,6 +25,7 @@ import {
   NearSputnikDaoFactoryContract,
 } from '@sputnik-v2/near-api';
 import {
+  DaoDelegationModel,
   DaoModel,
   PartialEntity,
   TokenBalanceModel,
@@ -493,16 +494,30 @@ export class DaoService extends TypeOrmCrudService<Dao> {
   async saveDelegation(
     delegationDto: Partial<DelegationDto>,
   ): Promise<Delegation> {
-    const { daoId, accountId } = delegationDto;
+    const { daoId, accountId, balance, delegators } = delegationDto;
+    const id = buildDelegationId(daoId, accountId);
 
+    await this.daoDynamoService.saveDelegation({
+      id,
+      daoId,
+      accountId,
+      balance,
+      delegators,
+    });
     return this.delegationRepository.save({
       ...delegationDto,
-      id: buildDelegationId(daoId, accountId),
+      id,
     });
   }
 
-  async getDelegationsByDaoId(daoId: string): Promise<Delegation[]> {
-    return this.delegationRepository.find({ where: { daoId } });
+  async getDelegationsByDaoId(
+    daoId: string,
+  ): Promise<Array<Delegation | DaoDelegationModel>> {
+    if (await this.useDynamoDB()) {
+      return this.daoDynamoService.getDelegations(daoId);
+    } else {
+      return this.delegationRepository.find({ where: { daoId } });
+    }
   }
 
   async getDelegationAccountsByDaoId(daoId: string): Promise<string[]> {
