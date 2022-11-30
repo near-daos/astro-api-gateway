@@ -4,7 +4,7 @@ import {
 } from '@sputnik-v2/proposal-template';
 import { buildEntityId } from '@sputnik-v2/utils';
 import { BaseModel } from './base.model';
-import { DynamoEntityType } from '../types';
+import { DynamoEntityType, PartialEntity } from '../types';
 
 export class SharedProposalTemplateModel extends BaseModel {
   id: string;
@@ -16,8 +16,8 @@ export class SharedProposalTemplateModel extends BaseModel {
 }
 
 export function mapSharedProposalTemplateToSharedProposalTemplateModel(
-  sharedProposalTemplate: SharedProposalTemplate,
-): SharedProposalTemplateModel {
+  sharedProposalTemplate: Partial<SharedProposalTemplate>,
+): PartialEntity<SharedProposalTemplateModel> {
   return {
     partitionId: sharedProposalTemplate.id,
     entityId: buildEntityId(
@@ -25,9 +25,13 @@ export function mapSharedProposalTemplateToSharedProposalTemplateModel(
       sharedProposalTemplate.id,
     ),
     entityType: DynamoEntityType.SharedProposalTemplate,
-    isArchived: sharedProposalTemplate.isArchived,
-    createTimestamp: sharedProposalTemplate.createdAt.getTime(),
-    processingTimeStamp: sharedProposalTemplate.updatedAt.getTime(),
+    isArchived: !!sharedProposalTemplate.isArchived,
+    createTimestamp: sharedProposalTemplate.createdAt
+      ? sharedProposalTemplate.createdAt.getTime()
+      : undefined,
+    processingTimeStamp: sharedProposalTemplate.updatedAt
+      ? sharedProposalTemplate.updatedAt.getTime()
+      : undefined,
     id: sharedProposalTemplate.id,
     createdBy: sharedProposalTemplate.createdBy,
     name: sharedProposalTemplate.name,

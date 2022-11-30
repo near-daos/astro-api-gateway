@@ -13,13 +13,13 @@ import { NFTTokenDto } from '@sputnik-v2/token';
 export class NFTTokenDynamoService {
   constructor(private readonly dynamoDbService: DynamodbService) {}
 
-  async save(nft: NFTTokenDto) {
+  async save(nft: Partial<NFTTokenDto>) {
     return this.dynamoDbService.saveItem<NftModel>(
       mapNftTokenDtoToNftModel(nft),
     );
   }
 
-  async saveMultiple(nfts: NFTTokenDto[]) {
+  async saveMultiple(nfts: Partial<NFTTokenDto>[]) {
     return this.dynamoDbService.batchPut<NftModel>(
       nfts.map((nft) => mapNftTokenDtoToNftModel(nft)),
     );

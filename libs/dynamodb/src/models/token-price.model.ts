@@ -1,21 +1,25 @@
 import { Token } from '@sputnik-v2/token/entities';
 import { buildEntityId } from '@sputnik-v2/utils';
 import { TransactionModel } from './transaction.model';
-import { DynamoEntityType } from '../types';
+import { DynamoEntityType, PartialEntity } from '../types';
 
 export class TokenPriceModel extends TransactionModel {
   price: string;
   decimals: number;
 }
 
-export function mapTokenToTokenPriceModel(token: Token): TokenPriceModel {
+export function mapTokenToTokenPriceModel(
+  token: Partial<Token>,
+): PartialEntity<TokenPriceModel> {
   return {
     partitionId: token.id,
     entityId: buildEntityId(DynamoEntityType.TokenPrice, token.id),
     entityType: DynamoEntityType.TokenPrice,
     isArchived: false,
-    createTimestamp: token.createdAt.getTime(),
-    processingTimeStamp: token.updatedAt.getTime(),
+    createTimestamp: token.createdAt ? token.createdAt.getTime() : undefined,
+    processingTimeStamp: token.updatedAt
+      ? token.updatedAt.getTime()
+      : undefined,
     transactionHash: token.transactionHash,
     updateTransactionHash: token.updateTransactionHash || token.transactionHash,
     createBlockTimestamp: token.createTimestamp,

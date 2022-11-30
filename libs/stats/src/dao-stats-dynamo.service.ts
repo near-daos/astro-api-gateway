@@ -17,7 +17,7 @@ export class DaoStatsDynamoService {
     return this.dynamoDbService.saveItem<DaoStatsModel>(daoStats);
   }
 
-  async saveDaoStats(daoStats: DaoStats) {
+  async saveDaoStats(daoStats: Partial<DaoStats>) {
     return this.save(mapDaoStatsToDaoStatsModel(daoStats));
   }
 

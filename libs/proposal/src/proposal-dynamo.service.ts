@@ -28,13 +28,13 @@ export class ProposalDynamoService {
     );
   }
 
-  async saveProposal(proposal: Proposal) {
+  async saveProposal(proposal: Partial<Proposal>) {
     return this.dynamoDbService.saveItem<ProposalModel>(
       mapProposalToProposalModel(proposal),
     );
   }
 
-  async saveProposalDto(proposal: ProposalDto) {
+  async saveProposalDto(proposal: Partial<ProposalDto>) {
     return this.dynamoDbService.saveItem<ProposalModel>(
       mapProposalDtoToProposalModel(proposal),
     );

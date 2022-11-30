@@ -290,3 +290,27 @@ export const getChunks = (arr: Array<any>, chunkSize: number) => {
 
   return chunks;
 };
+
+export const deepFilter = (
+  value: Record<string, any> | any,
+  filter: (
+    value: [string, any],
+    index: number,
+    array: [string, any][],
+  ) => boolean,
+) => {
+  if (typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value).reduce((acc, [key, value], index, array) => {
+        if (typeof value === 'object') {
+          acc.push([key, deepFilter(value, filter)]);
+        } else if (filter([key, value], index, array) === true) {
+          acc.push([key, value]);
+        }
+        return acc;
+      }, []),
+    );
+  } else {
+    return value;
+  }
+};

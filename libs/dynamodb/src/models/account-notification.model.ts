@@ -8,7 +8,7 @@ import {
 import { buildEntityId } from '@sputnik-v2/utils';
 import { NOTIFICATION_TTL } from '@sputnik-v2/common';
 import { BaseModel } from './base.model';
-import { DynamoEntityType } from '../types';
+import { DynamoEntityType, PartialEntity } from '../types';
 
 export class AccountNotificationModel extends BaseModel {
   id: string;
@@ -32,8 +32,8 @@ export class NotificationModel {
 }
 
 export function mapAccountNotificationDtoToAccountNotificationModel(
-  accountNotification: AccountNotificationDto,
-): AccountNotificationModel {
+  accountNotification: Partial<AccountNotificationDto>,
+): PartialEntity<AccountNotificationModel> {
   return {
     partitionId: accountNotification.accountId,
     entityId: buildEntityId(
@@ -58,8 +58,8 @@ export function mapAccountNotificationDtoToAccountNotificationModel(
 }
 
 export function mapAccountNotificationToAccountNotificationModel(
-  accountNotification: AccountNotification,
-): AccountNotificationModel {
+  accountNotification: Partial<AccountNotification>,
+): PartialEntity<AccountNotificationModel> {
   return {
     partitionId: accountNotification.accountId,
     entityId: buildEntityId(
@@ -68,8 +68,12 @@ export function mapAccountNotificationToAccountNotificationModel(
     ),
     entityType: DynamoEntityType.AccountNotification,
     isArchived: !!accountNotification.isArchived,
-    createTimestamp: accountNotification.createdAt.getTime(),
-    processingTimeStamp: accountNotification.updatedAt.getTime(),
+    createTimestamp: accountNotification.createdAt
+      ? accountNotification.createdAt.getTime()
+      : undefined,
+    processingTimeStamp: accountNotification.updatedAt
+      ? accountNotification.updatedAt.getTime()
+      : undefined,
     accountId: accountNotification.accountId,
     id: accountNotification.id,
     notification: mapNotificationToNotificationModel(
