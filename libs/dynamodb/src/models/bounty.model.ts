@@ -96,8 +96,12 @@ export function mapBountyToBountyModel(
     transactionHash: bounty.transactionHash,
     updateTransactionHash:
       bounty.updateTransactionHash || bounty.transactionHash,
-    creatingTimeStamp: bounty.createdAt.getTime(),
-    processingTimeStamp: bounty.updatedAt.getTime(),
+    creatingTimeStamp: bounty.createdAt
+      ? bounty.createdAt.getTime()
+      : undefined,
+    processingTimeStamp: bounty.updatedAt
+      ? bounty.updatedAt.getTime()
+      : undefined,
     createTimestamp: bounty.createTimestamp,
     updateTimestamp: bounty.updateTimestamp || bounty.createTimestamp,
     id: bounty.id,
