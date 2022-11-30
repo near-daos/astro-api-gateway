@@ -41,7 +41,7 @@ export class DaoModel extends TransactionModel {
   policy?: DaoPolicyModel;
   config?: DaoConfig;
   daoVersion?: DaoVersionModel;
-  delegations?: DaoDelegationModel[];
+  delegations: DaoDelegationModel[];
   settings?: DaoSettingsDto;
 }
 
@@ -73,6 +73,7 @@ export class DaoVersionModel {
 
 export class DaoDelegationModel {
   id: string;
+  daoId: string;
   accountId: string;
   balance: string;
   delegators: Record<string, any>;
@@ -164,6 +165,7 @@ export function mapDelegationToDaoDelegationModel(
 ): DaoDelegationModel {
   return {
     id: delegation.id,
+    daoId: delegation.daoId,
     accountId: delegation.accountId,
     balance: delegation.balance,
     delegators: delegation.delegators,

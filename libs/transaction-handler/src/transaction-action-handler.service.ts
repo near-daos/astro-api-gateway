@@ -915,7 +915,7 @@ export class TransactionActionHandlerService {
       daoId,
     );
 
-    const dao = await this.daoService.findOne(daoId);
+    const dao = await this.daoService.findById(daoId);
     if (!dao.stakingContract) {
       this.logger.warn(
         `Inconsistent state - no staking contract registered for DAO ${daoId}.`,
@@ -976,7 +976,6 @@ export class TransactionActionHandlerService {
       relations: ['delegations'],
     });
     await this.opensearchService.indexDao(dao.id, daoById);
-    await this.daoDynamoService.saveDao(daoById);
 
     return { type: ContractHandlerResultType.Delegate };
   }

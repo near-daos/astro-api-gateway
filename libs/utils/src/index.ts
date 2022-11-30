@@ -293,7 +293,7 @@ export const deepFilter = (
     array: [string, any][],
   ) => boolean,
 ) => {
-  if (typeof value === 'object') {
+  if (typeof value === 'object' && value !== null) {
     return Object.fromEntries(
       Object.entries(value).reduce((acc, [key, value], index, array) => {
         if (typeof value === 'object') {
