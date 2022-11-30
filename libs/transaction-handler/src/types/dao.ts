@@ -178,7 +178,7 @@ export function castActProposalDao({
     id: dao.id,
     config: config ?? dao.config,
     ...daoPolicy,
-    metadata: dao.metadata,
+    metadata: config ? btoaJSON(config.metadata) : dao.metadata,
     amount: amount ?? dao.amount,
     status: dao.status,
     totalSupply: dao.totalSupply,
