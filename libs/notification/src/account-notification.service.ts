@@ -37,7 +37,7 @@ export class AccountNotificationService extends TypeOrmCrudService<AccountNotifi
   }
 
   async createMultiple(
-    accountNotificationsDto: AccountNotificationDto[],
+    accountNotificationsDto: Partial<AccountNotificationDto>[],
   ): Promise<AccountNotification[]> {
     const models = accountNotificationsDto.map((accountNotification) =>
       mapAccountNotificationDtoToAccountNotificationModel(accountNotification),

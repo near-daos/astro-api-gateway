@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DaoDynamoService } from '@sputnik-v2/dao';
+import { DaoStatsModel } from '@sputnik-v2/dynamodb';
 import { Repository } from 'typeorm';
 import { DateTime } from 'luxon';
 
@@ -63,7 +64,10 @@ export class DaoStatsService {
     };
   }
 
-  async getLastDaoStats(daoId: string, timestamp?: number): Promise<DaoStats> {
+  async getLastDaoStats(
+    daoId: string,
+    timestamp?: number,
+  ): Promise<Partial<DaoStats>> {
     if (!timestamp) {
       timestamp = DateTime.now().minus({ day: 1 }).startOf('day').toMillis();
     }
@@ -80,7 +84,7 @@ export class DaoStatsService {
 
   async getDaoStatsState(
     daoStats: DaoStatsDto,
-    previousDaoStats: DaoStatsDto,
+    previousDaoStats: Partial<DaoStatsModel>,
   ): Promise<DaoStatsStateDto> {
     return {
       daoId: daoStats.daoId,
@@ -114,7 +118,7 @@ export class DaoStatsService {
   ): Promise<StatsEntryDto[]> {
     const currentDaoStats = await this.getDaoStats(daoId);
 
-    let daoStats: DaoStats[];
+    let daoStats: Partial<DaoStats>[];
 
     if (await this.useDynamoDB()) {
       daoStats = await this.daoStatsDynamoService.queryDaoStats(daoId, {
@@ -145,7 +149,7 @@ export class DaoStatsService {
   ): Promise<ProposalStatsEntryDto[]> {
     const currentDaoStats = await this.getDaoStats(daoId);
 
-    let daoStats: DaoStats[];
+    let daoStats: Partial<DaoStats>[];
 
     if (await this.useDynamoDB()) {
       daoStats = await this.daoStatsDynamoService.queryDaoStats(daoId, {

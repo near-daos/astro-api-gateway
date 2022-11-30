@@ -5,7 +5,7 @@ import {
 } from '@sputnik-v2/token/entities';
 import { buildEntityId } from '@sputnik-v2/utils';
 import { BaseModel } from './base.model';
-import { DynamoEntityType } from '../types';
+import { DynamoEntityType, PartialEntity } from '../types';
 import {
   NFTTokenContractDto,
   NFTTokenDto,
@@ -51,7 +51,9 @@ export class NftMetadataModel {
   approvedAccountIds: string[];
 }
 
-export function mapNftTokenDtoToNftModel(nft: NFTTokenDto): NftModel {
+export function mapNftTokenDtoToNftModel(
+  nft: Partial<NFTTokenDto>,
+): PartialEntity<NftModel> {
   return {
     partitionId: nft.accountId,
     entityId: buildEntityId(DynamoEntityType.Nft, nft.id),
@@ -70,22 +72,28 @@ export function mapNftTokenDtoToNftModel(nft: NFTTokenDto): NftModel {
   };
 }
 
-export function mapNftTokenToNftModel(nft: NFTToken): NftModel {
+export function mapNftTokenToNftModel(
+  nft: Partial<NFTToken>,
+): PartialEntity<NftModel> {
   return {
     partitionId: nft.accountId,
     entityId: buildEntityId(DynamoEntityType.Nft, nft.id),
     entityType: DynamoEntityType.Nft,
     isArchived: !!nft.isArchived,
-    createTimestamp: nft.createdAt.getTime(),
-    processingTimeStamp: nft.updatedAt.getTime(),
+    createTimestamp: nft.createdAt ? nft.createdAt.getTime() : undefined,
+    processingTimeStamp: nft.updatedAt ? nft.updatedAt.getTime() : undefined,
     id: nft.id,
     ownerId: nft.ownerId,
     tokenId: nft.tokenId,
     accountId: nft.accountId,
     minter: nft.minter,
     contractId: nft.contractId,
-    contract: mapNftContractToNftContractModel(nft.contract),
-    metadata: mapNftMetadataToNftMetadataModel(nft.metadata),
+    contract: nft.contract
+      ? mapNftContractToNftContractModel(nft.contract)
+      : undefined,
+    metadata: nft.metadata
+      ? mapNftMetadataToNftMetadataModel(nft.metadata)
+      : undefined,
   };
 }
 

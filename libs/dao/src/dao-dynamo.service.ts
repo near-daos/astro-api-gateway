@@ -24,7 +24,7 @@ export class DaoDynamoService {
     );
   }
 
-  async saveDao(dao: Dao) {
+  async saveDao(dao: Partial<Dao>) {
     return this.dynamoDbService.saveItem<DaoModel>(mapDaoToDaoModel(dao));
   }
 

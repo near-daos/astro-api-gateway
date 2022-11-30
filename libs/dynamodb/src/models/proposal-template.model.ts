@@ -4,7 +4,7 @@ import {
 } from '@sputnik-v2/proposal-template';
 import { buildEntityId } from '@sputnik-v2/utils';
 import { BaseModel } from './base.model';
-import { DynamoEntityType } from '../types';
+import { DynamoEntityType, PartialEntity } from '../types';
 
 export class ProposalTemplateModel extends BaseModel {
   id: string;
@@ -14,8 +14,8 @@ export class ProposalTemplateModel extends BaseModel {
 }
 
 export function mapProposalTemplateToProposalTemplateModel(
-  proposalTemplate: ProposalTemplate,
-): ProposalTemplateModel {
+  proposalTemplate: Partial<ProposalTemplate>,
+): PartialEntity<ProposalTemplateModel> {
   return {
     partitionId: proposalTemplate.daoId,
     entityId: buildEntityId(
@@ -23,9 +23,13 @@ export function mapProposalTemplateToProposalTemplateModel(
       proposalTemplate.id,
     ),
     entityType: DynamoEntityType.ProposalTemplate,
-    isArchived: proposalTemplate.isArchived,
-    createTimestamp: proposalTemplate.createdAt.getTime(),
-    processingTimeStamp: proposalTemplate.updatedAt.getTime(),
+    isArchived: !!proposalTemplate.isArchived,
+    createTimestamp: proposalTemplate.createdAt
+      ? proposalTemplate.createdAt.getTime()
+      : undefined,
+    processingTimeStamp: proposalTemplate.updatedAt
+      ? proposalTemplate.updatedAt.getTime()
+      : undefined,
     id: proposalTemplate.id,
     name: proposalTemplate.name,
     isEnabled: proposalTemplate.isEnabled,
