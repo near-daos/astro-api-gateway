@@ -40,6 +40,14 @@ export class BountyDynamoService {
     );
   }
 
+  async get(daoId: string, proposalIndex: number) {
+    return this.dynamoDbService.getItemByType<BountyModel>(
+      daoId,
+      DynamoEntityType.Bounty,
+      String(proposalIndex),
+    );
+  }
+
   async archive(daoId: string, proposalId: number, isArchived = true) {
     return this.dynamoDbService.archiveItemByType<BountyModel>(
       daoId,

@@ -343,6 +343,7 @@ export class TransactionActionHandlerService {
     await this.opensearchService.indexProposal(proposal.id, proposalById);
     await this.opensearchService.indexDao(proposal.daoId, daoById);
     await this.proposalDynamoService.saveProposal(proposalById);
+    // TODO: dont schedule event if proposal is already expired
     await this.proposalDynamoService.saveScheduleProposalExpireEvent(
       proposal.daoId,
       proposal.proposalId,
@@ -535,11 +536,9 @@ export class TransactionActionHandlerService {
       }
 
       if (proposalKindType === ProposalType.AddBounty) {
-        lastBountyId = await daoContract.get_last_bounty_id();
-        await this.handleAddBounty(
+        lastBountyId = await this.handleAddBounty(
           dao,
           proposal,
-          lastBountyId,
           transactionHash,
           timestamp,
         );
@@ -688,31 +687,45 @@ export class TransactionActionHandlerService {
   async handleAddBounty(
     dao: Dao | PartialEntity<DaoModel>,
     proposal: ProposalDto,
-    lastBountyId: number,
     transactionHash: string,
     timestamp: string,
-  ) {
+  ): Promise<number> {
     const { bounty: bountyData } = proposal.kind?.kind as ProposalKindAddBounty;
-    const daoBounty = await this.sputnikService.findLastBounty(
+
+    const bounty = await this.bountyService.findByProposalIndex(
       dao.id,
-      lastBountyId,
-      bountyData,
+      proposal.proposalId,
     );
 
-    if (!daoBounty) {
-      this.logger.warn(
-        `Bounty ${lastBountyId} not found for DAO ${dao.id}. Skip transaction ${transactionHash}`,
-      );
-      return;
-    }
-
-    const bountyId = daoBounty.id;
-    const bounty = await this.bountyService.findById(dao.id, bountyId);
+    let bountyId;
 
     if (bounty) {
       this.logger.log('Bounty has already been created');
+      bountyId = bounty.id;
     } else {
       this.logger.log('Storing new Bounty due to transaction');
+
+      // Try to find bounty in contract `get_bounties()` but this method does not always work,
+      // because bounties data mutates in contract as well as `times` property
+      const daoBounty = await this.sputnikService.findLastBounty(
+        dao.id,
+        bountyData,
+      );
+
+      if (daoBounty) {
+        // bounty is found, so we know its id
+        bountyId = daoBounty.id;
+      } else {
+        // bounty is not found, calculate it's id as total count
+        bountyId = await this.bountyService.getBountiesCount(dao.id);
+
+        this.logger.log(
+          `Bounty ${JSON.stringify(bountyData)} not found in DAO ${
+            dao.id
+          }. Calculated Bounty ID: ${bountyId}`,
+        );
+      }
+
       await this.bountyService.create(
         castAddBounty(
           dao,
@@ -737,7 +750,9 @@ export class TransactionActionHandlerService {
         ],
       },
     );
-    await this.opensearchService.indexBounty(bounty.id, bountyById);
+    await this.opensearchService.indexBounty(bountyById.id, bountyById);
+
+    return bountyId;
   }
 
   async handleDoneBounty(

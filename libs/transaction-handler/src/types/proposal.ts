@@ -45,6 +45,7 @@ export function castCreateProposal(
       kind.kind.type === ProposalType.BountyDone
         ? buildBountyId(dao.id, kind.kind.bountyId)
         : null,
+    // TODO: set current status from proposal output
     status: ProposalStatus.InProgress,
     voteStatus: ProposalVoteStatus.Active,
     voteCounts: {},

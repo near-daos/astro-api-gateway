@@ -1,7 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { Bounty } from '@sputnik-v2/bounty/entities';
 
 import {
   NearApiService,
+  SputnikDaoBounty,
   SputnikDaoBountyOutput,
   SputnikDaoContract,
   SputnikDaoFactoryContract,
@@ -106,12 +108,12 @@ export class SputnikService {
 
   public async getBountiesByDaoId(
     daoId: string,
-    lastBountyId: number,
   ): Promise<(SputnikDaoBountyOutput & { numberOfClaims: number })[]> {
     const daoContract = this.nearApiService.getContract<SputnikDaoContract>(
       'sputnikDao',
       daoId,
     );
+    const lastBountyId = await daoContract.get_last_bounty_id();
     const chunkSize = BOUNTY_REQUEST_CHUNK_SIZE;
     const chunkCount =
       (lastBountyId - (lastBountyId % chunkSize)) / chunkSize + 1;
@@ -164,8 +166,8 @@ export class SputnikService {
     return claims.flat();
   }
 
-  public async findLastBounty(daoId: string, lastBountyId: number, bountyData) {
-    const bounties = await this.getBountiesByDaoId(daoId, lastBountyId);
+  public async findLastBounty(daoId: string, bountyData: Bounty) {
+    const bounties = await this.getBountiesByDaoId(daoId);
 
     for (let i = bounties.length - 1; i >= 0; i--) {
       if (this.compareBounties(bounties[i], bountyData)) {
@@ -188,7 +190,7 @@ export class SputnikService {
     );
   }
 
-  private compareBounties(bounty1, bounty2): boolean {
+  private compareBounties(bounty1: SputnikDaoBounty, bounty2: Bounty): boolean {
     return (
       bounty1.description === bounty2.description &&
       bounty1.token === bounty2.token &&

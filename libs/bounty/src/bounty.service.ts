@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 import { BountyDynamoService } from '@sputnik-v2/bounty/bounty-dynamo.service';
 import { FindOneOptions, Not, Repository } from 'typeorm';
-import { buildBountyId } from '@sputnik-v2/utils';
+import { buildBountyId, buildProposalId } from '@sputnik-v2/utils';
 import { FeatureFlags, FeatureFlagsService } from '@sputnik-v2/feature-flags';
 import { BountyClaimModel } from '@sputnik-v2/dynamodb';
 
@@ -36,6 +36,34 @@ export class BountyService extends TypeOrmCrudService<Bounty> {
       )[0];
     } else {
       return this.findOne(id, options);
+    }
+  }
+
+  async findByProposalIndex(
+    daoId: string,
+    proposalIndex: number,
+    options: FindOneOptions<Bounty> = {},
+  ) {
+    if (await this.useDynamoDB()) {
+      return this.bountyDynamoService.get(daoId, proposalIndex);
+    } else {
+      return this.bountyRepository.findOne({
+        ...options,
+        where: {
+          daoId,
+          proposalId: buildProposalId(daoId, proposalIndex),
+        },
+      });
+    }
+  }
+
+  async getBountiesCount(daoId: string) {
+    if (await this.useDynamoDB()) {
+      return this.bountyDynamoService.count(daoId);
+    } else {
+      return this.bountyRepository.count({
+        where: { daoId },
+      });
     }
   }
 
