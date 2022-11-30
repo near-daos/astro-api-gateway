@@ -168,12 +168,14 @@ export class TransactionActionHandlerService {
   ): Promise<ContractHandlerResult[]> {
     if (await this.handledReceiptActionDynamoService.check(action)) {
       this.logger.warn(
-        `Already handled transaction: ${action.transactionHash}`,
+        `Already handled transaction action: ${action.transactionHash}:${action.receiptId}:${action.indexInReceipt}`,
       );
       return [];
     }
 
-    this.logger.log(`Handling transaction: ${action.transactionHash}`);
+    this.logger.log(
+      `Handling transaction action: ${action.transactionHash}:${action.receiptId}:${action.indexInReceipt}`,
+    );
     const contractHandlers = this.getContractHandlers(action.receiverId);
 
     const { results, errors } = await PromisePool.for(contractHandlers).process(
