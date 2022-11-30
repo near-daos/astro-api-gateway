@@ -33,10 +33,7 @@ export class BountyAggregatorService {
       ),
     ];
 
-    const bounties = await this.sputnikService.getBountiesByDaoId(
-      dao.id,
-      dao.lastBountyId,
-    );
+    const bounties = await this.sputnikService.getBountiesByDaoId(dao.id);
     const claims = await this.sputnikService.getBountyClaims(
       dao.id,
       bountyClaimAccountIds,
