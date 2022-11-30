@@ -1,13 +1,18 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { Bounty } from '@sputnik-v2/bounty/entities';
 
 import {
   NearApiService,
+  SputnikDaoBounty,
   SputnikDaoBountyOutput,
   SputnikDaoContract,
   SputnikDaoFactoryContract,
+  SputnikDaoProposal,
+  SputnikDaoProposalKind,
+  SputnikDaoProposalOutput,
 } from '@sputnik-v2/near-api';
 import PromisePool from '@supercharge/promise-pool';
-import { castProposalKind } from '@sputnik-v2/proposal/dto';
+import { castProposalKind, ProposalKind } from '@sputnik-v2/proposal/dto';
 
 import { DaoInfo } from './types';
 import {
@@ -59,7 +64,7 @@ export class SputnikService {
     const chunkSize = PROPOSAL_REQUEST_CHUNK_SIZE;
     const chunkCount =
       (lastProposalId - (lastProposalId % chunkSize)) / chunkSize + 1;
-    let proposals = [];
+    let proposals: SputnikDaoProposalOutput[] = [];
 
     // Load all proposals by chunks
     for (let i = 0; i < chunkCount; i++) {
@@ -164,7 +169,11 @@ export class SputnikService {
     return claims.flat();
   }
 
-  public async findLastBounty(daoId: string, lastBountyId: number, bountyData) {
+  public async findLastBounty(
+    daoId: string,
+    lastBountyId: number,
+    bountyData: Bounty,
+  ) {
     const bounties = await this.getBountiesByDaoId(daoId, lastBountyId);
 
     for (let i = bounties.length - 1; i >= 0; i--) {
@@ -176,7 +185,7 @@ export class SputnikService {
     return null;
   }
 
-  private compareProposals(proposal1, proposal2): boolean {
+  private compareProposals(proposal1: SputnikDaoProposal, proposal2): boolean {
     const hasSameKind = this.compareProposalKinds(
       proposal1.kind,
       proposal2.kind,
@@ -188,7 +197,7 @@ export class SputnikService {
     );
   }
 
-  private compareBounties(bounty1, bounty2): boolean {
+  private compareBounties(bounty1: SputnikDaoBounty, bounty2: Bounty): boolean {
     return (
       bounty1.description === bounty2.description &&
       bounty1.token === bounty2.token &&
@@ -198,7 +207,10 @@ export class SputnikService {
     );
   }
 
-  private compareProposalKinds(kind1, kind2): boolean {
+  private compareProposalKinds(
+    kind1: ProposalKind | SputnikDaoProposalKind,
+    kind2: ProposalKind | SputnikDaoProposalKind,
+  ): boolean {
     const kindDto1 = castProposalKind(kind1);
     const kindDto2 = castProposalKind(kind2);
     return kindDto1.equals(kindDto2);
