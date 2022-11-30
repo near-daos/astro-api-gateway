@@ -45,6 +45,7 @@ export function castCreateProposal(
       kind.kind.type === ProposalType.BountyDone
         ? buildBountyId(dao.id, kind.kind.bountyId)
         : null,
+    // TODO: set current status from proposal output
     status: ProposalStatus.InProgress,
     voteStatus: ProposalVoteStatus.Active,
     voteCounts: {},
@@ -88,6 +89,7 @@ export function castActProposal(
     description: proposalData.description,
     kind,
     type: kind.type,
+    policyLabel: ProposalTypeToPolicyLabel[kind.kind.type],
     status: proposalData.status as unknown as ProposalStatus,
     votes: proposalData.votes as unknown as Record<string, Vote>,
     voteCounts: proposalData.vote_counts,

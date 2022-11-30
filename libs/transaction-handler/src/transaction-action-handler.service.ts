@@ -343,6 +343,8 @@ export class TransactionActionHandlerService {
     await this.opensearchService.indexProposal(proposal.id, proposalById);
     await this.opensearchService.indexDao(proposal.daoId, daoById);
     await this.proposalDynamoService.saveProposal(proposalById);
+    // TODO: dont schedule event if proposal is already expired
+    // TODO: move to proposalService.create()
     await this.proposalDynamoService.saveScheduleProposalExpireEvent(
       proposal.daoId,
       proposal.proposalId,
@@ -693,6 +695,12 @@ export class TransactionActionHandlerService {
     timestamp: string,
   ) {
     const { bounty: bountyData } = proposal.kind?.kind as ProposalKindAddBounty;
+
+    // TODO
+    // Try to find bounty in contract `get_bounties()` but this method does not always work,
+    // because bounties data mutates in contract as well as `times` property
+    // To solve this problem we should not count on `id` property of `bounty`
+    // instead of it, use `proposalIndex` to find right bounty.
     const daoBounty = await this.sputnikService.findLastBounty(
       dao.id,
       lastBountyId,
@@ -759,6 +767,9 @@ export class TransactionActionHandlerService {
       return;
     }
 
+    // TODO
+    // This method does not work for old transactions because bounty data
+    // mutates in contract and contract method could return unexpected values
     const bountyData = await daoContract.get_bounty({
       id: bountyId,
     });
@@ -819,6 +830,9 @@ export class TransactionActionHandlerService {
       return;
     }
 
+    // TODO
+    // This method does not work for old transactions because bounty data
+    // mutates in contract and contract method could return unexpected values
     const bountyClaims = await daoContract.get_bounty_claims({
       account_id: signerId,
     });
