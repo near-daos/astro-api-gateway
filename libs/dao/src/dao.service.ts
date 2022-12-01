@@ -416,22 +416,19 @@ export class DaoService extends TypeOrmCrudService<Dao> {
     const nearBalance =
       nearToken && nearAmount
         ? calculateFunds(nearAmount, nearToken.price, nearToken.decimals)
-        : '0';
+        : 0;
     const tokenBalance = tokenBalances.reduce((balance, tokenBalance) => {
       const { price, decimals } =
         tokenBalance instanceof TokenBalanceModel
           ? tokenBalance
           : tokenBalance.token;
       if (tokenBalance.balance && price && decimals) {
-        return String(
-          BigInt(balance) +
-            BigInt(calculateFunds(tokenBalance.balance, price, decimals)),
-        );
+        return balance + calculateFunds(tokenBalance.balance, price, decimals);
       }
       return balance;
-    }, '0');
+    }, 0);
 
-    return Number(BigInt(nearBalance) + BigInt(tokenBalance));
+    return nearBalance + tokenBalance;
   }
 
   public async getDaoMemberVotes(daoId: string): Promise<DaoMemberVote[]> {
