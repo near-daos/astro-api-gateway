@@ -184,10 +184,10 @@ export const calculateFunds = (
   amount: string,
   price: string,
   decimals: number,
-): string => {
-  const value = BigInt(amount) / BigInt(10) ** BigInt(decimals);
-  const priceBigint = BigInt(price);
-  return value > 0n && priceBigint > 0n ? String(value * priceBigint) : '0';
+): number => {
+  const value = Number(BigInt(amount) / BigInt(10) ** BigInt(decimals));
+  const priceNum = Number(price);
+  return value > 0 && priceNum > 0 ? value * priceNum : 0;
 };
 
 export const getGrowth = (current: number, prev?: number) => {
