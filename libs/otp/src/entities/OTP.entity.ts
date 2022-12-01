@@ -1,5 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { numberTransformer } from '@sputnik-v2/common';
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity()
@@ -13,10 +12,10 @@ export class OTP {
   hash: string;
 
   @ApiProperty()
-  @Column({ type: 'bigint', transformer: numberTransformer() })
+  @Column({ type: 'bigint' }) // TODO: incorrect column type for number, returns as string
   createdAt: number; // milliseconds
 
   @ApiProperty()
-  @Column({ type: 'bigint', transformer: numberTransformer() })
+  @Column({ type: 'bigint' }) // TODO: incorrect column type for number, returns as string
   ttl: number; // milliseconds
 }
