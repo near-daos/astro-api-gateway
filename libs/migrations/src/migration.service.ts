@@ -15,7 +15,7 @@ export class MigrationService {
 
   async runMigration(
     name: string,
-    options: Record<string, any>,
+    options?: Record<string, any>,
   ): Promise<boolean> {
     const migration = this.getMigration(name);
 
