@@ -354,7 +354,6 @@ export class DynamoDataMigration implements Migration {
       {
         relations: ['actions'],
       },
-      5540,
     )) {
       await this.dynamodbService.batchPut<ProposalModel>(
         proposals.map((proposal) => mapProposalToProposalModel(proposal)),
