@@ -47,7 +47,7 @@ export class DynamoDraftProposalService implements DraftProposalService {
       kind: draftProposalDto.kind as ProposalKind,
       type: draftProposalDto.type,
       state: DraftProposalState.Open,
-      createTimestamp: Date.now(),
+      creatingTimeStamp: Date.now(),
       replies: 0,
       viewAccounts: [],
       saveAccounts: [],

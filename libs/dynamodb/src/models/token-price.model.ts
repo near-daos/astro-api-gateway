@@ -16,14 +16,14 @@ export function mapTokenToTokenPriceModel(
     entityId: buildEntityId(DynamoEntityType.TokenPrice, token.id),
     entityType: DynamoEntityType.TokenPrice,
     isArchived: false,
-    createTimestamp: token.createdAt ? token.createdAt.getTime() : undefined,
+    creatingTimeStamp: token.createdAt ? token.createdAt.getTime() : undefined,
     processingTimeStamp: token.updatedAt
       ? token.updatedAt.getTime()
       : undefined,
     transactionHash: token.transactionHash,
-    updateTransactionHash: token.updateTransactionHash || token.transactionHash,
-    createBlockTimestamp: token.createTimestamp,
-    updateBlockTimestamp: token.updateTimestamp || token.createTimestamp,
+    updateTransactionHash: token.updateTransactionHash ?? token.transactionHash,
+    createTimestamp: token.createTimestamp,
+    updateTimestamp: token.updateTimestamp ?? token.createTimestamp,
     price: token.price,
     decimals: token.decimals,
   };

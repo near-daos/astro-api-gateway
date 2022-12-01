@@ -79,20 +79,20 @@ export class TransactionHandlerService {
       this.logger.error(`Failed to query handler blocks with error: ${err}`);
       return {
         lastBlock: {
-          height: 0,
-          timestamp: 0,
+          height: '0',
+          timestamp: '0',
         },
         lastAstroBlock: {
-          height: 0,
-          timestamp: 0,
+          height: '0',
+          timestamp: '0',
         },
         lastHandledBlock: {
-          height: 0,
-          timestamp: 0,
+          height: '0',
+          timestamp: '0',
         },
         lastProcessedBlock: {
-          height: 0,
-          timestamp: 0,
+          height: '0',
+          timestamp: '0',
         },
       };
     }

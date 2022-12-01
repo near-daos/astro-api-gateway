@@ -16,12 +16,12 @@ export class AccountNotificationSettingsItemModel {
   daoId: string;
   accountId: string;
   types: NotificationType[];
-  mutedUntilTimestamp: number;
+  mutedUntilTimestamp: string; // nanoseconds
   isAllMuted: boolean;
   enableSms: boolean;
   enableEmail: boolean;
   actionRequiredOnly: boolean;
-  createTimestamp: number;
+  creatingTimeStamp: number;
 }
 
 export function mapAccountNotificationSettingsModel(
@@ -35,7 +35,7 @@ export function mapAccountNotificationSettingsModel(
       accountId,
     ),
     entityType: DynamoEntityType.AccountNotificationSettings,
-    createTimestamp: Date.now(),
+    creatingTimeStamp: Date.now(),
     processingTimeStamp: Date.now(),
     isArchived: false,
     accountId,
@@ -60,6 +60,8 @@ export function mapAccountNotificationSettingsToAccountNotificationSettingsItemM
     enableSms: accountNotificationSettings.enableSms,
     enableEmail: accountNotificationSettings.enableEmail,
     actionRequiredOnly: accountNotificationSettings.actionRequiredOnly,
-    createTimestamp: accountNotificationSettings.createdAt.getTime(),
+    creatingTimeStamp: accountNotificationSettings.createdAt
+      ? accountNotificationSettings.createdAt.getTime()
+      : undefined,
   };
 }

@@ -31,7 +31,7 @@ export class Dao extends TransactionEntity {
 
   @ApiProperty()
   @Column({ type: 'numeric' })
-  amount: number;
+  amount: string;
 
   @ApiProperty()
   @Column()

@@ -26,7 +26,7 @@ export function mapSharedProposalTemplateToSharedProposalTemplateModel(
     ),
     entityType: DynamoEntityType.SharedProposalTemplate,
     isArchived: !!sharedProposalTemplate.isArchived,
-    createTimestamp: sharedProposalTemplate.createdAt
+    creatingTimeStamp: sharedProposalTemplate.createdAt
       ? sharedProposalTemplate.createdAt.getTime()
       : undefined,
     processingTimeStamp: sharedProposalTemplate.updatedAt

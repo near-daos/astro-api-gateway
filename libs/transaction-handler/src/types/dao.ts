@@ -1,16 +1,36 @@
-import camelcaseKeys from 'camelcase-keys';
-import { RoleKindType } from '@sputnik-v2/dao/entities';
+import { DaoModel, PartialEntity } from '@sputnik-v2/dynamodb';
+import {
+  isSputnikDaoPolicyV2,
+  SputnikDaoConfig,
+  SputnikDaoPolicy,
+} from '@sputnik-v2/near-api';
+import { DaoInfo } from '@sputnik-v2/sputnikdao';
+import { Dao, DaoStatus, PolicyDtoV1, RoleKindType } from '@sputnik-v2/dao';
 import { SputnikDaoDto } from '@sputnik-v2/dao/dto';
 import { btoaJSON, buildRoleId } from '@sputnik-v2/utils';
+import { DaoPolicyModel } from '@sputnik-v2/dynamodb';
 
 import { castRolePermission } from './role';
 import { castVotePolicy } from './vote-policy';
-import { DaoStatus } from '@sputnik-v2/dao';
 
-export function castDaoPolicy({ daoId, daoPolicy, delegationAccounts = [] }) {
-  const policy = camelcaseKeys(daoPolicy, { deep: true });
+export function castDaoPolicy(
+  daoId: string,
+  daoPolicy: SputnikDaoPolicy,
+  delegationAccounts = [],
+): Pick<
+  SputnikDaoDto,
+  | 'council'
+  | 'councilSeats'
+  | 'numberOfMembers'
+  | 'numberOfGroups'
+  | 'accountIds'
+  | 'policy'
+> {
+  if (!isSputnikDaoPolicyV2(daoPolicy)) {
+    throw new Error(`Invalid sputnik dao policy: ${JSON.stringify(daoPolicy)}`);
+  }
   const roles = daoPolicy.roles.map((role) => ({
-    ...castRolePermission(camelcaseKeys(role)),
+    ...castRolePermission(role),
     id: buildRoleId(daoId, role.name),
     policy: { daoId },
   }));
@@ -32,33 +52,36 @@ export function castDaoPolicy({ daoId, daoPolicy, delegationAccounts = [] }) {
 
   return {
     council,
-    councilSeats: council?.length,
+    councilSeats: council.length,
     numberOfMembers,
     numberOfGroups,
     accountIds,
     policy: {
-      ...policy,
       daoId,
       roles,
-      defaultVotePolicy: castVotePolicy(policy.defaultVotePolicy),
+      proposalBond: daoPolicy.proposal_bond,
+      proposalPeriod: daoPolicy.proposal_period,
+      bountyBond: daoPolicy.bounty_bond,
+      bountyForgivenessPeriod: daoPolicy.bounty_forgiveness_period,
+      defaultVotePolicy: castVotePolicy(daoPolicy.default_vote_policy),
     },
   };
 }
 
-export function castCreateDao({
-  signerId,
-  transactionHash,
-  daoId,
-  daoInfo,
-  delegationAccounts,
-  timestamp,
-}): SputnikDaoDto {
+export function castCreateDao(
+  signerId: string,
+  transactionHash: string,
+  daoId: string,
+  daoInfo: DaoInfo,
+  delegationAccounts: string[],
+  timestamp: string,
+): SputnikDaoDto {
   return {
     id: daoId,
     config: daoInfo.config,
-    ...castDaoPolicy({ daoId, daoPolicy: daoInfo.policy, delegationAccounts }),
+    ...castDaoPolicy(daoId, daoInfo.policy, delegationAccounts),
     metadata: btoaJSON(daoInfo.config.metadata),
-    amount: Number(daoInfo.amount),
+    amount: daoInfo.amount,
     status: DaoStatus.Active,
     totalSupply: daoInfo.totalSupply,
     lastBountyId: daoInfo.lastBountyId,
@@ -75,16 +98,46 @@ export function castCreateDao({
   };
 }
 
-export function castAddProposalDao({
-  dao,
-  lastProposalId,
-  transactionHash,
-  timestamp,
-}): SputnikDaoDto {
+// dynamo compatibility
+export function castDynamoDaoPolicy(
+  daoId: string,
+  policy: PolicyDtoV1 | DaoPolicyModel,
+): PolicyDtoV1 {
   return {
-    ...dao,
+    daoId,
+    ...policy,
+  };
+}
+
+export function castAddProposalDao(
+  dao: Dao | PartialEntity<DaoModel>,
+  lastProposalId: number,
+  transactionHash: string,
+  timestamp: string,
+): SputnikDaoDto {
+  return {
+    id: dao.id,
+    config: dao.config,
+    policy: castDynamoDaoPolicy(dao.id, dao.policy),
+    council: dao.council,
+    councilSeats: dao.councilSeats,
+    metadata: dao.metadata,
+    amount: dao.amount,
+    status: dao.status,
+    totalSupply: dao.totalSupply,
+    lastBountyId: dao.lastBountyId,
     lastProposalId: Number(lastProposalId),
+    stakingContract: dao.stakingContract,
+    numberOfGroups: dao.numberOfGroups,
+    numberOfMembers: dao.numberOfMembers,
+    numberOfAssociates: dao.numberOfAssociates,
+    accountIds: dao.accountIds,
+    link: dao.link,
+    description: dao.description,
+    createdBy: dao.createdBy,
+    transactionHash: dao.transactionHash,
     updateTransactionHash: transactionHash,
+    createTimestamp: dao.createTimestamp,
     updateTimestamp: timestamp,
   };
 }
@@ -99,19 +152,46 @@ export function castActProposalDao({
   stakingContract,
   delegationAccounts,
   timestamp,
-}: any): SputnikDaoDto {
+}: {
+  dao: Dao | PartialEntity<DaoModel>;
+  transactionHash: string;
+  amount: string;
+  config?: SputnikDaoConfig;
+  policy?: SputnikDaoPolicy;
+  lastBountyId?: number;
+  stakingContract?: string;
+  delegationAccounts?: string[];
+  timestamp: string;
+}): SputnikDaoDto {
   const daoPolicy = policy
-    ? castDaoPolicy({ daoId: dao.id, daoPolicy: policy, delegationAccounts })
-    : {};
+    ? castDaoPolicy(dao.id, policy, delegationAccounts)
+    : {
+        council: dao.council,
+        councilSeats: dao.councilSeats,
+        numberOfGroups: dao.numberOfGroups,
+        numberOfMembers: dao.numberOfMembers,
+        accountIds: dao.accountIds,
+        policy: castDynamoDaoPolicy(dao.id, dao.policy),
+      };
+
   return {
-    ...dao,
+    id: dao.id,
+    config: config ?? dao.config,
     ...daoPolicy,
-    config,
-    metadata: btoaJSON(config?.metadata),
-    lastBountyId,
-    stakingContract,
-    amount: amount && Number(amount),
+    metadata: config ? btoaJSON(config.metadata) : dao.metadata,
+    amount: amount ?? dao.amount,
+    status: dao.status,
+    totalSupply: dao.totalSupply,
+    lastBountyId: lastBountyId ?? dao.lastBountyId,
+    lastProposalId: dao.lastProposalId,
+    stakingContract: stakingContract ?? dao.stakingContract,
+    numberOfAssociates: dao.numberOfAssociates,
+    link: dao.link,
+    description: dao.description,
+    createdBy: dao.createdBy,
+    transactionHash: dao.transactionHash,
     updateTransactionHash: transactionHash,
+    createTimestamp: dao.createTimestamp,
     updateTimestamp: timestamp,
   };
 }

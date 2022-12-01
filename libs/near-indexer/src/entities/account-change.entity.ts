@@ -15,7 +15,7 @@ export class AccountChange {
   causedByTransactionHash: string;
 
   @Column({ type: 'bigint' })
-  changedInBlockTimestamp: number;
+  changedInBlockTimestamp: string; // nanoseconds
 
   @ApiProperty()
   @OneToOne(() => Receipt, { cascade: true })

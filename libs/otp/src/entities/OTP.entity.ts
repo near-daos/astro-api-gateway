@@ -12,10 +12,10 @@ export class OTP {
   hash: string;
 
   @ApiProperty()
-  @Column({ type: 'bigint' })
-  createdAt: number;
+  @Column({ type: 'bigint' }) // TODO: incorrect column type for number, returns as string
+  createdAt: number; // milliseconds
 
   @ApiProperty()
-  @Column({ type: 'bigint' })
-  ttl: number;
+  @Column({ type: 'bigint' }) // TODO: incorrect column type for number, returns as string
+  ttl: number; // milliseconds
 }

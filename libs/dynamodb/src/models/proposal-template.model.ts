@@ -24,7 +24,7 @@ export function mapProposalTemplateToProposalTemplateModel(
     ),
     entityType: DynamoEntityType.ProposalTemplate,
     isArchived: !!proposalTemplate.isArchived,
-    createTimestamp: proposalTemplate.createdAt
+    creatingTimeStamp: proposalTemplate.createdAt
       ? proposalTemplate.createdAt.getTime()
       : undefined,
     processingTimeStamp: proposalTemplate.updatedAt

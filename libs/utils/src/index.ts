@@ -1,17 +1,11 @@
 import { DynamoEntityType, EntityId } from '@sputnik-v2/dynamodb';
-import Decimal from 'decimal.js';
-
-import { DaoDto } from '@sputnik-v2/dao/dto';
-import { Dao, Role, RoleKindType } from '@sputnik-v2/dao/entities';
+import { Role, RoleKindType } from '@sputnik-v2/dao/entities';
 import {
   ProposalType,
   ProposalPermissions,
   ProposalTypeToPolicyLabel,
 } from '@sputnik-v2/proposal/types';
-import { Proposal } from '@sputnik-v2/proposal/entities';
-import { ProposalDto } from '@sputnik-v2/proposal/dto';
 import { BaseResponse, PROPOSAL_DESC_SEPARATOR } from '@sputnik-v2/common';
-import { DaoModel } from '@sputnik-v2/dynamodb';
 
 export const formatTimestamp = (timestamp: number): string => {
   const seconds = Number(timestamp / 1e9);
@@ -37,9 +31,9 @@ export const convertDuration = (duration: number): Date => {
   return epoch;
 };
 
-export const getBlockTimestamp = (date = new Date()): number => {
-  // the approximate block timestamp in microseconds - the same way as it's done in indexer
-  return date.getTime() * 1000000;
+export const getBlockTimestamp = (date = new Date()): string => {
+  // the approximate block timestamp in nanoseconds - the same way as it's done in indexer
+  return String(BigInt(date.getTime()) * 1000000n);
 };
 
 export const buildProposalId = (daoId: string, proposalId: number): string => {
@@ -69,9 +63,9 @@ export const buildBountyDynamoId = (proposalId: number): string => {
 export const buildBountyClaimId = (
   daoId: string,
   bountyId: number,
-  bountyClaimId: number,
+  startTime: string,
 ): string => {
-  return `${daoId}-${bountyId}-${bountyClaimId}`;
+  return `${daoId}-${bountyId}-${startTime}`;
 };
 
 export const buildRoleId = (daoId: string, name: string): string => {
@@ -148,15 +142,10 @@ export const btoaJSON = (b: string) => {
 };
 
 export const calcProposalVotePeriodEnd = (
-  proposal: Proposal | ProposalDto | { submissionTime: number },
-  dao: Dao | DaoDto | DaoModel,
-): number => {
-  try {
-    return Decimal.sum(
-      new Decimal(proposal.submissionTime),
-      new Decimal(dao?.policy?.proposalPeriod),
-    ).toNumber();
-  } catch (e) {}
+  submissionTime: string,
+  proposalPeriod: string,
+): string => {
+  return String(BigInt(submissionTime) + BigInt(proposalPeriod));
 };
 
 export function isNotNull<T>(arg: T): arg is Exclude<T, null> {
@@ -191,9 +180,14 @@ export const calculateClaimEndTime = (
   return (BigInt(startTime) + BigInt(deadline)).toString();
 };
 
-export const calculateFunds = (amount, price, decimals): number => {
-  const value = Number(BigInt(amount) / BigInt(10) ** BigInt(decimals));
-  return value > 0 && price > 0 ? value * price : 0;
+export const calculateFunds = (
+  amount: string,
+  price: string,
+  decimals: number,
+): string => {
+  const value = BigInt(amount) / BigInt(10) ** BigInt(decimals);
+  const priceBigint = BigInt(price);
+  return value > 0n && priceBigint > 0n ? String(value * priceBigint) : '0';
 };
 
 export const getGrowth = (current: number, prev?: number) => {
@@ -319,3 +313,10 @@ export const deepFilter = (
     return value;
   }
 };
+
+export function arrayUniqueBy<T>(array: T[], key: keyof T): T[] {
+  return array.filter(
+    (item, index, self) =>
+      index === self.findIndex((t) => t[key] === item[key]),
+  );
+}

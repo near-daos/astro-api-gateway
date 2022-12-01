@@ -94,7 +94,7 @@ export class Proposal extends TransactionEntity {
 
   @ApiProperty()
   @Column({ type: 'bigint' })
-  submissionTime: number;
+  submissionTime: string; // nanoseconds
 
   @ApiProperty({ type: 'object' })
   @Column({ type: 'simple-json' })
@@ -118,7 +118,7 @@ export class Proposal extends TransactionEntity {
 
   @ApiProperty()
   @Column({ type: 'bigint', nullable: true })
-  votePeriodEnd: number;
+  votePeriodEnd: string; // nanoseconds
 
   @ApiProperty()
   @Column({ nullable: true })

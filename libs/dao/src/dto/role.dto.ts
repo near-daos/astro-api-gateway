@@ -1,5 +1,4 @@
 import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
-import { BaseEntity } from '@sputnik-v2/common';
 
 import { RoleKindType } from '../entities';
 import { VotePolicy } from '../types';
@@ -14,7 +13,7 @@ class RoleKindDto {
   group: string[];
 }
 
-class RoleBaseDto extends BaseEntity {
+class RoleBaseDto {
   @ApiProperty()
   id: string;
 
@@ -22,10 +21,10 @@ class RoleBaseDto extends BaseEntity {
   name: string;
 
   @ApiProperty()
-  balance: number;
+  balance?: number;
 
   @ApiProperty()
-  accountIds: string[];
+  accountIds?: string[];
 
   @ApiProperty()
   permissions: string[];

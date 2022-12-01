@@ -28,7 +28,7 @@ export class NotificationModel {
   type: NotificationType;
   status: NotificationStatus;
   metadata: Record<string, any>;
-  timestamp: number;
+  timestamp: string; // nanoseconds
 }
 
 export function mapAccountNotificationDtoToAccountNotificationModel(
@@ -42,7 +42,7 @@ export function mapAccountNotificationDtoToAccountNotificationModel(
     ),
     entityType: DynamoEntityType.AccountNotification,
     isArchived: false,
-    createTimestamp: Date.now(),
+    creatingTimeStamp: Date.now(),
     processingTimeStamp: Date.now(),
     accountId: accountNotification.accountId,
     id: accountNotification.id,
@@ -68,7 +68,7 @@ export function mapAccountNotificationToAccountNotificationModel(
     ),
     entityType: DynamoEntityType.AccountNotification,
     isArchived: !!accountNotification.isArchived,
-    createTimestamp: accountNotification.createdAt
+    creatingTimeStamp: accountNotification.createdAt
       ? accountNotification.createdAt.getTime()
       : undefined,
     processingTimeStamp: accountNotification.updatedAt

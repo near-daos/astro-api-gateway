@@ -18,7 +18,7 @@ export class BountyModel extends TransactionModel {
   description: string;
   token: string;
   amount: string;
-  times: string;
+  times: number;
   maxDeadline: string;
   numberOfClaims: number;
   commentsCount: number;
@@ -44,7 +44,7 @@ export function mapBountyContextDtoToBountyModel(
     entityId: buildEntityId(DynamoEntityType.Bounty, String(proposalIndex)),
     entityType: DynamoEntityType.Bounty,
     transactionHash: bountyContext.transactionHash,
-    createBlockTimestamp: bountyContext.createTimestamp,
+    createTimestamp: bountyContext.createTimestamp,
     proposalIndex,
   };
 }
@@ -63,10 +63,10 @@ export function mapBountyDtoToBountyModel(
     transactionHash: bounty.transactionHash,
     updateTransactionHash:
       bounty.updateTransactionHash || bounty.transactionHash,
-    createTimestamp: Date.now(),
+    creatingTimeStamp: Date.now(),
     processingTimeStamp: Date.now(),
-    createBlockTimestamp: bounty.createTimestamp,
-    updateBlockTimestamp: bounty.updateTimestamp || bounty.createTimestamp,
+    createTimestamp: bounty.createTimestamp,
+    updateTimestamp: bounty.updateTimestamp || bounty.createTimestamp,
     id: bounty.id,
     daoId: bounty.daoId,
     bountyId: bounty.bountyId,
@@ -98,12 +98,14 @@ export function mapBountyToBountyModel(
     transactionHash: bounty.transactionHash,
     updateTransactionHash:
       bounty.updateTransactionHash || bounty.transactionHash,
-    createTimestamp: bounty.createdAt ? bounty.createdAt.getTime() : undefined,
+    creatingTimeStamp: bounty.createdAt
+      ? bounty.createdAt.getTime()
+      : undefined,
     processingTimeStamp: bounty.updatedAt
       ? bounty.updatedAt.getTime()
       : undefined,
-    createBlockTimestamp: bounty.createTimestamp,
-    updateBlockTimestamp: bounty.updateTimestamp || bounty.createTimestamp,
+    createTimestamp: bounty.createTimestamp,
+    updateTimestamp: bounty.updateTimestamp || bounty.createTimestamp,
     id: bounty.id,
     daoId: bounty.daoId,
     bountyId: bounty.bountyId,

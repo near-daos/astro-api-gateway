@@ -38,5 +38,5 @@ export class ProposalAction {
 
   @ApiProperty()
   @Column({ type: 'bigint', nullable: true })
-  timestamp: number;
+  timestamp: string; // nanoseconds
 }

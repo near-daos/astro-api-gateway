@@ -24,12 +24,12 @@ export class ProposalModel extends TransactionModel {
   kind: ProposalKind;
   type: ProposalType;
   policyLabel: ProposalPolicyLabel;
-  submissionTime: number;
+  submissionTime: string;
   voteCounts: Record<string, number[]>;
   votes: Record<string, Vote>;
   failure: Record<string, any>;
   actions: ProposalActionModel[];
-  votePeriodEnd: number;
+  votePeriodEnd: string;
   commentsCount: number;
   bountyDoneId?: string;
   bountyClaimId?: string;
@@ -41,7 +41,7 @@ export class ProposalActionModel {
   accountId: string;
   action: Action;
   transactionHash: string;
-  timestamp: number;
+  timestamp: string; // nanoseconds
 }
 
 export function mapProposalDtoToProposalModel(
@@ -55,12 +55,12 @@ export function mapProposalDtoToProposalModel(
     ),
     entityType: DynamoEntityType.Proposal,
     isArchived: false,
-    createTimestamp: Date.now(),
+    creatingTimeStamp: Date.now(),
     processingTimeStamp: Date.now(),
     transactionHash: proposal.transactionHash,
     updateTransactionHash: proposal.updateTransactionHash,
-    createBlockTimestamp: proposal.createTimestamp,
-    updateBlockTimestamp: proposal.updateTimestamp,
+    createTimestamp: proposal.createTimestamp,
+    updateTimestamp: proposal.updateTimestamp,
     id: proposal.id,
     proposalId: proposal.proposalId,
     proposer: proposal.proposer,
@@ -95,16 +95,17 @@ export function mapProposalToProposalModel(
     ),
     entityType: DynamoEntityType.Proposal,
     isArchived: !!proposal.isArchived,
-    createTimestamp: proposal.createdAt
+    creatingTimeStamp: proposal.createdAt
       ? proposal.createdAt.getTime()
       : undefined,
     processingTimeStamp: proposal.updatedAt
       ? proposal.updatedAt.getTime()
       : undefined,
     transactionHash: proposal.transactionHash,
-    updateTransactionHash: proposal.updateTransactionHash,
-    createBlockTimestamp: proposal.createTimestamp,
-    updateBlockTimestamp: proposal.updateTimestamp,
+    updateTransactionHash:
+      proposal.updateTransactionHash ?? proposal.transactionHash,
+    createTimestamp: proposal.createTimestamp,
+    updateTimestamp: proposal.updateTimestamp ?? proposal.createTimestamp,
     id: proposal.id,
     proposalId: proposal.proposalId,
     proposer: proposal.proposer,

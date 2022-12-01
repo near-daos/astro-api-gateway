@@ -59,7 +59,7 @@ export class TokenAggregatorService {
   public async aggregateDaoTokens(
     daoId: string,
     tokenIds: string[],
-    timestamp?: number,
+    timestamp?: string,
   ): Promise<void> {
     const { errors: tokenErrors } = await PromisePool.withConcurrency(5)
       .for(tokenIds)
@@ -84,7 +84,7 @@ export class TokenAggregatorService {
 
   public async aggregateToken(
     tokenId: string,
-    timestamp?: number,
+    timestamp?: string,
   ): Promise<void> {
     await this.tokenService.loadTokenById(tokenId, timestamp);
   }

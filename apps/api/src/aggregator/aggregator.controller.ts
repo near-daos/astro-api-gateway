@@ -86,38 +86,42 @@ export class AggregatorController {
 
     this.logger.log(data);
 
-    this.statsDService.client.gauge('block.lastBlock.height', lastBlock.height);
+    this.statsDService.client.gauge(
+      'block.lastBlock.height',
+      Number(lastBlock.height),
+    );
     this.statsDService.client.gauge(
       'block.lastBlock.timestamp',
-      lastBlock.timestamp as number,
+      Number(lastBlock.timestamp),
     );
 
     this.statsDService.client.gauge(
       'block.lastAstroBlock.height',
-      lastAstroBlock.height,
+      Number(lastAstroBlock.height),
     );
     this.statsDService.client.gauge(
       'block.lastAstroBlock.timestamp',
-      lastAstroBlock.timestamp as number,
+      Number(lastAstroBlock.timestamp),
     );
 
     this.statsDService.client.gauge(
       'block.lastProcessedBlock.height',
-      lastProcessedBlock.height,
+      Number(lastProcessedBlock.height),
     );
     this.statsDService.client.gauge(
       'block.lastProcessedBlock.timestamp',
-      lastProcessedBlock.timestamp as number,
+      Number(lastProcessedBlock.timestamp),
     );
 
     this.statsDService.client.gauge(
       'block.lag.height',
-      lastAstroBlock.height - lastHandledBlock.height,
+      Number(BigInt(lastAstroBlock.height) - BigInt(lastHandledBlock.height)),
     );
     this.statsDService.client.gauge(
       'block.lag.time',
-      (lastAstroBlock.timestamp as number) -
-        (lastHandledBlock.timestamp as number),
+      Number(
+        BigInt(lastAstroBlock.timestamp) - BigInt(lastHandledBlock.timestamp),
+      ),
     );
 
     this.socketService.emitToAllEvent({

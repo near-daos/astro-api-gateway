@@ -25,8 +25,7 @@ export type TransactionAction = {
   methodName?: string;
   args: any;
   deposit: string;
-  timestamp: number; // TODO: deprecated, use timestampNanosec
-  timestampNanosec?: bigint;
+  timestamp: string; // nanoseconds
   receiptId?: string;
   indexInReceipt: number;
   status?: any;
@@ -50,8 +49,7 @@ export function castNearTransactionAction(
     methodName: action.FunctionCall?.methodName,
     args: action.FunctionCall?.args,
     deposit: action.Transfer?.deposit || action.FunctionCall?.deposit,
-    timestamp: block.header.timestamp,
-    timestampNanosec: BigInt(block.header.timestamp_nanosec),
+    timestamp: block.header.timestamp_nanosec,
     receiptId: receipt.receipt_id,
     indexInReceipt: index,
     receiptSuccessValue: (outcome.outcome.status as ExecutionStatus)

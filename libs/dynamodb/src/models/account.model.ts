@@ -22,7 +22,7 @@ export function mapAccountDtoToAccountModel(
     entityType: DynamoEntityType.Account,
     accountId: account.accountId,
     isArchived: false,
-    createTimestamp: Date.now(),
+    creatingTimeStamp: Date.now(),
     processingTimeStamp: Date.now(),
     email: account.email,
     isEmailVerified: account.isEmailVerified,
@@ -42,10 +42,12 @@ export function mapAccountToAccountModel(
     entityType: DynamoEntityType.Account,
     accountId: account.accountId,
     isArchived: !!account.isArchived,
-    createTimestamp:
-      account.updatedAt !== undefined ? account.updatedAt.getTime() : undefined,
-    processingTimeStamp:
-      account.createdAt !== undefined ? account.createdAt.getTime() : undefined,
+    creatingTimeStamp: account.createdAt
+      ? account.createdAt.getTime()
+      : undefined,
+    processingTimeStamp: account.updatedAt
+      ? account.updatedAt.getTime()
+      : undefined,
     email: account.email,
     isEmailVerified: account.isEmailVerified,
     phoneNumber: account.phoneNumber,

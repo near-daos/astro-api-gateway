@@ -29,7 +29,7 @@ export class BountyProposalOpensearchDto {
   description: string;
   token: string;
   amount: string;
-  times: string;
+  times: number;
   maxDeadline: string;
   numberOfClaims: number;
 }
@@ -45,16 +45,16 @@ export class ProposalOpensearchDto extends BaseOpensearchDto {
   voteStatus: ProposalVoteStatus;
   type: ProposalType;
   policyLabel: ProposalPolicyLabel;
-  submissionTime: number;
+  submissionTime: string;
   votes: string;
   failure: Record<string, any>;
-  votePeriodEnd: number;
+  votePeriodEnd: string;
   bountyDoneId: string;
   bountyClaimId: string;
   commentsCount: number;
   permissions?: ProposalPermissions;
   transactionHash: string;
-  createTimestamp: number;
+  createTimestamp: string; // nanoseconds
 
   // optional fields depending on the kind
   config?: DaoConfig;

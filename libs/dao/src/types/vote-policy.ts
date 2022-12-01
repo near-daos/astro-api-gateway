@@ -15,13 +15,13 @@ export class VotePolicy {
   weightKind: WeightKind;
 
   @ApiProperty()
-  quorum: number;
+  quorum: string;
 
   @ApiProperty({ enum: Object.keys(WeightOrRatioType) })
   kind: WeightOrRatioType;
 
   @ApiProperty()
-  weight?: number;
+  weight?: string;
 
   @ApiProperty()
   ratio?: number[];

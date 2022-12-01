@@ -21,18 +21,14 @@ export function castDao(
   const txUpdate = txs[txs.length - 1];
   return {
     id: daoAccount.accountId,
-    ...castDaoPolicy({
-      daoId: daoAccount.accountId,
-      daoPolicy: policy,
-      delegationAccounts,
-    }),
+    ...castDaoPolicy(daoAccount.accountId, policy, delegationAccounts),
     config,
     metadata: btoaJSON(config.metadata),
     stakingContract,
     totalSupply,
     lastProposalId,
     lastBountyId,
-    amount: Number(amount),
+    amount,
     link: '',
     description: '',
     transactionHash:
@@ -58,21 +54,17 @@ export function castDaoById(
     lastBountyId,
     amount,
   }: DaoInfo,
-  delegationAccounts?: string[],
+  delegationAccounts: string[],
 ): Partial<SputnikDaoDto> {
   return {
     id: daoId,
-    ...castDaoPolicy({
-      daoId: daoId,
-      daoPolicy: policy,
-      delegationAccounts,
-    }),
+    ...castDaoPolicy(daoId, policy, delegationAccounts),
     config,
     metadata: btoaJSON(config.metadata),
     stakingContract,
     totalSupply,
     lastProposalId,
     lastBountyId,
-    amount: Number(amount),
+    amount,
   };
 }

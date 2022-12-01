@@ -2,10 +2,10 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class TransactionHandlerBlock {
   @ApiProperty()
-  height: number;
+  height: string;
 
   @ApiProperty()
-  timestamp: number | bigint;
+  timestamp: string;
 }
 
 export class TransactionHandlerBlocks {

@@ -33,7 +33,7 @@ export function mapCommentToCommentModel(
     entityId: buildEntityId(entityType, `${comment.contextId}:${comment.id}`),
     entityType,
     isArchived: !!comment.isArchived,
-    createTimestamp: comment.createdAt
+    creatingTimeStamp: comment.createdAt
       ? comment.createdAt.getTime()
       : undefined,
     processingTimeStamp: comment.updatedAt
@@ -60,7 +60,7 @@ export function mapDraftCommentToCommentModel(
     entityId: buildEntityId(entityType, `${comment.contextId}:${comment.id}`),
     entityType,
     isArchived: !!comment.isArchived,
-    createTimestamp: comment.createdAt
+    creatingTimeStamp: comment.createdAt
       ? comment.createdAt.getTime()
       : undefined,
     processingTimeStamp: comment.updatedAt

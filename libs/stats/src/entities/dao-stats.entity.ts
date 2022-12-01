@@ -14,8 +14,8 @@ export class DaoStats extends BaseEntity {
   daoId: string;
 
   @ApiProperty()
-  @Column({ type: 'bigint' })
-  timestamp: number;
+  @Column({ type: 'bigint' }) // TODO: incorrect column type for number, returns as string
+  timestamp: number; // milliseconds
 
   @ApiProperty()
   @Column({ type: 'float', nullable: true })

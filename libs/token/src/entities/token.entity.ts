@@ -52,12 +52,6 @@ export class Token extends TransactionEntity {
   @Column({ nullable: true })
   price: string;
 
-  @ApiProperty()
-  tokenId?: string;
-
-  @ApiProperty()
-  balance?: string;
-
   @ApiProperty({ type: [TokenBalance] })
   @OneToMany(() => TokenBalance, (token) => token.tokenId, {
     cascade: true,

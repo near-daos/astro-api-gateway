@@ -40,7 +40,7 @@ export class NFTAggregatorService {
   public async aggregateDaoNFTs(
     daoId: string,
     nftIds: string[],
-    timestamp?: number,
+    timestamp?: string,
   ): Promise<void> {
     const { errors } = await PromisePool.withConcurrency(5)
       .for(nftIds)

@@ -15,7 +15,7 @@ import { TokenBalanceModel } from '../models';
 
 export class DaoModel extends TransactionModel {
   metadata: Record<string, any>;
-  amount: number;
+  amount: string;
   id: string;
   totalSupply: string;
   lastBountyId: number;
@@ -48,8 +48,8 @@ export class DaoModel extends TransactionModel {
 export class DaoPolicyModel {
   proposalBond: string;
   bountyBond: string;
-  proposalPeriod: number;
-  bountyForgivenessPeriod: number;
+  proposalPeriod: string;
+  bountyForgivenessPeriod: string;
   defaultVotePolicy: VotePolicy;
   roles: DaoRoleModel[];
 }
@@ -58,8 +58,8 @@ export class DaoRoleModel {
   id: string;
   name: string;
   kind: RoleKindType;
-  balance: number;
-  accountIds: string[];
+  balance?: number;
+  accountIds?: string[];
   permissions: string[];
   votePolicy: Record<string, VotePolicy>;
 }
@@ -85,13 +85,13 @@ export function mapDaoToDaoModel(dao: Partial<Dao>): PartialEntity<DaoModel> {
     entityId: buildEntityId(DynamoEntityType.Dao, dao.id),
     entityType: DynamoEntityType.Dao,
     isArchived: !!dao.isArchived,
-    createTimestamp: dao.createdAt ? dao.createdAt.getTime() : undefined,
+    creatingTimeStamp: dao.createdAt ? dao.createdAt.getTime() : undefined,
     processingTimeStamp: dao.updatedAt ? dao.updatedAt.getTime() : undefined,
     id: dao.id,
     transactionHash: dao.transactionHash,
     updateTransactionHash: dao.updateTransactionHash ?? dao.transactionHash,
-    createBlockTimestamp: dao.createTimestamp,
-    updateBlockTimestamp: dao.updateTimestamp ?? dao.createTimestamp,
+    createTimestamp: dao.createTimestamp,
+    updateTimestamp: dao.updateTimestamp ?? dao.createTimestamp,
     metadata: dao.metadata,
     amount: dao.amount,
     totalSupply: dao.totalSupply,

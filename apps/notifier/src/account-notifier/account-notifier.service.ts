@@ -153,11 +153,11 @@ export class AccountNotifierService {
       };
     }
 
-    const currentTimestamp = getBlockTimestamp();
+    const currentTimestamp = BigInt(getBlockTimestamp());
     const isDisabled = accountNotificationSettings.some(
       (ans) =>
-        (Number(ans.mutedUntilTimestamp) &&
-          ans.mutedUntilTimestamp > currentTimestamp) ||
+        (ans.mutedUntilTimestamp &&
+          BigInt(ans.mutedUntilTimestamp) > currentTimestamp) ||
         ans.isAllMuted,
     );
     const isActionRequiredOnly = accountNotificationSettings.some(

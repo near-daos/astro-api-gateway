@@ -465,7 +465,7 @@ export class AggregatorService {
     this.logger.log(`Finished all DAO aggregation`);
   }
 
-  public async aggregateDaoByAccount(account: Account, blockTimestamp: number) {
+  public async aggregateDaoByAccount(account: Account, blockTimestamp: string) {
     this.logger.log(`Start aggregation for DAO: ${account.accountId}`);
 
     const daoTransactions =
@@ -519,7 +519,7 @@ export class AggregatorService {
     }
   }
 
-  public async aggregateDaoTokens(account: Account, blockTimestamp: number) {
+  public async aggregateDaoTokens(account: Account, blockTimestamp: string) {
     this.logger.log(`Start aggregation tokens for DAO: ${account.accountId}`);
 
     try {
@@ -550,7 +550,7 @@ export class AggregatorService {
     }
   }
 
-  public async aggregateDaoNFTs(account: Account, blockTimestamp: number) {
+  public async aggregateDaoNFTs(account: Account, blockTimestamp: string) {
     this.logger.log(`Start aggregation NFTs for DAO: ${account.accountId}`);
 
     try {
