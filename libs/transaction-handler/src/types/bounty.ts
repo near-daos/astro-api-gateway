@@ -97,7 +97,9 @@ export function castClaimBounty(
     daoId: bounty.daoId || daoId,
     bountyId: bounty.bountyId,
     proposalId: bounty.proposalId,
-    proposalIndex: parseProposalIndex(bounty.proposalId),
+    proposalIndex:
+      (bounty as PartialEntity<BountyModel>).proposalIndex ??
+      parseProposalIndex(bounty.proposalId), // Bounty entity does not have proposalIndex
     description: bounty.description,
     token: bounty.token,
     amount: bounty.amount,
@@ -153,11 +155,11 @@ export function castDoneBounty(
 
 // dynamo compatibility
 export function parseProposalIndex(proposalId: string): number {
-  const [, proposalIndex] = proposalId.split('-');
-  if (!proposalIndex) {
+  const proposalIndex = parseInt(proposalId.split('-').pop());
+  if (isNaN(proposalIndex)) {
     throw new Error(`Invalid proposal ID format: ${proposalId}`);
   }
-  return Number(proposalIndex);
+  return proposalIndex;
 }
 
 // dynamo compatibility

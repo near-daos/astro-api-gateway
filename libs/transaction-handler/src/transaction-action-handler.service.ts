@@ -386,6 +386,13 @@ export class TransactionActionHandlerService {
       receiverId,
       args.id,
     );
+    if (!proposalEntity) {
+      this.logger.warn(
+        `Error proposal ${args.id} not found for DAO ${receiverId}. Skip transaction ${transactionHash}`,
+      );
+      return;
+    }
+
     const proposalResponse = await daoContract
       .get_proposal({ id: args.id })
       .catch(() => null);
@@ -745,7 +752,7 @@ export class TransactionActionHandlerService {
         ],
       },
     );
-    await this.opensearchService.indexBounty(bounty.id, bountyById);
+    await this.opensearchService.indexBounty(bountyById.id, bountyById);
   }
 
   async handleDoneBounty(
