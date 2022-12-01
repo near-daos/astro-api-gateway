@@ -117,14 +117,15 @@ export class DynamoDataMigration implements Migration {
     @InjectRepository(Comment)
     private readonly commentRepository: Repository<Comment>,
 
-    @InjectRepository(DraftComment, DRAFT_DB_CONNECTION)
-    private draftCommentRepository: MongoRepository<DraftComment>,
-
-    @InjectRepository(DraftProposal, DRAFT_DB_CONNECTION)
-    private draftProposalRepository: MongoRepository<DraftProposal>,
-
-    @InjectRepository(DraftProposalHistory, DRAFT_DB_CONNECTION)
-    private draftProposalHistoryRepository: MongoRepository<DraftProposalHistory>,
+    // TODO: Move back when DocumentDB is available for api
+    // @InjectRepository(DraftComment, DRAFT_DB_CONNECTION)
+    // private draftCommentRepository: MongoRepository<DraftComment>,
+    //
+    // @InjectRepository(DraftProposal, DRAFT_DB_CONNECTION)
+    // private draftProposalRepository: MongoRepository<DraftProposal>,
+    //
+    // @InjectRepository(DraftProposalHistory, DRAFT_DB_CONNECTION)
+    // private draftProposalHistoryRepository: MongoRepository<DraftProposalHistory>,
 
     @InjectRepository(Dao)
     private readonly daoRepository: Repository<Dao>,
@@ -259,14 +260,15 @@ export class DynamoDataMigration implements Migration {
   }
 
   public async migrateDraftComments(): Promise<void> {
-    for await (const comments of this.migrateEntity<DraftComment>(
-      DraftComment.name,
-      this.draftCommentRepository,
-    )) {
-      await this.dynamodbService.batchPut<CommentModel>(
-        comments.map((comment) => mapDraftCommentToCommentModel(comment)),
-      );
-    }
+    // TODO: Move back when DocumentDB is available for api
+    // for await (const comments of this.migrateEntity<DraftComment>(
+    //   DraftComment.name,
+    //   this.draftCommentRepository,
+    // )) {
+    //   await this.dynamodbService.batchPut<CommentModel>(
+    //     comments.map((comment) => mapDraftCommentToCommentModel(comment)),
+    //   );
+    // }
   }
 
   public async migrateDaos(): Promise<void> {
@@ -313,21 +315,22 @@ export class DynamoDataMigration implements Migration {
   }
 
   public async migrateDraftProposals(): Promise<void> {
-    for await (const draftProposals of this.migrateEntity<DraftProposal>(
-      DraftProposal.name,
-      this.draftProposalRepository,
-    )) {
-      await PromisePool.withConcurrency(5)
-        .for(draftProposals)
-        .process(async (draftProposal) => {
-          const history = await this.draftProposalHistoryRepository.find({
-            where: { draftProposalId: { $eq: draftProposal.id } },
-          });
-          return this.dynamodbService.saveItem<DraftProposalModel>(
-            mapDraftProposalToDraftProposalModel(draftProposal, history),
-          );
-        });
-    }
+    // TODO: Move back when DocumentDB is available for api
+    // for await (const draftProposals of this.migrateEntity<DraftProposal>(
+    //   DraftProposal.name,
+    //   this.draftProposalRepository,
+    // )) {
+    //   await PromisePool.withConcurrency(5)
+    //     .for(draftProposals)
+    //     .process(async (draftProposal) => {
+    //       const history = await this.draftProposalHistoryRepository.find({
+    //         where: { draftProposalId: { $eq: draftProposal.id } },
+    //       });
+    //       return this.dynamodbService.saveItem<DraftProposalModel>(
+    //         mapDraftProposalToDraftProposalModel(draftProposal, history),
+    //       );
+    //     });
+    // }
   }
 
   public async migrateNfts(): Promise<void> {

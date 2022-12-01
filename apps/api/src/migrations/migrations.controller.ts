@@ -1,5 +1,10 @@
 import { Body, Controller, Post, UseGuards } from '@nestjs/common';
-import { ApiBadRequestResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBadRequestResponse,
+  ApiBearerAuth,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 import { RunMigrationDto } from '@sputnik-v2/migrations/dto';
 import { MigrationService } from '@sputnik-v2/migrations/migration.service';
@@ -17,6 +22,7 @@ export class MigrationsController {
   @ApiBadRequestResponse({
     description: 'Failed to run migration',
   })
+  @ApiBearerAuth()
   @UseGuards(AccountAccessGuard, AdminGuard)
   @Post('/run')
   async runMigration(

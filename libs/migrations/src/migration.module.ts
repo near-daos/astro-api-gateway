@@ -92,14 +92,15 @@ import migrationScripts from './scripts';
       TokenBalance,
       TransactionHandlerState,
     ]),
-    TypeOrmModule.forRootAsync({
-      name: DRAFT_DB_CONNECTION,
-      useClass: TypeOrmConfigService,
-    }),
-    TypeOrmModule.forFeature(
-      [DraftProposal, DraftProposalHistory, DraftComment],
-      DRAFT_DB_CONNECTION,
-    ),
+    // TODO: Move back when DocumentDB is available for api
+    // TypeOrmModule.forRootAsync({
+    //   name: DRAFT_DB_CONNECTION,
+    //   useClass: TypeOrmConfigService,
+    // }),
+    // TypeOrmModule.forFeature(
+    //   [DraftProposal, DraftProposalHistory, DraftComment],
+    //   DRAFT_DB_CONNECTION,
+    // ),
     ConfigModule.forRoot({
       isGlobal: true,
       load: configuration,
