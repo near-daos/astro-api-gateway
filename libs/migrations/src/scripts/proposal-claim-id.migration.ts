@@ -30,6 +30,9 @@ export class ProposalClaimIdMigration implements Migration {
     this.logger.log(`Set Proposal Claim IDs...`);
     const { results, errors } = await PromisePool.withConcurrency(1)
       .for(proposals)
+      .handleError((err) => {
+        this.logger.error(err);
+      })
       .process(async (proposal) => this.migrateProposalClaimId(proposal));
 
     this.logger.log(

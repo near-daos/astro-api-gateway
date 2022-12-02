@@ -66,6 +66,11 @@ export class AccountNotificationIdsDynamoService {
     );
     const { errors } = await PromisePool.withConcurrency(5)
       .for(Object.keys(accountsMap))
+      .handleError((err, accountId) => {
+        this.logger.error(
+          `Failed to set account notification ids for ${accountId} with error: ${err} (${err.stack})`,
+        );
+      })
       .process(async (accountId) => {
         return this.setAccountNotificationIds(
           accountId,
@@ -74,11 +79,6 @@ export class AccountNotificationIdsDynamoService {
       });
 
     if (errors.length > 0) {
-      errors.forEach((error) => {
-        this.logger.error(
-          `Failed to set account notification ids for ${error.item} with error: ${error}`,
-        );
-      });
       throw new Error('Failed to set account notification ids');
     }
   }

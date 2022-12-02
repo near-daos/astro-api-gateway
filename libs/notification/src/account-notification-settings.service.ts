@@ -104,6 +104,9 @@ export class AccountNotificationSettingsService extends TypeOrmCrudService<Accou
     if (await this.useDynamoDB()) {
       const { results } = await PromisePool.withConcurrency(5)
         .for(accountIds)
+        .handleError((err) => {
+          throw err;
+        })
         .process(
           async (accountId) =>
             await this.dynamoDbService.getItemByType<AccountNotificationSettingsModel>(

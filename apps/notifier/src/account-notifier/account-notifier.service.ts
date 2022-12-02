@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 
 import {
   AccountNotification,
@@ -34,6 +34,8 @@ import {
 
 @Injectable()
 export class AccountNotifierService {
+  private readonly logger = new Logger(AccountNotifierService.name);
+
   constructor(
     private readonly accountNotificationService: AccountNotificationService,
     private readonly accountNotificationSettingsService: AccountNotificationSettingsService,
@@ -60,6 +62,11 @@ export class AccountNotifierService {
       // Notify accounts via email and sms
       await PromisePool.withConcurrency(1)
         .for(accountNotifications.filter(({ isMuted }) => !isMuted))
+        .handleError((err, notification) => {
+          this.logger.error(
+            `Failed to send notification ${notification.id}: ${err} (${err.stack})`,
+          );
+        })
         .process(async (accountNotification) => {
           return this.accountService.sendNotification(
             accountNotification,

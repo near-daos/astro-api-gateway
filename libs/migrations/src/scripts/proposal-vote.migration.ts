@@ -39,6 +39,9 @@ export class ProposalVoteMigration implements Migration {
     const { results, errors: proposalErrors } =
       await PromisePool.withConcurrency(500)
         .for(migratedProposals)
+        .handleError((err) => {
+          this.logger.error(err);
+        })
         .process(
           async (proposal) => await this.proposalService.update(proposal),
         );

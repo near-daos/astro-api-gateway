@@ -16,8 +16,15 @@ export class NFTAggregatorService {
   public async aggregateDaoNFTUpdates(
     tokenUpdates: NFTTokenUpdateDto[],
   ): Promise<void> {
-    const { errors } = await PromisePool.withConcurrency(5)
+    await PromisePool.withConcurrency(5)
       .for(tokenUpdates)
+      .handleError((err, dto) => {
+        this.logger.error(
+          `Failed loading NFT for ${JSON.stringify(dto)}: ${err} (${
+            err.stack
+          })`,
+        );
+      })
       .process(async ({ nft, account, timestamp }) =>
         this.nftTokenService.loadNFT(nft, account, timestamp),
       );
@@ -26,15 +33,14 @@ export class NFTAggregatorService {
 
     await PromisePool.withConcurrency(5)
       .for(daoIds)
+      .handleError((err, daoId) => {
+        this.logger.error(
+          `Failed update NFT count for ${daoId}: ${err} (${err.stack})`,
+        );
+      })
       .process(async (id) =>
         this.daoService.save({ id }, { updateNftsCount: true }),
       );
-
-    errors.forEach((error) => {
-      this.logger.error(
-        `Failed NFT aggregation ${error.item.nft} with error: ${error}`,
-      );
-    });
   }
 
   public async aggregateDaoNFTs(
@@ -42,18 +48,17 @@ export class NFTAggregatorService {
     nftIds: string[],
     timestamp?: string,
   ): Promise<void> {
-    const { errors } = await PromisePool.withConcurrency(5)
+    await PromisePool.withConcurrency(5)
       .for(nftIds)
+      .handleError((err, nftId) => {
+        this.logger.error(
+          `Failed loading NFT for ${nftId}, ${daoId}, ${timestamp}: ${err} (${err.stack})`,
+        );
+      })
       .process(async (nftId) =>
         this.nftTokenService.loadNFT(nftId, daoId, timestamp),
       );
 
     await this.daoService.save({ id: daoId }, { updateNftsCount: true });
-
-    errors.forEach((error) => {
-      this.logger.error(
-        `Failed NFT aggregation ${error.item} with error: ${error}`,
-      );
-    });
   }
 }

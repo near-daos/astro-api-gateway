@@ -211,6 +211,9 @@ export class DynamoDataMigration implements Migration {
     )) {
       await PromisePool.withConcurrency(5)
         .for(accountNotificationSettings)
+        .handleError((err) => {
+          throw err;
+        })
         .process(async (setting) => {
           return this.accountNotificationSettingsService.saveAccountNotificationSettings(
             setting,
@@ -415,6 +418,9 @@ export class DynamoDataMigration implements Migration {
     )) {
       await PromisePool.withConcurrency(1)
         .for(tokenBalances)
+        .handleError((err) => {
+          throw err;
+        })
         .process(async (tokenBalance) => {
           return this.tokenService.saveTokenBalanceToDao(tokenBalance);
         });

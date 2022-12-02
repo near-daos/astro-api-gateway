@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Bounty } from '@sputnik-v2/bounty/entities';
 
 import {
@@ -22,8 +22,6 @@ import {
 
 @Injectable()
 export class SputnikService {
-  private readonly logger = new Logger(SputnikService.name);
-
   private factoryContract!: SputnikDaoFactoryContract;
 
   constructor(private readonly nearApiService: NearApiService) {
@@ -155,6 +153,9 @@ export class SputnikService {
     );
     const { results: claims } = await PromisePool.withConcurrency(2)
       .for(accountIds)
+      .handleError((err) => {
+        throw err;
+      })
       .process(async (accountId) => {
         const bountyClaims = await daoContract.get_bounty_claims({
           account_id: accountId,
