@@ -63,7 +63,7 @@ export class IndexerProcessorService {
           id: `${receipt.receipt_id}-${i}`,
           type: ErrorType.IndexerProcessor,
           timestamp: receipt.included_in_block_timestamp,
-          reason: `${error} ${error.stack}`,
+          reason: `${error} (${error.stack})`,
           metadata: { receipt },
         });
         await this.transactionHandlerService.saveState(
