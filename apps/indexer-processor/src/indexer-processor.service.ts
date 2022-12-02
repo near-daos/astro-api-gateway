@@ -63,7 +63,7 @@ export class IndexerProcessorService {
           id: `${receipt.receipt_id}-${i}`,
           type: ErrorType.IndexerProcessor,
           timestamp: receipt.included_in_block_timestamp,
-          reason: error.message,
+          reason: `${error} (${error.stack})`,
           metadata: { receipt },
         });
         await this.transactionHandlerService.saveState(
@@ -71,7 +71,7 @@ export class IndexerProcessorService {
           TransactionHandlerStatus.Failed,
         );
         this.logger.error(
-          `Failed to handle receipt ${receipt.receipt_id} action ${i}. Skip receipt`,
+          `Failed to handle receipt ${receipt.receipt_id} action ${i}: ${error} (${error.stack}). Skip receipt.`,
         );
         return false;
       }

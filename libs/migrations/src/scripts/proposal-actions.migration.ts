@@ -61,24 +61,20 @@ export class ProposalActionsMigration implements Migration {
     }
 
     this.logger.log(`Querying for Near Indexer Transactions...`);
-    const { results: transactions, errors: txErrors } =
-      await PromisePool.withConcurrency(2)
-        .for(chunks)
-        .process(async ({ from, to }) => {
-          return this.nearIndexerService.findTransactionsByAccountIds(
-            contractName,
-            from,
-            to,
-          );
-        });
+    const { results: transactions } = await PromisePool.withConcurrency(2)
+      .for(chunks)
+      .handleError((err) => {
+        this.logger.error(err);
+      })
+      .process(async ({ from, to }) => {
+        return this.nearIndexerService.findTransactionsByAccountIds(
+          contractName,
+          from,
+          to,
+        );
+      });
 
-    this.logger.log(
-      `Received Total Transactions: ${transactions.length}. Errors count: ${txErrors.length}`,
-    );
-
-    if (txErrors && txErrors.length) {
-      txErrors.map((error) => this.logger.error(error));
-    }
+    this.logger.log(`Received Total Transactions: ${transactions.length}.`);
 
     this.logger.log(`Migrating Proposals...`);
     const migratedProposals = this.migrateProposals(
@@ -90,6 +86,9 @@ export class ProposalActionsMigration implements Migration {
     const { results, errors: proposalErrors } =
       await PromisePool.withConcurrency(500)
         .for(migratedProposals)
+        .handleError((err) => {
+          this.logger.log(err);
+        })
         .process(
           async (proposal) => await this.proposalService.update(proposal),
         );
@@ -99,10 +98,6 @@ export class ProposalActionsMigration implements Migration {
         proposalErrors.length
       }`,
     );
-
-    if (proposalErrors && proposalErrors.length) {
-      proposalErrors.map((error) => this.logger.error(error));
-    }
 
     this.logger.log('Proposal Actions migration finished.');
   }

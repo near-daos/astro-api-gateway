@@ -146,7 +146,7 @@ export class TransactionActionHandlerService {
         handledTxHashes.push(action.transactionHash);
       } catch (error) {
         this.logger.error(
-          `Failed to handle transaction ${action.transactionHash} with error: ${error}`,
+          `Failed to handle transaction action ${action.transactionHash}:${action.receiptId}:${action.indexInReceipt} with error: ${error} (${error.stack})`,
         );
 
         // If some action failed stop handling and remove failed transaction hash
@@ -178,30 +178,24 @@ export class TransactionActionHandlerService {
     );
     const contractHandlers = this.getContractHandlers(action.receiverId);
 
-    const { results, errors } = await PromisePool.for(contractHandlers).process(
-      async (contractHandler) => {
+    const { results } = await PromisePool.for(contractHandlers)
+      .handleError((err) => {
+        throw err;
+      })
+      .process(async (contractHandler) => {
         const handler =
           contractHandler.methodHandlers[action.methodName] ||
           contractHandler.defaultHandler;
         if (handler) {
           return handler(action);
         }
-      },
+      });
+
+    await this.handledReceiptActionDynamoService.save(action);
+
+    this.logger.log(
+      `Transaction action successfully handled: ${action.transactionHash}:${action.receiptId}:${action.indexInReceipt}`,
     );
-
-    if (errors.length > 0) {
-      const errorMessages = errors.map((error) => error.toString()).join('; ');
-      this.logger.error(
-        `Handling transaction action ${action.transactionHash}:${action.receiptId}:${action.indexInReceipt} failed with errors: ${errorMessages}`,
-      );
-      throw new Error(errorMessages);
-    } else {
-      await this.handledReceiptActionDynamoService.save(action);
-
-      this.logger.log(
-        `Transaction action successfully handled: ${action.transactionHash}:${action.receiptId}:${action.indexInReceipt}`,
-      );
-    }
 
     return results;
   }

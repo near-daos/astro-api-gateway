@@ -436,6 +436,11 @@ export class AggregatorService {
 
     await PromisePool.withConcurrency(5)
       .for(daoAccounts)
+      .handleError((err, daoAccount) => {
+        this.logger.error(
+          `Failed aggregateDaoByAccount(${daoAccount}, ${blockTimestamp}): ${err} (${err.stack})`,
+        );
+      })
       .process(
         async (daoAccount) =>
           await this.aggregateDaoByAccount(daoAccount, blockTimestamp),
@@ -443,6 +448,11 @@ export class AggregatorService {
 
     await PromisePool.withConcurrency(5)
       .for(daoAccounts)
+      .handleError((err, daoAccount) => {
+        this.logger.error(
+          `Failed aggregateDaoTokens(${daoAccount}, ${blockTimestamp}): ${err} (${err.stack})`,
+        );
+      })
       .process(
         async (daoAccount) =>
           await this.aggregateDaoTokens(daoAccount, blockTimestamp),
@@ -450,6 +460,11 @@ export class AggregatorService {
 
     await PromisePool.withConcurrency(5)
       .for(daoAccounts)
+      .handleError((err, daoAccount) => {
+        this.logger.error(
+          `Failed aggregateDaoNFTs(${daoAccount}, ${blockTimestamp}): ${err} (${err.stack})`,
+        );
+      })
       .process(
         async (daoAccount) =>
           await this.aggregateDaoNFTs(daoAccount, blockTimestamp),
