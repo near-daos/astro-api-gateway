@@ -8,11 +8,13 @@ import {
   BountyOpensearchDto,
   DraftProposalOpensearchDto,
   TokenPriceOpensearchDto,
+  DaoStatsOpensearchDto,
 } from '@sputnik-v2/opensearch/dto';
 import { Proposal } from '@sputnik-v2/proposal';
 import { Bounty } from '@sputnik-v2/bounty';
 import { sleep } from '@sputnik-v2/utils';
 import { DraftProposal } from '@sputnik-v2/draft-proposal';
+import { DaoStats } from '@sputnik-v2/stats';
 
 import { Migration } from '..';
 
@@ -58,6 +60,13 @@ export class OpensearchIndexMappingMigration implements Migration {
       'TokenPrice',
       `astro_TokenPrice`,
       TokenPriceOpensearchDto.getMappings(),
+    );
+
+    this.logger.log('Token Price Index Mapping migration...');
+    await this.migrateIndexMapping(
+      DaoStats.name,
+      `astro_${DaoStats.name}`,
+      DaoStatsOpensearchDto.getMappings(),
     );
 
     this.logger.log('Finished Opensearch Index Mapping migration.');

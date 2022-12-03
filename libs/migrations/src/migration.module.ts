@@ -92,7 +92,7 @@ import migrationScripts from './scripts';
       TokenBalance,
       TransactionHandlerState,
     ]),
-    // TODO: Move back when DocumentDB is available for api
+    // TODO: Remove after drafts migration
     // TypeOrmModule.forRootAsync({
     //   name: DRAFT_DB_CONNECTION,
     //   useClass: TypeOrmConfigService,
@@ -130,6 +130,7 @@ import migrationScripts from './scripts';
 })
 export class MigrationModule implements OnApplicationShutdown {
   async onApplicationShutdown() {
-    await getConnection(DRAFT_DB_CONNECTION).close();
+    // TODO: Remove after drafts migration
+    // await getConnection(DRAFT_DB_CONNECTION).close();
   }
 }
