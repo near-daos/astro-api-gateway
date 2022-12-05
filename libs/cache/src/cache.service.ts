@@ -1,6 +1,5 @@
 import { Cache } from 'cache-manager';
 import { CACHE_MANAGER, Inject, Injectable, Logger } from '@nestjs/common';
-import { ProposalDto } from '@sputnik-v2/proposal';
 
 // Cache invalidation is managed separately for the list of API endpoints below
 const CACHE_API_WHITELIST = ['/api/v1/proposals', '/api/v1/tokens'];
@@ -11,10 +10,8 @@ export class CacheService {
 
   constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {}
 
-  async handleProposalCache(proposal: ProposalDto): Promise<any> {
+  async handleProposalCache(id: string): Promise<any> {
     this.logger.log('Clearing Proposals Cache...');
-
-    const { id } = proposal;
 
     const keys: string[] = await this.cacheManager.store.keys(
       '/api/v1/proposals*',
