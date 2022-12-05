@@ -22,7 +22,11 @@ import { Transaction } from '@sputnik-v2/near-indexer';
 import { BountyContextService, BountyService } from '@sputnik-v2/bounty';
 import { EventService } from '@sputnik-v2/event';
 import { NFTTokenService, TokenService } from '@sputnik-v2/token';
-import { buildBountyId, buildDelegationId } from '@sputnik-v2/utils';
+import {
+  buildBountyId,
+  buildDelegationId,
+  buildProposalId,
+} from '@sputnik-v2/utils';
 import { CacheService } from '@sputnik-v2/cache';
 import { OpensearchService } from '@sputnik-v2/opensearch';
 import { DynamodbService, DynamoEntityType } from '@sputnik-v2/dynamodb';
@@ -351,7 +355,7 @@ export class TransactionActionHandlerService {
       dao.policy.proposalPeriod,
     );
 
-    await this.cacheService.handleProposalCache(proposal);
+    await this.cacheService.handleProposalCache(proposal.id);
 
     await this.eventService.sendProposalUpdateNotificationEvent(
       proposal,
@@ -444,17 +448,18 @@ export class TransactionActionHandlerService {
         break;
     }
 
-    const proposalById = await this.proposalService.findOne(proposal.id, {
+    const proposalId = buildProposalId(receiverId, args.id);
+    const proposalById = await this.proposalService.findOne(proposalId, {
       loadEagerRelations: false,
       relations: ['dao', 'actions'],
     });
-    const daoById = await this.daoService.findOne(proposal.daoId, {
+    const daoById = await this.daoService.findOne(receiverId, {
       relations: ['delegations'],
     });
-    await this.opensearchService.indexProposal(proposal.id, proposalById);
-    await this.opensearchService.indexDao(proposal.daoId, daoById);
+    await this.opensearchService.indexProposal(proposalId, proposalById);
+    await this.opensearchService.indexDao(receiverId, daoById);
 
-    await this.cacheService.handleProposalCache(proposal);
+    await this.cacheService.handleProposalCache(proposalId);
 
     await this.eventService.sendProposalUpdateNotificationEvent(
       proposal || proposalEntity,
@@ -465,7 +470,7 @@ export class TransactionActionHandlerService {
       type: ContractHandlerResultType.ProposalVote,
       metadata: {
         daoId: receiverId,
-        proposalId: proposal.id,
+        proposalId,
         action: args.action,
       },
     };
@@ -662,11 +667,11 @@ export class TransactionActionHandlerService {
         this.logger.log(
           `Removing Bounty Context: ${proposalEntity?.id} due to transaction`,
         );
-        await this.bountyContextService.remove(dao.id, proposal?.proposalId);
+        await this.bountyContextService.remove(dao.id, args.id);
       }
 
       this.logger.log(`Removing Proposal: ${args.id} due to transaction`);
-      await this.proposalService.remove(dao.id, proposal?.proposalId);
+      await this.proposalService.remove(dao.id, args.id);
     } else {
       this.logger.log(`Updating Proposal: ${proposal.id} due to transaction`);
       await this.proposalService.create(proposal);
