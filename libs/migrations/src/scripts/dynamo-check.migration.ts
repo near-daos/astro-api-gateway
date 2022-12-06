@@ -7,10 +7,11 @@ import {
   DaoModel,
   DynamodbService,
   DynamoEntityType,
+  NftModel,
   ProposalModel,
 } from '@sputnik-v2/dynamodb';
 import { Proposal } from '@sputnik-v2/proposal';
-import { TokenBalance } from '@sputnik-v2/token';
+import { NFTToken, TokenBalance } from '@sputnik-v2/token';
 import { parseProposalIndex } from '@sputnik-v2/transaction-handler';
 import PromisePool from '@supercharge/promise-pool';
 import { FindManyOptions, MongoRepository, Repository } from 'typeorm';
@@ -30,6 +31,8 @@ export class DynamoCheckMigration implements Migration {
     private readonly bountyRepository: Repository<Bounty>,
     @InjectRepository(TokenBalance)
     private readonly tokenBalanceRepository: Repository<TokenBalance>,
+    @InjectRepository(NFTToken)
+    private readonly nftRepository: Repository<NFTToken>,
     private readonly dynamodbService: DynamodbService,
   ) {}
 
@@ -307,8 +310,10 @@ export class DynamoCheckMigration implements Migration {
 
     await PromisePool.withConcurrency(5)
       .for(proposals)
-      .handleError((err) => {
-        this.logger.warn(`Dao ${dao.id} check failed: ${err} (${err.stack})`);
+      .handleError((err, proposal) => {
+        this.logger.warn(
+          `Proposal ${proposal.id} check failed: ${err} (${err.stack})`,
+        );
       })
       .process((proposal) => {
         return this.checkProposal(proposal);
@@ -324,13 +329,30 @@ export class DynamoCheckMigration implements Migration {
 
     await PromisePool.withConcurrency(5)
       .for(bounties)
-      .handleError((err) => {
+      .handleError((err, bounty) => {
         this.logger.warn(
-          `Bounty ${dao.id} check failed: ${err} (${err.stack})`,
+          `Bounty ${bounty.id} check failed: ${err} (${err.stack})`,
         );
       })
       .process((bounty) => {
         return this.checkBounty(bounty);
+      });
+
+    const nfts = await this.nftRepository.find({
+      where: {
+        accountId: dao.id,
+      },
+      loadEagerRelations: false,
+      relations: ['contract', 'metadata'],
+    });
+
+    await PromisePool.withConcurrency(5)
+      .for(nfts)
+      .handleError((err, nft) => {
+        this.logger.warn(`NFT ${nft.id} check failed: ${err} (${err.stack})`);
+      })
+      .process((nft) => {
+        return this.checkNft(nft);
       });
   }
 
@@ -418,8 +440,8 @@ export class DynamoCheckMigration implements Migration {
       createTimestamp: proposalModel.createTimestamp,
       updateTimestamp: proposalModel.updateTimestamp,
       isArchived: proposalModel.isArchived,
-      // createdAt: proposalModel.createdAt.getTime(),
-      // updateAt: proposalModel.updatedAt.getTime(),
+      // createdAt: proposalModel.creatingTimeStamp,
+      // updateAt: proposalModel.processingTimeStamp,
     };
 
     this.deepCompare(
@@ -437,7 +459,7 @@ export class DynamoCheckMigration implements Migration {
 
     const bountyModel = await this.dynamodbService.getItemByType<BountyModel>(
       bounty.daoId,
-      DynamoEntityType.Proposal,
+      DynamoEntityType.Bounty,
       String(proposalIndex),
     );
 
@@ -505,8 +527,8 @@ export class DynamoCheckMigration implements Migration {
       createTimestamp: bountyModel.createTimestamp,
       updateTimestamp: bountyModel.updateTimestamp,
       isArchived: bountyModel.isArchived,
-      // createdAt: bountyModel.createdAt.getTime(),
-      // updateAt: bountyModel.updatedAt.getTime(),
+      // createdAt: bountyModel.creatingTimeStamp,
+      // updateAt: bountyModel.processingTimeStamp,
     };
 
     this.deepCompare(
@@ -514,6 +536,103 @@ export class DynamoCheckMigration implements Migration {
       bountyModelProperties,
       'bountyEntity',
       'bountyModel',
+    );
+  }
+
+  async checkNft(nft: NFTToken) {
+    this.logger.log(`Checking NFT ${nft.id}`);
+
+    const nftModel = await this.dynamodbService.getItemByType<NftModel>(
+      nft.accountId,
+      DynamoEntityType.Nft,
+      nft.id,
+    );
+
+    const nftProperties = {
+      id: nft.id,
+      ownerId: nft.ownerId,
+      tokenId: nft.tokenId,
+      accountId: nft.accountId,
+      minter: nft.minter,
+      contractId: nft.contractId,
+      contract: {
+        id: nft.contract?.id,
+        spec: nft.contract?.spec,
+        name: nft.contract?.name,
+        symbol: nft.contract?.symbol,
+        icon: nft.contract?.icon,
+        baseUri: nft.contract?.baseUri,
+        reference: nft.contract?.reference,
+        referenceHash: nft.contract?.referenceHash,
+      },
+      metadata: {
+        tokenId: nft.metadata?.tokenId,
+        copies: nft.metadata?.copies,
+        description: nft.metadata?.description,
+        expiresAt: nft.metadata?.expiresAt,
+        extra: nft.metadata?.extra,
+        issuedAt: nft.metadata?.issuedAt,
+        media: nft.metadata?.media,
+        mediaHash: nft.metadata?.mediaHash,
+        reference: nft.metadata?.reference,
+        referenceHash: nft.metadata?.referenceHash,
+        startsAt: nft.metadata?.startsAt,
+        title: nft.metadata?.title,
+        updatedAt: nft.metadata?.updatedAt,
+        approvedAccountIds: nft.metadata?.approvedAccountIds,
+      },
+      // createTimestamp: nft.createTimestamp,
+      // updateTimestamp: nft.updateTimestamp,
+      isArchived: nft.isArchived,
+      // createdAt: nft.createdAt.getTime(),
+      // updatedAt: nft.updatedAt.getTime(),
+    };
+
+    const nftModelProperties = {
+      id: nftModel.id,
+      ownerId: nftModel.ownerId,
+      tokenId: nftModel.tokenId,
+      accountId: nftModel.accountId,
+      minter: nftModel.minter,
+      contractId: nftModel.contractId,
+      contract: {
+        id: nftModel.contract?.id,
+        spec: nftModel.contract?.spec,
+        name: nftModel.contract?.name,
+        symbol: nftModel.contract?.symbol,
+        icon: nftModel.contract?.icon,
+        baseUri: nftModel.contract?.baseUri,
+        reference: nftModel.contract?.reference,
+        referenceHash: nftModel.contract?.referenceHash,
+      },
+      metadata: {
+        tokenId: nftModel.metadata?.tokenId,
+        copies: nftModel.metadata?.copies,
+        description: nftModel.metadata?.description,
+        expiresAt: nftModel.metadata?.expiresAt,
+        extra: nftModel.metadata?.extra,
+        issuedAt: nftModel.metadata?.issuedAt,
+        media: nftModel.metadata?.media,
+        mediaHash: nftModel.metadata?.mediaHash,
+        reference: nftModel.metadata?.reference,
+        referenceHash: nftModel.metadata?.referenceHash,
+        startsAt: nftModel.metadata?.startsAt,
+        title: nftModel.metadata?.title,
+        updatedAt: nftModel.metadata?.updatedAt,
+        approvedAccountIds: nftModel.metadata?.approvedAccountIds,
+      },
+      // createTimestamp: nftModel.createTimestamp,
+      // updateTimestamp: nftModel.updateTimestamp,
+      isArchived: nftModel.isArchived,
+      // createdAt: nftModel.creatingTimeStamp,
+      // updatedAt: nftModel.processingTimeStamp,
+    };
+
+    this.deepCompare(
+      nftProperties,
+      nftModelProperties,
+      'nftEntity',
+      'nftModel',
     );
   }
 

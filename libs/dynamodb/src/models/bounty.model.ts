@@ -97,7 +97,7 @@ export function mapBountyToBountyModel(
     isArchived: bounty.isArchived,
     transactionHash: bounty.transactionHash,
     updateTransactionHash:
-      bounty.updateTransactionHash || bounty.transactionHash,
+      bounty.updateTransactionHash ?? bounty.transactionHash,
     creatingTimeStamp: bounty.createdAt
       ? bounty.createdAt.getTime()
       : undefined,
@@ -105,7 +105,7 @@ export function mapBountyToBountyModel(
       ? bounty.updatedAt.getTime()
       : undefined,
     createTimestamp: bounty.createTimestamp,
-    updateTimestamp: bounty.updateTimestamp || bounty.createTimestamp,
+    updateTimestamp: bounty.updateTimestamp ?? bounty.createTimestamp,
     id: bounty.id,
     daoId: bounty.daoId,
     bountyId: bounty.bountyId,
