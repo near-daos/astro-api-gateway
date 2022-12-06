@@ -446,7 +446,7 @@ export class DynamoDataMigration implements Migration {
   ): AsyncGenerator<E[]> {
     this.logger.log(`Migrating ${entity}...`);
 
-    const totalCount = await repo.count();
+    const totalCount = await repo.count(findParams);
 
     let count = startFrom;
     for await (const entities of this.getEntities(
