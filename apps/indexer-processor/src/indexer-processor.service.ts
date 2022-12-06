@@ -8,11 +8,7 @@ import { INDEXER_PROCESSOR_HANDLER_STATE_ID } from '@sputnik-v2/common';
 import { CacheService } from '@sputnik-v2/cache';
 
 import { RedisService } from './redis/redis.service';
-import {
-  castTransactionAction,
-  mapReceiptEntryActionArgs,
-  ReceiptEntry,
-} from './types/receipt-entry';
+import { castTransactionAction, ReceiptEntry } from './types/receipt-entry';
 import { IndexerProcessorErrorHandlerService } from './indexer-processor-error-handler.service';
 
 @Injectable()
