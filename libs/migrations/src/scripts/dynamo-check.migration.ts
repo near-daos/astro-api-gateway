@@ -50,7 +50,15 @@ export class DynamoCheckMigration implements Migration {
     startFrom = 0,
     chunkSize = 100,
   ): AsyncGenerator<E[]> {
+    const totalCount = await repo.count(findParams);
+
+    if (!totalCount) {
+      return;
+    }
+
     for (let start = startFrom; ; start += chunkSize) {
+      this.logger.log(`Fetching ${repo.metadata.name}: ${start}/${totalCount}`);
+
       const chunk = await repo.find({
         take: chunkSize,
         skip: start,
@@ -66,41 +74,49 @@ export class DynamoCheckMigration implements Migration {
     }
   }
 
-  private async *checkEntity<E>(
-    entity: string,
-    repo: Repository<E> | MongoRepository<E>,
-    findParams?: FindManyOptions<E>,
-    startFrom = 0,
-  ): AsyncGenerator<E[]> {
-    this.logger.log(`Checking ${entity}...`);
-
-    const totalCount = await repo.count();
-
-    let count = startFrom;
-
-    for await (const entities of this.getEntities(
-      repo,
-      findParams,
-      startFrom,
-    )) {
-      count += entities.length;
-
-      this.logger.log(`Checking ${entity}: chunk ${count}/${totalCount}`);
-
-      yield entities;
+  private deepCompare(a: any, b: any, aName = 'a', bName = 'b', path = []) {
+    if (a === b) {
+      return;
     }
 
-    this.logger.log(`Checked ${entity}: ${count}. Finished.`);
+    if (a && b && typeof a == 'object' && typeof b == 'object') {
+      if (Array.isArray(a)) {
+        const length = Math.max(a.length, b.length);
+
+        for (let i = 0; i < length; i++) {
+          this.deepCompare(a[i], b[i], aName, bName, path.concat(i));
+        }
+
+        return;
+      } else {
+        const keys = [...new Set([...Object.keys(a), ...Object.keys(b)])];
+
+        for (const key of keys) {
+          this.deepCompare(a[key], b[key], aName, bName, path.concat(key));
+        }
+
+        return;
+      }
+    }
+
+    if ((a === undefined || a === null) && (b === undefined || b === null)) {
+      return;
+    }
+
+    if (isNaN(a) && isNaN(b)) {
+      return;
+    }
+
+    const pathStr = path.length ? `.${path.join('.')}` : '';
+    throw new Error(
+      `${aName}${pathStr} !== ${bName}${pathStr} (${a} !== ${b})`,
+    );
   }
 
   private async checkDaos() {
-    for await (const daos of this.checkEntity<Dao>(
-      Dao.name,
-      this.daoRepository,
-      {
-        relations: ['policy', 'policy.roles', 'daoVersion'],
-      },
-    )) {
+    for await (const daos of this.getEntities<Dao>(this.daoRepository, {
+      relations: ['policy', 'policy.roles', 'daoVersion'],
+    })) {
       await PromisePool.withConcurrency(5)
         .for(daos)
         .handleError((err, dao) => {
@@ -112,7 +128,7 @@ export class DynamoCheckMigration implements Migration {
     }
   }
 
-  async checkDao(dao: Dao) {
+  private async checkDao(dao: Dao) {
     this.logger.log(`Checking dao ${dao.id}`);
 
     const tokenBalances = await this.tokenBalanceRepository.find({
@@ -300,63 +316,12 @@ export class DynamoCheckMigration implements Migration {
       'daoModel',
     );
 
-    const proposals = await this.proposalRepository.find({
-      where: {
-        daoId: dao.id,
-      },
-      loadEagerRelations: false,
-      relations: ['actions'],
-    });
-
-    await PromisePool.withConcurrency(5)
-      .for(proposals)
-      .handleError((err, proposal) => {
-        this.logger.warn(
-          `Proposal ${proposal.id} check failed: ${err} (${err.stack})`,
-        );
-      })
-      .process((proposal) => {
-        return this.checkProposal(proposal);
-      });
-
-    const bounties = await this.bountyRepository.find({
-      where: {
-        daoId: dao.id,
-      },
-      loadEagerRelations: false,
-      relations: ['bountyDoneProposals', 'bountyClaims'],
-    });
-
-    await PromisePool.withConcurrency(5)
-      .for(bounties)
-      .handleError((err, bounty) => {
-        this.logger.warn(
-          `Bounty ${bounty.id} check failed: ${err} (${err.stack})`,
-        );
-      })
-      .process((bounty) => {
-        return this.checkBounty(bounty);
-      });
-
-    const nfts = await this.nftRepository.find({
-      where: {
-        accountId: dao.id,
-      },
-      loadEagerRelations: false,
-      relations: ['contract', 'metadata'],
-    });
-
-    await PromisePool.withConcurrency(5)
-      .for(nfts)
-      .handleError((err, nft) => {
-        this.logger.warn(`NFT ${nft.id} check failed: ${err} (${err.stack})`);
-      })
-      .process((nft) => {
-        return this.checkNft(nft);
-      });
+    await this.checkDaoProposals(dao.id);
+    await this.checkDaoBounties(dao.id);
+    await this.checkDaoNfts(dao.id);
   }
 
-  async checkProposal(proposal: Proposal) {
+  private async checkProposal(proposal: Proposal) {
     this.logger.log(`Checking proposal ${proposal.id}`);
 
     const proposalModel =
@@ -452,7 +417,7 @@ export class DynamoCheckMigration implements Migration {
     );
   }
 
-  async checkBounty(bounty: Bounty) {
+  private async checkBounty(bounty: Bounty) {
     this.logger.log(`Checking bounty ${bounty.id}`);
 
     const proposalIndex = parseProposalIndex(bounty.proposalId);
@@ -539,7 +504,7 @@ export class DynamoCheckMigration implements Migration {
     );
   }
 
-  async checkNft(nft: NFTToken) {
+  private async checkNft(nft: NFTToken) {
     this.logger.log(`Checking NFT ${nft.id}`);
 
     const nftModel = await this.dynamodbService.getItemByType<NftModel>(
@@ -636,42 +601,85 @@ export class DynamoCheckMigration implements Migration {
     );
   }
 
-  private deepCompare(a: any, b: any, aName = 'a', bName = 'b', path = []) {
-    if (a === b) {
-      return;
+  async checkDaoById(id: string) {
+    const dao = await this.daoRepository.findOneOrFail(id);
+    return this.checkDao(dao);
+  }
+
+  async checkDaoProposals(daoId: string) {
+    for await (const proposals of this.getEntities<Proposal>(
+      this.proposalRepository,
+      {
+        where: { daoId },
+        relations: ['actions'],
+      },
+    )) {
+      await PromisePool.withConcurrency(5)
+        .for(proposals)
+        .handleError((err, proposal) => {
+          this.logger.warn(
+            `Proposal ${proposal.id} check failed: ${err} (${err.stack})`,
+          );
+        })
+        .process((proposal) => {
+          return this.checkProposal(proposal);
+        });
     }
+  }
 
-    if (a && b && typeof a == 'object' && typeof b == 'object') {
-      if (Array.isArray(a)) {
-        const length = Math.max(a.length, b.length);
-
-        for (let i = 0; i < length; i++) {
-          this.deepCompare(a[i], b[i], aName, bName, path.concat(i));
-        }
-
-        return;
-      } else {
-        const keys = [...new Set([...Object.keys(a), ...Object.keys(b)])];
-
-        for (const key of keys) {
-          this.deepCompare(a[key], b[key], aName, bName, path.concat(key));
-        }
-
-        return;
-      }
+  async checkDaoBounties(daoId: string) {
+    for await (const bounties of this.getEntities<Bounty>(
+      this.bountyRepository,
+      {
+        where: {
+          daoId,
+        },
+        relations: ['bountyDoneProposals', 'bountyClaims'],
+      },
+    )) {
+      await PromisePool.withConcurrency(5)
+        .for(bounties)
+        .handleError((err, bounty) => {
+          this.logger.warn(
+            `Bounty ${bounty.id} check failed: ${err} (${err.stack})`,
+          );
+        })
+        .process((bounty) => {
+          return this.checkBounty(bounty);
+        });
     }
+  }
 
-    if ((a === undefined || a === null) && (b === undefined || b === null)) {
-      return;
+  async checkDaoNfts(daoId: string) {
+    for await (const nfts of this.getEntities<NFTToken>(this.nftRepository, {
+      where: {
+        accountId: daoId,
+      },
+      relations: ['contract', 'metadata'],
+    })) {
+      await PromisePool.withConcurrency(5)
+        .for(nfts)
+        .handleError((err, nft) => {
+          this.logger.warn(`NFT ${nft.id} check failed: ${err} (${err.stack})`);
+        })
+        .process((nft) => {
+          return this.checkNft(nft);
+        });
     }
+  }
 
-    if (isNaN(a) && isNaN(b)) {
-      return;
-    }
+  async checkProposalById(id: string) {
+    const proposal = await this.proposalRepository.findOneOrFail(id);
+    return this.checkProposal(proposal);
+  }
 
-    const pathStr = path.length ? `.${path.join('.')}` : '';
-    throw new Error(
-      `${aName}${pathStr} !== ${bName}${pathStr} (${a} !== ${b})`,
-    );
+  async checkBountyById(id: string) {
+    const bounty = await this.bountyRepository.findOneOrFail(id);
+    return this.checkBounty(bounty);
+  }
+
+  async checkNftById(id: string) {
+    const nft = await this.nftRepository.findOneOrFail(id);
+    return this.checkNft(nft);
   }
 }
