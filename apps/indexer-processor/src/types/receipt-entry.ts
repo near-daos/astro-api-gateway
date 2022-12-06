@@ -32,6 +32,23 @@ export class ReceiptEntry {
   action: ActionReceiptEntry | null;
 }
 
+export function mapReceiptEntryActionArgs(receipt: ReceiptEntry): ReceiptEntry {
+  return {
+    ...receipt,
+    action: {
+      ...receipt.action,
+      actions: receipt.action.actions.map((action) => ({
+        ...action,
+        args: {
+          method_name: action.args?.method_name,
+          deposit: action.args?.deposit,
+          args_json: action.args?.args_json,
+        },
+      })),
+    },
+  };
+}
+
 export function castTransactionAction(
   receipt: ReceiptEntry,
   action: ActionReceiptAction,

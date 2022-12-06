@@ -13,4 +13,5 @@ export enum FeatureFlags {
   DraftDynamo = 'draft-dynamo',
   NftTokenDynamo = 'nft-token-dynamo',
   NotificationDynamo = 'notification-dynamo',
+  ErrorDynamo = 'error-dynamo',
 }

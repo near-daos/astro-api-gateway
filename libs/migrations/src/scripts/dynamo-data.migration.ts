@@ -15,7 +15,8 @@ import {
   CommentModel,
   DaoIdsModel,
   DaoModel,
-  DraftProposalModel,
+  ErrorIdsModel,
+  ErrorModel,
   mapAccountNotificationToAccountNotificationModel,
   mapAccountToAccountModel,
   mapBountyToBountyModel,
@@ -23,8 +24,8 @@ import {
   mapDaoIdsToDaoIdsModel,
   mapDaoStatsToDaoStatsModel,
   mapDaoToDaoModel,
-  mapDraftCommentToCommentModel,
-  mapDraftProposalToDraftProposalModel,
+  mapErrorEntityToErrorModel,
+  mapErrorIdsToErrorIdsModel,
   mapNftTokenToNftModel,
   mapProposalTemplateToProposalTemplateModel,
   mapProposalToProposalModel,
@@ -47,15 +48,9 @@ import {
 } from '@sputnik-v2/notification/entities';
 import { Bounty } from '@sputnik-v2/bounty/entities';
 import { Comment } from '@sputnik-v2/comment/entities';
-import { DraftComment } from '@sputnik-v2/draft-comment/entities';
 import { Dao } from '@sputnik-v2/dao/entities';
 import { getChunkCount } from '@sputnik-v2/utils';
-import { DRAFT_DB_CONNECTION } from '@sputnik-v2/common';
 import { DaoStats } from '@sputnik-v2/stats/entities';
-import {
-  DraftProposal,
-  DraftProposalHistory,
-} from '@sputnik-v2/draft-proposal/entities';
 import { NFTToken, Token, TokenBalance } from '@sputnik-v2/token/entities';
 import { Proposal } from '@sputnik-v2/proposal/entities';
 import {
@@ -63,6 +58,7 @@ import {
   SharedProposalTemplate,
 } from '@sputnik-v2/proposal-template/entities';
 import { Subscription } from '@sputnik-v2/subscription/entities';
+import { ErrorEntity } from '@sputnik-v2/error-tracker/entities';
 
 import { Migration } from '../interfaces';
 import { DynamoDataOptionsDto } from '../dto';
@@ -71,6 +67,7 @@ import {
   AccountNotificationSettingsService,
 } from '@sputnik-v2/notification';
 import { DynamoEntityType } from '@sputnik-v2/dynamodb';
+import { ErrorStatus, ErrorType } from '@sputnik-v2/error-tracker';
 
 @Injectable()
 export class DynamoDataMigration implements Migration {
@@ -96,6 +93,8 @@ export class DynamoDataMigration implements Migration {
     [DynamoEntityType.TokenBalance]: this.migrateTokenBalances,
     [DynamoEntityType.TokenPrice]: this.migrateTokenPrices,
     [DynamoEntityType.DraftProposal]: this.migrateDraftProposals,
+    [DynamoEntityType.Error]: this.migrateErrors,
+    [DynamoEntityType.ErrorIds]: this.migrateErrorIds,
   };
 
   constructor(
@@ -154,6 +153,9 @@ export class DynamoDataMigration implements Migration {
     @InjectRepository(Token)
     private readonly tokenRepository: Repository<Token>,
     private readonly tokenService: TokenService,
+
+    @InjectRepository(ErrorEntity)
+    private readonly errorRepository: Repository<ErrorEntity>,
 
     private readonly accountNotificationIdsDynamoService: AccountNotificationIdsDynamoService,
   ) {}
@@ -436,6 +438,48 @@ export class DynamoDataMigration implements Migration {
         tokens.map((token) => mapTokenToTokenPriceModel(token)),
       );
     }
+  }
+
+  public async migrateErrors(): Promise<void> {
+    for await (const errors of this.migrateEntity<ErrorEntity>(
+      ErrorEntity.name,
+      this.errorRepository,
+    )) {
+      await this.dynamodbService.batchPut<ErrorModel>(
+        errors.map((error) => {
+          if (error.type === ErrorType.IndexerProcessor) {
+            // Remove unused fields from error metadata receipt to avoid dynamo size limit
+            error.metadata.receipt = {
+              ...error.metadata.receipt,
+              action: {
+                ...error.metadata.receipt?.action,
+                actions: error.metadata.receipt?.action.actions.map(
+                  (action) => ({
+                    ...action,
+                    args: {
+                      method_name: action.args?.method_name,
+                      deposit: action.args?.deposit,
+                      args_json: action.args?.args_json,
+                    },
+                  }),
+                ),
+              },
+            };
+          }
+          return mapErrorEntityToErrorModel(error);
+        }),
+      );
+    }
+  }
+
+  public async migrateErrorIds(): Promise<void> {
+    const openErrors = await this.errorRepository.find({
+      where: { status: ErrorStatus.Open },
+      order: { timestamp: 'ASC' },
+    });
+    await this.dynamodbService.saveItem<ErrorIdsModel>(
+      mapErrorIdsToErrorIdsModel(openErrors.map(({ id }) => id)),
+    );
   }
 
   private async *migrateEntity<E>(

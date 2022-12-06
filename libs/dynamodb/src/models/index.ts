@@ -19,3 +19,5 @@ export * from './token-price.model';
 export * from './dao-ids.model';
 export * from './otp.model';
 export * from './account-notification-ids.model';
+export * from './error.model';
+export * from './error-ids.model';

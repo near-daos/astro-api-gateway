@@ -4,16 +4,16 @@ import {
   TransactionHandlerService,
   TransactionHandlerStatus,
 } from '@sputnik-v2/transaction-handler';
-import {
-  ErrorStatus,
-  ErrorTrackerService,
-  ErrorType,
-} from '@sputnik-v2/error-tracker';
 import { INDEXER_PROCESSOR_HANDLER_STATE_ID } from '@sputnik-v2/common';
 import { CacheService } from '@sputnik-v2/cache';
 
 import { RedisService } from './redis/redis.service';
-import { castTransactionAction, ReceiptEntry } from './types/receipt-entry';
+import {
+  castTransactionAction,
+  mapReceiptEntryActionArgs,
+  ReceiptEntry,
+} from './types/receipt-entry';
+import { IndexerProcessorErrorHandlerService } from './indexer-processor-error-handler.service';
 
 @Injectable()
 export class IndexerProcessorService {
@@ -24,14 +24,14 @@ export class IndexerProcessorService {
     private readonly redisService: RedisService,
     private readonly transactionHandlerService: TransactionHandlerService,
     private readonly transactionActionHandlerService: TransactionActionHandlerService,
-    private readonly errorTrackerService: ErrorTrackerService,
+    private readonly errorHandlerService: IndexerProcessorErrorHandlerService,
     private readonly cacheService: CacheService,
   ) {
     this.init();
   }
 
   async init() {
-    await this.resolveErrors();
+    this.errorHandlerService.resolveErrorsBackOff();
     await this.redisService.handleStream<ReceiptEntry>(
       this.STREAM_RECEIPTS,
       this.handleReceipt.bind(this),
@@ -58,14 +58,7 @@ export class IndexerProcessorService {
           `Receipt ${receipt.receipt_id} action ${i} successfully handled`,
         );
       } catch (error) {
-        // Save error and stop handling receipt
-        await this.errorTrackerService.create({
-          id: `${receipt.receipt_id}-${i}`,
-          type: ErrorType.IndexerProcessor,
-          timestamp: receipt.included_in_block_timestamp,
-          reason: `${error} (${error.stack})`,
-          metadata: { receipt },
-        });
+        await this.errorHandlerService.handleNewError(receipt, i, error);
         await this.transactionHandlerService.saveState(
           INDEXER_PROCESSOR_HANDLER_STATE_ID,
           TransactionHandlerStatus.Failed,
@@ -83,35 +76,5 @@ export class IndexerProcessorService {
     );
     await this.cacheService.clearCache();
     return true;
-  }
-
-  async resolveErrors() {
-    const errors = await this.errorTrackerService.getOpenErrors(
-      ErrorType.IndexerProcessor,
-    );
-    this.logger.log(`Found ${errors.length} errors to resolve`);
-
-    for (const error of errors) {
-      this.logger.log(`Resolving error ${error.id}`);
-      await this.errorTrackerService.setErrorStatus(
-        error.id,
-        ErrorStatus.InProgress,
-      );
-
-      const success = await this.handleReceipt(error.metadata.receipt);
-      if (success) {
-        await this.errorTrackerService.setErrorStatus(
-          error.id,
-          ErrorStatus.Resolved,
-        );
-        this.logger.log(`Error ${error.id} resolved`);
-      } else {
-        await this.errorTrackerService.setErrorStatus(
-          error.id,
-          ErrorStatus.Open,
-        );
-        this.logger.error(`Failed to resolve error ${error.id}`);
-      }
-    }
   }
 }
