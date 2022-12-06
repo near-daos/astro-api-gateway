@@ -5,7 +5,9 @@ import {
   DaoModel,
   DynamodbService,
   DynamoEntityType,
+  ProposalModel,
 } from '@sputnik-v2/dynamodb';
+import { Proposal } from '@sputnik-v2/proposal';
 import PromisePool from '@supercharge/promise-pool';
 import { FindManyOptions, MongoRepository, Repository } from 'typeorm';
 
@@ -18,6 +20,8 @@ export class DynamoCheckMigration implements Migration {
   constructor(
     @InjectRepository(Dao)
     private readonly daoRepository: Repository<Dao>,
+    @InjectRepository(Proposal)
+    private readonly proposalRepository: Repository<Proposal>,
     private readonly dynamodbService: DynamodbService,
   ) {}
 
@@ -86,10 +90,10 @@ export class DynamoCheckMigration implements Migration {
         relations: ['policy', 'daoVersion'],
       },
     )) {
-      await PromisePool.withConcurrency(20)
+      await PromisePool.withConcurrency(5)
         .for(daos)
         .handleError((err, dao) => {
-          this.logger.warn(`Dao ${dao.id} check failed: ${err}`);
+          this.logger.warn(`Dao ${dao.id} check failed: ${err} (${err.stack})`);
         })
         .process(async (dao) => {
           return this.checkDao(dao);
@@ -105,6 +109,10 @@ export class DynamoCheckMigration implements Migration {
       DynamoEntityType.Dao,
       dao.id,
     );
+
+    if (!daoModel) {
+      throw new Error(`Dao model not found: ${dao.id}`);
+    }
 
     const daoProperties = {
       id: dao.id,
@@ -157,9 +165,9 @@ export class DynamoCheckMigration implements Migration {
       totalDaoFunds: dao.totalDaoFunds,
       bountyCount: dao.bountyCount,
       nftCount: dao.nftCount,
-      isArchived: dao.isArchived,
       createTimestamp: dao.createTimestamp,
       updateTimestamp: dao.updateTimestamp,
+      isArchived: dao.isArchived,
       // createdAt: dao.createdAt.getTime(),
       // updateAt: dao.updatedAt.getTime(),
     };
@@ -215,9 +223,9 @@ export class DynamoCheckMigration implements Migration {
       totalDaoFunds: daoModel.totalDaoFunds,
       bountyCount: daoModel.bountyCount,
       nftCount: daoModel.nftCount,
-      isArchived: daoModel.isArchived,
       createTimestamp: daoModel.createTimestamp,
       updateTimestamp: daoModel.updateTimestamp,
+      isArchived: daoModel.isArchived,
       // createdAt: daoModel.creatingTimeStamp,
       // updateAt: daoModel.processingTimeStamp,
     };
@@ -227,6 +235,109 @@ export class DynamoCheckMigration implements Migration {
       daoModelProperties,
       'daoEntity',
       'daoModel',
+    );
+
+    const proposals = await this.proposalRepository.find({
+      where: {
+        daoId: dao.id,
+      },
+      loadEagerRelations: false,
+    });
+
+    for (const proposal of proposals) {
+      await this.checkProposal(proposal);
+    }
+  }
+
+  async checkProposal(proposal: Proposal) {
+    this.logger.log(`Checking proposal ${proposal.id}`);
+
+    const proposalModel =
+      await this.dynamodbService.getItemByType<ProposalModel>(
+        proposal.daoId,
+        DynamoEntityType.Proposal,
+        String(proposal.proposalId),
+      );
+
+    if (!proposalModel) {
+      throw new Error(`Proposal model not found: ${proposal.id}`);
+    }
+
+    const proposalProperties = {
+      id: proposal.id,
+      daoId: proposal.daoId,
+      proposer: proposal.proposer,
+      description: proposal.description,
+      status: proposal.status,
+      voteStatus: proposal.voteStatus,
+      kind: proposal.kind,
+      type: proposal.type,
+      policyLabel: proposal.policyLabel,
+      submissionTime: proposal.submissionTime,
+      voteCounts: proposal.voteCounts,
+      votes: proposal.votes,
+      failure: proposal.failure,
+      actions: proposal.actions
+        ? proposal.actions.map((action) => ({
+            id: action.id,
+            proposalId: action.proposalId,
+            accountId: action.accountId,
+            action: action.action,
+            transactionHash: action.transactionHash,
+            timestamp: action.timestamp,
+          }))
+        : [],
+      votePeriodEnd: proposal.votePeriodEnd,
+      bountyDoneId: proposal.bountyDoneId,
+      bountyClaimId: proposal.bountyClaimId,
+      commentsCount: proposal.commentsCount,
+      createTimestamp: proposal.createTimestamp,
+      updateTimestamp: proposal.updateTimestamp,
+      isArchived: proposal.isArchived,
+      // createdAt: proposal.createdAt.getTime(),
+      // updateAt: proposal.updatedAt.getTime(),
+    };
+
+    const proposalModelProperties = {
+      id: proposalModel.id,
+      daoId: proposalModel.partitionId,
+      proposer: proposalModel.proposer,
+      description: proposalModel.description,
+      status: proposalModel.status,
+      voteStatus: proposalModel.voteStatus,
+      kind: proposalModel.kind,
+      type: proposalModel.type,
+      policyLabel: proposalModel.policyLabel,
+      submissionTime: proposalModel.submissionTime,
+      voteCounts: proposalModel.voteCounts,
+      votes: proposalModel.votes,
+      failure: proposalModel.failure,
+      actions: proposalModel.actions
+        ? proposalModel.actions.map((actionModel) => ({
+            id: actionModel.id,
+            proposalId: actionModel.proposalId,
+            accountId: actionModel.accountId,
+            action: actionModel.action,
+            transactionHash: actionModel.transactionHash,
+            timestamp: actionModel.timestamp,
+          }))
+        : [],
+      votePeriodEnd: proposalModel.votePeriodEnd,
+      bountyDoneId: proposalModel.bountyDoneId,
+      bountyClaimId: proposalModel.bountyClaimId,
+      commentsCount: proposalModel.commentsCount,
+      createTimestamp: proposalModel.createTimestamp,
+      updateTimestamp: proposalModel.updateTimestamp,
+      isArchived: proposalModel.isArchived,
+      // createdAt: proposalModel.createdAt.getTime(),
+      // updateAt: proposalModel.updatedAt.getTime(),
+    };
+
+    this.deepCompare(
+      proposalProperties,
+      proposalModelProperties,
+      'proposalEntity',
+      'proposalModel',
     );
   }
 
