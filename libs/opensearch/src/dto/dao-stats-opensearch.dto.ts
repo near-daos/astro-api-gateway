@@ -9,6 +9,7 @@ export class DaoStatsOpensearchDto {
         properties: {
           daoId: { type: 'keyword' },
           timestamp: { type: 'long' },
+          creatingTimeStamp: { type: 'long' },
         },
       },
     };
