@@ -102,10 +102,9 @@ export function mapProposalToProposalModel(
       ? proposal.updatedAt.getTime()
       : undefined,
     transactionHash: proposal.transactionHash,
-    updateTransactionHash:
-      proposal.updateTransactionHash ?? proposal.transactionHash,
+    updateTransactionHash: proposal.updateTransactionHash,
     createTimestamp: proposal.createTimestamp,
-    updateTimestamp: proposal.updateTimestamp ?? proposal.createTimestamp,
+    updateTimestamp: proposal.updateTimestamp,
     id: proposal.id,
     proposalId: proposal.proposalId,
     proposer: proposal.proposer,

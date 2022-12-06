@@ -21,9 +21,9 @@ export function mapTokenToTokenPriceModel(
       ? token.updatedAt.getTime()
       : undefined,
     transactionHash: token.transactionHash,
-    updateTransactionHash: token.updateTransactionHash ?? token.transactionHash,
+    updateTransactionHash: token.updateTransactionHash,
     createTimestamp: token.createTimestamp,
-    updateTimestamp: token.updateTimestamp ?? token.createTimestamp,
+    updateTimestamp: token.updateTimestamp,
     price: token.price,
     decimals: token.decimals,
   };
