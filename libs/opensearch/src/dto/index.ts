@@ -5,3 +5,4 @@ export * from './bounty-opensearch.dto';
 export * from './comment-opensearch.dto';
 export * from './draft-proposal-opensearch.dto';
 export * from './token-balance.dto';
+export * from './dao-stats-opensearch.dto';

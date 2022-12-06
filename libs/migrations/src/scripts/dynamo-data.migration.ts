@@ -117,7 +117,7 @@ export class DynamoDataMigration implements Migration {
     @InjectRepository(Comment)
     private readonly commentRepository: Repository<Comment>,
 
-    // TODO: Move back when DocumentDB is available for api
+    // TODO: Remove after drafts migration
     // @InjectRepository(DraftComment, DRAFT_DB_CONNECTION)
     // private draftCommentRepository: MongoRepository<DraftComment>,
     //
@@ -263,7 +263,7 @@ export class DynamoDataMigration implements Migration {
   }
 
   public async migrateDraftComments(): Promise<void> {
-    // TODO: Move back when DocumentDB is available for api
+    // TODO: Remove after drafts migration
     // for await (const comments of this.migrateEntity<DraftComment>(
     //   DraftComment.name,
     //   this.draftCommentRepository,
@@ -318,7 +318,7 @@ export class DynamoDataMigration implements Migration {
   }
 
   public async migrateDraftProposals(): Promise<void> {
-    // TODO: Move back when DocumentDB is available for api
+    // TODO: Remove after drafts migration
     // for await (const draftProposals of this.migrateEntity<DraftProposal>(
     //   DraftProposal.name,
     //   this.draftProposalRepository,

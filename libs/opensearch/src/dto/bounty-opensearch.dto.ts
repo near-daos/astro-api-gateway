@@ -37,6 +37,7 @@ export class BountyOpensearchDto extends BaseOpensearchDto {
         properties: {
           ...properties,
           createTimestamp: { type: 'long' },
+          creatingTimeStamp: { type: 'long' },
           daoId: { type: 'keyword' },
           numberOfClaims: { type: 'integer' },
           bountyId: { type: 'integer' },
