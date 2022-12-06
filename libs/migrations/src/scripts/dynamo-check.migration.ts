@@ -10,6 +10,7 @@ import {
   ProposalModel,
 } from '@sputnik-v2/dynamodb';
 import { Proposal } from '@sputnik-v2/proposal';
+import { TokenBalance } from '@sputnik-v2/token';
 import { parseProposalIndex } from '@sputnik-v2/transaction-handler';
 import PromisePool from '@supercharge/promise-pool';
 import { FindManyOptions, MongoRepository, Repository } from 'typeorm';
@@ -27,6 +28,8 @@ export class DynamoCheckMigration implements Migration {
     private readonly proposalRepository: Repository<Proposal>,
     @InjectRepository(Bounty)
     private readonly bountyRepository: Repository<Bounty>,
+    @InjectRepository(TokenBalance)
+    private readonly tokenBalanceRepository: Repository<TokenBalance>,
     private readonly dynamodbService: DynamodbService,
   ) {}
 
@@ -92,7 +95,7 @@ export class DynamoCheckMigration implements Migration {
       Dao.name,
       this.daoRepository,
       {
-        relations: ['policy', 'daoVersion'],
+        relations: ['policy', 'policy.roles', 'daoVersion'],
       },
     )) {
       await PromisePool.withConcurrency(5)
@@ -108,6 +111,14 @@ export class DynamoCheckMigration implements Migration {
 
   async checkDao(dao: Dao) {
     this.logger.log(`Checking dao ${dao.id}`);
+
+    const tokenBalances = await this.tokenBalanceRepository.find({
+      where: {
+        accountId: dao.id,
+      },
+      loadEagerRelations: false,
+      relations: ['token'],
+    });
 
     const daoModel = await this.dynamodbService.getItemByType<DaoModel>(
       dao.id,
@@ -133,6 +144,26 @@ export class DynamoCheckMigration implements Migration {
       numberOfGroups: dao.numberOfGroups,
       council: dao.council,
       accountIds: dao.accountIds,
+      tokens: tokenBalances
+        ? tokenBalances
+            .map((tokenBalance) => ({
+              tokenId: tokenBalance.tokenId,
+              accountId: tokenBalance.accountId,
+              balance: tokenBalance.balance,
+              id: tokenBalance.token?.id,
+              ownerId: tokenBalance.token?.ownerId,
+              totalSupply: tokenBalance.token?.totalSupply,
+              decimals: tokenBalance.token?.decimals,
+              icon: tokenBalance.token?.icon,
+              name: tokenBalance.token?.name,
+              reference: tokenBalance.token?.reference,
+              referenceHash: tokenBalance.token?.referenceHash,
+              spec: tokenBalance.token?.spec,
+              symbol: tokenBalance.token?.symbol,
+              price: tokenBalance.token?.price,
+            }))
+            .sort((a, b) => a.id.localeCompare(b.id))
+        : [],
       councilSeats: dao.councilSeats,
       policy: {
         proposalBond: dao.policy?.proposalBond,
@@ -193,6 +224,26 @@ export class DynamoCheckMigration implements Migration {
       numberOfGroups: daoModel.numberOfGroups,
       council: daoModel.council,
       accountIds: daoModel.accountIds,
+      tokens: daoModel.tokens
+        ? daoModel.tokens
+            .map((tokenBalanceModel) => ({
+              tokenId: tokenBalanceModel.tokenId,
+              accountId: tokenBalanceModel.accountId,
+              balance: tokenBalanceModel.balance,
+              id: tokenBalanceModel.id,
+              ownerId: tokenBalanceModel.ownerId,
+              totalSupply: tokenBalanceModel.totalSupply,
+              decimals: tokenBalanceModel.decimals,
+              icon: tokenBalanceModel.icon,
+              name: tokenBalanceModel.name,
+              reference: tokenBalanceModel.reference,
+              referenceHash: tokenBalanceModel.referenceHash,
+              spec: tokenBalanceModel.spec,
+              symbol: tokenBalanceModel.symbol,
+              price: tokenBalanceModel.price,
+            }))
+            .sort((a, b) => a.id.localeCompare(b.id))
+        : [],
       councilSeats: daoModel.councilSeats,
       policy: {
         proposalBond: daoModel.policy?.proposalBond,
