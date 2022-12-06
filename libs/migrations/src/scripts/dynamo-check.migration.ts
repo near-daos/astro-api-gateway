@@ -1,13 +1,16 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Bounty } from '@sputnik-v2/bounty';
 import { Dao } from '@sputnik-v2/dao';
 import {
+  BountyModel,
   DaoModel,
   DynamodbService,
   DynamoEntityType,
   ProposalModel,
 } from '@sputnik-v2/dynamodb';
 import { Proposal } from '@sputnik-v2/proposal';
+import { parseProposalIndex } from '@sputnik-v2/transaction-handler';
 import PromisePool from '@supercharge/promise-pool';
 import { FindManyOptions, MongoRepository, Repository } from 'typeorm';
 
@@ -22,6 +25,8 @@ export class DynamoCheckMigration implements Migration {
     private readonly daoRepository: Repository<Dao>,
     @InjectRepository(Proposal)
     private readonly proposalRepository: Repository<Proposal>,
+    @InjectRepository(Bounty)
+    private readonly bountyRepository: Repository<Bounty>,
     private readonly dynamodbService: DynamodbService,
   ) {}
 
@@ -165,6 +170,8 @@ export class DynamoCheckMigration implements Migration {
       totalDaoFunds: dao.totalDaoFunds,
       bountyCount: dao.bountyCount,
       nftCount: dao.nftCount,
+      transactionHash: dao.transactionHash,
+      updateTransactionHash: dao.updateTransactionHash,
       createTimestamp: dao.createTimestamp,
       updateTimestamp: dao.updateTimestamp,
       isArchived: dao.isArchived,
@@ -223,6 +230,8 @@ export class DynamoCheckMigration implements Migration {
       totalDaoFunds: daoModel.totalDaoFunds,
       bountyCount: daoModel.bountyCount,
       nftCount: daoModel.nftCount,
+      transactionHash: daoModel.transactionHash,
+      updateTransactionHash: daoModel.updateTransactionHash,
       createTimestamp: daoModel.createTimestamp,
       updateTimestamp: daoModel.updateTimestamp,
       isArchived: daoModel.isArchived,
@@ -242,11 +251,36 @@ export class DynamoCheckMigration implements Migration {
         daoId: dao.id,
       },
       loadEagerRelations: false,
+      relations: ['actions'],
     });
 
-    for (const proposal of proposals) {
-      await this.checkProposal(proposal);
-    }
+    await PromisePool.withConcurrency(5)
+      .for(proposals)
+      .handleError((err) => {
+        this.logger.warn(`Dao ${dao.id} check failed: ${err} (${err.stack})`);
+      })
+      .process((proposal) => {
+        return this.checkProposal(proposal);
+      });
+
+    const bounties = await this.bountyRepository.find({
+      where: {
+        daoId: dao.id,
+      },
+      loadEagerRelations: false,
+      relations: ['bountyDoneProposals', 'bountyClaims'],
+    });
+
+    await PromisePool.withConcurrency(5)
+      .for(bounties)
+      .handleError((err) => {
+        this.logger.warn(
+          `Bounty ${dao.id} check failed: ${err} (${err.stack})`,
+        );
+      })
+      .process((bounty) => {
+        return this.checkBounty(bounty);
+      });
   }
 
   async checkProposal(proposal: Proposal) {
@@ -291,6 +325,8 @@ export class DynamoCheckMigration implements Migration {
       bountyDoneId: proposal.bountyDoneId,
       bountyClaimId: proposal.bountyClaimId,
       commentsCount: proposal.commentsCount,
+      transactionHash: proposal.transactionHash,
+      updateTransactionHash: proposal.updateTransactionHash,
       createTimestamp: proposal.createTimestamp,
       updateTimestamp: proposal.updateTimestamp,
       isArchived: proposal.isArchived,
@@ -326,6 +362,8 @@ export class DynamoCheckMigration implements Migration {
       bountyDoneId: proposalModel.bountyDoneId,
       bountyClaimId: proposalModel.bountyClaimId,
       commentsCount: proposalModel.commentsCount,
+      transactionHash: proposalModel.transactionHash,
+      updateTransactionHash: proposalModel.updateTransactionHash,
       createTimestamp: proposalModel.createTimestamp,
       updateTimestamp: proposalModel.updateTimestamp,
       isArchived: proposalModel.isArchived,
@@ -338,6 +376,93 @@ export class DynamoCheckMigration implements Migration {
       proposalModelProperties,
       'proposalEntity',
       'proposalModel',
+    );
+  }
+
+  async checkBounty(bounty: Bounty) {
+    this.logger.log(`Checking bounty ${bounty.id}`);
+
+    const proposalIndex = parseProposalIndex(bounty.proposalId);
+
+    const bountyModel = await this.dynamodbService.getItemByType<BountyModel>(
+      bounty.daoId,
+      DynamoEntityType.Proposal,
+      String(proposalIndex),
+    );
+
+    if (!bountyModel) {
+      throw new Error(`Bounty model not found: ${bountyModel.id}`);
+    }
+
+    const bountyProperties = {
+      id: bounty.id,
+      bountyId: bounty.bountyId,
+      proposalId: bounty.proposalId,
+      daoId: bounty.daoId,
+      bountyDoneProposalsIds: bounty.bountyDoneProposals
+        ? bounty.bountyDoneProposals.map((proposal) => proposal.id)
+        : [],
+      bountyClaims: bounty.bountyClaims
+        ? bounty.bountyClaims.map((bountyClaim) => ({
+            id: bountyClaim.id,
+            accountId: bountyClaim.accountId,
+            startTime: bountyClaim.startTime,
+            deadline: bountyClaim.deadline,
+            completed: bountyClaim.completed,
+            endTime: bountyClaim.endTime,
+          }))
+        : [],
+      description: bounty.description,
+      token: bounty.token,
+      amount: bounty.amount,
+      times: bounty.times,
+      maxDeadline: bounty.maxDeadline,
+      numberOfClaims: bounty.numberOfClaims,
+      transactionHash: bounty.transactionHash,
+      updateTransactionHash: bounty.updateTransactionHash,
+      createTimestamp: bounty.createTimestamp,
+      updateTimestamp: bounty.updateTimestamp,
+      isArchived: bounty.isArchived,
+      // createdAt: bounty.createdAt.getTime(),
+      // updateAt: bounty.updatedAt.getTime(),
+    };
+
+    const bountyModelProperties = {
+      id: bountyModel.id,
+      bountyId: bountyModel.bountyId,
+      proposalId: bountyModel.proposalId,
+      daoId: bountyModel.daoId,
+      bountyDoneProposalsIds: bountyModel.bountyDoneProposalIds,
+      bountyClaims: bountyModel.bountyClaims
+        ? bounty.bountyClaims.map((bountyClaimModel) => ({
+            id: bountyClaimModel.id,
+            accountId: bountyClaimModel.accountId,
+            startTime: bountyClaimModel.startTime,
+            deadline: bountyClaimModel.deadline,
+            completed: bountyClaimModel.completed,
+            endTime: bountyClaimModel.endTime,
+          }))
+        : [],
+      description: bountyModel.description,
+      token: bountyModel.token,
+      amount: bountyModel.amount,
+      times: bountyModel.times,
+      maxDeadline: bountyModel.maxDeadline,
+      numberOfClaims: bountyModel.numberOfClaims,
+      transactionHash: bountyModel.transactionHash,
+      updateTransactionHash: bountyModel.updateTransactionHash,
+      createTimestamp: bountyModel.createTimestamp,
+      updateTimestamp: bountyModel.updateTimestamp,
+      isArchived: bountyModel.isArchived,
+      // createdAt: bountyModel.createdAt.getTime(),
+      // updateAt: bountyModel.updatedAt.getTime(),
+    };
+
+    this.deepCompare(
+      bountyProperties,
+      bountyModelProperties,
+      'bountyEntity',
+      'bountyModel',
     );
   }
 
