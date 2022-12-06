@@ -14,8 +14,16 @@ export class DaoOpensearchDto extends BaseOpensearchDto {
           ...properties,
           // using type 'long' since timestamp in NEAR is in nanos so there will be no
           // typecasting possible in Opensearch while re-indexing
+<<<<<<< Updated upstream
           createTimestamp: { type: 'long' },
+<<<<<<< Updated upstream
           creatingTimeStamp: { type: 'long' },
+=======
+=======
+          createTimestamp: { type: 'keyword' },
+          creatingTimeStamp: { type: 'long' },
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
           name: { type: 'text' },
           totalDaoFunds: { type: 'float' },
           totalProposalCount: { type: 'integer' },

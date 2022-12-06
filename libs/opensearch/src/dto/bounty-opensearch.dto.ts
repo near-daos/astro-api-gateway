@@ -36,8 +36,16 @@ export class BountyOpensearchDto extends BaseOpensearchDto {
         ...mappings,
         properties: {
           ...properties,
+<<<<<<< Updated upstream
           createTimestamp: { type: 'long' },
+<<<<<<< Updated upstream
           creatingTimeStamp: { type: 'long' },
+=======
+=======
+          createTimestamp: { type: 'keyword' },
+          creatingTimeStamp: { type: 'long' },
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
           daoId: { type: 'keyword' },
           numberOfClaims: { type: 'integer' },
           bountyId: { type: 'integer' },
