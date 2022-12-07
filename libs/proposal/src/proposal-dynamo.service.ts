@@ -5,7 +5,6 @@ import {
   mapProposalDtoToProposalModel,
   mapProposalToProposalModel,
   ProposalModel,
-  ScheduledProposalExpirationEvent,
 } from '@sputnik-v2/dynamodb';
 import { DynamodbService } from '@sputnik-v2/dynamodb/dynamodb.service';
 import { Proposal } from '@sputnik-v2/proposal/entities';
@@ -62,31 +61,6 @@ export class ProposalDynamoService {
       daoId,
       DynamoEntityType.Proposal,
       query,
-    );
-  }
-
-  async saveScheduleProposalExpireEvent(
-    daoId: string,
-    proposalId: number,
-    proposalExpiration: string,
-  ) {
-    const secondsSinceEpoch = Math.round(Date.now() / 1000);
-    const proposalExpirationPeriod = Number(
-      BigInt(proposalExpiration) / 1000000000n,
-    );
-    const ttl = secondsSinceEpoch + proposalExpirationPeriod;
-
-    return this.dynamoDbService.saveItemByType<ScheduledProposalExpirationEvent>(
-      daoId,
-      DynamoEntityType.ScheduledProposalExpirationEvent,
-      String(proposalId),
-      {
-        ttl,
-        proposalId,
-        isArchived: false,
-        creatingTimeStamp: Date.now(),
-        processingTimeStamp: Date.now(),
-      },
     );
   }
 }
