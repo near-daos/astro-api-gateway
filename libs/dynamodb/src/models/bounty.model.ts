@@ -61,12 +61,11 @@ export function mapBountyDtoToBountyModel(
     entityType: DynamoEntityType.Bounty,
     isArchived: false,
     transactionHash: bounty.transactionHash,
-    updateTransactionHash:
-      bounty.updateTransactionHash || bounty.transactionHash,
+    updateTransactionHash: bounty.updateTransactionHash,
     creatingTimeStamp: Date.now(),
     processingTimeStamp: Date.now(),
     createTimestamp: bounty.createTimestamp,
-    updateTimestamp: bounty.updateTimestamp || bounty.createTimestamp,
+    updateTimestamp: bounty.updateTimestamp,
     id: bounty.id,
     daoId: bounty.daoId,
     bountyId: bounty.bountyId,
@@ -96,8 +95,7 @@ export function mapBountyToBountyModel(
     entityType: DynamoEntityType.Bounty,
     isArchived: bounty.isArchived,
     transactionHash: bounty.transactionHash,
-    updateTransactionHash:
-      bounty.updateTransactionHash || bounty.transactionHash,
+    updateTransactionHash: bounty.updateTransactionHash,
     creatingTimeStamp: bounty.createdAt
       ? bounty.createdAt.getTime()
       : undefined,
@@ -105,7 +103,7 @@ export function mapBountyToBountyModel(
       ? bounty.updatedAt.getTime()
       : undefined,
     createTimestamp: bounty.createTimestamp,
-    updateTimestamp: bounty.updateTimestamp || bounty.createTimestamp,
+    updateTimestamp: bounty.updateTimestamp,
     id: bounty.id,
     daoId: bounty.daoId,
     bountyId: bounty.bountyId,

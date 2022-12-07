@@ -25,8 +25,8 @@ export const buildProposalAction = (
   return {
     id: buildProposalActionId(proposalId, accountId, action),
     accountId,
-    proposalId: proposalId,
-    action: action,
+    proposalId,
+    action,
     transactionHash,
     timestamp,
   };
