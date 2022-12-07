@@ -348,13 +348,6 @@ export class TransactionActionHandlerService {
     await this.opensearchService.indexProposal(proposal.id, proposalById);
     await this.opensearchService.indexDao(proposal.daoId, daoById);
     await this.proposalDynamoService.saveProposal(proposalById);
-    // TODO: dont schedule event if proposal is already expired
-    // TODO: move to proposalService.create()
-    await this.proposalDynamoService.saveScheduleProposalExpireEvent(
-      proposal.daoId,
-      proposal.proposalId,
-      dao.policy.proposalPeriod,
-    );
 
     await this.cacheService.handleProposalCache(proposal);
 

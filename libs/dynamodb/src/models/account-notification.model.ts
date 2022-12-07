@@ -13,6 +13,7 @@ import { DynamoEntityType, PartialEntity } from '../types';
 export class AccountNotificationModel extends BaseModel {
   id: string;
   notification: NotificationModel;
+  daoId: string;
   accountId: string;
   isPhone: boolean;
   isEmail: boolean;
@@ -44,6 +45,7 @@ export function mapAccountNotificationDtoToAccountNotificationModel(
     isArchived: false,
     creatingTimeStamp: Date.now(),
     processingTimeStamp: Date.now(),
+    daoId: accountNotification.notification.daoId,
     accountId: accountNotification.accountId,
     id: accountNotification.id,
     notification: mapNotificationToNotificationModel(

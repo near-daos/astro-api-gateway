@@ -19,7 +19,6 @@ export enum DynamoEntityType {
   Nft = 'Nft',
   TokenBalance = 'TokenBalance',
   TokenPrice = 'TokenPrice',
-  ScheduledProposalExpirationEvent = 'ScheduledProposalExpirationEvent',
   HandledReceiptAction = 'HandledReceiptAction',
   Otp = 'Otp',
   Error = 'Error',

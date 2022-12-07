@@ -7,7 +7,7 @@ export * from './dao.model';
 export * from './proposal.model';
 export * from './bounty.model';
 export * from './comment.model';
-export * from './darft-proposal.model';
+export * from './draft-proposal.model';
 export * from './proposal-template.model';
 export * from './scheduled-proposal-expiration.model';
 export * from './shared-proposal-template.model';
