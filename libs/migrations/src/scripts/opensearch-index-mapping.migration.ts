@@ -9,6 +9,7 @@ import {
   DraftProposalOpensearchDto,
   TokenPriceOpensearchDto,
   DaoStatsOpensearchDto,
+  AccountNotificationOpensearchDto,
 } from '@sputnik-v2/opensearch/dto';
 import { Proposal } from '@sputnik-v2/proposal';
 import { Bounty } from '@sputnik-v2/bounty';
@@ -17,6 +18,7 @@ import { DraftProposal } from '@sputnik-v2/draft-proposal';
 import { DaoStats } from '@sputnik-v2/stats';
 
 import { Migration } from '..';
+import { AccountNotification } from '@sputnik-v2/notification';
 
 @Injectable()
 export class OpensearchIndexMappingMigration implements Migration {
@@ -62,11 +64,18 @@ export class OpensearchIndexMappingMigration implements Migration {
       TokenPriceOpensearchDto.getMappings(),
     );
 
-    this.logger.log('Token Price Index Mapping migration...');
+    this.logger.log('Dao Stats Index Mapping migration...');
     await this.migrateIndexMapping(
       DaoStats.name,
       `astro_${DaoStats.name}`,
       DaoStatsOpensearchDto.getMappings(),
+    );
+
+    this.logger.log('Account Notification Index Mapping migration...');
+    await this.migrateIndexMapping(
+      AccountNotification.name,
+      `astro_${AccountNotification.name}`,
+      AccountNotificationOpensearchDto.getMappings(),
     );
 
     this.logger.log('Finished Opensearch Index Mapping migration.');
