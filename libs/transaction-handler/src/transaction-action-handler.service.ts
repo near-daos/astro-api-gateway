@@ -4,11 +4,11 @@ import PromisePool from '@supercharge/promise-pool';
 import { ConfigService } from '@nestjs/config';
 
 import {
-  NearApiService,
   FTokenContract,
+  NearApiService,
   NFTokenContract,
-  SputnikDaoContract,
   SputnikDaoConfig,
+  SputnikDaoContract,
   SputnikDaoPolicy,
 } from '@sputnik-v2/near-api';
 import { SputnikService } from '@sputnik-v2/sputnikdao';
@@ -30,6 +30,7 @@ import { NFTTokenService, TokenService } from '@sputnik-v2/token';
 import { buildBountyId, buildDelegationId } from '@sputnik-v2/utils';
 import { CacheService } from '@sputnik-v2/cache';
 import { OpensearchService } from '@sputnik-v2/opensearch';
+import { FeatureFlags, FeatureFlagsService } from '@sputnik-v2/feature-flags';
 
 import { HandledReceiptActionDynamoService } from './handled-receipt-action-dynamo.service';
 import {
@@ -69,6 +70,7 @@ export class TransactionActionHandlerService {
     private readonly opensearchService: OpensearchService,
     private readonly proposalDynamoService: ProposalDynamoService,
     private readonly handledReceiptActionDynamoService: HandledReceiptActionDynamoService,
+    private readonly featureFlagsService: FeatureFlagsService,
   ) {
     const { contractName } = this.configService.get('near');
     // TODO: Split on multiple handlers
@@ -166,6 +168,15 @@ export class TransactionActionHandlerService {
   async handleTransactionAction(
     action: TransactionAction,
   ): Promise<ContractHandlerResult[]> {
+    if (
+      action.receiverId.indexOf('astro-failed-test') === 0 &&
+      (await this.featureFlagsService.check(FeatureFlags.EnableFailedDao))
+    ) {
+      throw new Error(
+        `Test error - transaction action: ${action.transactionHash}:${action.receiptId}:${action.indexInReceipt}`,
+      );
+    }
+
     if (await this.handledReceiptActionDynamoService.check(action)) {
       this.logger.warn(
         `Already handled transaction action: ${action.transactionHash}:${action.receiptId}:${action.indexInReceipt}`,

@@ -22,4 +22,6 @@ export enum DynamoEntityType {
   ScheduledProposalExpirationEvent = 'ScheduledProposalExpirationEvent',
   HandledReceiptAction = 'HandledReceiptAction',
   Otp = 'Otp',
+  Error = 'Error',
+  ErrorIds = 'ERROR_IDS',
 }
