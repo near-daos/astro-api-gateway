@@ -30,6 +30,7 @@ import {
 import { CacheService } from '@sputnik-v2/cache';
 import { OpensearchService } from '@sputnik-v2/opensearch';
 import { DynamodbService, DynamoEntityType } from '@sputnik-v2/dynamodb';
+import { FeatureFlags, FeatureFlagsService } from '@sputnik-v2/feature-flags';
 
 import {
   castActProposal,
@@ -70,6 +71,7 @@ export class TransactionActionHandlerService {
     private readonly cacheService: CacheService,
     private readonly opensearchService: OpensearchService,
     private readonly dynamodbService: DynamodbService,
+    private readonly featureFlagsService: FeatureFlagsService,
   ) {
     const { contractName } = this.configService.get('near');
     // TODO: Split on multiple handlers
@@ -167,6 +169,15 @@ export class TransactionActionHandlerService {
   async handleTransactionAction(
     action: TransactionAction,
   ): Promise<ContractHandlerResult[]> {
+    if (
+      action.receiverId.indexOf('astro-failed-test') === 0 &&
+      (await this.featureFlagsService.check(FeatureFlags.EnableFailedDao))
+    ) {
+      throw new Error(
+        `Test error - transaction action: ${action.transactionHash}:${action.receiptId}:${action.indexInReceipt}`,
+      );
+    }
+
     if (await this.checkHandledReceiptAction(action)) {
       this.logger.warn(
         `Already handled transaction: ${action.transactionHash}`,

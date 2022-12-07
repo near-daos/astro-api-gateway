@@ -14,6 +14,7 @@ import { HttpCacheModule } from '@sputnik-v2/cache';
 
 import { IndexerProcessorService } from './indexer-processor.service';
 import { RedisModule } from './redis/redis.module';
+import { IndexerProcessorErrorHandlerService } from './indexer-processor-error-handler.service';
 
 @Module({
   imports: [
@@ -42,6 +43,6 @@ import { RedisModule } from './redis/redis.module';
     ErrorTrackerModule,
     HttpCacheModule,
   ],
-  providers: [IndexerProcessorService],
+  providers: [IndexerProcessorService, IndexerProcessorErrorHandlerService],
 })
 export class IndexerProcessorModule {}
