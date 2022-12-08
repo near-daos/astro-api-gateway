@@ -77,6 +77,7 @@ export function mapAccountNotificationToAccountNotificationModel(
       ? accountNotification.updatedAt.getTime()
       : undefined,
     accountId: accountNotification.accountId,
+    daoId: accountNotification.notification.daoId,
     id: accountNotification.id,
     notification: mapNotificationToNotificationModel(
       accountNotification.notification,
