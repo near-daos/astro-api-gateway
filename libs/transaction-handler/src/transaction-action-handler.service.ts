@@ -177,11 +177,13 @@ export class TransactionActionHandlerService {
       );
     }
 
-    if (await this.handledReceiptActionDynamoService.check(action)) {
+    const handledReceiptAction =
+      await this.handledReceiptActionDynamoService.check(action);
+    if (handledReceiptAction) {
       this.logger.warn(
         `Already handled transaction action: ${action.transactionHash}:${action.receiptId}:${action.indexInReceipt}`,
       );
-      return [];
+      return handledReceiptAction.results;
     }
 
     this.logger.log(
@@ -202,7 +204,7 @@ export class TransactionActionHandlerService {
         }
       });
 
-    await this.handledReceiptActionDynamoService.save(action);
+    await this.handledReceiptActionDynamoService.save(action, results);
 
     this.logger.log(
       `Transaction action successfully handled: ${action.transactionHash}:${action.receiptId}:${action.indexInReceipt}`,
