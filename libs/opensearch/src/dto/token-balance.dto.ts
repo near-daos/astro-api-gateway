@@ -14,7 +14,6 @@ export class TokenPriceOpensearchDto extends BaseOpensearchDto {
           name: { type: 'text' },
           symbol: { type: 'text' },
           price: { type: 'keyword' },
-          creatingTimeStamp: { type: 'long' },
         },
       },
     };
