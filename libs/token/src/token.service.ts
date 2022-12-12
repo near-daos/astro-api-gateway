@@ -87,14 +87,15 @@ export class TokenService {
       DynamoEntityType.Dao,
       daoId,
     );
-    const tokenIndex = dao.tokens.findIndex(
+    const tokens = dao.tokens || [];
+    const tokenIndex = tokens.findIndex(
       (token) => token.tokenId === updatedToken.tokenId,
     );
 
     if (tokenIndex >= 0) {
-      dao.tokens[tokenIndex] = updatedToken;
+      tokens[tokenIndex] = updatedToken;
     } else {
-      dao.tokens.push(updatedToken);
+      tokens.push(updatedToken);
     }
 
     return this.dynamodbService.updateItemByType<DaoModel>(
@@ -102,7 +103,7 @@ export class TokenService {
       DynamoEntityType.Dao,
       daoId,
       {
-        tokens: dao.tokens,
+        tokens,
       },
     );
   }

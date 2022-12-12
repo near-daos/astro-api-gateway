@@ -38,10 +38,11 @@ export class SubscriptionService {
       DynamoEntityType.Dao,
       daoId,
     );
+    const followers = daoModel.followers || [];
 
     await this.dynamoDbService.saveItem<DaoModel>({
       ...daoModel,
-      followers: [...daoModel.followers, accountId],
+      followers: [...followers, accountId],
     });
 
     return this.subscriptionRepository.save(subscription);
@@ -57,10 +58,11 @@ export class SubscriptionService {
       DynamoEntityType.Dao,
       daoId,
     );
+    const followers = daoModel.followers || [];
 
     await this.dynamoDbService.saveItem<DaoModel>({
       ...daoModel,
-      followers: daoModel.followers.filter((item) => item !== accountId),
+      followers: followers.filter((item) => item !== accountId),
     });
 
     const deleteResponse = await this.subscriptionRepository.delete({

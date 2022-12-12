@@ -26,8 +26,8 @@ export class DaoModel extends TransactionModel {
   numberOfGroups: number;
   council: string[];
   accountIds: string[];
-  followers: string[];
-  tokens: TokenBalanceModel[];
+  followers?: string[];
+  tokens?: TokenBalanceModel[];
   councilSeats: number;
   link: string;
   description: string;
@@ -103,8 +103,6 @@ export function mapDaoToDaoModel(dao: Partial<Dao>): PartialEntity<DaoModel> {
     numberOfGroups: dao.numberOfGroups,
     council: dao.council,
     accountIds: dao.accountIds,
-    followers: [],
-    tokens: [],
     councilSeats: dao.councilSeats,
     link: dao.link,
     description: dao.description,
