@@ -284,9 +284,14 @@ export class DynamoDataMigration implements Migration {
         relations: ['delegations', 'daoVersion', 'policy'],
       },
     )) {
-      await this.dynamodbService.batchPut<DaoModel>(
-        daos.map((dao) => mapDaoToDaoModel(dao)),
-      );
+      await PromisePool.withConcurrency(1)
+        .for(daos)
+        .handleError((err) => {
+          throw err;
+        })
+        .process(async (dao) => {
+          return this.dynamodbService.saveItem<DaoModel>(mapDaoToDaoModel(dao));
+        });
     }
   }
 
