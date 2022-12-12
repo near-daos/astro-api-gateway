@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ILike, IsNull, Not, Repository } from 'typeorm';
 import { NearApiService, FTokenContract } from '@sputnik-v2/near-api';
@@ -26,8 +26,6 @@ import { castToken, castTokenBalance } from './types';
 
 @Injectable()
 export class TokenService {
-  private readonly logger = new Logger(TokenService.name);
-
   constructor(
     @InjectRepository(Token)
     private readonly tokenRepository: Repository<Token>,
@@ -83,12 +81,6 @@ export class TokenService {
   async saveTokenBalanceToDao(tokenBalance: TokenBalance) {
     const { accountId: daoId } = tokenBalance;
     const updatedToken = mapTokenBalanceToTokenBalanceModel(tokenBalance);
-
-    this.logger.log(
-      `Migrating token: ${JSON.stringify(
-        tokenBalance.token,
-      )} balance, for DAO: ${daoId}`,
-    );
 
     const dao = await this.dynamodbService.getItemByType<DaoModel>(
       daoId,
