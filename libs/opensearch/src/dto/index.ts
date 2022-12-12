@@ -7,3 +7,4 @@ export * from './draft-proposal-opensearch.dto';
 export * from './token-balance.dto';
 export * from './dao-stats-opensearch.dto';
 export * from './account-notification-opensearch.dto';
+export * from './account-opensearch.dto';

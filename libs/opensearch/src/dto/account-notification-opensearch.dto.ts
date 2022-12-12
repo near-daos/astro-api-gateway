@@ -6,6 +6,9 @@ export class AccountNotificationOpensearchDto {
         properties: {
           daoId: { type: 'keyword' },
           accountId: { type: 'keyword' },
+          createTimestamp: { type: 'long' },
+          creatingTimeStamp: { type: 'long' },
+          isArchived: { type: 'boolean' },
         },
       },
     };
