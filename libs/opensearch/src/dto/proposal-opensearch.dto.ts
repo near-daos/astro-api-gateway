@@ -81,8 +81,6 @@ export class ProposalOpensearchDto extends BaseOpensearchDto {
         ...mappings,
         properties: {
           ...properties,
-          createTimestamp: { type: 'long' },
-          creatingTimeStamp: { type: 'long' },
           type: { type: 'keyword' },
           status: { type: 'keyword' },
           voteStatus: { type: 'keyword' },

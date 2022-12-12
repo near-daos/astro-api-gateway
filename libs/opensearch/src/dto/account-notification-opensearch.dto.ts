@@ -1,13 +1,17 @@
-export class AccountNotificationOpensearchDto {
+import { BaseOpensearchDto } from './base-opensearch.dto';
+
+export class AccountNotificationOpensearchDto extends BaseOpensearchDto {
   public static getMappings(): any {
+    const { mappings } = super.getMappings();
+    const { properties } = mappings;
+
     return {
       mappings: {
-        dynamic: false,
+        ...mappings,
         properties: {
+          ...properties,
           daoId: { type: 'keyword' },
           accountId: { type: 'keyword' },
-          createTimestamp: { type: 'long' },
-          creatingTimeStamp: { type: 'long' },
           isArchived: { type: 'boolean' },
         },
       },

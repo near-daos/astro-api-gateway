@@ -14,6 +14,8 @@ export class BaseOpensearchDto {
           id: { type: 'keyword' },
           description: { type: 'text' },
           accounts: { type: 'text' },
+          createTimestamp: { type: 'keyword' },
+          creatingTimeStamp: { type: 'keyword' },
         },
       },
     };
