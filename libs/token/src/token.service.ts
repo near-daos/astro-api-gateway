@@ -5,15 +5,14 @@ import { NearApiService, FTokenContract } from '@sputnik-v2/near-api';
 import { BaseResponseDto, Order } from '@sputnik-v2/common';
 import { Dao } from '@sputnik-v2/dao/entities';
 import { FeatureFlags, FeatureFlagsService } from '@sputnik-v2/feature-flags';
+import { DynamoEntityType, PartialEntity } from '@sputnik-v2/dynamodb/types';
 import {
   DaoModel,
-  DynamodbService,
-  DynamoEntityType,
-  mapTokenBalanceToTokenBalanceModel,
-  PartialEntity,
   TokenBalanceModel,
   TokenPriceModel,
-} from '@sputnik-v2/dynamodb';
+  mapTokenBalanceToTokenBalanceModel,
+} from '@sputnik-v2/dynamodb/models';
+import { DynamodbService } from '@sputnik-v2/dynamodb/dynamodb.service';
 
 import { Token, TokenBalance } from './entities';
 import {
