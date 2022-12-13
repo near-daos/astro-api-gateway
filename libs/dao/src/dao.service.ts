@@ -18,7 +18,7 @@ import {
   getBlockTimestamp,
   paginate,
 } from '@sputnik-v2/utils';
-import { NFTTokenService, TokenService } from '@sputnik-v2/token';
+import { NFTTokenService, TokenBalance, TokenService } from '@sputnik-v2/token';
 import { SearchQuery } from '@sputnik-v2/common';
 import {
   NearApiService,
@@ -418,10 +418,9 @@ export class DaoService extends TypeOrmCrudService<Dao> {
         ? calculateFunds(nearAmount, nearToken.price, nearToken.decimals)
         : 0;
     const tokenBalance = tokenBalances.reduce((balance, tokenBalance) => {
-      const { price, decimals } =
-        tokenBalance instanceof TokenBalanceModel
-          ? tokenBalance
-          : tokenBalance.token;
+      const { price = '', decimals } = !(tokenBalance as TokenBalance).token
+        ? (tokenBalance as TokenBalanceModel)
+        : (tokenBalance as TokenBalance).token;
       if (tokenBalance.balance && price && decimals) {
         return balance + calculateFunds(tokenBalance.balance, price, decimals);
       }
