@@ -1,11 +1,17 @@
-import { TransactionAction } from '@sputnik-v2/transaction-handler';
+import {
+  ContractHandlerResult,
+  TransactionAction,
+} from '@sputnik-v2/transaction-handler';
 import { buildEntityId } from '@sputnik-v2/utils';
 import { BaseEntity, DynamoEntityType } from '../types';
 
-export class HandledReceiptActionModel extends BaseEntity {}
+export class HandledReceiptActionModel extends BaseEntity {
+  results: ContractHandlerResult[];
+}
 
 export function mapTransactionActionToHandledReceiptActionModel(
   action: TransactionAction,
+  results: ContractHandlerResult[],
 ): HandledReceiptActionModel {
   return {
     partitionId: action.transactionHash,
@@ -14,5 +20,6 @@ export function mapTransactionActionToHandledReceiptActionModel(
       `${action.receiptId}-${action.indexInReceipt}`,
     ),
     entityType: DynamoEntityType.HandledReceiptAction,
+    results,
   };
 }
