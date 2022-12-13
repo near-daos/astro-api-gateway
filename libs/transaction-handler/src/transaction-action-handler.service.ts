@@ -233,6 +233,7 @@ export class TransactionActionHandlerService {
 
     this.logger.log(`Storing new DAO: ${daoId} due to transaction`);
     await this.daoService.save(dao, { updateTotalDaoFunds: true });
+    await this.tokenService.saveNearBalanceToDao(dao.id, dao.amount);
     await this.daoService.setDaoVersion(daoId);
     await this.daoDynamoService.saveDaoId(daoId);
     this.logger.log(`Successfully stored new DAO: ${daoId}`);
@@ -596,6 +597,7 @@ export class TransactionActionHandlerService {
         updateBountiesCount: true,
       },
     );
+    await this.tokenService.saveNearBalanceToDao(receiverId, state.amount);
     this.logger.log(`DAO successfully updated: ${receiverId}`);
   }
 
@@ -638,6 +640,7 @@ export class TransactionActionHandlerService {
       }),
       { updateProposalsCount: true },
     );
+    await this.tokenService.saveNearBalanceToDao(receiverId, state.amount);
     this.logger.log(`DAO successfully updated: ${receiverId}`);
   }
 
@@ -691,6 +694,7 @@ export class TransactionActionHandlerService {
       }),
       { updateProposalsCount: true },
     );
+    await this.tokenService.saveNearBalanceToDao(receiverId, state.amount);
     this.logger.log(`DAO successfully updated: ${receiverId}`);
   }
 
@@ -898,6 +902,7 @@ export class TransactionActionHandlerService {
 
     this.logger.log(`Updating DAO: ${receiverId} due to transaction`);
     await this.daoService.save(dao, { updateTotalDaoFunds: true });
+    await this.tokenService.saveNearBalanceToDao(dao.id, dao.amount);
     this.logger.log(`DAO successfully updated: ${receiverId}`);
 
     const daoById = await this.daoService.findOne(dao.id, {

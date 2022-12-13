@@ -1,5 +1,5 @@
 import Decimal from 'decimal.js';
-import { TokenDto } from '@sputnik-v2/token';
+import { Token, TokenDto } from '@sputnik-v2/token';
 import { yoktoNear } from '@sputnik-v2/sputnikdao';
 import { FTokenMetadata } from '@sputnik-v2/near-api';
 
@@ -32,5 +32,5 @@ export function castNearToken(price?: string) {
     price,
     ownerId: '',
     totalSupply: '',
-  };
+  } as Token;
 }
