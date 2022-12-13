@@ -22,7 +22,7 @@ import {
   TokenResponse,
   TokensRequest,
 } from './dto';
-import { castToken, castTokenBalance } from './types';
+import { castNearToken, castToken, castTokenBalance } from './types';
 
 @Injectable()
 export class TokenService {
@@ -76,6 +76,17 @@ export class TokenService {
       token: token as Token,
     });
     await this.tokenBalanceRepository.save(tokenBalance);
+  }
+
+  async saveNearBalanceToDao(daoId: string, balance: string) {
+    const token = castNearToken('');
+    return this.saveTokenBalanceToDao({
+      id: token.id,
+      tokenId: token.id,
+      accountId: daoId,
+      balance,
+      token,
+    });
   }
 
   async saveTokenBalanceToDao(tokenBalance: TokenBalance) {

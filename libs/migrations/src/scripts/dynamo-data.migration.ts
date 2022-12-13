@@ -290,7 +290,8 @@ export class DynamoDataMigration implements Migration {
           throw err;
         })
         .process(async (dao) => {
-          return this.dynamodbService.saveItem<DaoModel>(mapDaoToDaoModel(dao));
+          await this.dynamodbService.saveItem<DaoModel>(mapDaoToDaoModel(dao));
+          return this.tokenService.saveNearBalanceToDao(dao.id, dao.amount);
         });
     }
   }
