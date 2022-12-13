@@ -79,7 +79,7 @@ export class TokenService {
   }
 
   async saveNearBalanceToDao(daoId: string, balance: string) {
-    const token = castNearToken('');
+    const token = castNearToken();
     return this.saveTokenBalanceToDao({
       id: token.id,
       tokenId: token.id,
