@@ -21,7 +21,7 @@ export class AccountNotificationSettingsItemModel {
   enableSms: boolean;
   enableEmail: boolean;
   actionRequiredOnly: boolean;
-  creatingTimeStamp: number;
+  createdAt: number;
 }
 
 export function mapAccountNotificationSettingsModel(
@@ -35,8 +35,8 @@ export function mapAccountNotificationSettingsModel(
       accountId,
     ),
     entityType: DynamoEntityType.AccountNotificationSettings,
-    creatingTimeStamp: Date.now(),
-    processingTimeStamp: Date.now(),
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
     isArchived: false,
     accountId,
     settings: accountNotificationSettings.map((setting) =>
@@ -60,7 +60,7 @@ export function mapAccountNotificationSettingsToAccountNotificationSettingsItemM
     enableSms: accountNotificationSettings.enableSms,
     enableEmail: accountNotificationSettings.enableEmail,
     actionRequiredOnly: accountNotificationSettings.actionRequiredOnly,
-    creatingTimeStamp: accountNotificationSettings.createdAt
+    createdAt: accountNotificationSettings.createdAt
       ? accountNotificationSettings.createdAt.getTime()
       : undefined,
   };

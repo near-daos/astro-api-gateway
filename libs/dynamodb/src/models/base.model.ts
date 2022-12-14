@@ -2,6 +2,7 @@ import { BaseEntity } from '../types';
 
 export class BaseModel extends BaseEntity {
   isArchived: boolean;
-  creatingTimeStamp?: number; // milliseconds
-  processingTimeStamp?: number; // milliseconds
+  createdAt?: number; // milliseconds
+  updatedAt?: number; // milliseconds
+  migratedAt?: number; // milliseconds
 }

@@ -11,10 +11,12 @@ import PromisePool from '@supercharge/promise-pool';
 import {
   AccountModel,
   AccountNotificationModel,
+  BaseModel,
   BountyModel,
   CommentModel,
   DaoIdsModel,
   DaoModel,
+  DaoStatsModel,
   ErrorIdsModel,
   ErrorModel,
   mapAccountNotificationToAccountNotificationModel,
@@ -66,7 +68,7 @@ import {
   AccountNotificationIdsDynamoService,
   AccountNotificationSettingsService,
 } from '@sputnik-v2/notification';
-import { DynamoEntityType } from '@sputnik-v2/dynamodb';
+import { DynamoEntityType, PartialEntity } from '@sputnik-v2/dynamodb';
 import { ErrorStatus, ErrorType } from '@sputnik-v2/error-tracker';
 
 @Injectable()
@@ -178,7 +180,9 @@ export class DynamoDataMigration implements Migration {
       this.accountRepository,
     )) {
       await this.dynamodbService.batchPut<AccountModel>(
-        accounts.map((account) => mapAccountToAccountModel(account)),
+        accounts.map((account) =>
+          this.populateMigrationFields(mapAccountToAccountModel(account)),
+        ),
       );
     }
   }
@@ -195,13 +199,19 @@ export class DynamoDataMigration implements Migration {
         relations: ['notification'],
       },
     )) {
+      const accountNotificationModels = accountNotifications.map(
+        (accountNotification) =>
+          this.populateMigrationFields(
+            mapAccountNotificationToAccountNotificationModel(
+              accountNotification,
+            ),
+          ),
+      );
       await this.dynamodbService.batchPut<AccountNotificationModel>(
-        accountNotifications.map((accountNotification) =>
-          mapAccountNotificationToAccountNotificationModel(accountNotification),
-        ),
+        accountNotificationModels,
       );
       await this.accountNotificationIdsDynamoService.setAccountsNotificationIds(
-        accountNotifications,
+        accountNotificationModels,
       );
     }
   }
@@ -241,9 +251,11 @@ export class DynamoDataMigration implements Migration {
         bounties
           .filter((bounty) => bounty.bountyContext)
           .map((bounty) =>
-            mapBountyToBountyModel(
-              bounty,
-              bounty.bountyContext.proposal.proposalId,
+            this.populateMigrationFields(
+              mapBountyToBountyModel(
+                bounty,
+                bounty.bountyContext.proposal.proposalId,
+              ),
             ),
           ),
       );
@@ -259,7 +271,9 @@ export class DynamoDataMigration implements Migration {
       },
     )) {
       await this.dynamodbService.batchPut<CommentModel>(
-        comments.map((comment) => mapCommentToCommentModel(comment)),
+        comments.map((comment) =>
+          this.populateMigrationFields(mapCommentToCommentModel(comment)),
+        ),
       );
     }
   }
@@ -290,7 +304,9 @@ export class DynamoDataMigration implements Migration {
           throw err;
         })
         .process(async (dao) => {
-          await this.dynamodbService.saveItem<DaoModel>(mapDaoToDaoModel(dao));
+          await this.dynamodbService.saveItem<DaoModel>(
+            this.populateMigrationFields(mapDaoToDaoModel(dao)),
+          );
           return this.tokenService.saveNearBalanceToDao(dao.id, dao.amount);
         });
     }
@@ -311,15 +327,17 @@ export class DynamoDataMigration implements Migration {
       DaoStats.name,
       this.daoStatsRepository,
     )) {
-      await this.dynamodbService.batchPut<DaoStats>(
+      await this.dynamodbService.batchPut<DaoStatsModel>(
         daoStats.map((stats) =>
-          mapDaoStatsToDaoStatsModel({
-            ...stats,
-            // reset timestamp to start of day
-            timestamp: DateTime.fromMillis(stats.timestamp)
-              .startOf('day')
-              .toMillis(),
-          }),
+          this.populateMigrationFields(
+            mapDaoStatsToDaoStatsModel({
+              ...stats,
+              // reset timestamp to start of day
+              timestamp: DateTime.fromMillis(stats.timestamp)
+                .startOf('day')
+                .toMillis(),
+            }),
+          ),
         ),
       );
     }
@@ -353,7 +371,9 @@ export class DynamoDataMigration implements Migration {
       },
     )) {
       await this.dynamodbService.batchPut<NftModel>(
-        nfts.map((nft) => mapNftTokenToNftModel(nft)),
+        nfts.map((nft) =>
+          this.populateMigrationFields(mapNftTokenToNftModel(nft)),
+        ),
       );
     }
   }
@@ -367,7 +387,9 @@ export class DynamoDataMigration implements Migration {
       },
     )) {
       await this.dynamodbService.batchPut<ProposalModel>(
-        proposals.map((proposal) => mapProposalToProposalModel(proposal)),
+        proposals.map((proposal) =>
+          this.populateMigrationFields(mapProposalToProposalModel(proposal)),
+        ),
       );
     }
   }
@@ -379,7 +401,9 @@ export class DynamoDataMigration implements Migration {
     )) {
       await this.dynamodbService.batchPut<ProposalTemplateModel>(
         proposalTemplates.map((proposalTemplate) =>
-          mapProposalTemplateToProposalTemplateModel(proposalTemplate),
+          this.populateMigrationFields(
+            mapProposalTemplateToProposalTemplateModel(proposalTemplate),
+          ),
         ),
       );
     }
@@ -395,8 +419,10 @@ export class DynamoDataMigration implements Migration {
     )) {
       await this.dynamodbService.batchPut<SharedProposalTemplateModel>(
         sharedProposalTemplates.map((sharedProposalTemplate) =>
-          mapSharedProposalTemplateToSharedProposalTemplateModel(
-            sharedProposalTemplate,
+          this.populateMigrationFields(
+            mapSharedProposalTemplateToSharedProposalTemplateModel(
+              sharedProposalTemplate,
+            ),
           ),
         ),
       );
@@ -410,7 +436,9 @@ export class DynamoDataMigration implements Migration {
     )) {
       await this.dynamodbService.batchPut<SubscriptionModel>(
         subscriptions.map((subscription) =>
-          mapSubscriptionToSubscriptionModel(subscription),
+          this.populateMigrationFields(
+            mapSubscriptionToSubscriptionModel(subscription),
+          ),
         ),
       );
     }
@@ -441,7 +469,9 @@ export class DynamoDataMigration implements Migration {
       this.tokenRepository,
     )) {
       await this.dynamodbService.batchPut<TokenPriceModel>(
-        tokens.map((token) => mapTokenToTokenPriceModel(token)),
+        tokens.map((token) =>
+          this.populateMigrationFields(mapTokenToTokenPriceModel(token)),
+        ),
       );
     }
   }
@@ -472,7 +502,9 @@ export class DynamoDataMigration implements Migration {
               },
             };
           }
-          return mapErrorEntityToErrorModel(error);
+          return this.populateMigrationFields(
+            mapErrorEntityToErrorModel(error),
+          );
         }),
       );
     }
@@ -484,7 +516,9 @@ export class DynamoDataMigration implements Migration {
       order: { timestamp: 'ASC' },
     });
     await this.dynamodbService.saveItem<ErrorIdsModel>(
-      mapErrorIdsToErrorIdsModel(openErrors.map(({ id }) => id)),
+      this.populateMigrationFields(
+        mapErrorIdsToErrorIdsModel(openErrors.map(({ id }) => id)),
+      ),
     );
   }
 
@@ -533,5 +567,14 @@ export class DynamoDataMigration implements Migration {
 
       yield chunk;
     }
+  }
+
+  private populateMigrationFields(
+    model: PartialEntity<BaseModel>,
+  ): PartialEntity<BaseModel> {
+    return {
+      ...model,
+      migratedAt: Date.now(),
+    };
   }
 }

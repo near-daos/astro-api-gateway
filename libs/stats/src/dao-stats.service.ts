@@ -84,7 +84,7 @@ export class DaoStatsService {
 
   async getDaoStatsState(
     daoStats: DaoStatsDto,
-    previousDaoStats: Partial<DaoStatsModel>,
+    previousDaoStats: Partial<DaoStats>,
   ): Promise<DaoStatsStateDto> {
     return {
       daoId: daoStats.daoId,

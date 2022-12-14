@@ -1,7 +1,6 @@
 import hash from 'object-hash';
 import { Injectable, Logger } from '@nestjs/common';
 
-import { SharedProposalTemplate } from '@sputnik-v2/proposal-template/entities';
 import { CreateSharedProposalTemplateDto } from '@sputnik-v2/proposal-template/dto';
 
 import {
@@ -27,7 +26,7 @@ export class DynamoSharedProposalTemplateService {
 
   async create(
     createProposalTemplate: CreateSharedProposalTemplateDto,
-  ): Promise<Partial<SharedProposalTemplate>> {
+  ): Promise<Partial<SharedProposalTemplateModel>> {
     const { daoId, config } = createProposalTemplate;
     const { smartContractAddress, methodName } = config;
     const { contractName } = this.configService.get('near');
@@ -73,7 +72,7 @@ export class DynamoSharedProposalTemplateService {
       ...templateModel,
     });
 
-    return newTemplate;
+    return templateModel;
   }
 
   async cloneToDao(proposalTemplateId: string, toDao: string): Promise<void> {
