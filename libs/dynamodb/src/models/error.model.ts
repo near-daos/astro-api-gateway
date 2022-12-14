@@ -23,7 +23,7 @@ export function mapErrorEntityToErrorModel(error: ErrorEntity): ErrorModel {
     reason: error.reason,
     metadata: error.metadata,
     isArchived: false,
-    creatingTimeStamp: new Date(error.createdAt).getTime(),
-    processingTimeStamp: Date.now(),
+    createdAt: new Date(error.createdAt).getTime(),
+    updatedAt: Date.now(),
   };
 }

@@ -33,12 +33,8 @@ export function mapCommentToCommentModel(
     entityId: buildEntityId(entityType, `${comment.contextId}:${comment.id}`),
     entityType,
     isArchived: !!comment.isArchived,
-    creatingTimeStamp: comment.createdAt
-      ? comment.createdAt.getTime()
-      : undefined,
-    processingTimeStamp: comment.updatedAt
-      ? comment.updatedAt.getTime()
-      : undefined,
+    createdAt: comment.createdAt ? comment.createdAt.getTime() : undefined,
+    updatedAt: comment.updatedAt ? comment.updatedAt.getTime() : undefined,
     id: comment.id.toString(),
     contextId: comment.contextId,
     contextType: comment.contextType,
@@ -60,12 +56,8 @@ export function mapDraftCommentToCommentModel(
     entityId: buildEntityId(entityType, `${comment.contextId}:${comment.id}`),
     entityType,
     isArchived: !!comment.isArchived,
-    creatingTimeStamp: comment.createdAt
-      ? comment.createdAt.getTime()
-      : undefined,
-    processingTimeStamp: comment.updatedAt
-      ? comment.updatedAt.getTime()
-      : undefined,
+    createdAt: comment.createdAt ? comment.createdAt.getTime() : undefined,
+    updatedAt: comment.updatedAt ? comment.updatedAt.getTime() : undefined,
     id: comment.id.toString(),
     contextId: comment.contextId,
     contextType: comment.contextType,

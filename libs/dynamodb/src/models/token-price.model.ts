@@ -16,10 +16,8 @@ export function mapTokenToTokenPriceModel(
     entityId: buildEntityId(DynamoEntityType.TokenPrice, token.id),
     entityType: DynamoEntityType.TokenPrice,
     isArchived: false,
-    creatingTimeStamp: token.createdAt ? token.createdAt.getTime() : undefined,
-    processingTimeStamp: token.updatedAt
-      ? token.updatedAt.getTime()
-      : undefined,
+    createdAt: token.createdAt ? token.createdAt.getTime() : undefined,
+    updatedAt: token.updatedAt ? token.updatedAt.getTime() : undefined,
     transactionHash: token.transactionHash,
     updateTransactionHash: token.updateTransactionHash,
     createTimestamp: token.createTimestamp,

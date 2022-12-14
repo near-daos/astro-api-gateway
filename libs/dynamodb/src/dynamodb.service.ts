@@ -96,8 +96,8 @@ export class DynamodbService {
           [tableName]: items.map((item) => ({
             PutRequest: {
               Item: {
-                creatingTimeStamp: timestamp,
-                processingTimeStamp: timestamp,
+                createdAt: timestamp,
+                updatedAt: timestamp,
                 ...item,
               },
             },
@@ -138,7 +138,7 @@ export class DynamodbService {
     const { partitionId, entityId, entityType, ...rest } = data;
     const dataToUpdate = deepFilter(
       {
-        processingTimeStamp: Date.now(),
+        updatedAt: Date.now(),
         ...rest,
       },
       ([, value]) => value !== undefined,
@@ -309,8 +309,8 @@ export class DynamodbService {
     const timestamp = Date.now();
     const dataToPut = deepFilter(
       {
-        creatingTimeStamp: timestamp,
-        processingTimeStamp: timestamp,
+        createdAt: timestamp,
+        updatedAt: timestamp,
         ...data,
       },
       ([, value]) => value !== undefined,

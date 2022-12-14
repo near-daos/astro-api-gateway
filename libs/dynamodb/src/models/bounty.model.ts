@@ -62,8 +62,8 @@ export function mapBountyDtoToBountyModel(
     isArchived: false,
     transactionHash: bounty.transactionHash,
     updateTransactionHash: bounty.updateTransactionHash,
-    creatingTimeStamp: Date.now(),
-    processingTimeStamp: Date.now(),
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
     createTimestamp: bounty.createTimestamp,
     updateTimestamp: bounty.updateTimestamp,
     id: bounty.id,
@@ -96,12 +96,8 @@ export function mapBountyToBountyModel(
     isArchived: bounty.isArchived,
     transactionHash: bounty.transactionHash,
     updateTransactionHash: bounty.updateTransactionHash,
-    creatingTimeStamp: bounty.createdAt
-      ? bounty.createdAt.getTime()
-      : undefined,
-    processingTimeStamp: bounty.updatedAt
-      ? bounty.updatedAt.getTime()
-      : undefined,
+    createdAt: bounty.createdAt ? bounty.createdAt.getTime() : undefined,
+    updatedAt: bounty.updatedAt ? bounty.updatedAt.getTime() : undefined,
     createTimestamp: bounty.createTimestamp,
     updateTimestamp: bounty.updateTimestamp,
     id: bounty.id,

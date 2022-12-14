@@ -305,8 +305,8 @@ export class DynamoCheckMigration implements Migration {
       createTimestamp: daoModel.createTimestamp,
       updateTimestamp: daoModel.updateTimestamp,
       isArchived: daoModel.isArchived,
-      // createdAt: daoModel.creatingTimeStamp,
-      // updateAt: daoModel.processingTimeStamp,
+      // createdAt: daoModel.createdAt,
+      // updateAt: daoModel.updatedAt,
     };
 
     this.deepCompare(
@@ -405,8 +405,8 @@ export class DynamoCheckMigration implements Migration {
       createTimestamp: proposalModel.createTimestamp,
       updateTimestamp: proposalModel.updateTimestamp,
       isArchived: proposalModel.isArchived,
-      // createdAt: proposalModel.creatingTimeStamp,
-      // updateAt: proposalModel.processingTimeStamp,
+      // createdAt: proposalModel.createdAt,
+      // updateAt: proposalModel.updatedAt,
     };
 
     this.deepCompare(
@@ -492,8 +492,8 @@ export class DynamoCheckMigration implements Migration {
       createTimestamp: bountyModel.createTimestamp,
       updateTimestamp: bountyModel.updateTimestamp,
       isArchived: bountyModel.isArchived,
-      // createdAt: bountyModel.creatingTimeStamp,
-      // updateAt: bountyModel.processingTimeStamp,
+      // createdAt: bountyModel.createdAt,
+      // updateAt: bountyModel.updatedAt,
     };
 
     this.deepCompare(
@@ -589,8 +589,8 @@ export class DynamoCheckMigration implements Migration {
       // createTimestamp: nftModel.createTimestamp,
       // updateTimestamp: nftModel.updateTimestamp,
       isArchived: nftModel.isArchived,
-      // createdAt: nftModel.creatingTimeStamp,
-      // updatedAt: nftModel.processingTimeStamp,
+      // createdAt: nftModel.createdAt,
+      // updatedAt: nftModel.updatedAt,
     };
 
     this.deepCompare(

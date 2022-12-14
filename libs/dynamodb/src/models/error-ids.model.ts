@@ -15,7 +15,7 @@ export function mapErrorIdsToErrorIdsModel(
     entityType: DynamoEntityType.ErrorIds,
     openErrorIds,
     isArchived: false,
-    creatingTimeStamp: Date.now(),
-    processingTimeStamp: Date.now(),
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
   };
 }

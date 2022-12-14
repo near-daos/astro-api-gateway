@@ -22,10 +22,8 @@ export function mapDaoStatsToDaoStatsModel(
     entityId: buildEntityId(DynamoEntityType.DaoStats, stats.id),
     entityType: DynamoEntityType.DaoStats,
     isArchived: !!stats.isArchived,
-    creatingTimeStamp: stats.createdAt ? stats.createdAt.getTime() : undefined,
-    processingTimeStamp: stats.updatedAt
-      ? stats.updatedAt.getTime()
-      : undefined,
+    createdAt: stats.createdAt ? stats.createdAt.getTime() : undefined,
+    updatedAt: stats.updatedAt ? stats.updatedAt.getTime() : undefined,
     id: stats.id,
     timestamp: stats.timestamp,
     totalDaoFunds: stats.totalDaoFunds,
@@ -51,11 +49,7 @@ export function mapDaoStatsModelToDaoStats(
     activeProposalCount: stats.activeProposalCount,
     totalProposalCount: stats.totalProposalCount,
     isArchived: !!stats.isArchived,
-    createdAt: stats.creatingTimeStamp
-      ? new Date(stats.creatingTimeStamp)
-      : undefined,
-    updatedAt: stats.processingTimeStamp
-      ? new Date(stats.processingTimeStamp)
-      : undefined,
+    createdAt: stats.createdAt ? new Date(stats.createdAt) : undefined,
+    updatedAt: stats.updatedAt ? new Date(stats.updatedAt) : undefined,
   };
 }
