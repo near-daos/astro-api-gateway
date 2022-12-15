@@ -60,4 +60,18 @@ export class ErrorTrackerService {
     await this.errorTrackerDynamoService.save(id, { status });
     return this.errorRepository.update(id, { status });
   }
+
+  getErrorById(id: string) {
+    return this.errorRepository.findOne(id);
+  }
+
+  async getOpenErrorsIds() {
+    return (
+      await this.errorRepository.find({
+        select: ['id'],
+        where: { status: ErrorStatus.Open },
+        order: { timestamp: 'ASC' },
+      })
+    ).map(({ id }) => id);
+  }
 }
