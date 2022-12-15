@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { DaoModel, PartialEntity, ProposalModel } from '@sputnik-v2/dynamodb';
 import PromisePool from '@supercharge/promise-pool';
 import { ConfigService } from '@nestjs/config';
+import { ExecutionStatus } from 'near-api-js/lib/providers/provider';
 
 import {
   FTokenContract,
@@ -270,8 +271,23 @@ export class TransactionActionHandlerService {
       receiptId,
       receiptSuccessValue,
     } = txAction;
+    let lastProposalId;
 
-    const lastProposalId = parseInt(receiptSuccessValue);
+    // TODO: Find better solution for indexer processor (when there is no receipt outcome)
+    if (receiptSuccessValue === undefined) {
+      const txStatus = await this.nearApiService.getTxStatus(
+        transactionHash,
+        receiverId,
+      );
+      const receiptOutcome = txStatus.receipts_outcome.find(
+        ({ id }) => id === receiptId,
+      );
+      lastProposalId = parseInt(
+        (receiptOutcome?.outcome?.status as ExecutionStatus)?.SuccessValue,
+      );
+    } else {
+      lastProposalId = parseInt(receiptSuccessValue);
+    }
 
     if (isNaN(lastProposalId)) {
       this.logger.warn(
