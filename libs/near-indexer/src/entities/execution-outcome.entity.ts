@@ -15,7 +15,7 @@ export class ExecutionOutcome {
 
   @ApiProperty()
   @Column({ type: 'bigint' })
-  executedInBlockTimestamp: number;
+  executedInBlockTimestamp: string; // nanoseconds
 
   @ApiProperty()
   @Column()

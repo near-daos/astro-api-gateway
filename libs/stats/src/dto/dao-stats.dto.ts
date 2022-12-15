@@ -8,7 +8,7 @@ export class DaoStatsDto {
   daoId: string;
 
   @ApiProperty()
-  timestamp: number;
+  timestamp: number; // milliseconds
 
   @ApiProperty()
   totalDaoFunds: number;

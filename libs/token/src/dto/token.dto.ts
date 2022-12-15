@@ -3,7 +3,7 @@ import { TransactionInfo } from '@sputnik-v2/common';
 export interface TokenUpdateDto {
   account: string;
   token: string;
-  timestamp: number;
+  timestamp: string; // nanoseconds
 }
 
 export interface TokenMetadataDto {

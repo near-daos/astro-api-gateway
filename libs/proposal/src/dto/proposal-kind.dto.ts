@@ -93,7 +93,7 @@ export type ProposalKindAddBounty = {
 /// Indicates that given bounty is done by given user.
 export type ProposalKindBountyDone = {
   type: ProposalType.BountyDone;
-  bountyId: string;
+  bountyId: number;
   receiverId: string;
 };
 
@@ -101,3 +101,9 @@ export type ProposalKindBountyDone = {
 export type ProposalKindVote = {
   type: ProposalType.Vote;
 };
+
+export function isProposalKind(
+  proposalKind: any,
+): proposalKind is ProposalKind {
+  return proposalKind.hasOwnProperty('type');
+}

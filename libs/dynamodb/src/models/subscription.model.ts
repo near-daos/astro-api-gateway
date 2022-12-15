@@ -1,7 +1,7 @@
 import { Subscription } from '@sputnik-v2/subscription';
 import { buildEntityId } from '@sputnik-v2/utils';
 import { BaseModel } from './base.model';
-import { DynamoEntityType } from '../types';
+import { DynamoEntityType, PartialEntity } from '../types';
 
 export class SubscriptionModel extends BaseModel {
   id: string;
@@ -9,16 +9,20 @@ export class SubscriptionModel extends BaseModel {
 }
 
 export function mapSubscriptionToSubscriptionModel(
-  subscription: Subscription,
-): SubscriptionModel {
+  subscription: Partial<Subscription>,
+): PartialEntity<SubscriptionModel> {
   return {
     partitionId: subscription.daoId,
     entityId: buildEntityId(DynamoEntityType.Subscription, subscription.id),
     entityType: DynamoEntityType.Subscription,
-    isArchived: subscription.isArchived,
-    processingTimeStamp: Date.now(),
+    isArchived: !!subscription.isArchived,
+    createdAt: subscription.createdAt
+      ? subscription.createdAt.getTime()
+      : undefined,
+    updatedAt: subscription.updatedAt
+      ? subscription.updatedAt.getTime()
+      : undefined,
     id: subscription.id,
     accountId: subscription.accountId,
-    createTimestamp: subscription.createdAt.getTime(),
   };
 }

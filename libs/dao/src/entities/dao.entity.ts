@@ -31,7 +31,7 @@ export class Dao extends TransactionEntity {
 
   @ApiProperty()
   @Column({ type: 'numeric' })
-  amount: number;
+  amount: string;
 
   @ApiProperty()
   @Column()
@@ -125,6 +125,14 @@ export class Dao extends TransactionEntity {
   @ApiProperty()
   @Column({ type: 'float', default: 0 })
   totalDaoFunds: number;
+
+  @ApiProperty()
+  @Column({ default: 0 })
+  bountyCount: number;
+
+  @ApiProperty()
+  @Column({ default: 0 })
+  nftCount: number;
 
   @OneToMany(() => Delegation, (delegation) => delegation.dao, {
     eager: false,

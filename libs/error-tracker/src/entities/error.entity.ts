@@ -20,5 +20,5 @@ export class ErrorEntity extends BaseEntity {
   metadata: Record<string, any>;
 
   @Column({ type: 'bigint', nullable: true })
-  timestamp: number;
+  timestamp: string; // nanoseconds
 }

@@ -6,7 +6,7 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
-    "target": "es2017",
+    "target": "es2020",
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
@@ -207,6 +207,12 @@
       ],
       "@sputnik-v2/feature-flags/*": [
         "libs/feature-flags/src/*"
+      ],
+      "@sputnik-v2/migrations": [
+        "libs/migrations/src"
+      ],
+      "@sputnik-v2/migrations/*": [
+        "libs/migrations/src/*"
       ]
     }
   }

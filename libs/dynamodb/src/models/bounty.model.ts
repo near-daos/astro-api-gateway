@@ -1,7 +1,13 @@
-import { Bounty, BountyClaim } from '@sputnik-v2/bounty';
+import {
+  Bounty,
+  BountyClaim,
+  BountyClaimDto,
+  BountyContextDto,
+  BountyDto,
+} from '@sputnik-v2/bounty';
 import { buildEntityId } from '@sputnik-v2/utils';
+import { DynamoEntityType, PartialEntity } from '../types';
 import { TransactionModel } from './transaction.model';
-import { DynamoEntityType } from '../types';
 
 export class BountyModel extends TransactionModel {
   bountyId: number;
@@ -12,7 +18,7 @@ export class BountyModel extends TransactionModel {
   description: string;
   token: string;
   amount: string;
-  times: string;
+  times: number;
   maxDeadline: string;
   numberOfClaims: number;
   commentsCount: number;
@@ -29,21 +35,71 @@ export class BountyClaimModel {
   endTime: string;
 }
 
+export function mapBountyContextDtoToBountyModel(
+  bountyContext: BountyContextDto,
+  proposalIndex: number,
+): PartialEntity<BountyModel> {
+  return {
+    partitionId: bountyContext.daoId,
+    entityId: buildEntityId(DynamoEntityType.Bounty, String(proposalIndex)),
+    entityType: DynamoEntityType.Bounty,
+    transactionHash: bountyContext.transactionHash,
+    createTimestamp: bountyContext.createTimestamp,
+    proposalIndex,
+  };
+}
+
+export function mapBountyDtoToBountyModel(
+  bounty: Partial<BountyDto>,
+): PartialEntity<BountyModel> {
+  return {
+    partitionId: bounty.daoId,
+    entityId: buildEntityId(
+      DynamoEntityType.Bounty,
+      String(bounty.proposalIndex),
+    ),
+    entityType: DynamoEntityType.Bounty,
+    isArchived: false,
+    transactionHash: bounty.transactionHash,
+    updateTransactionHash: bounty.updateTransactionHash,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+    createTimestamp: bounty.createTimestamp,
+    updateTimestamp: bounty.updateTimestamp,
+    id: bounty.id,
+    daoId: bounty.daoId,
+    bountyId: bounty.bountyId,
+    proposalId: bounty.proposalId,
+    proposalIndex: bounty.proposalIndex,
+    description: bounty.description,
+    token: bounty.token,
+    amount: bounty.amount,
+    times: bounty.times,
+    maxDeadline: bounty.maxDeadline,
+    numberOfClaims: bounty.numberOfClaims,
+    commentsCount: 0,
+    bountyClaims: bounty.bountyClaims
+      ? bounty.bountyClaims.map(mapBountyClaimToBountyClaimModel)
+      : [],
+    bountyDoneProposalIds: [],
+  };
+}
+
 export function mapBountyToBountyModel(
   bounty: Partial<Bounty>,
-  proposalIndex = bounty.bountyContext?.proposal?.proposalId,
-): BountyModel {
+  proposalIndex: number,
+): PartialEntity<BountyModel> {
   return {
     partitionId: bounty.daoId,
     entityId: buildEntityId(DynamoEntityType.Bounty, String(proposalIndex)),
     entityType: DynamoEntityType.Bounty,
     isArchived: bounty.isArchived,
-    processingTimeStamp: Date.now(),
     transactionHash: bounty.transactionHash,
-    updateTransactionHash:
-      bounty.updateTransactionHash || bounty.transactionHash,
+    updateTransactionHash: bounty.updateTransactionHash,
+    createdAt: bounty.createdAt ? bounty.createdAt.getTime() : undefined,
+    updatedAt: bounty.updatedAt ? bounty.updatedAt.getTime() : undefined,
     createTimestamp: bounty.createTimestamp,
-    updateTimestamp: bounty.updateTimestamp || bounty.createTimestamp,
+    updateTimestamp: bounty.updateTimestamp,
     id: bounty.id,
     daoId: bounty.daoId,
     bountyId: bounty.bountyId,
@@ -58,15 +114,15 @@ export function mapBountyToBountyModel(
     commentsCount: bounty.bountyContext?.commentsCount,
     bountyClaims: bounty.bountyClaims
       ? bounty.bountyClaims.map(mapBountyClaimToBountyClaimModel)
-      : undefined,
+      : [],
     bountyDoneProposalIds: bounty.bountyDoneProposals?.length
       ? bounty.bountyDoneProposals.map(({ id }) => id)
-      : undefined,
+      : [],
   };
 }
 
 export function mapBountyClaimToBountyClaimModel(
-  bountyClaim: BountyClaim,
+  bountyClaim: BountyClaim | BountyClaimDto,
 ): BountyClaimModel {
   return {
     id: bountyClaim.id,

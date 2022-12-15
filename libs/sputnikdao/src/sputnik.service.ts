@@ -1,9 +1,18 @@
-import { Contract } from 'near-api-js';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { Bounty } from '@sputnik-v2/bounty/entities';
 
-import { NearApiService } from '@sputnik-v2/near-api';
+import {
+  NearApiService,
+  SputnikDaoBounty,
+  SputnikDaoBountyOutput,
+  SputnikDaoContract,
+  SputnikDaoFactoryContract,
+  SputnikDaoProposal,
+  SputnikDaoProposalKind,
+  SputnikDaoProposalOutput,
+} from '@sputnik-v2/near-api';
 import PromisePool from '@supercharge/promise-pool';
-import { castProposalKind } from '@sputnik-v2/proposal/dto';
+import { castProposalKind, ProposalKind } from '@sputnik-v2/proposal/dto';
 
 import { DaoInfo } from './types';
 import {
@@ -13,16 +22,20 @@ import {
 
 @Injectable()
 export class SputnikService {
-  private readonly logger = new Logger(SputnikService.name);
-
-  private factoryContract!: Contract & any;
+  private factoryContract!: SputnikDaoFactoryContract;
 
   constructor(private readonly nearApiService: NearApiService) {
-    this.factoryContract = nearApiService.getContract('sputnikDaoFactory');
+    this.factoryContract =
+      nearApiService.getContract<SputnikDaoFactoryContract>(
+        'sputnikDaoFactory',
+      );
   }
 
   public async getDaoInfo(daoId: string): Promise<DaoInfo> {
-    const daoContract = this.nearApiService.getContract('sputnikDao', daoId);
+    const daoContract = this.nearApiService.getContract<SputnikDaoContract>(
+      'sputnikDao',
+      daoId,
+    );
     const config = await daoContract.get_config();
     const policy = await daoContract.get_policy();
     const stakingContract = await daoContract.get_staking_contract();
@@ -42,11 +55,14 @@ export class SputnikService {
   }
 
   public async getProposalsByDaoId(daoId: string, lastProposalId: number) {
-    const daoContract = this.nearApiService.getContract('sputnikDao', daoId);
+    const daoContract = this.nearApiService.getContract<SputnikDaoContract>(
+      'sputnikDao',
+      daoId,
+    );
     const chunkSize = PROPOSAL_REQUEST_CHUNK_SIZE;
     const chunkCount =
       (lastProposalId - (lastProposalId % chunkSize)) / chunkSize + 1;
-    let proposals = [];
+    let proposals: SputnikDaoProposalOutput[] = [];
 
     // Load all proposals by chunks
     for (let i = 0; i < chunkCount; i++) {
@@ -61,7 +77,10 @@ export class SputnikService {
   }
 
   public async getProposal(daoId: string, proposalId: number) {
-    const daoContract = this.nearApiService.getContract('sputnikDao', daoId);
+    const daoContract = this.nearApiService.getContract<SputnikDaoContract>(
+      'sputnikDao',
+      daoId,
+    );
     try {
       return await daoContract.get_proposal({ id: proposalId });
     } catch (err) {
@@ -88,12 +107,18 @@ export class SputnikService {
     return null;
   }
 
-  public async getBountiesByDaoId(daoId: string, lastBountyId: number) {
-    const daoContract = this.nearApiService.getContract('sputnikDao', daoId);
+  public async getBountiesByDaoId(
+    daoId: string,
+    lastBountyId: number,
+  ): Promise<(SputnikDaoBountyOutput & { numberOfClaims: number })[]> {
+    const daoContract = this.nearApiService.getContract<SputnikDaoContract>(
+      'sputnikDao',
+      daoId,
+    );
     const chunkSize = BOUNTY_REQUEST_CHUNK_SIZE;
     const chunkCount =
       (lastBountyId - (lastBountyId % chunkSize)) / chunkSize + 1;
-    let bounties = [];
+    let bounties: SputnikDaoBountyOutput[] = [];
 
     // Load all bounties by chunks
     for (let i = 0; i < chunkCount; i++) {
@@ -104,21 +129,33 @@ export class SputnikService {
       bounties = bounties.concat(bountiesChunk);
     }
 
-    await PromisePool.withConcurrency(5)
+    const { results } = await PromisePool.withConcurrency(5)
       .for(bounties)
+      .handleError((err) => {
+        throw err;
+      })
       .process(async (bounty) => {
-        bounty.numberOfClaims = await daoContract.get_bounty_number_of_claims({
-          id: bounty.id,
-        });
+        return {
+          ...bounty,
+          numberOfClaims: await daoContract.get_bounty_number_of_claims({
+            id: bounty.id,
+          }),
+        };
       });
 
-    return bounties;
+    return results;
   }
 
   public async getBountyClaims(daoId: string, accountIds: string[]) {
-    const daoContract = this.nearApiService.getContract('sputnikDao', daoId);
+    const daoContract = this.nearApiService.getContract<SputnikDaoContract>(
+      'sputnikDao',
+      daoId,
+    );
     const { results: claims } = await PromisePool.withConcurrency(2)
       .for(accountIds)
+      .handleError((err) => {
+        throw err;
+      })
       .process(async (accountId) => {
         const bountyClaims = await daoContract.get_bounty_claims({
           account_id: accountId,
@@ -133,7 +170,11 @@ export class SputnikService {
     return claims.flat();
   }
 
-  public async findLastBounty(daoId: string, lastBountyId: number, bountyData) {
+  public async findLastBounty(
+    daoId: string,
+    lastBountyId: number,
+    bountyData: Bounty,
+  ) {
     const bounties = await this.getBountiesByDaoId(daoId, lastBountyId);
 
     for (let i = bounties.length - 1; i >= 0; i--) {
@@ -145,7 +186,7 @@ export class SputnikService {
     return null;
   }
 
-  private compareProposals(proposal1, proposal2): boolean {
+  private compareProposals(proposal1: SputnikDaoProposal, proposal2): boolean {
     const hasSameKind = this.compareProposalKinds(
       proposal1.kind,
       proposal2.kind,
@@ -157,7 +198,7 @@ export class SputnikService {
     );
   }
 
-  private compareBounties(bounty1, bounty2): boolean {
+  private compareBounties(bounty1: SputnikDaoBounty, bounty2: Bounty): boolean {
     return (
       bounty1.description === bounty2.description &&
       bounty1.token === bounty2.token &&
@@ -167,7 +208,10 @@ export class SputnikService {
     );
   }
 
-  private compareProposalKinds(kind1, kind2): boolean {
+  private compareProposalKinds(
+    kind1: ProposalKind | SputnikDaoProposalKind,
+    kind2: ProposalKind | SputnikDaoProposalKind,
+  ): boolean {
     const kindDto1 = castProposalKind(kind1);
     const kindDto2 = castProposalKind(kind2);
     return kindDto1.equals(kindDto2);

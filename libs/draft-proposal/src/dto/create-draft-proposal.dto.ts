@@ -55,7 +55,7 @@ export function mapCreateDraftProposalToDraftProposalModel(
     replies: 0,
     viewAccounts: [],
     saveAccounts: [],
-    createTimestamp: Date.now(),
-    updateTimestamp: Date.now(),
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
   };
 }

@@ -14,6 +14,7 @@ import { HttpCacheModule } from '@sputnik-v2/cache';
 import { ThrottlerModule, ThrottlerModuleOptions } from '@nestjs/throttler';
 import { EventModule } from '@sputnik-v2/event';
 import { WebsocketModule, WebsocketGateway } from '@sputnik-v2/websocket';
+import { MigrationModule as MigrationModuleLib } from '@sputnik-v2/migrations/migration.module';
 
 import { BountyModule } from './bounty/bounty.module';
 import { DaoModule } from './dao/dao.module';
@@ -31,6 +32,7 @@ import { ApiDaoSettingsModule } from './dao-settings/dao-settings.module';
 import { AccountModule } from './account/account.module';
 import { ProposalTemplateModule } from './proposal-template/proposal-template.module';
 import { SearchModule } from './search/search.module';
+import { MigrationsModule } from './migrations/migrations.module';
 
 @Module({
   imports: [
@@ -86,6 +88,8 @@ import { SearchModule } from './search/search.module';
     StatsModule,
     AccountModule,
     SearchModule,
+    MigrationModuleLib,
+    MigrationsModule,
   ],
   controllers: [AppController],
   providers: [WebsocketGateway],

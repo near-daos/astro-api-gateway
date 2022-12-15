@@ -6,7 +6,7 @@ import {
 } from '@sputnik-v2/draft-proposal';
 import { buildEntityId } from '@sputnik-v2/utils';
 import { BaseModel } from './base.model';
-import { DynamoEntityType } from '../types';
+import { DynamoEntityType, PartialEntity } from '../types';
 
 export class DraftProposalModel extends BaseModel {
   id: string;
@@ -20,9 +20,7 @@ export class DraftProposalModel extends BaseModel {
   viewAccounts: string[];
   saveAccounts: string[];
   replies: number;
-  history: DraftProposalHistoryModel[];
-  createTimestamp: number;
-  updateTimestamp: number;
+  history: Partial<DraftProposalHistoryModel>[];
 }
 
 export class DraftProposalHistoryModel {
@@ -37,9 +35,9 @@ export class DraftProposalHistoryModel {
 }
 
 export function mapDraftProposalToDraftProposalModel(
-  draftProposal: DraftProposal,
+  draftProposal: Partial<DraftProposal>,
   history?: DraftProposalHistory[],
-): DraftProposalModel {
+): PartialEntity<DraftProposalModel> {
   return {
     partitionId: draftProposal.daoId,
     entityId: buildEntityId(
@@ -47,8 +45,13 @@ export function mapDraftProposalToDraftProposalModel(
       String(draftProposal.id),
     ),
     entityType: DynamoEntityType.DraftProposal,
-    isArchived: draftProposal.isArchived,
-    processingTimeStamp: Date.now(),
+    isArchived: !!draftProposal.isArchived,
+    createdAt: draftProposal.createdAt
+      ? draftProposal.createdAt.getTime()
+      : undefined,
+    updatedAt: draftProposal.updatedAt
+      ? draftProposal.updatedAt.getTime()
+      : undefined,
     id: draftProposal.id.toString(),
     proposalId: draftProposal.proposalId,
     proposer: draftProposal.proposer,
@@ -60,8 +63,6 @@ export function mapDraftProposalToDraftProposalModel(
     viewAccounts: draftProposal.viewAccounts,
     saveAccounts: draftProposal.saveAccounts,
     replies: draftProposal.replies,
-    createTimestamp: new Date(draftProposal.createdAt).getTime(),
-    updateTimestamp: new Date(draftProposal.updatedAt).getTime(),
     history: history?.length
       ? history.map(mapDraftProposalHistoryToDraftProposalHistoryModel)
       : [],
@@ -70,7 +71,7 @@ export function mapDraftProposalToDraftProposalModel(
 
 export function mapDraftProposalHistoryToDraftProposalHistoryModel(
   draftProposalHistory: DraftProposalHistory,
-): DraftProposalHistoryModel {
+): Partial<DraftProposalHistoryModel> {
   return {
     id: draftProposalHistory.id.toString(),
     daoId: draftProposalHistory.daoId,

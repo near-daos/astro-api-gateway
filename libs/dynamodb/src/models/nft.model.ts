@@ -5,7 +5,7 @@ import {
 } from '@sputnik-v2/token/entities';
 import { buildEntityId } from '@sputnik-v2/utils';
 import { BaseModel } from './base.model';
-import { DynamoEntityType } from '../types';
+import { DynamoEntityType, PartialEntity } from '../types';
 import {
   NFTTokenContractDto,
   NFTTokenDto,
@@ -51,13 +51,16 @@ export class NftMetadataModel {
   approvedAccountIds: string[];
 }
 
-export function mapNftTokenToNftModel(nft: NFTToken | NFTTokenDto): NftModel {
+export function mapNftTokenDtoToNftModel(
+  nft: Partial<NFTTokenDto>,
+): PartialEntity<NftModel> {
   return {
     partitionId: nft.accountId,
     entityId: buildEntityId(DynamoEntityType.Nft, nft.id),
     entityType: DynamoEntityType.Nft,
-    isArchived: !!nft.isArchived,
-    processingTimeStamp: Date.now(),
+    isArchived: false,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
     id: nft.id,
     ownerId: nft.ownerId,
     tokenId: nft.tokenId,
@@ -66,7 +69,31 @@ export function mapNftTokenToNftModel(nft: NFTToken | NFTTokenDto): NftModel {
     contractId: nft.contractId,
     contract: mapNftContractToNftContractModel(nft.contract),
     metadata: mapNftMetadataToNftMetadataModel(nft.metadata),
-    createTimestamp: nft.createdAt.getTime(),
+  };
+}
+
+export function mapNftTokenToNftModel(
+  nft: Partial<NFTToken>,
+): PartialEntity<NftModel> {
+  return {
+    partitionId: nft.accountId,
+    entityId: buildEntityId(DynamoEntityType.Nft, nft.id),
+    entityType: DynamoEntityType.Nft,
+    isArchived: !!nft.isArchived,
+    createdAt: nft.createdAt ? nft.createdAt.getTime() : undefined,
+    updatedAt: nft.updatedAt ? nft.updatedAt.getTime() : undefined,
+    id: nft.id,
+    ownerId: nft.ownerId,
+    tokenId: nft.tokenId,
+    accountId: nft.accountId,
+    minter: nft.minter,
+    contractId: nft.contractId,
+    contract: nft.contract
+      ? mapNftContractToNftContractModel(nft.contract)
+      : undefined,
+    metadata: nft.metadata
+      ? mapNftMetadataToNftMetadataModel(nft.metadata)
+      : undefined,
   };
 }
 

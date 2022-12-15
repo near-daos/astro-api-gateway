@@ -8,12 +8,15 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 import { In, IsNull, Not, Repository } from 'typeorm';
 import { CrudRequest } from '@nestjsx/crud';
-import { NearApiService } from '@sputnik-v2/near-api';
+import {
+  NearApiService,
+  NFTokenContract,
+  NFTokenOutput,
+} from '@sputnik-v2/near-api';
 import { FeatureFlags, FeatureFlagsService } from '@sputnik-v2/feature-flags';
-
 import { AssetsNftEvent, NearIndexerService } from '@sputnik-v2/near-indexer';
-import { NFTTokenDynamoService } from './nft-token-dynamo.service';
 
+import { NFTTokenDynamoService } from './nft-token-dynamo.service';
 import { NFTToken } from './entities';
 import { NFTTokenDto, NFTTokenResponse } from './dto';
 import { castNFT } from './types';
@@ -76,8 +79,11 @@ export class NFTTokenService extends TypeOrmCrudService<NFTToken> {
     return super.getMany(req);
   }
 
-  async getAccountTokenCount(accountId: string): Promise<number> {
-    if (await this.useDynamoDB()) {
+  async getAccountTokenCount(
+    accountId: string,
+    allowDynamo = true,
+  ): Promise<number> {
+    if (allowDynamo && (await this.useDynamoDB())) {
       return this.nftTokenDynamoService.count(accountId);
     } else {
       return this.nftTokenRepository.count({ accountId });
@@ -98,8 +104,11 @@ export class NFTTokenService extends TypeOrmCrudService<NFTToken> {
     );
   }
 
-  async loadNFT(nftContractId: string, accountId: string, timestamp?: number) {
-    const contract = this.nearApiService.getContract('nft', nftContractId);
+  async loadNFT(nftContractId: string, accountId: string, timestamp: string) {
+    const contract = this.nearApiService.getContract<NFTokenContract>(
+      'nft',
+      nftContractId,
+    );
     const metadata = await contract.nft_metadata();
     const nfts = await this.getNfts(nftContractId, accountId);
     const tokenDtos = nfts.map((nft) =>
@@ -113,8 +122,11 @@ export class NFTTokenService extends TypeOrmCrudService<NFTToken> {
   private async getNfts(
     nftContractId: string,
     accountId: string,
-  ): Promise<Array<any>> {
-    const contract = this.nearApiService.getContract('nft', nftContractId);
+  ): Promise<NFTokenOutput[]> {
+    const contract = this.nearApiService.getContract<NFTokenContract>(
+      'nft',
+      nftContractId,
+    );
     const chunkSize = 50;
     let nfts = [];
     let chunk = [];

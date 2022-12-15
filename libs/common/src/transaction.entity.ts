@@ -13,9 +13,9 @@ export abstract class TransactionEntity extends BaseEntity {
 
   @ApiProperty()
   @Column({ type: 'bigint', nullable: true })
-  createTimestamp: number;
+  createTimestamp: string; // nanoseconds
 
   @ApiProperty()
   @Column({ type: 'bigint', nullable: true })
-  updateTimestamp: number;
+  updateTimestamp: string; // nanoseconds
 }

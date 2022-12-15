@@ -35,7 +35,7 @@ export class Receipt {
 
   @ApiProperty()
   @Column({ type: 'bigint' })
-  includedInBlockTimestamp: number;
+  includedInBlockTimestamp: string; // nanoseconds
 
   @ApiProperty({ type: [ReceiptAction] })
   @OneToMany(() => ReceiptAction, (receiptAction) => receiptAction.receipt, {

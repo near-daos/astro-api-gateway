@@ -5,7 +5,7 @@ import { PolicyDtoV1 } from './policy.dto';
 
 export interface DaoDto extends TransactionInfo {
   id: string;
-  amount: number;
+  amount: string;
   config: DaoConfig;
   totalSupply: string;
   stakingContract: string;

@@ -1,11 +1,17 @@
+import { SputnikDaoProposalKind } from '@sputnik-v2/near-api';
 import camelcaseKeys from 'camelcase-keys';
 import { PolicyDtoV1 } from '@sputnik-v2/dao';
 import { TransactionInfo } from '@sputnik-v2/common';
 import { Vote } from '@sputnik-v2/sputnikdao/types';
 
-import { ProposalPolicyLabel, ProposalStatus, ProposalType } from '../types';
-
 import {
+  ProposalPolicyLabel,
+  ProposalStatus,
+  ProposalType,
+  ProposalVoteStatus,
+} from '../types';
+import {
+  isProposalKind,
   ProposalKind,
   ProposalKindAddBounty,
   ProposalKindAddMemberToRole,
@@ -30,16 +36,16 @@ export class ProposalDto extends TransactionInfo {
   proposer: string;
   description: string;
   status: ProposalStatus;
-  submissionTime: number;
+  submissionTime: string;
   kind: ProposalKindDto;
-  type?: ProposalType;
+  type: ProposalType;
   policyLabel?: ProposalPolicyLabel;
-  voteCounts: { [key: string]: number[] };
-  votes: {
-    [key: string]: Vote;
-  };
+  voteStatus: ProposalVoteStatus;
+  voteCounts: Record<string, number[]>;
+  votes: Record<string, Vote>;
   actions: ProposalActionDto[];
-  votePeriodEnd: number;
+  votePeriodEnd: string;
+  failure?: Record<string, any>;
 }
 
 export class ProposalKindDto {
@@ -254,17 +260,19 @@ export class ProposalKindDto {
   }
 }
 
-export function castProposalKind(kind: unknown): ProposalKindDto | null {
+export function castProposalKind(
+  kind: ProposalKind | SputnikDaoProposalKind,
+): ProposalKindDto | null {
   if (!kind) {
     return null;
   }
 
-  if (kind === ProposalType.Vote) {
-    return new ProposalKindDto({ type: ProposalType.Vote });
+  if (isProposalKind(kind)) {
+    return new ProposalKindDto(kind);
   }
 
-  if (kind.hasOwnProperty('type')) {
-    return new ProposalKindDto(kind as ProposalKindChangePolicy);
+  if (kind === ProposalType.Vote) {
+    return new ProposalKindDto({ type: ProposalType.Vote });
   }
 
   const type = Object.keys(ProposalType).find((key) =>

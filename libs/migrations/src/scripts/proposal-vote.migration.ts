@@ -1,5 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { calcProposalVotePeriodEnd } from '@sputnik-v2/utils';
+import {
+  calcProposalVotePeriodEnd,
+  getBlockTimestamp,
+} from '@sputnik-v2/utils';
 import PromisePool from '@supercharge/promise-pool';
 import { ProposalService, ProposalVoteStatus } from '@sputnik-v2/proposal';
 import { Migration } from '..';
@@ -16,14 +19,17 @@ export class ProposalVoteMigration implements Migration {
     this.logger.log('Collecting proposals...');
     const proposals = await this.proposalService.find();
 
-    const currentTimestamp = new Date().getTime() * 1000 * 1000; // nanoseconds
+    const currentTimestamp = getBlockTimestamp();
     const migratedProposals = proposals.map((proposal) => {
-      const votePeriodEnd = calcProposalVotePeriodEnd(proposal, proposal.dao);
+      const votePeriodEnd = calcProposalVotePeriodEnd(
+        proposal.submissionTime,
+        proposal.dao.policy.proposalPeriod,
+      );
       return {
         ...proposal,
         votePeriodEnd,
         voteStatus:
-          votePeriodEnd > currentTimestamp
+          BigInt(votePeriodEnd) > BigInt(currentTimestamp)
             ? ProposalVoteStatus.Active
             : ProposalVoteStatus.Expired,
       };
@@ -33,6 +39,9 @@ export class ProposalVoteMigration implements Migration {
     const { results, errors: proposalErrors } =
       await PromisePool.withConcurrency(500)
         .for(migratedProposals)
+        .handleError((err) => {
+          this.logger.error(err);
+        })
         .process(
           async (proposal) => await this.proposalService.update(proposal),
         );

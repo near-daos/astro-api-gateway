@@ -17,7 +17,7 @@ class DaoBaseResponse extends TransactionEntity {
   metadata: Record<string, any>;
 
   @ApiProperty()
-  amount: number;
+  amount: string;
 
   @ApiProperty()
   totalSupply: string;

@@ -429,13 +429,18 @@ export class AggregatorService {
     );
     const lastTx = await this.transactionService.lastTransaction();
     const blockTimestamp =
-      handlerState?.lastBlockTimestamp || lastTx.blockTimestamp;
+      handlerState?.lastBlockTimestamp || lastTx?.blockTimestamp;
     const { contractName } = this.configService.get('near');
     const daoAccounts =
       await this.nearIndexerService.findAccountsByContractName(contractName);
 
     await PromisePool.withConcurrency(5)
       .for(daoAccounts)
+      .handleError((err, daoAccount) => {
+        this.logger.error(
+          `Failed aggregateDaoByAccount(${daoAccount}, ${blockTimestamp}): ${err} (${err.stack})`,
+        );
+      })
       .process(
         async (daoAccount) =>
           await this.aggregateDaoByAccount(daoAccount, blockTimestamp),
@@ -443,6 +448,11 @@ export class AggregatorService {
 
     await PromisePool.withConcurrency(5)
       .for(daoAccounts)
+      .handleError((err, daoAccount) => {
+        this.logger.error(
+          `Failed aggregateDaoTokens(${daoAccount}, ${blockTimestamp}): ${err} (${err.stack})`,
+        );
+      })
       .process(
         async (daoAccount) =>
           await this.aggregateDaoTokens(daoAccount, blockTimestamp),
@@ -450,6 +460,11 @@ export class AggregatorService {
 
     await PromisePool.withConcurrency(5)
       .for(daoAccounts)
+      .handleError((err, daoAccount) => {
+        this.logger.error(
+          `Failed aggregateDaoNFTs(${daoAccount}, ${blockTimestamp}): ${err} (${err.stack})`,
+        );
+      })
       .process(
         async (daoAccount) =>
           await this.aggregateDaoNFTs(daoAccount, blockTimestamp),
@@ -465,7 +480,7 @@ export class AggregatorService {
     this.logger.log(`Finished all DAO aggregation`);
   }
 
-  public async aggregateDaoByAccount(account: Account, blockTimestamp: number) {
+  public async aggregateDaoByAccount(account: Account, blockTimestamp: string) {
     this.logger.log(`Start aggregation for DAO: ${account.accountId}`);
 
     const daoTransactions =
@@ -519,7 +534,7 @@ export class AggregatorService {
     }
   }
 
-  public async aggregateDaoTokens(account: Account, blockTimestamp: number) {
+  public async aggregateDaoTokens(account: Account, blockTimestamp: string) {
     this.logger.log(`Start aggregation tokens for DAO: ${account.accountId}`);
 
     try {
@@ -550,7 +565,7 @@ export class AggregatorService {
     }
   }
 
-  public async aggregateDaoNFTs(account: Account, blockTimestamp: number) {
+  public async aggregateDaoNFTs(account: Account, blockTimestamp: string) {
     this.logger.log(`Start aggregation NFTs for DAO: ${account.accountId}`);
 
     try {

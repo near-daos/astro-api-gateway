@@ -21,11 +21,11 @@ export class Policy extends BaseEntity {
 
   @ApiProperty()
   @Column({ type: 'bigint' })
-  proposalPeriod: number;
+  proposalPeriod: string; // nanoseconds
 
   @ApiProperty()
   @Column({ type: 'bigint' })
-  bountyForgivenessPeriod: number;
+  bountyForgivenessPeriod: string; // nanoseconds
 
   @ApiProperty({ type: VotePolicy })
   @Column({ type: 'simple-json' })

@@ -5,25 +5,40 @@ export class AccountDto {
   @ApiProperty()
   @IsString()
   @IsOptional()
-  email: string;
-
-  @ApiProperty()
-  @IsBoolean()
-  @IsOptional()
-  isEmailVerified: boolean;
+  accountId: string;
 
   @ApiProperty()
   @IsString()
   @IsOptional()
-  phoneNumber: string;
+  email?: string;
 
   @ApiProperty()
   @IsBoolean()
   @IsOptional()
-  isPhoneVerified: boolean;
+  isEmailVerified?: boolean;
 
   @ApiProperty()
   @IsString()
   @IsOptional()
-  notifiId: string;
+  phoneNumber?: string;
+
+  @ApiProperty()
+  @IsBoolean()
+  @IsOptional()
+  isPhoneVerified?: boolean;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  notifiId?: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  notifiUserId?: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  notifiAlertId?: string;
 }

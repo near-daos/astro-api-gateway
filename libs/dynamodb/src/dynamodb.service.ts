@@ -1,71 +1,24 @@
 import * as AWS from 'aws-sdk';
 import DynamoDB, { DocumentClient } from 'aws-sdk/clients/dynamodb';
 import { ConfigService } from '@nestjs/config';
-import { Injectable } from '@nestjs/common';
-
-import { Dao } from '@sputnik-v2/dao/entities';
-import { Proposal } from '@sputnik-v2/proposal/entities';
-import { Account } from '@sputnik-v2/account/entities';
+import { Injectable, Logger } from '@nestjs/common';
+import { buildEntityId, deepFilter, getChunks } from '@sputnik-v2/utils';
 import {
-  AccountNotification,
-  AccountNotificationSettings,
-} from '@sputnik-v2/notification';
-import { Comment } from '@sputnik-v2/comment/entities';
-import { DraftComment } from '@sputnik-v2/draft-comment/entities';
-import {
-  DraftProposal,
-  DraftProposalHistory,
-} from '@sputnik-v2/draft-proposal/entities';
-import { Token, TokenBalance } from '@sputnik-v2/token/entities';
-import {
-  ProposalTemplate,
-  SharedProposalTemplate,
-} from '@sputnik-v2/proposal-template/entities';
-import { Subscription } from '@sputnik-v2/subscription/entities';
-import { buildEntityId } from '@sputnik-v2/utils';
-import PromisePool from '@supercharge/promise-pool';
-
-import {
-  AccountModel,
-  AccountNotificationModel,
-  AccountNotificationSettingsModel,
-  CommentModel,
-  DaoModel,
-  DraftProposalModel,
-  mapAccountNotificationSettingsToAccountNotificationSettingsModel,
-  mapAccountNotificationToAccountNotificationModel,
-  mapAccountToAccountModel,
-  mapCommentToCommentModel,
-  mapDaoToDaoModel,
-  mapDraftCommentToCommentModel,
-  mapDraftProposalToDraftProposalModel,
-  mapProposalTemplateToProposalTemplateModel,
-  mapProposalToProposalModel,
-  mapSharedProposalTemplateToSharedProposalTemplateModel,
-  mapSubscriptionToSubscriptionModel,
-  mapTokenBalanceToTokenBalanceModel,
-  mapTokenToTokenPriceModel,
-  ProposalModel,
-  ProposalTemplateModel,
-  ScheduledProposalExpirationEvent,
-  SharedProposalTemplateModel,
-  SubscriptionModel,
-  TokenPriceModel,
-} from './models';
-import {
-  BaseEntity,
   CountItemsQuery,
   DynamoEntityType,
   EntityId,
+  EntityKey,
   PartialEntity,
   QueryItemsQuery,
 } from './types';
 
 @Injectable()
 export class DynamodbService {
-  private client: AWS.DynamoDB.DocumentClient;
+  private readonly logger = new Logger(DynamodbService.name);
 
+  private client: AWS.DynamoDB.DocumentClient;
   private tableName: string;
+  private logging = false;
 
   constructor(private readonly configService: ConfigService) {
     const { region, endpoint, tableName, accessKeyId, secretAccessKey } =
@@ -84,165 +37,115 @@ export class DynamodbService {
       options = { ...options, endpoint };
     }
 
-    this.client = new AWS.DynamoDB.DocumentClient({ ...options });
+    const logger = this.logging
+      ? { log: this.logger.verbose.bind(this.logger) }
+      : undefined;
 
+    this.client = new AWS.DynamoDB.DocumentClient({
+      ...options,
+      logger,
+    });
     this.tableName = tableName;
   }
 
-  async saveAccount(account: Partial<Account>) {
-    return this.saveItem<AccountModel>(mapAccountToAccountModel(account));
-  }
-
-  async updateDraftProposalReplies(
-    daoId: string,
-    draftId: string,
-    replies: number,
-  ) {
-    const draft = await this.getItemByType<DraftProposalModel>(
-      daoId,
-      DynamoEntityType.DraftProposal,
-      draftId,
-    );
-
-    const currentReplies = draft.replies;
-
-    await this.saveItem<DraftProposalModel>({
-      partitionId: daoId,
-      entityId: buildEntityId(DynamoEntityType.DraftProposal, draftId),
-      entityType: DynamoEntityType.DraftProposal,
-      replies: currentReplies ?? replies,
-    });
-  }
-
-  async saveAccountNotification(
-    accountNotification: Partial<AccountNotification>,
-  ) {
-    return this.saveItem<AccountNotificationModel>(
-      mapAccountNotificationToAccountNotificationModel(accountNotification),
-    );
-  }
-
-  async saveAccountNotificationSettings(
-    accountNotificationSettings: Partial<AccountNotificationSettings>,
-  ) {
-    return this.saveItem<AccountNotificationSettingsModel>(
-      mapAccountNotificationSettingsToAccountNotificationSettingsModel(
-        accountNotificationSettings,
-      ),
-    );
-  }
-
-  async saveComment(comment: Partial<Comment>) {
-    return this.saveItem<CommentModel>(mapCommentToCommentModel(comment));
-  }
-
-  async saveDraftComment(comment: Partial<DraftComment>) {
-    return this.saveItem<CommentModel>(mapDraftCommentToCommentModel(comment));
-  }
-
-  async saveDao(dao: Dao) {
-    return this.saveItem<DaoModel>(mapDaoToDaoModel(dao));
-  }
-
-  async saveDraftProposal(
-    draftProposal: DraftProposal,
-    history?: DraftProposalHistory[],
-  ) {
-    return this.saveItem<DraftProposalModel>(
-      mapDraftProposalToDraftProposalModel(draftProposal, history),
-    );
-  }
-
-  async saveProposal(proposal: Proposal) {
-    return this.saveItem<ProposalModel>(mapProposalToProposalModel(proposal));
-  }
-
-  async saveProposalTemplate(proposalTemplate: ProposalTemplate) {
-    return this.saveItem<ProposalTemplateModel>(
-      mapProposalTemplateToProposalTemplateModel(proposalTemplate),
-    );
-  }
-
-  async saveSharedProposalTemplate(
-    sharedProposalTemplate: SharedProposalTemplate,
-  ) {
-    return this.saveItem<SharedProposalTemplateModel>(
-      mapSharedProposalTemplateToSharedProposalTemplateModel(
-        sharedProposalTemplate,
-      ),
-    );
-  }
-
-  async saveSubscription(subscription: Subscription) {
-    return this.saveItem<SubscriptionModel>(
-      mapSubscriptionToSubscriptionModel(subscription),
-    );
-  }
-
-  async saveTokenBalanceToDao(tokenBalance: TokenBalance) {
-    const { accountId: daoId } = tokenBalance;
-    const updatedToken = mapTokenBalanceToTokenBalanceModel(tokenBalance);
-
-    const dao = await this.getItemByType<DaoModel>(
-      daoId,
-      DynamoEntityType.Dao,
-      daoId,
-    );
-    const tokenIndex = dao.tokens.findIndex(
-      (token) => token.tokenId === updatedToken.tokenId,
-    );
-
-    if (tokenIndex >= 0) {
-      dao.tokens[tokenIndex] = updatedToken;
-    } else {
-      dao.tokens.push(updatedToken);
+  async batchDelete<M>(
+    items: PartialEntity<M>[],
+    tableName = this.tableName,
+  ): Promise<DocumentClient.BatchWriteItemOutput> {
+    if (!items.length) {
+      return;
     }
 
-    return await this.updateItem(
-      daoId,
-      buildEntityId(DynamoEntityType.Dao, daoId),
-      { tokens: dao.tokens },
-    );
-  }
-
-  async saveTokenPrice(token: Partial<Token>) {
-    return this.saveItem<TokenPriceModel>(mapTokenToTokenPriceModel(token));
-  }
-
-  async batchDelete<M extends BaseEntity>(
-    items: Partial<M>[],
-    tableName = this.tableName,
-  ) {
-    return PromisePool.withConcurrency(10)
-      .for(items)
-      .process((item) => {
-        return this.deleteItem(item, tableName);
-      });
-  }
-
-  async batchPut<M extends BaseEntity>(
-    items: Partial<M>[],
-    tableName = this.tableName,
-  ) {
     return this.client
       .batchWrite({
         RequestItems: {
-          [tableName]: items.map((Item) => ({
-            PutRequest: { Item },
+          [tableName]: items.map(({ partitionId, entityId }) => ({
+            DeleteRequest: {
+              Key: { partitionId, entityId },
+            },
           })),
         },
       })
       .promise();
   }
 
-  async updateItem(
-    partitionId: string,
-    entityId: string,
-    payload: Record<string, unknown>,
-  ) {
-    const keys = Object.keys(payload);
+  async batchPut<M>(
+    items: PartialEntity<M>[],
+    tableName = this.tableName,
+  ): Promise<DocumentClient.BatchWriteItemOutput[]> {
+    if (!items.length) {
+      return;
+    }
+    const chunks = getChunks(items, 25);
+    return Promise.all(
+      chunks.map((chunk) => this._batchPut<M>(chunk, tableName)),
+    );
+  }
 
-    await this.client
+  private async _batchPut<M>(
+    items: PartialEntity<M>[],
+    tableName = this.tableName,
+  ): Promise<DocumentClient.BatchWriteItemOutput> {
+    if (!items.length) {
+      return;
+    }
+    const timestamp = Date.now();
+    return this.client
+      .batchWrite({
+        RequestItems: {
+          [tableName]: items.map((item) => ({
+            PutRequest: {
+              Item: {
+                createdAt: timestamp,
+                updatedAt: timestamp,
+                ...item,
+              },
+            },
+          })),
+        },
+      })
+      .promise();
+  }
+
+  async batchGet<M>(
+    keys: EntityKey[],
+    tableName = this.tableName,
+  ): Promise<PartialEntity<M>[]> {
+    if (!keys.length) {
+      return [];
+    }
+    return this.client
+      .batchGet({
+        RequestItems: {
+          [tableName]: {
+            Keys: keys.map(({ partitionId, entityId }) => ({
+              partitionId,
+              entityId,
+            })),
+          },
+        },
+      })
+      .promise()
+      .then(({ Responses }) => Responses[tableName] as PartialEntity<M>[]);
+  }
+
+  async updateItem<M>(
+    data: PartialEntity<M>,
+    checkIfExists = true,
+    tableName = this.tableName,
+  ): Promise<PartialEntity<M> | undefined> {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { partitionId, entityId, entityType, ...rest } = data;
+    const dataToUpdate = deepFilter(
+      {
+        updatedAt: Date.now(),
+        ...rest,
+      },
+      ([, value]) => value !== undefined,
+    );
+    const keys = Object.keys(dataToUpdate);
+
+    return this.client
       .update({
         Key: {
           partitionId,
@@ -261,75 +164,108 @@ export class DynamodbService {
         ExpressionAttributeValues: keys.reduce(
           (accumulator, k, index) => ({
             ...accumulator,
-            [`:value${index}`]: payload[k],
+            [`:value${index}`]: dataToUpdate[k],
           }),
           {},
         ),
-
-        TableName: this.tableName,
+        ...(checkIfExists
+          ? {
+              ConditionExpression:
+                'attribute_exists(partitionId) AND attribute_exists(entityId)',
+            }
+          : {}),
+        TableName: tableName,
+        ReturnValues: 'ALL_NEW',
       })
-      .promise();
+      .promise()
+      .then(({ Attributes }) => Attributes as PartialEntity<M>);
   }
 
-  async getItemByType<M extends BaseEntity>(
+  async updateItemByType<M>(
     partitionId: string,
     entityType: DynamoEntityType,
     id: string,
-  ): Promise<M | null> {
-    return await this.getItemById(partitionId, buildEntityId(entityType, id));
+    data: Partial<M>,
+    checkIfExists = true,
+    tableName = this.tableName,
+  ): Promise<PartialEntity<M> | undefined> {
+    return this.updateItem<M>(
+      {
+        ...data,
+        partitionId,
+        entityType,
+        entityId: buildEntityId(entityType, id),
+      },
+      checkIfExists,
+      tableName,
+    );
   }
 
-  async getItemById<M extends BaseEntity>(
+  async getItemByType<M>(
+    partitionId: string,
+    entityType: DynamoEntityType,
+    id: string,
+    checkIfExists = false,
+    tableName = this.tableName,
+  ): Promise<PartialEntity<M> | undefined> {
+    return this.getItemById(
+      partitionId,
+      buildEntityId(entityType, id),
+      checkIfExists,
+      tableName,
+    );
+  }
+
+  async getItemById<M>(
     partitionId: string,
     entityId: EntityId,
+    checkIfExists = false,
     tableName = this.tableName,
-  ): Promise<M | null> {
-    return await this.client
+  ): Promise<PartialEntity<M> | undefined> {
+    return this.client
       .get({
         TableName: tableName,
         Key: { partitionId, entityId },
       })
       .promise()
-      .then(({ Item }) => Item as M)
-      .catch(() => null);
+      .then(({ Item }) => Item as PartialEntity<M>)
+      .catch((err) => (checkIfExists ? Promise.reject(err) : undefined));
   }
 
-  async queryItems<M extends BaseEntity>(
+  async queryItems<M>(
     query: QueryItemsQuery,
     tableName = this.tableName,
-  ): Promise<M[]> {
-    return await this.client
+  ): Promise<PartialEntity<M>[]> {
+    return this.client
       .query({
         TableName: tableName,
         ...query,
       })
       .promise()
-      .then(({ Items }) => Items as M[])
-      .catch(() => null);
+      .then(({ Items }) => Items as PartialEntity<M>[]);
   }
 
   async countItems(
     query: CountItemsQuery,
     tableName = this.tableName,
   ): Promise<number> {
-    return await this.client
+    return this.client
       .query({
         TableName: tableName,
         Select: 'COUNT',
         ...query,
       })
       .promise()
-      .then(({ Count }) => Count)
-      .catch(() => 0);
+      .then(({ Count }) => Count);
   }
 
-  async queryItemsByType<M extends BaseEntity>(
+  async queryItemsByType<M>(
     partitionId: string,
     entityType: DynamoEntityType,
     query: CountItemsQuery = {},
     tableName = this.tableName,
-  ): Promise<M[]> {
-    return await this.queryItems<M>(
+  ): Promise<PartialEntity<M>[]> {
+    return this.queryItems<M>(
       {
         KeyConditionExpression:
           'partitionId = :partitionId and begins_with(entityId, :entityType)',
@@ -365,88 +301,214 @@ export class DynamodbService {
     );
   }
 
-  async saveItem<M extends BaseEntity>(data: PartialEntity<M>, upsert = true) {
-    if (upsert) {
-      const processingTimeStamp = Date.now();
-      const { partitionId, entityId } = data;
-      const item = await this.getItemById(
+  async putItem<M>(
+    data: PartialEntity<M>,
+    checkIfExists = true,
+    tableName = this.tableName,
+  ): Promise<PartialEntity<M>> {
+    const timestamp = Date.now();
+    const dataToPut = deepFilter(
+      {
+        createdAt: timestamp,
+        updatedAt: timestamp,
+        ...data,
+      },
+      ([, value]) => value !== undefined,
+    );
+    return this.client
+      .put({
+        TableName: tableName,
+        Item: dataToPut,
+        ...(checkIfExists
+          ? {
+              ConditionExpression:
+                'attribute_not_exists(partitionId) AND attribute_not_exists(entityId)',
+            }
+          : {}),
+      })
+      .promise()
+      .then(() => dataToPut);
+  }
+
+  async putItemByType<M>(
+    partitionId: string,
+    entityType: DynamoEntityType,
+    id: string,
+    data: Partial<M>,
+    checkIfExists = true,
+    tableName = this.tableName,
+  ): Promise<PartialEntity<M>> {
+    return this.putItem<M>(
+      {
+        ...data,
         partitionId,
-        entityId,
-        this.tableName,
-      );
-      return this.client
-        .put({
-          TableName: this.tableName,
-          Item: {
-            ...(item || {}),
-            ...data,
-            processingTimeStamp,
-          },
-        })
-        .promise();
-    } else {
-      const processingTimeStamp = Date.now();
-      return this.client
-        .put({
-          TableName: this.tableName,
-          Item: {
-            ...data,
-            processingTimeStamp,
-          },
-        })
-        .promise();
+        entityId: buildEntityId(entityType, id),
+        entityType,
+      },
+      checkIfExists,
+      tableName,
+    );
+  }
+
+  async saveItem<M>(
+    data: PartialEntity<M>,
+    tableName = this.tableName,
+  ): Promise<PartialEntity<M>> {
+    try {
+      return await this.putItem(data, true, tableName);
+    } catch (err) {
+      if (err.code === 'ConditionalCheckFailedException') {
+        return this.updateItem(data, true, tableName);
+      }
+      throw err;
     }
   }
 
-  async archiveItemByType(
+  async increment<M>(
+    data: PartialEntity<M>,
+    field: keyof M,
+    value = 1,
+    tableName = this.tableName,
+  ): Promise<PartialEntity<M>> {
+    const item = await this.getItemById<M>(
+      data.partitionId,
+      data.entityId,
+      true,
+      tableName,
+    );
+    return this.saveItem<M>({
+      ...item,
+      [field]: Number(item[field] || 0) + value,
+    });
+  }
+
+  async decrement<M>(
+    data: PartialEntity<M>,
+    field: keyof M,
+    value = -1,
+    tableName = this.tableName,
+  ): Promise<PartialEntity<M>> {
+    return this.increment<M>(data, field, value, tableName);
+  }
+
+  async incrementByType<M>(
+    partitionId: string,
+    entityType: DynamoEntityType,
+    id: string,
+    field: keyof M,
+    value = 1,
+    tableName = this.tableName,
+  ): Promise<PartialEntity<M>> {
+    return this.increment<M>(
+      {
+        partitionId,
+        entityId: buildEntityId(entityType, id),
+        entityType,
+      } as PartialEntity<M>,
+      field,
+      value,
+      tableName,
+    );
+  }
+
+  async decrementByType<M>(
+    partitionId: string,
+    entityType: DynamoEntityType,
+    id: string,
+    field: keyof M,
+    value = -1,
+    tableName = this.tableName,
+  ): Promise<PartialEntity<M>> {
+    return this.incrementByType<M>(
+      partitionId,
+      entityType,
+      id,
+      field,
+      value,
+      tableName,
+    );
+  }
+
+  async saveItemByType<M>(
+    partitionId: string,
+    entityType: DynamoEntityType,
+    id: string,
+    data: Partial<M>,
+    tableName = this.tableName,
+  ): Promise<PartialEntity<M>> {
+    return this.saveItem<M>(
+      {
+        ...data,
+        partitionId,
+        entityId: buildEntityId(entityType, id),
+        entityType,
+      },
+      tableName,
+    );
+  }
+
+  async archiveItem<M>(
+    data: PartialEntity<M>,
+    isArchived = true,
+    tableName = this.tableName,
+  ): Promise<PartialEntity<M>> {
+    return this.saveItem<M>({ ...data, isArchived }, tableName);
+  }
+
+  async archiveItemByType<M>(
     partitionId: string,
     entityType: DynamoEntityType,
     id: string,
     isArchived = true,
-  ) {
-    return this.saveItem({
-      partitionId,
-      entityId: buildEntityId(entityType, id),
-      entityType: entityType,
+    tableName = this.tableName,
+  ): Promise<PartialEntity<M>> {
+    return this.archiveItem<M>(
+      {
+        partitionId,
+        entityId: buildEntityId(entityType, id),
+        entityType,
+      } as PartialEntity<M>,
       isArchived,
-    });
+      tableName,
+    );
   }
 
-  async deleteItem<M extends BaseEntity>(
-    data: Partial<M>,
+  async deleteItem<M>(
+    data: PartialEntity<M>,
+    checkIfExists = true,
     tableName = this.tableName,
-  ) {
+  ): Promise<PartialEntity<M> | undefined> {
     return this.client
       .delete({
         TableName: tableName,
         Key: { partitionId: data.partitionId, entityId: data.entityId },
+        ...(checkIfExists
+          ? {
+              ConditionExpression:
+                'attribute_exists(partitionId) AND attribute_exists(entityId)',
+            }
+          : {}),
+        ReturnValues: 'ALL_OLD',
       })
-      .promise();
+      .promise()
+      .then(({ Attributes }) => Attributes as PartialEntity<M>);
   }
 
-  async saveScheduleProposalExpireEvent(
-    daoId: string,
-    proposalId: number,
-    proposalExpiration: number,
-  ) {
-    const secondsSinceEpoch = Math.round(Date.now() / 1000);
-    const proposalExpirationPeriod = proposalExpiration / 1000000000;
-    const ttl = secondsSinceEpoch + proposalExpirationPeriod;
-
-    const item: ScheduledProposalExpirationEvent = {
-      createTimestamp: new Date().getTime(),
-      entityId: buildEntityId(
-        DynamoEntityType.ScheduledProposalExpirationEvent,
-        String(proposalId),
-      ),
-      entityType: DynamoEntityType.ScheduledProposalExpirationEvent,
-      isArchived: false,
-      partitionId: daoId,
-      processingTimeStamp: new Date().getTime(),
-      proposalId: proposalId,
-      ttl,
-    };
-
-    return this.saveItem<ScheduledProposalExpirationEvent>(item);
+  async deleteItemByType<M>(
+    partitionId: string,
+    entityType: DynamoEntityType,
+    id: string,
+    checkIfExists = true,
+    tableName = this.tableName,
+  ): Promise<PartialEntity<M> | undefined> {
+    return this.deleteItem<M>(
+      {
+        partitionId,
+        entityId: buildEntityId(entityType, id),
+        entityType,
+      } as PartialEntity<M>,
+      checkIfExists,
+      tableName,
+    );
   }
 }

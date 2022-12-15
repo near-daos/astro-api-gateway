@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 
 import { SputnikService } from '@sputnik-v2/sputnikdao';
 import { Dao, DaoService } from '@sputnik-v2/dao';
@@ -11,6 +11,8 @@ import { BountyContextService } from '@sputnik-v2/bounty/bounty-context.service'
 
 @Injectable()
 export class ProposalAggregatorService {
+  private readonly logger = new Logger(ProposalAggregatorService.name);
+
   constructor(
     private readonly sputnikService: SputnikService,
     private readonly proposalService: ProposalService,
@@ -47,6 +49,13 @@ export class ProposalAggregatorService {
 
     await PromisePool.withConcurrency(5)
       .for(proposalDtos)
+      .handleError((err, dto) => {
+        this.logger.error(
+          `Failed create proposal ${JSON.stringify(dto)}: ${err} (${
+            err.stack
+          })`,
+        );
+      })
       .process((proposalDto) => this.proposalService.create(proposalDto));
 
     await this.bountyContextService.createMultiple(bountyContextDtos);
@@ -60,8 +69,13 @@ export class ProposalAggregatorService {
     if (daoIds.length) {
       await PromisePool.withConcurrency(10)
         .for(daoIds)
+        .handleError((err, daoId) => {
+          this.logger.error(
+            `Failed update proposal count for ${daoId}: ${err} (${err.stack})`,
+          );
+        })
         .process((daoId) =>
-          this.daoService.saveWithProposalCount({ id: daoId }),
+          this.daoService.save({ id: daoId }, { updateProposalsCount: true }),
         );
     }
   }

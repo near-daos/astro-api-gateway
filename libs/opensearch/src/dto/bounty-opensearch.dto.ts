@@ -15,7 +15,7 @@ export class BountyOpensearchDto extends BaseOpensearchDto {
   description: string;
   token: string;
   amount: string;
-  times: string;
+  times: number;
   maxDeadline: string;
   numberOfClaims: number;
   commentsCount: number;
@@ -24,7 +24,8 @@ export class BountyOpensearchDto extends BaseOpensearchDto {
   bountyDoneProposals: string;
   bountyClaims: string;
   transactionHash: string;
-  createTimestamp: number;
+  createTimestamp: string; // nanoseconds
+  tags?: string[];
 
   public static getMappings(): any {
     const { mappings } = super.getMappings();
@@ -35,11 +36,11 @@ export class BountyOpensearchDto extends BaseOpensearchDto {
         ...mappings,
         properties: {
           ...properties,
-          createTimestamp: { type: 'long' },
           daoId: { type: 'keyword' },
           numberOfClaims: { type: 'integer' },
           bountyId: { type: 'integer' },
           proposalStatus: { type: 'keyword' },
+          tags: { type: 'text' },
         },
       },
     };

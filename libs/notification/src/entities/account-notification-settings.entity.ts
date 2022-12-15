@@ -24,7 +24,7 @@ export class AccountNotificationSettings extends BaseEntity {
 
   @ApiProperty()
   @Column({ type: 'bigint', nullable: true })
-  mutedUntilTimestamp: number;
+  mutedUntilTimestamp: string; // nanoseconds
 
   @ApiProperty()
   @Column()

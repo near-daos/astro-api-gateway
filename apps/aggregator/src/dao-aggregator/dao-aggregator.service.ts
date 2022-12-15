@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import PromisePool from '@supercharge/promise-pool';
 import { ReturnValue } from '@supercharge/promise-pool/dist/return-value';
 
@@ -10,6 +10,8 @@ import { castDao, castDaoById } from './types/dao';
 
 @Injectable()
 export class DaoAggregatorService {
+  private readonly logger = new Logger(DaoAggregatorService.name);
+
   constructor(
     private readonly sputnikService: SputnikService,
     private readonly daoService: DaoService,
@@ -41,6 +43,11 @@ export class DaoAggregatorService {
 
     return PromisePool.withConcurrency(10)
       .for(daos)
+      .handleError((err, dao) => {
+        this.logger.error(
+          `Failed dao status update for ${dao.id}: ${err} (${err.stack})`,
+        );
+      })
       .process((dao) => this.daoService.updateDaoStatus(dao));
   }
 
@@ -49,13 +56,29 @@ export class DaoAggregatorService {
 
     return PromisePool.withConcurrency(10)
       .for(daos)
-      .process((dao) => this.daoService.saveWithFunds(dao));
+      .handleError((err, dao) => {
+        this.logger.error(
+          `Failed dao funds update for (${dao.id}): ${err} (${err.stack})`,
+        );
+      })
+      .process((dao) =>
+        this.daoService.save(dao, { updateTotalDaoFunds: true }),
+      );
   }
 
   public async aggregateDaoAdditionalFields(dao: Dao): Promise<void> {
-    await this.daoService.saveWithAdditionalFields({
-      ...dao,
-      status: await this.daoService.getDaoStatus(dao),
-    });
+    const status = await this.daoService.getDaoStatus(dao);
+
+    await this.daoService.save(
+      {
+        ...dao,
+        status,
+      },
+      {
+        updateProposalsCount: true,
+        updateTotalDaoFunds: true,
+        updateBountiesCount: true,
+      },
+    );
   }
 }

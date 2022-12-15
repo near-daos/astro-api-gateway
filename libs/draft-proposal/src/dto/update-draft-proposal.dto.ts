@@ -43,7 +43,7 @@ export function mapUpdateDraftProposalToDraftProposalModel(
     description: dto.description,
     kind: dto.kind as ProposalKind,
     type: dto.type,
-    updateTimestamp: Date.now(),
+    updatedAt: Date.now(),
     viewAccounts: [],
     saveAccounts: [],
     history: [
@@ -55,7 +55,7 @@ export function mapUpdateDraftProposalToDraftProposalModel(
         description: draftProposal.description,
         kind: draftProposal.kind,
         type: draftProposal.type,
-        timestamp: draftProposal.updateTimestamp,
+        timestamp: draftProposal.updatedAt,
       },
       ...history,
     ],

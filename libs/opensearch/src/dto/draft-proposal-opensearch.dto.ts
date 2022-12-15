@@ -30,7 +30,6 @@ export class DraftProposalOpensearchDto extends BaseOpensearchDto {
           proposer: { type: 'keyword' },
           state: { type: 'keyword' },
           type: { type: 'keyword' },
-          createTimestamp: { type: 'long' },
           viewAccounts: { type: 'text' },
         },
       },

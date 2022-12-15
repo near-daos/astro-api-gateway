@@ -4,7 +4,7 @@ import { TransactionInfo } from '@sputnik-v2/common';
 export interface NFTTokenUpdateDto {
   account: string;
   nft: string;
-  timestamp: number;
+  timestamp: string; // nanoseconds
 }
 
 export class NFTTokenContractDto {
@@ -18,19 +18,13 @@ export class NFTTokenContractDto {
   spec: string;
 
   @ApiProperty()
-  ownerId: string;
-
-  @ApiProperty()
-  minter: string;
+  icon: string;
 
   @ApiProperty()
   baseUri: string;
 
   @ApiProperty()
   symbol: string;
-
-  @ApiProperty()
-  icon: string;
 
   @ApiProperty()
   reference: string;
@@ -107,8 +101,4 @@ export class NFTTokenDto extends TransactionInfo {
 
   @ApiProperty()
   metadata: NFTTokenMetadataDto;
-
-  isArchived?: boolean;
-
-  createdAt?: Date;
 }

@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
 import { CrudRequest } from '@nestjsx/crud';
 import {
@@ -16,7 +16,6 @@ import { Dao, Delegation, Role, RoleKindType } from '@sputnik-v2/dao/entities';
 import { Order, SearchQuery } from '@sputnik-v2/common';
 import {
   buildDelegationId,
-  buildEntityId,
   buildProposalId,
   getAccountPermissions,
   getBlockTimestamp,
@@ -33,17 +32,12 @@ import {
 } from './dto';
 import { Proposal } from './entities';
 import { ProposalStatus, ProposalVoteStatus } from './types';
-import {
-  DynamodbService,
-  DynamoEntityType,
-  ProposalModel,
-} from '@sputnik-v2/dynamodb';
+import { PartialEntity, ProposalModel } from '@sputnik-v2/dynamodb';
 import { FeatureFlags, FeatureFlagsService } from '@sputnik-v2/feature-flags';
+import { ProposalDynamoService } from './proposal-dynamo.service';
 
 @Injectable()
 export class ProposalService extends BaseTypeOrmCrudService<Proposal> {
-  private readonly logger = new Logger(ProposalService.name);
-
   constructor(
     @InjectRepository(Proposal)
     private readonly proposalRepository: Repository<Proposal>,
@@ -55,7 +49,7 @@ export class ProposalService extends BaseTypeOrmCrudService<Proposal> {
     private readonly daoRepository: Repository<Dao>,
     @InjectConnection()
     private connection: Connection,
-    private readonly dynamodbService: DynamodbService,
+    private readonly proposalDynamoService: ProposalDynamoService,
     private readonly featureFlagsService: FeatureFlagsService,
   ) {
     super(proposalRepository);
@@ -68,13 +62,9 @@ export class ProposalService extends BaseTypeOrmCrudService<Proposal> {
   async findById(
     daoId: string,
     proposalId: number,
-  ): Promise<Proposal | ProposalModel> {
+  ): Promise<Proposal | PartialEntity<ProposalModel>> {
     if (await this.useDynamoDB()) {
-      return this.dynamodbService.getItemByType<ProposalModel>(
-        daoId,
-        DynamoEntityType.Proposal,
-        String(proposalId),
-      );
+      return this.proposalDynamoService.get(daoId, String(proposalId));
     } else {
       return this.proposalRepository.findOne(
         buildProposalId(daoId, proposalId),
@@ -82,16 +72,12 @@ export class ProposalService extends BaseTypeOrmCrudService<Proposal> {
     }
   }
 
-  async create(proposalDto: ProposalDto): Promise<string> {
-    const entity = this.proposalRepository.create({
+  async create(proposalDto: ProposalDto): Promise<void> {
+    await this.proposalDynamoService.saveProposalDto(proposalDto);
+    await this.proposalRepository.save({
       ...proposalDto,
       kind: proposalDto.kind.kind,
     });
-
-    await this.dynamodbService.saveProposal(entity);
-    await this.proposalRepository.save(entity);
-
-    return entity.id;
   }
 
   createMultiple(proposalDtos: ProposalDto[]): Promise<Proposal[]> {
@@ -427,15 +413,33 @@ export class ProposalService extends BaseTypeOrmCrudService<Proposal> {
   }
 
   public async getDaoProposalCount(daoId: string): Promise<number> {
-    return this.proposalRepository.count({ daoId });
+    if (await this.useDynamoDB()) {
+      return this.proposalDynamoService.count(daoId);
+    } else {
+      return this.proposalRepository.count({ daoId });
+    }
   }
 
   public async getDaoActiveProposalCount(daoId: string): Promise<number> {
-    return this.proposalRepository.count({
-      daoId,
-      status: ProposalStatus.InProgress,
-      voteStatus: Not(ProposalVoteStatus.Expired),
-    });
+    if (await this.useDynamoDB()) {
+      return this.proposalDynamoService.count(daoId, {
+        FilterExpression:
+          '#proposalStatus = :proposalStatus and voteStatus <> :voteStatus',
+        ExpressionAttributeValues: {
+          ':proposalStatus': ProposalStatus.InProgress,
+          ':voteStatus': ProposalVoteStatus.Expired,
+        },
+        ExpressionAttributeNames: {
+          '#proposalStatus': 'status',
+        },
+      });
+    } else {
+      return this.proposalRepository.count({
+        daoId,
+        status: ProposalStatus.InProgress,
+        voteStatus: Not(ProposalVoteStatus.Expired),
+      });
+    }
   }
 
   async search(
@@ -531,12 +535,7 @@ export class ProposalService extends BaseTypeOrmCrudService<Proposal> {
   }
 
   async remove(daoId: string, proposalId: number) {
-    await this.dynamodbService.saveItem<ProposalModel>({
-      partitionId: daoId,
-      entityId: buildEntityId(DynamoEntityType.Proposal, String(proposalId)),
-      entityType: DynamoEntityType.Proposal,
-      isArchived: true,
-    });
+    await this.proposalDynamoService.archive(daoId, String(proposalId));
     await this.proposalRepository.delete({
       id: buildProposalId(daoId, proposalId),
     });

@@ -10,6 +10,7 @@ import {
   TokenUpdateDto,
   castNearToken,
 } from '@sputnik-v2/token';
+import { getBlockTimestamp } from '@sputnik-v2/utils';
 
 @Injectable()
 export class TokenAggregatorService {
@@ -27,8 +28,13 @@ export class TokenAggregatorService {
   ): Promise<void> {
     const tokenIds = [...new Set(tokenUpdates.map(({ token }) => token))];
 
-    const { errors: tokenErrors } = await PromisePool.withConcurrency(5)
+    await PromisePool.withConcurrency(5)
       .for(tokenIds)
+      .handleError((err, tokenId) => {
+        this.logger.error(
+          `Failed token aggregation ${tokenId}: ${err} (${err.stack})`,
+        );
+      })
       .process(async (tokenId) => {
         const timestamp = tokenUpdates.find(
           ({ token }) => token === tokenId,
@@ -36,54 +42,45 @@ export class TokenAggregatorService {
         return this.aggregateToken(tokenId, timestamp);
       });
 
-    tokenErrors.forEach((error) => {
-      this.logger.error(
-        `Failed to token aggregation ${error.item} with error: ${error}`,
-      );
-    });
-
-    const { errors: balanceErrors } = await PromisePool.withConcurrency(5)
+    await PromisePool.withConcurrency(5)
       .for(tokenUpdates)
+      .handleError((err, tokenId) => {
+        this.logger.error(
+          `Failed token balance aggregation ${tokenId}: ${err} (${err.stack})`,
+        );
+      })
       .process(async ({ token, account }) =>
         this.aggregateTokenBalance(token, account),
       );
-
-    balanceErrors.forEach((error) => {
-      this.logger.error(
-        `Failed to token balance aggregation ${error.item.token} with error: ${error}`,
-      );
-    });
   }
 
   public async aggregateDaoTokens(
     daoId: string,
     tokenIds: string[],
-    timestamp?: number,
+    timestamp?: string,
   ): Promise<void> {
-    const { errors: tokenErrors } = await PromisePool.withConcurrency(5)
+    await PromisePool.withConcurrency(5)
       .for(tokenIds)
+      .handleError((err, tokenId) => {
+        this.logger.error(
+          `Failed token aggregation ${tokenId}: ${err} (${err.stack})`,
+        );
+      })
       .process(async (tokenId) => this.aggregateToken(tokenId, timestamp));
 
-    tokenErrors.forEach((error) => {
-      this.logger.error(
-        `Failed to token aggregation ${error.item} with error: ${error}`,
-      );
-    });
-
-    const { errors: balanceErrors } = await PromisePool.withConcurrency(5)
+    await PromisePool.withConcurrency(5)
       .for(tokenIds)
+      .handleError((err, tokenId) => {
+        this.logger.error(
+          `Failed token balance aggregation ${tokenId}: ${err} (${err.stack})`,
+        );
+      })
       .process(async (tokenId) => this.aggregateTokenBalance(tokenId, daoId));
-
-    balanceErrors.forEach((error) => {
-      this.logger.error(
-        `Failed to token balance aggregation ${error.item} with error: ${error}`,
-      );
-    });
   }
 
   public async aggregateToken(
     tokenId: string,
-    timestamp?: number,
+    timestamp?: string,
   ): Promise<void> {
     await this.tokenService.loadTokenById(tokenId, timestamp);
   }
@@ -91,8 +88,9 @@ export class TokenAggregatorService {
   public async aggregateTokenBalance(
     tokenId: string,
     accountId: string,
+    timestamp = getBlockTimestamp(),
   ): Promise<void> {
-    await this.tokenService.loadBalanceById(tokenId, accountId);
+    await this.tokenService.loadBalanceById(tokenId, accountId, timestamp);
   }
 
   public async aggregateTokenPrices(): Promise<Token[]> {

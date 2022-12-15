@@ -1,3 +1,3 @@
 export declare class Migration {
-  migrate(): Promise<void>;
+  migrate(options?: Record<string, any> | null): Promise<void>;
 }

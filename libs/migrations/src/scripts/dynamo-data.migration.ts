@@ -1,11 +1,24 @@
 import { DateTime } from 'luxon';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindManyOptions, MongoRepository, Repository } from 'typeorm';
+import {
+  FindManyOptions,
+  MongoRepository,
+  MoreThan,
+  Repository,
+} from 'typeorm';
 import PromisePool from '@supercharge/promise-pool';
 import {
+  AccountModel,
+  AccountNotificationModel,
+  BaseModel,
+  BountyModel,
+  CommentModel,
   DaoIdsModel,
-  mapAccountNotificationSettingsToAccountNotificationSettingsModel,
+  DaoModel,
+  DaoStatsModel,
+  ErrorIdsModel,
+  ErrorModel,
   mapAccountNotificationToAccountNotificationModel,
   mapAccountToAccountModel,
   mapBountyToBountyModel,
@@ -13,15 +26,23 @@ import {
   mapDaoIdsToDaoIdsModel,
   mapDaoStatsToDaoStatsModel,
   mapDaoToDaoModel,
-  mapDraftCommentToCommentModel,
+  mapErrorEntityToErrorModel,
+  mapErrorIdsToErrorIdsModel,
   mapNftTokenToNftModel,
   mapProposalTemplateToProposalTemplateModel,
   mapProposalToProposalModel,
   mapSharedProposalTemplateToSharedProposalTemplateModel,
   mapSubscriptionToSubscriptionModel,
   mapTokenToTokenPriceModel,
+  NftModel,
+  ProposalModel,
+  ProposalTemplateModel,
+  SharedProposalTemplateModel,
+  SubscriptionModel,
+  TokenPriceModel,
 } from '@sputnik-v2/dynamodb/models';
 import { DynamodbService } from '@sputnik-v2/dynamodb/dynamodb.service';
+import { TokenService } from '@sputnik-v2/token/token.service';
 import { Account } from '@sputnik-v2/account/entities';
 import {
   AccountNotification,
@@ -29,15 +50,9 @@ import {
 } from '@sputnik-v2/notification/entities';
 import { Bounty } from '@sputnik-v2/bounty/entities';
 import { Comment } from '@sputnik-v2/comment/entities';
-import { DraftComment } from '@sputnik-v2/draft-comment/entities';
 import { Dao } from '@sputnik-v2/dao/entities';
 import { getChunkCount } from '@sputnik-v2/utils';
-import { DRAFT_DB_CONNECTION } from '@sputnik-v2/common';
 import { DaoStats } from '@sputnik-v2/stats/entities';
-import {
-  DraftProposal,
-  DraftProposalHistory,
-} from '@sputnik-v2/draft-proposal/entities';
 import { NFTToken, Token, TokenBalance } from '@sputnik-v2/token/entities';
 import { Proposal } from '@sputnik-v2/proposal/entities';
 import {
@@ -45,12 +60,44 @@ import {
   SharedProposalTemplate,
 } from '@sputnik-v2/proposal-template/entities';
 import { Subscription } from '@sputnik-v2/subscription/entities';
+import { ErrorEntity } from '@sputnik-v2/error-tracker/entities';
 
-import { Migration } from '..';
+import { Migration } from '../interfaces';
+import { DynamoDataOptionsDto } from '../dto';
+import {
+  AccountNotificationIdsDynamoService,
+  AccountNotificationSettingsService,
+} from '@sputnik-v2/notification';
+import { DynamoEntityType, PartialEntity } from '@sputnik-v2/dynamodb';
+import { ErrorStatus, ErrorType } from '@sputnik-v2/error-tracker';
 
 @Injectable()
 export class DynamoDataMigration implements Migration {
   private readonly logger = new Logger(DynamoDataMigration.name);
+  // TODO: Migrate ErrorEntity, TransactionHandlerState
+  private readonly migrationMap = {
+    [DynamoEntityType.Account]: this.migrateAccounts,
+    [DynamoEntityType.AccountNotificationSettings]:
+      this.migrateAccountNotificationSettings,
+    [DynamoEntityType.AccountNotification]: this.migrateAccountNotifications,
+    [DynamoEntityType.ProposalComment]: this.migrateComments,
+    [DynamoEntityType.DraftProposalComment]: this.migrateDraftComments,
+    [DynamoEntityType.Dao]: this.migrateDaos,
+    [DynamoEntityType.DaoIds]: this.migrateDaoIds,
+    [DynamoEntityType.Proposal]: this.migrateProposals,
+    [DynamoEntityType.Bounty]: this.migrateBounties,
+    [DynamoEntityType.DaoStats]: this.migrateDaoStats,
+    [DynamoEntityType.Nft]: this.migrateNfts,
+    [DynamoEntityType.ProposalTemplate]: this.migrateProposalTemplates,
+    [DynamoEntityType.SharedProposalTemplate]:
+      this.migrateSharedProposalTemplates,
+    [DynamoEntityType.Subscription]: this.migrateSubscription,
+    [DynamoEntityType.TokenBalance]: this.migrateTokenBalances,
+    [DynamoEntityType.TokenPrice]: this.migrateTokenPrices,
+    [DynamoEntityType.DraftProposal]: this.migrateDraftProposals,
+    [DynamoEntityType.Error]: this.migrateErrors,
+    [DynamoEntityType.ErrorIds]: this.migrateErrorIds,
+  };
 
   constructor(
     private readonly dynamodbService: DynamodbService,
@@ -63,6 +110,7 @@ export class DynamoDataMigration implements Migration {
 
     @InjectRepository(AccountNotificationSettings)
     private readonly accountNotificationSettingsRepository: Repository<AccountNotificationSettings>,
+    private readonly accountNotificationSettingsService: AccountNotificationSettingsService,
 
     @InjectRepository(Bounty)
     private readonly bountyRepository: Repository<Bounty>,
@@ -70,14 +118,15 @@ export class DynamoDataMigration implements Migration {
     @InjectRepository(Comment)
     private readonly commentRepository: Repository<Comment>,
 
-    @InjectRepository(DraftComment, DRAFT_DB_CONNECTION)
-    private draftCommentRepository: MongoRepository<DraftComment>,
-
-    @InjectRepository(DraftProposal, DRAFT_DB_CONNECTION)
-    private draftProposalRepository: MongoRepository<DraftProposal>,
-
-    @InjectRepository(DraftProposalHistory, DRAFT_DB_CONNECTION)
-    private draftProposalHistoryRepository: MongoRepository<DraftProposalHistory>,
+    // TODO: Remove after drafts migration
+    // @InjectRepository(DraftComment, DRAFT_DB_CONNECTION)
+    // private draftCommentRepository: MongoRepository<DraftComment>,
+    //
+    // @InjectRepository(DraftProposal, DRAFT_DB_CONNECTION)
+    // private draftProposalRepository: MongoRepository<DraftProposal>,
+    //
+    // @InjectRepository(DraftProposalHistory, DRAFT_DB_CONNECTION)
+    // private draftProposalHistoryRepository: MongoRepository<DraftProposalHistory>,
 
     @InjectRepository(Dao)
     private readonly daoRepository: Repository<Dao>,
@@ -105,48 +154,24 @@ export class DynamoDataMigration implements Migration {
 
     @InjectRepository(Token)
     private readonly tokenRepository: Repository<Token>,
+    private readonly tokenService: TokenService,
+
+    @InjectRepository(ErrorEntity)
+    private readonly errorRepository: Repository<ErrorEntity>,
+
+    private readonly accountNotificationIdsDynamoService: AccountNotificationIdsDynamoService,
   ) {}
 
-  public async migrate(): Promise<void> {
+  public async migrate(options?: DynamoDataOptionsDto): Promise<void> {
     this.logger.log('Starting Dynamo Data migration...');
 
-    await this.migrateAccounts();
+    const entityTypes = options?.entityTypes || [];
 
-    await this.migrateAccountNotificationSettings();
+    for (const entityType of entityTypes) {
+      await this.migrationMap[entityType].call(this);
+    }
 
-    await this.migrateComments();
-
-    await this.migrateDaos();
-
-    await this.migrateDaoIds();
-
-    await this.migrateProposals();
-
-    await this.migrateBounties();
-
-    await this.migrateDaoStats();
-
-    await this.migrateNfts();
-
-    await this.migrateProposalTemplates();
-
-    await this.migrateSharedProposalTemplates();
-
-    await this.migrateSubscription();
-
-    await this.migrateTokenBalances();
-
-    await this.migrateTokenPrices();
-
-    await this.migrateDraftComments();
-
-    await this.migrateDraftProposals();
-
-    await this.migrateAccountNotifications();
-
-    // TODO: Migrate ErrorEntity, OTP, TransactionHandlerState
-
-    this.logger.log('Starting Dynamo Data migration finished.');
+    this.logger.log('Dynamo Data migration finished.');
   }
 
   public async migrateAccounts(): Promise<void> {
@@ -154,24 +179,39 @@ export class DynamoDataMigration implements Migration {
       Account.name,
       this.accountRepository,
     )) {
-      await this.dynamodbService.batchPut(
-        accounts.map((account) => mapAccountToAccountModel(account)),
+      await this.dynamodbService.batchPut<AccountModel>(
+        accounts.map((account) =>
+          this.populateMigrationFields(mapAccountToAccountModel(account)),
+        ),
       );
     }
   }
 
   public async migrateAccountNotifications(): Promise<void> {
+    const twoWeeksAgo = new Date();
+    twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+
     for await (const accountNotifications of this.migrateEntity<AccountNotification>(
       AccountNotification.name,
       this.accountNotificationRepository,
       {
+        where: { createdAt: MoreThan(twoWeeksAgo) },
         relations: ['notification'],
       },
     )) {
-      await this.dynamodbService.batchPut(
-        accountNotifications.map((accountNotification) =>
-          mapAccountNotificationToAccountNotificationModel(accountNotification),
-        ),
+      const accountNotificationModels = accountNotifications.map(
+        (accountNotification) =>
+          this.populateMigrationFields(
+            mapAccountNotificationToAccountNotificationModel(
+              accountNotification,
+            ),
+          ),
+      );
+      await this.dynamodbService.batchPut<AccountNotificationModel>(
+        accountNotificationModels,
+      );
+      await this.accountNotificationIdsDynamoService.setAccountsNotificationIds(
+        accountNotificationModels,
       );
     }
   }
@@ -181,13 +221,16 @@ export class DynamoDataMigration implements Migration {
       AccountNotificationSettings.name,
       this.accountNotificationSettingsRepository,
     )) {
-      await this.dynamodbService.batchPut(
-        accountNotificationSettings.map((setting) =>
-          mapAccountNotificationSettingsToAccountNotificationSettingsModel(
+      await PromisePool.withConcurrency(5)
+        .for(accountNotificationSettings)
+        .handleError((err) => {
+          throw err;
+        })
+        .process(async (setting) => {
+          return this.accountNotificationSettingsService.saveAccountNotificationSettings(
             setting,
-          ),
-        ),
-      );
+          );
+        });
     }
   }
 
@@ -204,10 +247,17 @@ export class DynamoDataMigration implements Migration {
         ],
       },
     )) {
-      await this.dynamodbService.batchPut(
+      await this.dynamodbService.batchPut<BountyModel>(
         bounties
           .filter((bounty) => bounty.bountyContext)
-          .map((bounty) => mapBountyToBountyModel(bounty)),
+          .map((bounty) =>
+            this.populateMigrationFields(
+              mapBountyToBountyModel(
+                bounty,
+                bounty.bountyContext.proposal.proposalId,
+              ),
+            ),
+          ),
       );
     }
   }
@@ -220,21 +270,24 @@ export class DynamoDataMigration implements Migration {
         relations: ['reports'],
       },
     )) {
-      await this.dynamodbService.batchPut(
-        comments.map((comment) => mapCommentToCommentModel(comment)),
+      await this.dynamodbService.batchPut<CommentModel>(
+        comments.map((comment) =>
+          this.populateMigrationFields(mapCommentToCommentModel(comment)),
+        ),
       );
     }
   }
 
   public async migrateDraftComments(): Promise<void> {
-    for await (const comments of this.migrateEntity<DraftComment>(
-      DraftComment.name,
-      this.draftCommentRepository,
-    )) {
-      await this.dynamodbService.batchPut(
-        comments.map((comment) => mapDraftCommentToCommentModel(comment)),
-      );
-    }
+    // TODO: Remove after drafts migration
+    // for await (const comments of this.migrateEntity<DraftComment>(
+    //   DraftComment.name,
+    //   this.draftCommentRepository,
+    // )) {
+    //   await this.dynamodbService.batchPut<CommentModel>(
+    //     comments.map((comment) => mapDraftCommentToCommentModel(comment)),
+    //   );
+    // }
   }
 
   public async migrateDaos(): Promise<void> {
@@ -245,9 +298,17 @@ export class DynamoDataMigration implements Migration {
         relations: ['delegations', 'daoVersion', 'policy'],
       },
     )) {
-      await this.dynamodbService.batchPut(
-        daos.map((dao) => mapDaoToDaoModel(dao)),
-      );
+      await PromisePool.withConcurrency(1)
+        .for(daos)
+        .handleError((err) => {
+          throw err;
+        })
+        .process(async (dao) => {
+          await this.dynamodbService.saveItem<DaoModel>(
+            this.populateMigrationFields(mapDaoToDaoModel(dao)),
+          );
+          return this.tokenService.saveNearBalanceToDao(dao.id, dao.amount);
+        });
     }
   }
 
@@ -266,37 +327,39 @@ export class DynamoDataMigration implements Migration {
       DaoStats.name,
       this.daoStatsRepository,
     )) {
-      await this.dynamodbService.batchPut(
+      await this.dynamodbService.batchPut<DaoStatsModel>(
         daoStats.map((stats) =>
-          mapDaoStatsToDaoStatsModel({
-            ...stats,
-            // reset timestamp to start of day
-            timestamp: DateTime.fromMillis(stats.timestamp)
-              .startOf('day')
-              .toMillis(),
-          }),
+          this.populateMigrationFields(
+            mapDaoStatsToDaoStatsModel({
+              ...stats,
+              // reset timestamp to start of day
+              timestamp: DateTime.fromMillis(stats.timestamp)
+                .startOf('day')
+                .toMillis(),
+            }),
+          ),
         ),
       );
     }
   }
 
   public async migrateDraftProposals(): Promise<void> {
-    for await (const draftProposals of this.migrateEntity<DraftProposal>(
-      DraftProposal.name,
-      this.draftProposalRepository,
-    )) {
-      await PromisePool.withConcurrency(5)
-        .for(draftProposals)
-        .process(async (draftProposal) => {
-          const history = await this.draftProposalHistoryRepository.find({
-            where: { draftProposalId: { $eq: draftProposal.id } },
-          });
-          return await this.dynamodbService.saveDraftProposal(
-            draftProposal,
-            history,
-          );
-        });
-    }
+    // TODO: Remove after drafts migration
+    // for await (const draftProposals of this.migrateEntity<DraftProposal>(
+    //   DraftProposal.name,
+    //   this.draftProposalRepository,
+    // )) {
+    //   await PromisePool.withConcurrency(5)
+    //     .for(draftProposals)
+    //     .process(async (draftProposal) => {
+    //       const history = await this.draftProposalHistoryRepository.find({
+    //         where: { draftProposalId: { $eq: draftProposal.id } },
+    //       });
+    //       return this.dynamodbService.saveItem<DraftProposalModel>(
+    //         mapDraftProposalToDraftProposalModel(draftProposal, history),
+    //       );
+    //     });
+    // }
   }
 
   public async migrateNfts(): Promise<void> {
@@ -307,8 +370,10 @@ export class DynamoDataMigration implements Migration {
         relations: ['contract', 'metadata'],
       },
     )) {
-      await this.dynamodbService.batchPut(
-        nfts.map((nft) => mapNftTokenToNftModel(nft)),
+      await this.dynamodbService.batchPut<NftModel>(
+        nfts.map((nft) =>
+          this.populateMigrationFields(mapNftTokenToNftModel(nft)),
+        ),
       );
     }
   }
@@ -320,10 +385,11 @@ export class DynamoDataMigration implements Migration {
       {
         relations: ['actions'],
       },
-      5540,
     )) {
-      await this.dynamodbService.batchPut(
-        proposals.map((proposal) => mapProposalToProposalModel(proposal)),
+      await this.dynamodbService.batchPut<ProposalModel>(
+        proposals.map((proposal) =>
+          this.populateMigrationFields(mapProposalToProposalModel(proposal)),
+        ),
       );
     }
   }
@@ -333,9 +399,11 @@ export class DynamoDataMigration implements Migration {
       ProposalTemplate.name,
       this.proposalTemplateRepository,
     )) {
-      await this.dynamodbService.batchPut(
+      await this.dynamodbService.batchPut<ProposalTemplateModel>(
         proposalTemplates.map((proposalTemplate) =>
-          mapProposalTemplateToProposalTemplateModel(proposalTemplate),
+          this.populateMigrationFields(
+            mapProposalTemplateToProposalTemplateModel(proposalTemplate),
+          ),
         ),
       );
     }
@@ -349,10 +417,12 @@ export class DynamoDataMigration implements Migration {
         relations: ['daos'],
       },
     )) {
-      await this.dynamodbService.batchPut(
+      await this.dynamodbService.batchPut<SharedProposalTemplateModel>(
         sharedProposalTemplates.map((sharedProposalTemplate) =>
-          mapSharedProposalTemplateToSharedProposalTemplateModel(
-            sharedProposalTemplate,
+          this.populateMigrationFields(
+            mapSharedProposalTemplateToSharedProposalTemplateModel(
+              sharedProposalTemplate,
+            ),
           ),
         ),
       );
@@ -364,9 +434,11 @@ export class DynamoDataMigration implements Migration {
       Subscription.name,
       this.subscriptionRepository,
     )) {
-      await this.dynamodbService.batchPut(
+      await this.dynamodbService.batchPut<SubscriptionModel>(
         subscriptions.map((subscription) =>
-          mapSubscriptionToSubscriptionModel(subscription),
+          this.populateMigrationFields(
+            mapSubscriptionToSubscriptionModel(subscription),
+          ),
         ),
       );
     }
@@ -382,8 +454,11 @@ export class DynamoDataMigration implements Migration {
     )) {
       await PromisePool.withConcurrency(1)
         .for(tokenBalances)
+        .handleError((err) => {
+          throw err;
+        })
         .process(async (tokenBalance) => {
-          return await this.dynamodbService.saveTokenBalanceToDao(tokenBalance);
+          return this.tokenService.saveTokenBalanceToDao(tokenBalance);
         });
     }
   }
@@ -393,10 +468,58 @@ export class DynamoDataMigration implements Migration {
       Token.name,
       this.tokenRepository,
     )) {
-      await this.dynamodbService.batchPut(
-        tokens.map((token) => mapTokenToTokenPriceModel(token)),
+      await this.dynamodbService.batchPut<TokenPriceModel>(
+        tokens.map((token) =>
+          this.populateMigrationFields(mapTokenToTokenPriceModel(token)),
+        ),
       );
     }
+  }
+
+  public async migrateErrors(): Promise<void> {
+    for await (const errors of this.migrateEntity<ErrorEntity>(
+      ErrorEntity.name,
+      this.errorRepository,
+    )) {
+      await this.dynamodbService.batchPut<ErrorModel>(
+        errors.map((error) => {
+          if (error.type === ErrorType.IndexerProcessor) {
+            // Remove unused fields from error metadata receipt to avoid dynamo size limit
+            error.metadata.receipt = {
+              ...error.metadata.receipt,
+              action: {
+                ...error.metadata.receipt?.action,
+                actions: error.metadata.receipt?.action.actions.map(
+                  (action) => ({
+                    ...action,
+                    args: {
+                      method_name: action.args?.method_name,
+                      deposit: action.args?.deposit,
+                      args_json: action.args?.args_json,
+                    },
+                  }),
+                ),
+              },
+            };
+          }
+          return this.populateMigrationFields(
+            mapErrorEntityToErrorModel(error),
+          );
+        }),
+      );
+    }
+  }
+
+  public async migrateErrorIds(): Promise<void> {
+    const openErrors = await this.errorRepository.find({
+      where: { status: ErrorStatus.Open },
+      order: { timestamp: 'ASC' },
+    });
+    await this.dynamodbService.saveItem<ErrorIdsModel>(
+      this.populateMigrationFields(
+        mapErrorIdsToErrorIdsModel(openErrors.map(({ id }) => id)),
+      ),
+    );
   }
 
   private async *migrateEntity<E>(
@@ -407,7 +530,7 @@ export class DynamoDataMigration implements Migration {
   ): AsyncGenerator<E[]> {
     this.logger.log(`Migrating ${entity}...`);
 
-    const totalCount = await repo.count();
+    const totalCount = await repo.count(findParams);
 
     let count = startFrom;
     for await (const entities of this.getEntities(
@@ -444,5 +567,14 @@ export class DynamoDataMigration implements Migration {
 
       yield chunk;
     }
+  }
+
+  private populateMigrationFields(
+    model: PartialEntity<BaseModel>,
+  ): PartialEntity<BaseModel> {
+    return {
+      ...model,
+      migratedAt: Date.now(),
+    };
   }
 }

@@ -2,34 +2,57 @@ import {
   AccountNotificationSettings,
   NotificationType,
 } from '@sputnik-v2/notification';
-import { buildEntityId } from '@sputnik-v2/utils';
 import { BaseModel } from './base.model';
-import { DynamoEntityType } from '../types';
+import { buildEntityId } from '@sputnik-v2/utils';
+import { DynamoEntityType } from '@sputnik-v2/dynamodb/types';
 
 export class AccountNotificationSettingsModel extends BaseModel {
+  accountId: string;
+  settings: AccountNotificationSettingsItemModel[];
+}
+
+export class AccountNotificationSettingsItemModel {
   id: string;
   daoId: string;
+  accountId: string;
   types: NotificationType[];
-  mutedUntilTimestamp: number;
+  mutedUntilTimestamp: string; // nanoseconds
   isAllMuted: boolean;
   enableSms: boolean;
   enableEmail: boolean;
   actionRequiredOnly: boolean;
+  createdAt: number;
 }
 
-export function mapAccountNotificationSettingsToAccountNotificationSettingsModel(
-  accountNotificationSettings: Partial<AccountNotificationSettings>,
+export function mapAccountNotificationSettingsModel(
+  accountId: string,
+  accountNotificationSettings: AccountNotificationSettings[],
 ): AccountNotificationSettingsModel {
   return {
-    partitionId: accountNotificationSettings.accountId,
+    partitionId: accountId,
     entityId: buildEntityId(
       DynamoEntityType.AccountNotificationSettings,
-      accountNotificationSettings.id,
+      accountId,
     ),
     entityType: DynamoEntityType.AccountNotificationSettings,
-    isArchived: accountNotificationSettings.isArchived,
-    processingTimeStamp: Date.now(),
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+    isArchived: false,
+    accountId,
+    settings: accountNotificationSettings.map((setting) =>
+      mapAccountNotificationSettingsToAccountNotificationSettingsItemModel(
+        setting,
+      ),
+    ),
+  };
+}
+
+export function mapAccountNotificationSettingsToAccountNotificationSettingsItemModel(
+  accountNotificationSettings: AccountNotificationSettings,
+): AccountNotificationSettingsItemModel {
+  return {
     id: accountNotificationSettings.id,
+    accountId: accountNotificationSettings.accountId,
     daoId: accountNotificationSettings.daoId,
     types: accountNotificationSettings.types,
     mutedUntilTimestamp: accountNotificationSettings.mutedUntilTimestamp,
@@ -37,6 +60,8 @@ export function mapAccountNotificationSettingsToAccountNotificationSettingsModel
     enableSms: accountNotificationSettings.enableSms,
     enableEmail: accountNotificationSettings.enableEmail,
     actionRequiredOnly: accountNotificationSettings.actionRequiredOnly,
-    createTimestamp: accountNotificationSettings.createdAt.getTime(),
+    createdAt: accountNotificationSettings.createdAt
+      ? accountNotificationSettings.createdAt.getTime()
+      : undefined,
   };
 }

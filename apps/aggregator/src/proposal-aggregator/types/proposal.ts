@@ -103,8 +103,8 @@ export function castProposal(
         ? buildBountyId(dao.id, kind.kind.bountyId)
         : null,
     votePeriodEnd: calcProposalVotePeriodEnd(
-      { submissionTime: proposalDto.submissionTime },
-      dao,
+      proposalDto.submissionTime,
+      dao.policy.proposalPeriod,
     ),
     voteStatus: ProposalVoteStatus.Active,
     actions,

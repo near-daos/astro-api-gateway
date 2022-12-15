@@ -2,14 +2,16 @@ import { Account, Contract, Near } from 'near-api-js';
 import { Inject, Injectable } from '@nestjs/common';
 import { NEAR_API_PROVIDER } from '@sputnik-v2/common';
 import { NearApiContract, NearApiProvider } from '@sputnik-v2/config/near-api';
-import { decodeBase64 } from '@sputnik-v2/utils';
+import { BlockId } from 'near-api-js/lib/providers/provider';
 
+import { StakingContract } from './contracts';
 import {
   NearAccountState,
   NearTransactionStatus,
   NearProvider,
   castTransactionAction,
   castTransactionReceipt,
+  castTransactionReceiptOutcome,
   castTransactionStatus,
   ViewCodeResponse,
 } from './types';
@@ -17,11 +19,8 @@ import {
 @Injectable()
 export class NearApiService {
   private near!: Near;
-
   private contracts: Record<string, NearApiContract>;
-
   private account: Account;
-
   private provider: NearProvider;
 
   constructor(
@@ -36,37 +35,31 @@ export class NearApiService {
     this.contracts = contracts;
   }
 
+  public async getBlock(blockId: BlockId) {
+    return this.provider.block({ blockId });
+  }
+
   public async getTxStatus(
     transactionHash: string,
     accountId: string,
   ): Promise<NearTransactionStatus> {
-    const txStatus = await this.provider.sendJsonRpc<NearTransactionStatus>(
-      'EXPERIMENTAL_tx_status',
-      [transactionHash, accountId],
+    const txStatus = await this.provider.txStatusReceipts(
+      transactionHash,
+      accountId,
     );
 
-    txStatus.status = castTransactionStatus(txStatus.status);
-    txStatus.transaction.actions = txStatus.transaction.actions.map(
-      castTransactionAction,
-    );
-    txStatus.receipts = txStatus.receipts.map(castTransactionReceipt);
-    txStatus.receiptSuccessValues = txStatus.receipts_outcome.reduce(
-      (values, value) => {
-        if (
-          typeof value.outcome?.status === 'object' &&
-          'SuccessValue' in value.outcome.status
-        ) {
-          return {
-            ...values,
-            [value.id]: decodeBase64(value.outcome.status.SuccessValue),
-          };
-        }
-        return values;
+    return {
+      status: castTransactionStatus(txStatus.status),
+      transaction: {
+        ...txStatus.transaction,
+        actions: txStatus.transaction.actions.map(castTransactionAction),
       },
-      {},
-    );
-
-    return txStatus;
+      transaction_outcome: txStatus.transaction_outcome,
+      receipts: txStatus.receipts.map(castTransactionReceipt),
+      receipts_outcome: txStatus.receipts_outcome.map(
+        castTransactionReceiptOutcome,
+      ),
+    };
   }
 
   public async getAccountState(accountId: string): Promise<NearAccountState> {
@@ -78,23 +71,25 @@ export class NearApiService {
     return (await this.getAccountState(accountId)).amount;
   }
 
-  public getContract(key: string, id?: string): Contract & any {
+  public getContract<T extends Contract>(key: string, id?: string): T {
     const contract = this.contracts[key];
     const contractId = id || contract?.contractId;
 
     return new Contract(this.account, contractId, {
       viewMethods: contract.viewMethods,
       changeMethods: contract.changeMethods,
-    });
+    }) as T;
   }
 
-  public async getStakingContract(contractId: string): Promise<Contract & any> {
+  public async getStakingContract(
+    contractId: string,
+  ): Promise<StakingContract> {
     const account = await this.near.account(contractId);
 
     return new Contract(account, contractId, {
       viewMethods: ['ft_total_supply', 'ft_balance_of', 'get_user'],
       changeMethods: ['delegate', 'undelegate', 'withdraw'],
-    });
+    }) as StakingContract;
   }
 
   public async getContractVersionHash(id: string): Promise<string> {

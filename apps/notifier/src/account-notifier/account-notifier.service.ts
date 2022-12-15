@@ -1,5 +1,4 @@
-import { Injectable } from '@nestjs/common';
-import { In } from 'typeorm';
+import { Injectable, Logger } from '@nestjs/common';
 
 import {
   AccountNotification,
@@ -28,9 +27,15 @@ import {
   NotifiTemplateMessageDto,
 } from '@sputnik-v2/notifi-client';
 import { ConfigService } from '@nestjs/config';
+import {
+  AccountNotificationSettingsItemModel,
+  DaoModel,
+} from '@sputnik-v2/dynamodb';
 
 @Injectable()
 export class AccountNotifierService {
+  private readonly logger = new Logger(AccountNotifierService.name);
+
   constructor(
     private readonly accountNotificationService: AccountNotificationService,
     private readonly accountNotificationSettingsService: AccountNotificationSettingsService,
@@ -57,6 +62,11 @@ export class AccountNotifierService {
       // Notify accounts via email and sms
       await PromisePool.withConcurrency(1)
         .for(accountNotifications.filter(({ isMuted }) => !isMuted))
+        .handleError((err, notification) => {
+          this.logger.error(
+            `Failed to send notification ${notification.id}: ${err} (${err.stack})`,
+          );
+        })
         .process(async (accountNotification) => {
           return this.accountService.sendNotification(
             accountNotification,
@@ -71,9 +81,9 @@ export class AccountNotifierService {
   ): Promise<AccountNotification[]> {
     const daoSubscribers = await this.getDaoSubscribers(notification.daoId);
     const notificationSettings =
-      await this.accountNotificationSettingsService.find({
-        accountId: In(daoSubscribers),
-      });
+      await this.accountNotificationSettingsService.getAccountsNotificationSettings(
+        daoSubscribers,
+      );
     const accountsNotifications = daoSubscribers.reduce(
       (accountsNotifications, accountId) => {
         const status = this.getNotifyAccountStatus(
@@ -105,19 +115,28 @@ export class AccountNotifierService {
   }
 
   private async getDaoSubscribers(daoId: string): Promise<string[]> {
-    const daoSubscribers = await this.subscriptionService.getDaoSubscribers(
-      daoId,
-    );
-    const daoMembers = await this.daoService.getDaoMembers(daoId);
-    return [...new Set(daoSubscribers.concat(daoMembers))].filter(
-      (member) => !!member,
-    );
+    if (await this.daoService.useDynamoDB()) {
+      const daoModel = (await this.daoService.findById(daoId)) as DaoModel;
+      return [
+        ...new Set(daoModel.accountIds.concat(daoModel.followers)),
+      ].filter((member) => !!member);
+    } else {
+      const daoSubscribers = await this.subscriptionService.getDaoSubscribers(
+        daoId,
+      );
+      const daoMembers = await this.daoService.getDaoMembers(daoId);
+      return [...new Set(daoSubscribers.concat(daoMembers))].filter(
+        (member) => !!member,
+      );
+    }
   }
 
   private getNotifyAccountStatus(
     accountId: string,
     notification: Notification,
-    notificationSettings: AccountNotificationSettings[],
+    notificationSettings: Array<
+      AccountNotificationSettings | AccountNotificationSettingsItemModel
+    >,
   ): {
     isDisabled: boolean;
     shouldNotify: boolean;
@@ -141,11 +160,11 @@ export class AccountNotifierService {
       };
     }
 
-    const currentTimestamp = getBlockTimestamp();
+    const currentTimestamp = BigInt(getBlockTimestamp());
     const isDisabled = accountNotificationSettings.some(
       (ans) =>
-        (Number(ans.mutedUntilTimestamp) &&
-          ans.mutedUntilTimestamp > currentTimestamp) ||
+        (ans.mutedUntilTimestamp &&
+          BigInt(ans.mutedUntilTimestamp) > currentTimestamp) ||
         ans.isAllMuted,
     );
     const isActionRequiredOnly = accountNotificationSettings.some(

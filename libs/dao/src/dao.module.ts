@@ -1,5 +1,6 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { BountyModule } from '@sputnik-v2/bounty';
 import { DaoDynamoService } from '@sputnik-v2/dao/dao-dynamo.service';
 import { ProposalModule } from '@sputnik-v2/proposal/proposal.module';
 import { TokenModule } from '@sputnik-v2/token';
@@ -18,6 +19,7 @@ import { DaoService } from './dao.service';
     NearApiModule,
     FeatureFlagsModule,
     DynamodbModule,
+    forwardRef(() => BountyModule),
   ],
   providers: [DaoService, DaoDynamoService],
   exports: [DaoService, DaoDynamoService],

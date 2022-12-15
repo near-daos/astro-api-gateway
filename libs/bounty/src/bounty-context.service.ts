@@ -25,16 +25,11 @@ export class BountyContextService extends TypeOrmCrudService<BountyContext> {
 
   async create(
     bountyContextDto: BountyContextDto,
-    proposalId: number,
+    proposalIndex: number,
   ): Promise<string> {
-    await this.bountyDynamoService.saveBounty(
-      {
-        proposalId: bountyContextDto.id,
-        daoId: bountyContextDto.daoId,
-        transactionHash: bountyContextDto.transactionHash,
-        createTimestamp: bountyContextDto.createTimestamp,
-      },
-      proposalId,
+    await this.bountyDynamoService.saveBountyContext(
+      bountyContextDto,
+      proposalIndex,
     );
     await this.bountyContextRepository.save(bountyContextDto);
 
@@ -48,10 +43,10 @@ export class BountyContextService extends TypeOrmCrudService<BountyContext> {
     });
   }
 
+  // TODO: deprecated
   async createMultiple(
     bountyContextDtos: BountyContextDto[],
   ): Promise<BountyContext[]> {
-    await this.bountyDynamoService.saveMultipleBounties(bountyContextDtos);
     return this.bountyContextRepository.save(bountyContextDtos);
   }
 

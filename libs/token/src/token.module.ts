@@ -10,7 +10,6 @@ import { NFTTokenDynamoService } from '@sputnik-v2/token/nft-token-dynamo.servic
 import { Token, NFTToken, NFTTokenMetadata, TokenBalance } from './entities';
 import { NFTTokenService } from './nft-token.service';
 import { TokenService } from './token.service';
-import { TokenFactoryService } from './token-factory.service';
 
 @Module({
   imports: [
@@ -26,17 +25,7 @@ import { TokenFactoryService } from './token-factory.service';
     FeatureFlagsModule,
     DynamodbModule,
   ],
-  providers: [
-    TokenFactoryService,
-    TokenService,
-    NFTTokenService,
-    NFTTokenDynamoService,
-  ],
-  exports: [
-    TokenFactoryService,
-    TokenService,
-    NFTTokenService,
-    NFTTokenDynamoService,
-  ],
+  providers: [TokenService, NFTTokenService, NFTTokenDynamoService],
+  exports: [TokenService, NFTTokenService, NFTTokenDynamoService],
 })
 export class TokenModule {}

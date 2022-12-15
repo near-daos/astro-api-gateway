@@ -1,6 +1,7 @@
 import { OpensearchModule } from 'nestjs-opensearch';
 
-import { Module } from '@nestjs/common';
+import { getConnection } from 'typeorm';
+import { forwardRef, Module, OnApplicationShutdown } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { Proposal, ProposalAction, ProposalModule } from '@sputnik-v2/proposal';
@@ -17,6 +18,7 @@ import {
   NFTTokenMetadata,
   Token,
   TokenBalance,
+  TokenModule,
 } from '@sputnik-v2/token';
 import { Dao, DaoModule } from '@sputnik-v2/dao';
 import {
@@ -29,6 +31,7 @@ import {
   AccountNotification,
   AccountNotificationSettings,
   Notification,
+  NotificationModule,
 } from '@sputnik-v2/notification';
 import { Comment, CommentModule } from '@sputnik-v2/comment';
 import {
@@ -53,6 +56,7 @@ import { DaoStats } from '@sputnik-v2/stats';
 import { Subscription } from '@sputnik-v2/subscription';
 import { TransactionHandlerState } from '@sputnik-v2/transaction-handler';
 
+import { MigrationService } from './migration.service';
 import migrationScripts from './scripts';
 
 @Module({
@@ -88,14 +92,15 @@ import migrationScripts from './scripts';
       TokenBalance,
       TransactionHandlerState,
     ]),
-    TypeOrmModule.forRootAsync({
-      name: DRAFT_DB_CONNECTION,
-      useClass: TypeOrmConfigService,
-    }),
-    TypeOrmModule.forFeature(
-      [DraftProposal, DraftProposalHistory, DraftComment],
-      DRAFT_DB_CONNECTION,
-    ),
+    // TODO: Remove after drafts migration
+    // TypeOrmModule.forRootAsync({
+    //   name: DRAFT_DB_CONNECTION,
+    //   useClass: TypeOrmConfigService,
+    // }),
+    // TypeOrmModule.forFeature(
+    //   [DraftProposal, DraftProposalHistory, DraftComment],
+    //   DRAFT_DB_CONNECTION,
+    // ),
     ConfigModule.forRoot({
       isGlobal: true,
       load: configuration,
@@ -106,17 +111,26 @@ import migrationScripts from './scripts';
         node: process.env.OPENSEARCH_NODE_URL,
       }),
     }),
-    DaoModule,
+    forwardRef(() => DaoModule),
     ProposalModule,
     BountyModule,
+    NotificationModule,
+    forwardRef(() => BountyModule),
     NearIndexerModule,
     NearApiModule,
     SputnikModule,
     CommentModule,
     ProposalTemplateModule,
+    TokenModule,
     OpenSearchModule,
     DynamodbModule,
   ],
-  providers: [...migrationScripts],
+  exports: [MigrationService, ...migrationScripts],
+  providers: [MigrationService, ...migrationScripts],
 })
-export class MigrationModule {}
+export class MigrationModule implements OnApplicationShutdown {
+  async onApplicationShutdown() {
+    // TODO: Remove after drafts migration
+    // await getConnection(DRAFT_DB_CONNECTION).close();
+  }
+}

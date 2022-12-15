@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { Bounty } from '@sputnik-v2/bounty/entities';
+import { BountyContextDto, BountyDto } from '@sputnik-v2/bounty/dto';
 import { DynamodbService } from '@sputnik-v2/dynamodb/dynamodb.service';
 import {
   BountyModel,
-  mapBountyToBountyModel,
+  mapBountyContextDtoToBountyModel,
+  mapBountyDtoToBountyModel,
 } from '@sputnik-v2/dynamodb/models';
 import { DynamoEntityType, QueryItemsQuery } from '@sputnik-v2/dynamodb/types';
 
@@ -11,24 +12,36 @@ import { DynamoEntityType, QueryItemsQuery } from '@sputnik-v2/dynamodb/types';
 export class BountyDynamoService {
   constructor(private readonly dynamoDbService: DynamodbService) {}
 
-  async save(bounty) {
-    return this.dynamoDbService.saveItem<BountyModel>(bounty);
+  async save(daoId, bountyId, bounty: Partial<BountyModel>) {
+    return this.dynamoDbService.saveItemByType<BountyModel>(
+      daoId,
+      DynamoEntityType.Bounty,
+      bountyId,
+      bounty,
+    );
   }
 
   async saveMultiple(bounty) {
     return this.dynamoDbService.batchPut<BountyModel>(bounty);
   }
 
-  async saveBounty(bounty: Partial<Bounty>, proposalId?: number) {
-    return this.save(mapBountyToBountyModel(bounty, proposalId));
+  async saveBounty(bountyDto: Partial<BountyDto>) {
+    return this.dynamoDbService.saveItem<BountyModel>(
+      mapBountyDtoToBountyModel(bountyDto),
+    );
   }
 
-  async saveMultipleBounties(bounties: Partial<Bounty>[]) {
-    return this.save(bounties.map((bounty) => mapBountyToBountyModel(bounty)));
+  async saveBountyContext(
+    bountyContext: BountyContextDto,
+    proposalIndex: number,
+  ) {
+    return this.dynamoDbService.saveItem<BountyModel>(
+      mapBountyContextDtoToBountyModel(bountyContext, proposalIndex),
+    );
   }
 
   async archive(daoId: string, proposalId: number, isArchived = true) {
-    return this.dynamoDbService.archiveItemByType(
+    return this.dynamoDbService.archiveItemByType<BountyModel>(
       daoId,
       DynamoEntityType.Bounty,
       String(proposalId),

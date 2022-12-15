@@ -40,20 +40,20 @@ export class ProposalActionsMigration implements Migration {
     const { blockTimestamp: nearBlockTimestamp } =
       await this.nearIndexerService.lastTransaction();
     this.logger.log(
-      `Lst available indexer transaction timestamp: ${nearBlockTimestamp}`,
+      `Last available indexer transaction timestamp: ${nearBlockTimestamp}`,
     );
 
     const chunkSize = 7 * 24 * 60 * 60 * 1000 * 1000 * 1000; // a week
-    const chunks = [];
-    let from = new Decimal(blockTimestamp).toNumber();
-    while (true) {
-      const to = Math.min(
-        Decimal.sum(from, chunkSize).toNumber(),
-        nearBlockTimestamp,
-      );
-      chunks.push({ from, to });
+    const chunks: { from: string; to: string }[] = [];
 
-      if (to >= nearBlockTimestamp) {
+    let from = new Decimal(blockTimestamp);
+
+    while (true) {
+      const to = Decimal.min(Decimal.sum(from, chunkSize), nearBlockTimestamp);
+
+      chunks.push({ from: from.toString(), to: to.toString() });
+
+      if (to.gte(nearBlockTimestamp)) {
         break;
       }
 
@@ -61,24 +61,20 @@ export class ProposalActionsMigration implements Migration {
     }
 
     this.logger.log(`Querying for Near Indexer Transactions...`);
-    const { results: transactions, errors: txErrors } =
-      await PromisePool.withConcurrency(2)
-        .for(chunks)
-        .process(async ({ from, to }) => {
-          return await this.nearIndexerService.findTransactionsByAccountIds(
-            contractName,
-            from,
-            to,
-          );
-        });
+    const { results: transactions } = await PromisePool.withConcurrency(2)
+      .for(chunks)
+      .handleError((err) => {
+        this.logger.error(err);
+      })
+      .process(async ({ from, to }) => {
+        return this.nearIndexerService.findTransactionsByAccountIds(
+          contractName,
+          from,
+          to,
+        );
+      });
 
-    this.logger.log(
-      `Received Total Transactions: ${transactions.length}. Errors count: ${txErrors.length}`,
-    );
-
-    if (txErrors && txErrors.length) {
-      txErrors.map((error) => this.logger.error(error));
-    }
+    this.logger.log(`Received Total Transactions: ${transactions.length}.`);
 
     this.logger.log(`Migrating Proposals...`);
     const migratedProposals = this.migrateProposals(
@@ -90,6 +86,9 @@ export class ProposalActionsMigration implements Migration {
     const { results, errors: proposalErrors } =
       await PromisePool.withConcurrency(500)
         .for(migratedProposals)
+        .handleError((err) => {
+          this.logger.log(err);
+        })
         .process(
           async (proposal) => await this.proposalService.update(proposal),
         );
@@ -99,10 +98,6 @@ export class ProposalActionsMigration implements Migration {
         proposalErrors.length
       }`,
     );
-
-    if (proposalErrors && proposalErrors.length) {
-      proposalErrors.map((error) => this.logger.error(error));
-    }
 
     this.logger.log('Proposal Actions migration finished.');
   }

@@ -12,5 +12,7 @@ export enum FeatureFlags {
   DraftCommentsDynamo = 'draft-comments-dynamo',
   DraftDynamo = 'draft-dynamo',
   NftTokenDynamo = 'nft-token-dynamo',
+  NotificationDynamo = 'notification-dynamo',
+  ErrorDynamo = 'error-dynamo',
   EnableFailedDao = 'enable-failed-dao',
 }

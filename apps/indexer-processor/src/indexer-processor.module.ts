@@ -13,8 +13,8 @@ import { ErrorTrackerModule } from '@sputnik-v2/error-tracker';
 import { HttpCacheModule } from '@sputnik-v2/cache';
 
 import { IndexerProcessorService } from './indexer-processor.service';
-import { RedisModule } from './redis/redis.module';
 import { IndexerProcessorErrorHandlerService } from './indexer-processor-error-handler.service';
+import { RedisModule } from './redis/redis.module';
 
 @Module({
   imports: [

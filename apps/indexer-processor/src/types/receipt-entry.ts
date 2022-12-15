@@ -24,7 +24,7 @@ export class ReceiptEntry {
   included_in_block_hash: string;
   included_in_chunk_hash: string;
   index_in_chunk: number;
-  included_in_block_timestamp: number;
+  included_in_block_timestamp: string;
   predecessor_account_id: string;
   receiver_account_id: string;
   receipt_kind: 'ACTION' | 'DATA';

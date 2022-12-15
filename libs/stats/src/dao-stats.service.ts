@@ -1,14 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DaoDynamoService } from '@sputnik-v2/dao';
+import { DaoStatsModel } from '@sputnik-v2/dynamodb';
 import { Repository } from 'typeorm';
-import { BountyService } from '@sputnik-v2/bounty';
 import { DateTime } from 'luxon';
 
-import { Dao, DaoService } from '@sputnik-v2/dao';
-import { DaoModel } from '@sputnik-v2/dynamodb';
+import { DaoService } from '@sputnik-v2/dao';
 import { FeatureFlags, FeatureFlagsService } from '@sputnik-v2/feature-flags';
-import { NFTTokenService } from '@sputnik-v2/token';
 import { buildDaoStatsId, getGrowth } from '@sputnik-v2/utils';
 
 import { DaoStatsDynamoService } from './dao-stats-dynamo.service';
@@ -28,8 +26,6 @@ export class DaoStatsService {
     @InjectRepository(DaoStats)
     private readonly daoStatsRepository: Repository<DaoStats>,
     private readonly daoService: DaoService,
-    private readonly bountyService: BountyService,
-    private readonly nftTokenService: NFTTokenService,
     private readonly featureFlagsService: FeatureFlagsService,
     private readonly daoDynamoService: DaoDynamoService,
     private readonly daoStatsDynamoService: DaoStatsDynamoService,
@@ -50,23 +46,11 @@ export class DaoStatsService {
 
   async getDaoStats(daoId: string): Promise<DaoStatsDto> {
     const timestamp = DateTime.now().startOf('day').toMillis();
-
-    let dao: Dao | DaoModel;
-
-    if (await this.useDynamoDB()) {
-      dao = await this.daoDynamoService.getDao(daoId);
-    } else {
-      dao = await this.daoService.findById(daoId);
-    }
+    const dao = await this.daoService.findById(daoId);
 
     if (!dao) {
       throw new NotFoundException();
     }
-
-    const bountyCount = await this.bountyService.getDaoActiveBountiesCount(
-      daoId,
-    );
-    const nftCount = await this.nftTokenService.getAccountTokenCount(daoId);
 
     return {
       id: buildDaoStatsId(dao.id, timestamp),
@@ -75,12 +59,15 @@ export class DaoStatsService {
       totalDaoFunds: dao.totalDaoFunds,
       totalProposalCount: dao.totalProposalCount,
       activeProposalCount: dao.activeProposalCount,
-      bountyCount,
-      nftCount,
+      bountyCount: dao.bountyCount,
+      nftCount: dao.nftCount,
     };
   }
 
-  async getLastDaoStats(daoId: string, timestamp?: number): Promise<DaoStats> {
+  async getLastDaoStats(
+    daoId: string,
+    timestamp?: number,
+  ): Promise<Partial<DaoStats>> {
     if (!timestamp) {
       timestamp = DateTime.now().minus({ day: 1 }).startOf('day').toMillis();
     }
@@ -97,7 +84,7 @@ export class DaoStatsService {
 
   async getDaoStatsState(
     daoStats: DaoStatsDto,
-    previousDaoStats: DaoStatsDto,
+    previousDaoStats: Partial<DaoStats>,
   ): Promise<DaoStatsStateDto> {
     return {
       daoId: daoStats.daoId,
@@ -131,7 +118,7 @@ export class DaoStatsService {
   ): Promise<StatsEntryDto[]> {
     const currentDaoStats = await this.getDaoStats(daoId);
 
-    let daoStats: DaoStats[];
+    let daoStats: Partial<DaoStats>[];
 
     if (await this.useDynamoDB()) {
       daoStats = await this.daoStatsDynamoService.queryDaoStats(daoId, {
@@ -162,7 +149,7 @@ export class DaoStatsService {
   ): Promise<ProposalStatsEntryDto[]> {
     const currentDaoStats = await this.getDaoStats(daoId);
 
-    let daoStats: DaoStats[];
+    let daoStats: Partial<DaoStats>[];
 
     if (await this.useDynamoDB()) {
       daoStats = await this.daoStatsDynamoService.queryDaoStats(daoId, {

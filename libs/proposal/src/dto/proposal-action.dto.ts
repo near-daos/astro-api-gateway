@@ -9,7 +9,7 @@ export class ProposalActionDto {
   accountId: string;
   action: Action;
   transactionHash: string;
-  timestamp: number;
+  timestamp: string; // nanoseconds
 }
 
 export const buildProposalAction = (
@@ -17,7 +17,7 @@ export const buildProposalAction = (
   tx: {
     accountId: string;
     transactionHash: string;
-    blockTimestamp: number;
+    blockTimestamp: string; // nanoseconds
   },
   action: Action,
 ): ProposalActionDto | ProposalAction => {
@@ -25,8 +25,8 @@ export const buildProposalAction = (
   return {
     id: buildProposalActionId(proposalId, accountId, action),
     accountId,
-    proposalId: proposalId,
-    action: action,
+    proposalId,
+    action,
     transactionHash,
     timestamp,
   };

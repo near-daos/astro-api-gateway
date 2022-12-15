@@ -47,7 +47,7 @@ export class DynamoDraftProposalService implements DraftProposalService {
       kind: draftProposalDto.kind as ProposalKind,
       type: draftProposalDto.type,
       state: DraftProposalState.Open,
-      createTimestamp: Date.now(),
+      createdAt: Date.now(),
       replies: 0,
       viewAccounts: [],
       saveAccounts: [],
@@ -174,7 +174,6 @@ export class DynamoDraftProposalService implements DraftProposalService {
       await this.dynamodbService.saveItem<DraftProposalModel>({
         ...draftProposal,
         viewAccounts,
-        updateTimestamp: Date.now(),
       });
     }
 

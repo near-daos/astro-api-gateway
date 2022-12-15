@@ -5,6 +5,7 @@ export enum DynamoEntityType {
   Bounty = 'Bounty',
   Account = 'Account',
   AccountNotification = 'AccountNotification',
+  AccountNotificationIds = 'AccountNotificationIds',
   AccountNotificationSettings = 'AccountNotificationSettings',
   ProposalComment = 'ProposalComment',
   BountyComment = 'BountyComment',
@@ -18,6 +19,8 @@ export enum DynamoEntityType {
   Nft = 'Nft',
   TokenBalance = 'TokenBalance',
   TokenPrice = 'TokenPrice',
-  ScheduledProposalExpirationEvent = 'ScheduledProposalExpirationEvent',
   HandledReceiptAction = 'HandledReceiptAction',
+  Otp = 'Otp',
+  Error = 'Error',
+  ErrorIds = 'ERROR_IDS',
 }

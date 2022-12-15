@@ -1,26 +1,39 @@
-import camelcaseKeys from 'camelcase-keys';
-import { VotePolicy, WeightOrRatioType } from '@sputnik-v2/dao/types';
+import {
+  VotePolicy,
+  WeightKind,
+  WeightOrRatioType,
+} from '@sputnik-v2/dao/types';
+import {
+  SputnikDaoVotePolicy,
+  SputnikDaoVotePolicyWeightKind,
+} from '@sputnik-v2/near-api';
 
-export function castVotePolicy(policy): VotePolicy | null {
+export function castVotePolicy(
+  policy: SputnikDaoVotePolicy,
+): VotePolicy | null {
   if (!policy) {
     return null;
   }
 
-  const { threshold, weightKind, quorum } = camelcaseKeys(policy || {});
+  const { threshold, weight_kind, quorum } = policy;
 
-  if (threshold instanceof Array) {
-    return {
-      weightKind,
-      quorum,
-      kind: WeightOrRatioType.Ratio,
-      ratio: threshold,
-    };
+  switch (weight_kind) {
+    case SputnikDaoVotePolicyWeightKind.RoleWeight:
+      return {
+        weightKind: WeightKind.RoleWeight,
+        quorum,
+        kind: WeightOrRatioType.Ratio,
+        ratio: threshold as number[],
+      };
+
+    case SputnikDaoVotePolicyWeightKind.TokenWeight:
+      return {
+        weightKind: WeightKind.TokenWeight,
+        quorum,
+        kind: WeightOrRatioType.Weight,
+        weight: threshold as string,
+      };
   }
 
-  return {
-    weightKind,
-    quorum,
-    kind: WeightOrRatioType.Weight,
-    weight: threshold,
-  };
+  throw new Error(`Invalid vote policy: ${JSON.stringify(policy)}`);
 }

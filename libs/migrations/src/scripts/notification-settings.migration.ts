@@ -29,13 +29,14 @@ export class NotificationSettingsMigration implements Migration {
     const allDaos = await this.daoService.find();
     const { errors } = await PromisePool.withConcurrency(50)
       .for(allDaos)
+      .handleError((err) => {
+        this.logger.error(err);
+      })
       .process(async (dao) => this.migrateDaoNotificationSettings(dao.id));
 
-    if (errors && errors.length) {
-      errors.map((error) => this.logger.error(error));
-    }
-
-    this.logger.log('Notification Settings migration finished.');
+    this.logger.log(
+      `Notification Settings migration finished. Errors: ${errors.length}`,
+    );
   }
 
   public async migrateDaoNotificationSettings(daoId: string): Promise<void> {
@@ -43,6 +44,9 @@ export class NotificationSettingsMigration implements Migration {
 
     const { errors } = await PromisePool.withConcurrency(10)
       .for(members)
+      .handleError((err) => {
+        this.logger.error(err);
+      })
       .process(async (member) =>
         this.migrateAccountNotificationSettings(member, daoId),
       );

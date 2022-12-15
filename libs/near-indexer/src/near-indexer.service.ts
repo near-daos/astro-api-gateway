@@ -121,7 +121,7 @@ export class NearIndexerService {
 
   async findLastAccountChangesByContractName(
     contractName: string,
-    fromBlockTimestamp?: number,
+    fromBlockTimestamp?: string,
   ): Promise<AccountChange> {
     return this.buildAccountChangeQuery(
       contractName,
@@ -132,7 +132,7 @@ export class NearIndexerService {
   /** Pass either single accountId or array of accountIds */
   async findLastTransactionByAccountIds(
     accountIds: string | string[],
-    fromBlockTimestamp?: number,
+    fromBlockTimestamp?: string,
   ): Promise<Transaction> {
     return this.buildAggregationTransactionQuery(accountIds, fromBlockTimestamp)
       .select('transaction.transactionHash')
@@ -143,8 +143,8 @@ export class NearIndexerService {
   /** Pass either single accountId or array of accountIds */
   async findTransactionsByAccountIds(
     accountIds: string | string[],
-    fromBlockTimestamp?: number,
-    toBlockTimestamp?: number,
+    fromBlockTimestamp?: string,
+    toBlockTimestamp?: string,
   ): Promise<Transaction[]> {
     return this.buildAggregationTransactionQuery(
       accountIds,
@@ -211,7 +211,7 @@ export class NearIndexerService {
 
   async findLikelyTokenUpdates(
     contractName: string,
-    fromBlockTimestamp: number,
+    fromBlockTimestamp: string,
   ): Promise<TokenUpdateDto[]> {
     const accountId = buildLikeContractName(contractName);
     const { bridgeTokenFactoryContractName } = this.configService.get('near');
@@ -313,7 +313,7 @@ export class NearIndexerService {
 
   async findNFTEventUpdates(
     contractName: string,
-    fromBlockTimestamp: number,
+    fromBlockTimestamp: string,
   ): Promise<AssetsNftEvent[]> {
     // TODO optimize query, replace LIKE '%.contract.name' with IN ('1.contract.name', '2.contract.name', ...)
     const accountId = buildLikeContractName(contractName);
@@ -392,8 +392,8 @@ export class NearIndexerService {
 
   private buildAggregationTransactionQuery(
     accountIds: string | string[],
-    fromBlockTimestamp?: number,
-    toBlockTimestamp?: number,
+    fromBlockTimestamp?: string,
+    toBlockTimestamp?: string,
   ): SelectQueryBuilder<Transaction> {
     let queryBuilder = this.transactionRepository
       .createQueryBuilder('transaction')
@@ -440,7 +440,7 @@ export class NearIndexerService {
 
   private buildAccountChangeQuery(
     contractName: string,
-    fromBlockTimestamp?: number,
+    fromBlockTimestamp?: string,
   ): SelectQueryBuilder<AccountChange> {
     let queryBuilder = this.accountChangeRepository
       .createQueryBuilder('account_change')
@@ -463,7 +463,7 @@ export class NearIndexerService {
 
   async findAccountChangeActionsByContractName(
     contractName: string,
-    fromBlockTimestamp?: number,
+    fromBlockTimestamp?: string,
   ): Promise<AccountChange[]> {
     return this.buildAccountChangeActionQuery(
       contractName,
@@ -473,7 +473,7 @@ export class NearIndexerService {
 
   private buildAccountChangeActionQuery(
     contractName: string,
-    fromBlockTimestamp?: number,
+    fromBlockTimestamp?: string,
   ): SelectQueryBuilder<AccountChange> {
     return this.accountChangeRepository
       .createQueryBuilder('account_change')
