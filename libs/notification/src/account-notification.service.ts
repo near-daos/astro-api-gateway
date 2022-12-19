@@ -91,7 +91,7 @@ export class AccountNotificationService extends TypeOrmCrudService<AccountNotifi
       [updatedModel],
     );
     return this.accountNotificationRepository.save({
-      ...accountNotification,
+      id,
       isMuted: updateDto.isMuted,
       isRead: updateDto.isRead,
       isArchived: updateDto.isArchived,
