@@ -351,8 +351,7 @@ export class DaoService extends TypeOrmCrudService<Dao> {
 
     const daoEntity = this.daoRepository.create(data);
 
-    // TODO: cast daoModel from DTO not from entity
-    await this.daoDynamoService.saveDao(daoEntity);
+    await this.daoDynamoService.saveDao(data);
     await this.daoRepository.save(daoEntity);
   }
 
