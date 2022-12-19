@@ -10,10 +10,22 @@ export interface DaoDto extends TransactionInfo {
   totalSupply: string;
   stakingContract: string;
   council: string[];
+  councilSeats: number;
+  accountIds: string[];
   policy: PolicyDtoV1;
   link: string;
   description: string;
   createdBy: string;
   metadata?: Record<string, any>;
   status?: DaoStatus;
+  lastBountyId?: number;
+  lastProposalId?: number;
+  numberOfAssociates?: number;
+  numberOfMembers?: number;
+  numberOfGroups?: number;
+  activeProposalCount?: number;
+  totalProposalCount?: number;
+  totalDaoFunds?: number;
+  bountyCount?: number;
+  nftCount?: number;
 }

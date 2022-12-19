@@ -1,9 +1,11 @@
 import { DaoConfig, DaoStatus, VotePolicy } from '@sputnik-v2/dao/types';
 import {
   Dao,
+  DaoDto,
   DaoVersionDto,
   Delegation,
   Policy,
+  PolicyDtoV1,
   Role,
   RoleKindType,
 } from '@sputnik-v2/dao';
@@ -167,5 +169,55 @@ export function mapDelegationToDaoDelegationModel(
     accountId: delegation.accountId,
     balance: delegation.balance,
     delegators: delegation.delegators,
+  };
+}
+
+export function mapDaoDtoToDaoModel(
+  dao: Partial<DaoDto | DaoModel>,
+): PartialEntity<DaoModel> {
+  return {
+    partitionId: dao.id,
+    entityId: buildEntityId(DynamoEntityType.Dao, dao.id),
+    entityType: DynamoEntityType.Dao,
+    id: dao.id,
+    transactionHash: dao.transactionHash,
+    updateTransactionHash: dao.updateTransactionHash,
+    createTimestamp: dao.createTimestamp,
+    updateTimestamp: dao.updateTimestamp,
+    metadata: dao.metadata,
+    amount: dao.amount,
+    totalSupply: dao.totalSupply,
+    lastBountyId: dao.lastBountyId,
+    lastProposalId: dao.lastProposalId,
+    stakingContract: dao.stakingContract,
+    numberOfAssociates: dao.numberOfAssociates,
+    numberOfMembers: dao.numberOfMembers,
+    numberOfGroups: dao.numberOfGroups,
+    council: dao.council,
+    accountIds: dao.accountIds,
+    councilSeats: dao.councilSeats,
+    link: dao.link,
+    description: dao.description,
+    createdBy: dao.createdBy,
+    status: dao.status,
+    activeProposalCount: dao.activeProposalCount,
+    totalProposalCount: dao.totalProposalCount,
+    totalDaoFunds: dao.totalDaoFunds,
+    bountyCount: dao.bountyCount,
+    nftCount: dao.nftCount,
+    policy: dao.policy ? mapPolicyDtoToDaoPolicyModel(dao.policy) : undefined,
+    config: dao.config,
+  };
+}
+export function mapPolicyDtoToDaoPolicyModel(
+  policy: PolicyDtoV1 | DaoPolicyModel,
+): DaoPolicyModel {
+  return {
+    proposalBond: policy.proposalBond,
+    bountyBond: policy.bountyBond,
+    proposalPeriod: policy.proposalPeriod,
+    bountyForgivenessPeriod: policy.bountyForgivenessPeriod,
+    defaultVotePolicy: policy.defaultVotePolicy,
+    roles: policy.roles.map(mapRoleToDaoRoleModel),
   };
 }
