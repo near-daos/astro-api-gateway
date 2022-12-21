@@ -57,6 +57,10 @@ export class TokenService {
     const metadata = await contract.ft_metadata();
     const totalSupply = await contract.ft_total_supply();
     await this.create(castToken(tokenId, metadata, totalSupply, timestamp));
+    return {
+      metadata,
+      totalSupply,
+    };
   }
 
   async loadBalanceById(tokenId: string, accountId: string, timestamp: string) {
@@ -75,6 +79,12 @@ export class TokenService {
       token: token as Token,
     });
     await this.tokenBalanceRepository.save(tokenBalance);
+
+    return {
+      metadata,
+      totalSupply,
+      balance,
+    };
   }
 
   async saveNearBalanceToDao(daoId: string, balance: string) {
