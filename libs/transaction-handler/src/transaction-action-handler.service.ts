@@ -2,7 +2,6 @@ import { Injectable, Logger } from '@nestjs/common';
 import { DaoModel, PartialEntity, ProposalModel } from '@sputnik-v2/dynamodb';
 import PromisePool from '@supercharge/promise-pool';
 import { ConfigService } from '@nestjs/config';
-import { ExecutionStatus } from 'near-api-js/lib/providers/provider';
 
 import {
   FTokenContract,
@@ -39,7 +38,7 @@ import {
 } from '@sputnik-v2/utils';
 import { CacheService } from '@sputnik-v2/cache';
 import { OpensearchService } from '@sputnik-v2/opensearch';
-import { DynamodbService, DynamoEntityType } from '@sputnik-v2/dynamodb';
+import { DynamodbService } from '@sputnik-v2/dynamodb';
 
 import { FeatureFlags, FeatureFlagsService } from '@sputnik-v2/feature-flags';
 
@@ -289,27 +288,7 @@ export class TransactionActionHandlerService {
       receiptId,
       receiptSuccessValue,
     } = txAction;
-    let lastProposalId;
-
-    // TODO: Find better solution for indexer processor (when there is no receipt outcome)
-    if (receiptSuccessValue === undefined) {
-      const txStatus = await this.nearApiService.getTxStatus(
-        transactionHash,
-        receiverId,
-      );
-      this.log(
-        transactionHash,
-        `Received tx status from RPC: ${JSON.stringify(txStatus)}`,
-      );
-      const receiptOutcome = txStatus.receipts_outcome.find(
-        ({ id }) => id === receiptId,
-      );
-      lastProposalId = parseInt(
-        (receiptOutcome?.outcome?.status as ExecutionStatus)?.SuccessValue,
-      );
-    } else {
-      lastProposalId = parseInt(receiptSuccessValue);
-    }
+    const lastProposalId = parseInt(receiptSuccessValue);
 
     this.log(transactionHash, `Received proposal id: ${lastProposalId}`);
 

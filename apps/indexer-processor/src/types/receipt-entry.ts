@@ -1,5 +1,10 @@
+import { NearTransactionStatus } from '@sputnik-v2/near-api';
 import { ActionKind } from '@sputnik-v2/near-indexer';
 import { TransactionAction } from '@sputnik-v2/transaction-handler';
+import {
+  ExecutionOutcomeWithIdView,
+  ExecutionStatus,
+} from 'near-api-js/lib/providers/provider';
 
 export class ActionReceiptAction {
   receipt_id: string;
@@ -50,7 +55,9 @@ export function mapReceiptEntryActionArgs(receipt: ReceiptEntry): ReceiptEntry {
 }
 
 export function castTransactionAction(
+  txStatus: NearTransactionStatus,
   receipt: ReceiptEntry,
+  outcome: ExecutionOutcomeWithIdView,
   action: ActionReceiptAction,
 ): TransactionAction {
   return {
@@ -65,5 +72,8 @@ export function castTransactionAction(
     timestamp: receipt.included_in_block_timestamp,
     receiptId: receipt.receipt_id,
     indexInReceipt: action.index_in_action_receipt,
+    status: txStatus.status,
+    receiptSuccessValue: (outcome.outcome.status as ExecutionStatus)
+      ?.SuccessValue,
   };
 }

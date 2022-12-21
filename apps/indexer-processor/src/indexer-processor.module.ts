@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { NearApiModule } from '@sputnik-v2/near-api';
 import { LoggerModule, Params } from 'nestjs-pino';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -42,6 +43,7 @@ import { RedisModule } from './redis/redis.module';
     TransactionHandlerModule,
     ErrorTrackerModule,
     HttpCacheModule,
+    NearApiModule,
   ],
   providers: [IndexerProcessorService, IndexerProcessorErrorHandlerService],
 })
