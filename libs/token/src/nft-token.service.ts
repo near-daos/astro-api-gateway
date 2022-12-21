@@ -117,6 +117,10 @@ export class NFTTokenService extends TypeOrmCrudService<NFTToken> {
     const tokenIds = tokenDtos.map(({ id }) => id);
     await this.createMultiple(tokenDtos);
     await this.purge(accountId, nftContractId, tokenIds);
+    return {
+      metadata,
+      nfts,
+    };
   }
 
   private async getNfts(
