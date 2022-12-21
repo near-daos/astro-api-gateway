@@ -64,4 +64,12 @@ export class BountyDynamoService {
       query,
     );
   }
+
+  async get(daoId: string, bountyId: string) {
+    return this.dynamoDbService.getItemByType<BountyModel>(
+      daoId,
+      DynamoEntityType.Bounty,
+      bountyId,
+    );
+  }
 }
