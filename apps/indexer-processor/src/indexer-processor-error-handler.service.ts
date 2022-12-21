@@ -1,20 +1,21 @@
 import { Injectable, Logger } from '@nestjs/common';
-import {
-  TransactionActionHandlerService,
-  TransactionHandlerService,
-} from '@sputnik-v2/transaction-handler';
+import { CacheService } from '@sputnik-v2/cache';
 import {
   ErrorStatus,
   ErrorTrackerService,
   ErrorType,
 } from '@sputnik-v2/error-tracker';
-import { IndexerProcessorService } from './indexer-processor.service';
+import {
+  TransactionActionHandlerService,
+  TransactionHandlerService,
+} from '@sputnik-v2/transaction-handler';
+import { sleep } from '@sputnik-v2/utils';
+import { backOff } from 'exponential-backoff';
+
+import { IndexerProcessorCommonService } from './indexer-processor-common.service';
 
 import { RedisService } from './redis/redis.service';
 import { mapReceiptEntryActionArgs, ReceiptEntry } from './types/receipt-entry';
-import { CacheService } from '@sputnik-v2/cache';
-import { backOff } from 'exponential-backoff';
-import { sleep } from '@sputnik-v2/utils';
 
 @Injectable()
 export class IndexerProcessorErrorHandlerService {
@@ -33,7 +34,7 @@ export class IndexerProcessorErrorHandlerService {
     private readonly transactionActionHandlerService: TransactionActionHandlerService,
     private readonly errorTrackerService: ErrorTrackerService,
     private readonly cacheService: CacheService,
-    private readonly indexerProcessorService: IndexerProcessorService,
+    private readonly commonService: IndexerProcessorCommonService,
   ) {}
 
   async handleNewError(
@@ -90,11 +91,10 @@ export class IndexerProcessorErrorHandlerService {
         this.logger.log(
           `Resolving error ${id}: Handling receipt ${receipt.receipt_id} action ${i}`,
         );
-        const transactionAction =
-          await this.indexerProcessorService.getTransactionAction(
-            receipt,
-            receipt.action.actions[i],
-          );
+        const transactionAction = await this.commonService.getTransactionAction(
+          receipt,
+          receipt.action.actions[i],
+        );
         await this.transactionActionHandlerService.handleTransactionAction(
           transactionAction,
         );

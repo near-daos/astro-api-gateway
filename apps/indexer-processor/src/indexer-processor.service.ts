@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { NearApiService } from '@sputnik-v2/near-api';
 import {
   TransactionActionHandlerService,
   TransactionHandlerService,
@@ -9,11 +8,8 @@ import { INDEXER_PROCESSOR_HANDLER_STATE_ID } from '@sputnik-v2/common';
 import { CacheService } from '@sputnik-v2/cache';
 
 import { RedisService } from './redis/redis.service';
-import {
-  ActionReceiptAction,
-  castTransactionAction,
-  ReceiptEntry,
-} from './types/receipt-entry';
+import { ReceiptEntry } from './types/receipt-entry';
+import { IndexerProcessorCommonService } from './indexer-processor-common.service';
 import { IndexerProcessorErrorHandlerService } from './indexer-processor-error-handler.service';
 
 @Injectable()
@@ -25,9 +21,9 @@ export class IndexerProcessorService {
     private readonly redisService: RedisService,
     private readonly transactionHandlerService: TransactionHandlerService,
     private readonly transactionActionHandlerService: TransactionActionHandlerService,
+    private readonly commonService: IndexerProcessorCommonService,
     private readonly errorHandlerService: IndexerProcessorErrorHandlerService,
     private readonly cacheService: CacheService,
-    private readonly nearApiService: NearApiService,
   ) {
     this.init();
   }
@@ -53,7 +49,7 @@ export class IndexerProcessorService {
     for (let i = 0; i < receipt.action?.actions.length; i++) {
       try {
         this.logger.log(`Handling receipt ${receipt.receipt_id} action ${i}`);
-        const transactionAction = await this.getTransactionAction(
+        const transactionAction = await this.commonService.getTransactionAction(
           receipt,
           receipt.action.actions[i],
         );
@@ -82,27 +78,5 @@ export class IndexerProcessorService {
     );
     await this.cacheService.clearCache();
     return true;
-  }
-
-  async getTransactionAction(
-    receipt: ReceiptEntry,
-    action: ActionReceiptAction,
-  ) {
-    const txStatus = await this.nearApiService.getTxStatusRetry(
-      receipt.originated_from_transaction_hash,
-      receipt.predecessor_account_id,
-    );
-
-    const outcome = txStatus.receipts_outcome.find(
-      (outcome) => outcome.id === receipt.receipt_id,
-    );
-
-    if (!outcome) {
-      throw new Error(
-        `Unable to fund outcome for receipt ID: ${receipt.receipt_id}`,
-      );
-    }
-
-    return castTransactionAction(txStatus, receipt, outcome, action);
   }
 }
