@@ -84,7 +84,7 @@ export class IndexerProcessorService {
     return true;
   }
 
-  private async getTransactionAction(
+  async getTransactionAction(
     receipt: ReceiptEntry,
     action: ActionReceiptAction,
   ) {

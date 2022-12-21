@@ -8,13 +8,10 @@ import {
   ErrorTrackerService,
   ErrorType,
 } from '@sputnik-v2/error-tracker';
+import { IndexerProcessorService } from './indexer-processor.service';
 
 import { RedisService } from './redis/redis.service';
-import {
-  castTransactionAction,
-  mapReceiptEntryActionArgs,
-  ReceiptEntry,
-} from './types/receipt-entry';
+import { mapReceiptEntryActionArgs, ReceiptEntry } from './types/receipt-entry';
 import { CacheService } from '@sputnik-v2/cache';
 import { backOff } from 'exponential-backoff';
 import { sleep } from '@sputnik-v2/utils';
@@ -36,6 +33,7 @@ export class IndexerProcessorErrorHandlerService {
     private readonly transactionActionHandlerService: TransactionActionHandlerService,
     private readonly errorTrackerService: ErrorTrackerService,
     private readonly cacheService: CacheService,
+    private readonly indexerProcessorService: IndexerProcessorService,
   ) {}
 
   async handleNewError(
@@ -92,8 +90,13 @@ export class IndexerProcessorErrorHandlerService {
         this.logger.log(
           `Resolving error ${id}: Handling receipt ${receipt.receipt_id} action ${i}`,
         );
+        const transactionAction =
+          await this.indexerProcessorService.getTransactionAction(
+            receipt,
+            receipt.action.actions[i],
+          );
         await this.transactionActionHandlerService.handleTransactionAction(
-          castTransactionAction(receipt, receipt.action.actions[i]),
+          transactionAction,
         );
         this.logger.log(
           `Resolving error ${id}: Receipt ${receipt.receipt_id} action ${i} successfully handled`,

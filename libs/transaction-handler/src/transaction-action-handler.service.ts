@@ -182,13 +182,13 @@ export class TransactionActionHandlerService {
   async handleTransactionAction(
     action: TransactionAction,
   ): Promise<ContractHandlerResult[]> {
+    const actionId = `${action.transactionHash}:${action.receiptId}:${action.indexInReceipt}`;
+
     if (
       action.receiverId.indexOf('astro-failed-test') === 0 &&
       (await this.featureFlagsService.check(FeatureFlags.EnableFailedDao))
     ) {
-      throw new Error(
-        `Test error - transaction action: ${action.transactionHash}:${action.receiptId}:${action.indexInReceipt}`,
-      );
+      throw new Error(`Test error - transaction action: ${actionId}`);
     }
 
     const handledReceiptAction =
@@ -196,16 +196,24 @@ export class TransactionActionHandlerService {
     if (handledReceiptAction) {
       this.log(
         action.transactionHash,
-        `Already handled transaction action: ${action.transactionHash}:${action.receiptId}:${action.indexInReceipt}`,
+        `Already handled transaction action: ${actionId}`,
         'warn',
       );
       return handledReceiptAction.results;
     }
 
-    this.log(
-      action.transactionHash,
-      `action: ${action.transactionHash}:${action.receiptId}:${action.indexInReceipt}`,
-    );
+    if (action.status.Failure !== undefined) {
+      this.log(
+        action.transactionHash,
+        `Skipping transaction action (${actionId}) due to transaction failure: ${JSON.stringify(
+          action.status.Failure,
+        )}`,
+        'warn',
+      );
+      return [];
+    }
+
+    this.log(action.transactionHash, `action: ${actionId}`);
     const contractHandlers = this.getContractHandlers(action.receiverId);
 
     const { results } = await PromisePool.for(contractHandlers)
@@ -225,9 +233,9 @@ export class TransactionActionHandlerService {
 
     this.log(
       action.transactionHash,
-      `Transaction action successfully handled: ${action.transactionHash}:${
-        action.receiptId
-      }:${action.indexInReceipt} - Results: ${JSON.stringify(results)}`,
+      `Transaction action successfully handled: ${actionId} - Results: ${JSON.stringify(
+        results,
+      )}`,
     );
 
     return results;

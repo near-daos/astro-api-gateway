@@ -4,6 +4,7 @@ import { TransactionAction } from '@sputnik-v2/transaction-handler';
 import {
   ExecutionOutcomeWithIdView,
   ExecutionStatus,
+  FinalExecutionStatus,
 } from 'near-api-js/lib/providers/provider';
 
 export class ActionReceiptAction {
@@ -72,7 +73,7 @@ export function castTransactionAction(
     timestamp: receipt.included_in_block_timestamp,
     receiptId: receipt.receipt_id,
     indexInReceipt: action.index_in_action_receipt,
-    status: txStatus.status,
+    status: txStatus.status as FinalExecutionStatus,
     receiptSuccessValue: (outcome.outcome.status as ExecutionStatus)
       ?.SuccessValue,
   };

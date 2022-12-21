@@ -30,7 +30,7 @@ export type TransactionAction = {
   timestamp: string; // nanoseconds
   receiptId: string;
   indexInReceipt: number;
-  status?: FinalExecutionStatus | FinalExecutionStatusBasic;
+  status?: FinalExecutionStatus;
   receiptSuccessValue?: string;
 };
 
@@ -44,7 +44,6 @@ export function castNearTransactionAction(
 ): TransactionAction {
   return {
     transactionHash: txStatus.transaction.hash,
-    status: txStatus.status,
     receiverId: receipt.receiver_id,
     predecessorId: receipt.predecessor_id,
     signerId: receipt.predecessor_id,
@@ -55,6 +54,7 @@ export function castNearTransactionAction(
     timestamp: block.header.timestamp_nanosec,
     receiptId: receipt.receipt_id,
     indexInReceipt: index,
+    status: txStatus.status as FinalExecutionStatus,
     receiptSuccessValue: (outcome.outcome.status as ExecutionStatus)
       ?.SuccessValue,
   };
