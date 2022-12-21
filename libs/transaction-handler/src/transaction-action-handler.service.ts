@@ -375,14 +375,11 @@ export class TransactionActionHandlerService {
       );
       proposal.bountyClaimId = bountyClaim?.id;
 
-      const bounty = await this.bountyDynamoService.get(
+      await this.bountyDynamoService.addBountyDoneProposalId(
         dao.id,
         String(proposalKind.bountyId),
+        String(proposal.proposalId),
       );
-
-      bounty.bountyDoneProposalIds.push(proposal.id);
-
-      await this.bountyDynamoService.save(dao.id, bounty.bountyId, bounty);
     }
 
     this.log(transactionHash, `Storing Proposal: ${JSON.stringify(proposal)}`);

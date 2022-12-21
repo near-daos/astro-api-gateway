@@ -3,6 +3,7 @@ export enum DynamoEntityType {
   DaoIds = 'DAO_IDS',
   Proposal = 'Proposal',
   Bounty = 'Bounty',
+  BountyMapping = 'BountyMapping',
   Account = 'Account',
   AccountNotification = 'AccountNotification',
   AccountNotificationIds = 'AccountNotificationIds',

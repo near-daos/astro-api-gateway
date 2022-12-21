@@ -28,12 +28,7 @@ export class BountyService extends TypeOrmCrudService<Bounty> {
   async findById(daoId: string, bountyId: number, options?: FindOneOptions) {
     const id = buildBountyId(daoId, bountyId);
     if (await this.useDynamoDB()) {
-      return (
-        await this.bountyDynamoService.query(daoId, {
-          FilterExpression: 'id = :id',
-          ExpressionAttributeValues: { ':id': id },
-        })
-      )[0];
+      return this.bountyDynamoService.getByBountyId(daoId, String(bountyId));
     } else {
       return this.findOne(id, options);
     }
@@ -41,6 +36,11 @@ export class BountyService extends TypeOrmCrudService<Bounty> {
 
   async create(bountyDto: BountyDto) {
     await this.bountyDynamoService.saveBounty(bountyDto);
+    await this.bountyDynamoService.saveBountyMapping(
+      bountyDto.daoId,
+      bountyDto.bountyId,
+      bountyDto.proposalIndex,
+    );
     await this.bountyRepository.save(bountyDto);
   }
 
