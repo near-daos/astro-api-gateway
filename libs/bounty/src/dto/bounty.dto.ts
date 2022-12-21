@@ -18,4 +18,5 @@ export class BountyDto extends TransactionInfo {
   maxDeadline: string;
   numberOfClaims: number;
   bountyClaims: BountyClaimDto[];
+  bountyDoneProposalIds?: string[];
 }

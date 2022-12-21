@@ -25,7 +25,11 @@ import {
   ProposalStatus,
   ProposalType,
 } from '@sputnik-v2/proposal';
-import { BountyContextService, BountyService } from '@sputnik-v2/bounty';
+import {
+  BountyContextService,
+  BountyDynamoService,
+  BountyService,
+} from '@sputnik-v2/bounty';
 import { EventService } from '@sputnik-v2/event';
 import { NFTTokenService, TokenService } from '@sputnik-v2/token';
 import { buildBountyId, buildDelegationId } from '@sputnik-v2/utils';
@@ -72,6 +76,7 @@ export class TransactionActionHandlerService {
     private readonly proposalDynamoService: ProposalDynamoService,
     private readonly handledReceiptActionDynamoService: HandledReceiptActionDynamoService,
     private readonly featureFlagsService: FeatureFlagsService,
+    private readonly bountyDynamoService: BountyDynamoService,
   ) {
     const { contractName } = this.configService.get('near');
     // TODO: Split on multiple handlers
@@ -331,6 +336,15 @@ export class TransactionActionHandlerService {
         timestamp,
       );
       proposal.bountyClaimId = bountyClaim?.id;
+
+      const bounty = await this.bountyDynamoService.get(
+        dao.id,
+        String(proposalKind.bountyId),
+      );
+
+      bounty.bountyDoneProposalIds.push(proposal.id);
+
+      await this.bountyDynamoService.save(dao.id, bounty.bountyId, bounty);
     }
 
     this.logger.log(`Storing Proposal: ${proposal.id} due to transaction`);
