@@ -2,7 +2,6 @@ import { Injectable, Logger } from '@nestjs/common';
 import { DaoModel, PartialEntity, ProposalModel } from '@sputnik-v2/dynamodb';
 import PromisePool from '@supercharge/promise-pool';
 import { ConfigService } from '@nestjs/config';
-import { ExecutionStatus } from 'near-api-js/lib/providers/provider';
 
 import {
   FTokenContract,
@@ -39,7 +38,7 @@ import {
 } from '@sputnik-v2/utils';
 import { CacheService } from '@sputnik-v2/cache';
 import { OpensearchService } from '@sputnik-v2/opensearch';
-import { DynamodbService, DynamoEntityType } from '@sputnik-v2/dynamodb';
+import { DynamodbService } from '@sputnik-v2/dynamodb';
 
 import { FeatureFlags, FeatureFlagsService } from '@sputnik-v2/feature-flags';
 
@@ -183,13 +182,13 @@ export class TransactionActionHandlerService {
   async handleTransactionAction(
     action: TransactionAction,
   ): Promise<ContractHandlerResult[]> {
+    const actionId = `${action.transactionHash}:${action.receiptId}:${action.indexInReceipt}`;
+
     if (
       action.receiverId.indexOf('astro-failed-test') === 0 &&
       (await this.featureFlagsService.check(FeatureFlags.EnableFailedDao))
     ) {
-      throw new Error(
-        `Test error - transaction action: ${action.transactionHash}:${action.receiptId}:${action.indexInReceipt}`,
-      );
+      throw new Error(`Test error - transaction action: ${actionId}`);
     }
 
     const handledReceiptAction =
@@ -197,16 +196,24 @@ export class TransactionActionHandlerService {
     if (handledReceiptAction) {
       this.log(
         action.transactionHash,
-        `Already handled transaction action: ${action.transactionHash}:${action.receiptId}:${action.indexInReceipt}`,
+        `Already handled transaction action: ${actionId}`,
         'warn',
       );
       return handledReceiptAction.results;
     }
 
-    this.log(
-      action.transactionHash,
-      `action: ${action.transactionHash}:${action.receiptId}:${action.indexInReceipt}`,
-    );
+    if (action.status.Failure !== undefined) {
+      this.log(
+        action.transactionHash,
+        `Skipping transaction action (${actionId}) due to transaction failure: ${JSON.stringify(
+          action.status.Failure,
+        )}`,
+        'warn',
+      );
+      return [];
+    }
+
+    this.log(action.transactionHash, `action: ${actionId}`);
     const contractHandlers = this.getContractHandlers(action.receiverId);
 
     const { results } = await PromisePool.for(contractHandlers)
@@ -226,9 +233,9 @@ export class TransactionActionHandlerService {
 
     this.log(
       action.transactionHash,
-      `Transaction action successfully handled: ${action.transactionHash}:${
-        action.receiptId
-      }:${action.indexInReceipt} - Results: ${JSON.stringify(results)}`,
+      `Transaction action successfully handled: ${actionId} - Results: ${JSON.stringify(
+        results,
+      )}`,
     );
 
     return results;
@@ -289,27 +296,7 @@ export class TransactionActionHandlerService {
       receiptId,
       receiptSuccessValue,
     } = txAction;
-    let lastProposalId;
-
-    // TODO: Find better solution for indexer processor (when there is no receipt outcome)
-    if (receiptSuccessValue === undefined) {
-      const txStatus = await this.nearApiService.getTxStatus(
-        transactionHash,
-        receiverId,
-      );
-      this.log(
-        transactionHash,
-        `Received tx status from RPC: ${JSON.stringify(txStatus)}`,
-      );
-      const receiptOutcome = txStatus.receipts_outcome.find(
-        ({ id }) => id === receiptId,
-      );
-      lastProposalId = parseInt(
-        (receiptOutcome?.outcome?.status as ExecutionStatus)?.SuccessValue,
-      );
-    } else {
-      lastProposalId = parseInt(receiptSuccessValue);
-    }
+    const lastProposalId = parseInt(receiptSuccessValue);
 
     this.log(transactionHash, `Received proposal id: ${lastProposalId}`);
 

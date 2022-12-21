@@ -3,6 +3,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { NEAR_API_PROVIDER } from '@sputnik-v2/common';
 import { NearApiContract, NearApiProvider } from '@sputnik-v2/config/near-api';
 import { BlockId } from 'near-api-js/lib/providers/provider';
+import { Retryable } from 'typescript-retry-decorator';
 
 import { StakingContract } from './contracts';
 import {
@@ -39,6 +40,14 @@ export class NearApiService {
     return this.provider.block({ blockId });
   }
 
+  @Retryable({
+    maxAttempts: 5,
+    backOff: 1000,
+  })
+  public async getBlockRetry(blockHash: string) {
+    return this.getBlock(blockHash);
+  }
+
   public async getTxStatus(
     transactionHash: string,
     accountId: string,
@@ -60,6 +69,17 @@ export class NearApiService {
         castTransactionReceiptOutcome,
       ),
     };
+  }
+
+  @Retryable({
+    maxAttempts: 5,
+    backOff: 1000,
+  })
+  public async getTxStatusRetry(
+    transactionHash: string,
+    accountId: string,
+  ): Promise<NearTransactionStatus> {
+    return this.getTxStatus(transactionHash, accountId);
   }
 
   public async getAccountState(accountId: string): Promise<NearAccountState> {

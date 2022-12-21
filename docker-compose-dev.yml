@@ -1,6 +1,18 @@
 version: '3.1'
 
 services:
+  postgres:
+    image: postgres
+    restart: always
+    ports:
+      - '5437:5432'
+    volumes:
+      - pg-data:/data/postgres
+    env_file:
+      - .env.docker-dev
+    networks:
+      - postgres
+
   mongo:
     image: mongo:5.0
     restart: always
@@ -12,6 +24,19 @@ services:
       - MONGO_INITDB_ROOT_DATABASE=draft
       - MONGO_INITDB_ROOT_USERNAME=draft
       - MONGO_INITDB_ROOT_PASSWORD=draft
+
+  pgadmin:
+    links:
+      - postgres:postgres
+    image: dpage/pgadmin4
+    ports:
+      - '8080:80'
+    volumes:
+      - pg-data:/root/.pgadmin
+    env_file:
+      - .env.docker-dev
+    networks:
+      - postgres
 
   redis:
     image: 'redis:alpine'
@@ -113,6 +138,8 @@ volumes:
   opensearch-data2:
 
 networks:
+  postgres:
+    driver: bridge
   redis:
     driver: bridge
   opensearch-net:

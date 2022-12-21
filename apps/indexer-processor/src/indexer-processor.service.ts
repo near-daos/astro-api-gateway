@@ -8,7 +8,8 @@ import { INDEXER_PROCESSOR_HANDLER_STATE_ID } from '@sputnik-v2/common';
 import { CacheService } from '@sputnik-v2/cache';
 
 import { RedisService } from './redis/redis.service';
-import { castTransactionAction, ReceiptEntry } from './types/receipt-entry';
+import { ReceiptEntry } from './types/receipt-entry';
+import { IndexerProcessorCommonService } from './indexer-processor-common.service';
 import { IndexerProcessorErrorHandlerService } from './indexer-processor-error-handler.service';
 
 @Injectable()
@@ -20,6 +21,7 @@ export class IndexerProcessorService {
     private readonly redisService: RedisService,
     private readonly transactionHandlerService: TransactionHandlerService,
     private readonly transactionActionHandlerService: TransactionActionHandlerService,
+    private readonly commonService: IndexerProcessorCommonService,
     private readonly errorHandlerService: IndexerProcessorErrorHandlerService,
     private readonly cacheService: CacheService,
   ) {
@@ -47,8 +49,12 @@ export class IndexerProcessorService {
     for (let i = 0; i < receipt.action?.actions.length; i++) {
       try {
         this.logger.log(`Handling receipt ${receipt.receipt_id} action ${i}`);
+        const transactionAction = await this.commonService.getTransactionAction(
+          receipt,
+          receipt.action.actions[i],
+        );
         await this.transactionActionHandlerService.handleTransactionAction(
-          castTransactionAction(receipt, receipt.action.actions[i]),
+          transactionAction,
         );
         this.logger.log(
           `Receipt ${receipt.receipt_id} action ${i} successfully handled`,

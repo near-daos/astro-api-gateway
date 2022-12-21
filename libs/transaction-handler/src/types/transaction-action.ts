@@ -13,22 +13,24 @@ import {
   BlockResult,
   ExecutionOutcomeWithIdView,
   ExecutionStatus,
+  FinalExecutionStatus,
+  FinalExecutionStatusBasic,
 } from 'near-api-js/lib/providers/provider';
 
 export type TransactionAction = {
   receiverId: string;
   signerId: string;
   // added for backward compatibility with original signer id that can be a predecessor in some cases
-  txSignerId?: string;
-  predecessorId?: string;
+  txSignerId: string;
+  predecessorId: string;
   transactionHash: string;
-  methodName?: string;
+  methodName: string;
   args: any;
   deposit: string;
   timestamp: string; // nanoseconds
-  receiptId?: string;
+  receiptId: string;
   indexInReceipt: number;
-  status?: any;
+  status?: FinalExecutionStatus;
   receiptSuccessValue?: string;
 };
 
@@ -42,16 +44,17 @@ export function castNearTransactionAction(
 ): TransactionAction {
   return {
     transactionHash: txStatus.transaction.hash,
-    status: txStatus.status,
     receiverId: receipt.receiver_id,
     predecessorId: receipt.predecessor_id,
     signerId: receipt.predecessor_id,
+    txSignerId: txStatus.transaction.signer_id,
     methodName: action.FunctionCall?.methodName,
     args: action.FunctionCall?.args,
     deposit: action.Transfer?.deposit || action.FunctionCall?.deposit,
     timestamp: block.header.timestamp_nanosec,
     receiptId: receipt.receipt_id,
     indexInReceipt: index,
+    status: txStatus.status as FinalExecutionStatus,
     receiptSuccessValue: (outcome.outcome.status as ExecutionStatus)
       ?.SuccessValue,
   };

@@ -26,9 +26,16 @@ export class RedisService {
   async handleStream<T>(
     key: string,
     handler: (entries: T) => Promise<unknown>,
-    interval = 100,
+    maxItems = 10,
+    interval = 3000,
   ) {
-    const results = await this.redis.xread('STREAMS', key, 0);
+    const results = await this.redis.xread(
+      'COUNT',
+      maxItems,
+      'STREAMS',
+      key,
+      0,
+    );
 
     if (results) {
       const entries = results[0][1];
