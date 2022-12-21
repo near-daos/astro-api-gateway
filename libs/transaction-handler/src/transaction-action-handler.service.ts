@@ -155,8 +155,10 @@ export class TransactionActionHandlerService {
         results = results.concat(actionResults.filter((result) => result));
         handledTxHashes.push(action.transactionHash);
       } catch (error) {
-        this.logger.error(
+        this.log(
+          action.transactionHash,
           `Failed to handle transaction action ${action.transactionHash}:${action.receiptId}:${action.indexInReceipt} with error: ${error} (${error.stack})`,
+          'error',
         );
 
         // If some action failed stop handling and remove failed transaction hash
@@ -188,14 +190,17 @@ export class TransactionActionHandlerService {
     const handledReceiptAction =
       await this.handledReceiptActionDynamoService.check(action);
     if (handledReceiptAction) {
-      this.logger.warn(
+      this.log(
+        action.transactionHash,
         `Already handled transaction action: ${action.transactionHash}:${action.receiptId}:${action.indexInReceipt}`,
+        'warn',
       );
       return handledReceiptAction.results;
     }
 
-    this.logger.log(
-      `Handling transaction action: ${action.transactionHash}:${action.receiptId}:${action.indexInReceipt}`,
+    this.log(
+      action.transactionHash,
+      `action: ${action.transactionHash}:${action.receiptId}:${action.indexInReceipt}`,
     );
     const contractHandlers = this.getContractHandlers(action.receiverId);
 
@@ -214,8 +219,11 @@ export class TransactionActionHandlerService {
 
     await this.handledReceiptActionDynamoService.save(action, results);
 
-    this.logger.log(
-      `Transaction action successfully handled: ${action.transactionHash}:${action.receiptId}:${action.indexInReceipt}`,
+    this.log(
+      action.transactionHash,
+      `Transaction action successfully handled: ${action.transactionHash}:${
+        action.receiptId
+      }:${action.indexInReceipt} - Results: ${JSON.stringify(results)}`,
     );
 
     return results;
@@ -228,6 +236,11 @@ export class TransactionActionHandlerService {
     const { contractName } = this.configService.get('near');
     const daoId = `${args.name}.${contractName}`;
     const daoInfo = await this.sputnikService.getDaoInfo(daoId);
+
+    this.log(
+      transactionHash,
+      `Received DAO from RPC: ${JSON.stringify(daoInfo)}`,
+    );
     const delegationAccounts =
       await this.daoService.getDelegationAccountsByDaoId(daoId);
     const dao = castCreateDao(
@@ -239,12 +252,12 @@ export class TransactionActionHandlerService {
       timestamp,
     );
 
-    this.logger.log(`Storing new DAO: ${daoId} due to transaction`);
+    this.log(transactionHash, `Storing new DAO: ${JSON.stringify(dao)}`);
     await this.daoService.save(dao, { updateTotalDaoFunds: true });
     await this.tokenService.saveNearBalanceToDao(dao.id, dao.amount);
     await this.daoService.setDaoVersion(daoId);
     await this.daoDynamoService.saveDaoId(daoId);
-    this.logger.log(`Successfully stored new DAO: ${daoId}`);
+    this.log(transactionHash, `Successfully stored new DAO: ${daoId}`);
 
     await this.eventService.sendDaoUpdateNotificationEvent(dao, txAction);
 
@@ -279,6 +292,10 @@ export class TransactionActionHandlerService {
         transactionHash,
         receiverId,
       );
+      this.log(
+        transactionHash,
+        `Received tx status from RPC: ${JSON.stringify(txStatus)}`,
+      );
       const receiptOutcome = txStatus.receipts_outcome.find(
         ({ id }) => id === receiptId,
       );
@@ -289,9 +306,13 @@ export class TransactionActionHandlerService {
       lastProposalId = parseInt(receiptSuccessValue);
     }
 
+    this.log(transactionHash, `Received proposal id: ${lastProposalId}`);
+
     if (isNaN(lastProposalId)) {
-      this.logger.warn(
+      this.log(
+        transactionHash,
         `Error getting Proposal ID from receipt ID: ${receiptId}`,
+        'warn',
       );
       return {
         type: ContractHandlerResultType.Unknown,
@@ -304,10 +325,16 @@ export class TransactionActionHandlerService {
       receiverId,
       lastProposalId,
     );
+    this.log(
+      transactionHash,
+      `Received proposal from RPC: ${JSON.stringify(daoProposal)}`,
+    );
 
     if (!daoProposal) {
-      this.logger.warn(
-        `Error proposal ${lastProposalId} not found for DAO ${receiverId}. Skip transaction ${transactionHash}`,
+      this.log(
+        transactionHash,
+        `Error proposal ${lastProposalId} not found for DAO ${receiverId}. Skip transaction`,
+        'warn',
       );
       return {
         type: ContractHandlerResultType.Unknown,
@@ -337,17 +364,19 @@ export class TransactionActionHandlerService {
         proposalKind.receiverId,
         timestamp,
       );
+      this.log(
+        transactionHash,
+        `Received bounty claim: ${JSON.stringify(bountyClaim)}`,
+      );
       proposal.bountyClaimId = bountyClaim?.id;
     }
 
-    this.logger.log(`Storing Proposal: ${proposal.id} due to transaction`);
+    this.log(transactionHash, `Storing Proposal: ${JSON.stringify(proposal)}`);
     await this.proposalService.create(proposal);
-    this.logger.log(`Successfully stored Proposal: ${proposal.id}`);
+    this.log(transactionHash, `Successfully stored Proposal: ${proposal.id}`);
 
     if (proposal.type === ProposalType.AddBounty) {
-      this.logger.log(
-        `Storing Bounty Context: ${proposal.id} due to transaction`,
-      );
+      this.log(transactionHash, `Storing Bounty Context: ${proposal.id}`);
       await this.bountyContextService.create(
         {
           id: proposal.id,
@@ -357,12 +386,15 @@ export class TransactionActionHandlerService {
         },
         proposal.proposalId,
       );
-      this.logger.log(`Successfully stored Bounty Context: ${proposal.id}`);
+      this.log(
+        transactionHash,
+        `Successfully stored Bounty Context: ${proposal.id}`,
+      );
     }
 
-    this.logger.log(`Updating DAO: ${receiverId} due to transaction`);
+    this.log(transactionHash, `Updating DAO proposal count: ${receiverId}`);
     await this.daoService.save(dao, { updateProposalsCount: true });
-    this.logger.log(`DAO successfully updated: ${receiverId}`);
+    this.log(transactionHash, `DAO successfully updated: ${receiverId}`);
 
     const proposalById = await this.proposalService.findOne(proposal.id, {
       loadEagerRelations: false,
@@ -373,7 +405,6 @@ export class TransactionActionHandlerService {
     });
     await this.opensearchService.indexProposal(proposal.id, proposalById);
     await this.opensearchService.indexDao(proposal.daoId, daoById);
-    await this.proposalDynamoService.saveProposal(proposalById);
 
     await this.cacheService.handleProposalCache(proposal.id);
 
@@ -383,6 +414,7 @@ export class TransactionActionHandlerService {
     );
 
     if (args.draftId) {
+      this.log(transactionHash, `Closing draft: ${args.draftId}`);
       await this.eventService.sendCloseDraftProposalEvent(
         proposal.daoId,
         args.draftId,
@@ -411,8 +443,10 @@ export class TransactionActionHandlerService {
       args.id,
     );
     if (!proposalEntity) {
-      this.logger.warn(
-        `Error proposal ${args.id} not found for DAO ${receiverId}. Skip transaction ${transactionHash}`,
+      this.log(
+        transactionHash,
+        `Error proposal ${args.id} not found for DAO ${receiverId}. Skip transaction`,
+        'warn',
       );
       return;
     }
@@ -420,6 +454,10 @@ export class TransactionActionHandlerService {
     const proposalResponse = await daoContract
       .get_proposal({ id: args.id })
       .catch(() => null);
+    this.log(
+      transactionHash,
+      `Received proposal from RPC: ${proposalResponse}`,
+    );
     const proposal =
       proposalResponse &&
       castActProposal(
@@ -514,6 +552,10 @@ export class TransactionActionHandlerService {
     status: any,
   ) {
     const state = await this.nearApiService.getAccountState(receiverId);
+    this.log(
+      transactionHash,
+      `Received ${receiverId} state from RPC: ${state}`,
+    );
     const proposalKindType = proposal.kind?.kind.type;
     let config: SputnikDaoConfig;
     let policy: SputnikDaoPolicy;
@@ -526,6 +568,10 @@ export class TransactionActionHandlerService {
         .kind as ProposalKindTransfer;
       if (proposalKindType === ProposalType.Transfer && tokenId) {
         const { contractName } = this.configService.get('near');
+        this.log(
+          transactionHash,
+          `Updating ${receiverId} token ${tokenId} balance`,
+        );
         await this.tokenService.loadTokenById(tokenId, timestamp);
         await this.tokenService.loadBalanceById(tokenId, dao.id, timestamp);
         if (receiverId && String(receiverId).includes(contractName)) {
@@ -539,6 +585,10 @@ export class TransactionActionHandlerService {
 
       if (proposalKindType === ProposalType.ChangeConfig) {
         config = await daoContract.get_config();
+        this.log(
+          transactionHash,
+          `Received DAO config from RPC: ${JSON.stringify(config)}`,
+        );
       }
 
       if (
@@ -549,6 +599,10 @@ export class TransactionActionHandlerService {
         ].includes(proposalKindType)
       ) {
         policy = await daoContract.get_policy();
+        this.log(
+          transactionHash,
+          `Received DAO policy from RPC: ${JSON.stringify(policy)}`,
+        );
         delegationAccounts = await this.daoService.getDelegationAccountsByDaoId(
           dao.id,
         );
@@ -556,6 +610,10 @@ export class TransactionActionHandlerService {
 
       if (proposalKindType === ProposalType.SetStakingContract) {
         stakingContract = await daoContract.get_staking_contract();
+        this.log(
+          transactionHash,
+          `Received DAO stakingContract from RPC: ${stakingContract}`,
+        );
       }
 
       if (proposalKindType === ProposalType.BountyDone) {
@@ -570,6 +628,10 @@ export class TransactionActionHandlerService {
 
       if (proposalKindType === ProposalType.AddBounty) {
         lastBountyId = await daoContract.get_last_bounty_id();
+        this.log(
+          transactionHash,
+          `Received DAO lastBountyId from RPC: ${lastBountyId}`,
+        );
         await this.handleAddBounty(
           dao,
           proposal,
@@ -581,15 +643,18 @@ export class TransactionActionHandlerService {
 
       if (proposalKindType === ProposalType.UpgradeSelf) {
         // TODO: Remove temporary workaround when transaction failure check will be implemented
-        this.logger.log(
+        this.log(
+          transactionHash,
           `Start timeout to load new Version of DAO:  ${receiverId}`,
         );
         setTimeout(async () => {
-          this.logger.log(
+          this.log(
+            transactionHash,
             `Updating Version of DAO: ${receiverId} due to transaction`,
           );
           const daoVersionHash = await this.daoService.setDaoVersion(dao.id);
-          this.logger.log(
+          this.log(
+            transactionHash,
             `DAO ${receiverId} Version successfully updated to ${daoVersionHash}`,
           );
         }, 30000);
@@ -598,31 +663,29 @@ export class TransactionActionHandlerService {
       proposal.failure = status?.Failure;
     }
 
-    this.logger.log(`Updating Proposal: ${proposal.id} due to transaction`);
+    this.log(transactionHash, `Updating Proposal: ${JSON.stringify(proposal)}`);
     await this.proposalService.create(proposal);
-    this.logger.log(`Proposal successfully updated: ${proposal.id}`);
+    this.log(transactionHash, `Proposal successfully updated: ${proposal.id}`);
 
-    this.logger.log(`Updating DAO: ${receiverId} due to transaction`);
-    await this.daoService.save(
-      castActProposalDao({
-        dao,
-        amount: state.amount,
-        config,
-        policy,
-        delegationAccounts,
-        lastBountyId,
-        stakingContract,
-        transactionHash,
-        timestamp,
-      }),
-      {
-        updateProposalsCount: true,
-        updateTotalDaoFunds: true,
-        updateBountiesCount: true,
-      },
-    );
+    const updatedDao = castActProposalDao({
+      dao,
+      amount: state.amount,
+      config,
+      policy,
+      delegationAccounts,
+      lastBountyId,
+      stakingContract,
+      transactionHash,
+      timestamp,
+    });
+    this.log(transactionHash, `Updating DAO: ${JSON.stringify(updatedDao)}`);
+    await this.daoService.save(updatedDao, {
+      updateProposalsCount: true,
+      updateTotalDaoFunds: true,
+      updateBountiesCount: true,
+    });
     await this.tokenService.saveNearBalanceToDao(receiverId, state.amount);
-    this.logger.log(`DAO successfully updated: ${receiverId}`);
+    this.log(transactionHash, `DAO successfully updated: ${receiverId}`);
   }
 
   async handleRejectProposal(
@@ -634,6 +697,10 @@ export class TransactionActionHandlerService {
     timestamp: string,
   ) {
     const state = await this.nearApiService.getAccountState(receiverId);
+    this.log(
+      transactionHash,
+      `Received ${receiverId} state from RPC: ${JSON.stringify(state)}`,
+    );
     const proposalKindType = proposal.kind?.kind.type;
 
     if (
@@ -650,22 +717,20 @@ export class TransactionActionHandlerService {
       );
     }
 
-    this.logger.log(`Updating Proposal: ${proposal.id} due to transaction`);
+    this.log(transactionHash, `Updating Proposal: ${JSON.stringify(proposal)}`);
     await this.proposalService.create(proposal);
-    this.logger.log(`Proposal successfully updated: ${proposal.id}`);
+    this.log(transactionHash, `Proposal successfully updated: ${proposal.id}`);
 
-    this.logger.log(`Updating DAO: ${receiverId} due to transaction`);
-    await this.daoService.save(
-      castActProposalDao({
-        dao,
-        amount: state.amount,
-        transactionHash,
-        timestamp,
-      }),
-      { updateProposalsCount: true },
-    );
+    const updatedDao = castActProposalDao({
+      dao,
+      amount: state.amount,
+      transactionHash,
+      timestamp,
+    });
+    this.log(transactionHash, `Updating DAO: ${JSON.stringify(updatedDao)}`);
+    await this.daoService.save(updatedDao, { updateProposalsCount: true });
     await this.tokenService.saveNearBalanceToDao(receiverId, state.amount);
-    this.logger.log(`DAO successfully updated: ${receiverId}`);
+    this.log(transactionHash, `DAO successfully updated: ${receiverId}`);
   }
 
   async handleRemoveProposal(
@@ -679,6 +744,10 @@ export class TransactionActionHandlerService {
     timestamp: string,
   ) {
     const state = await this.nearApiService.getAccountState(receiverId);
+    this.log(
+      transactionHash,
+      `Received ${receiverId} state from RPC: ${JSON.stringify(state)}`,
+    );
 
     if (!proposal) {
       const proposalKindType = proposalEntity?.kind?.type;
@@ -694,21 +763,29 @@ export class TransactionActionHandlerService {
       }
 
       if (proposalKindType === ProposalType.AddBounty) {
-        this.logger.log(
-          `Removing Bounty Context: ${proposalEntity?.id} due to transaction`,
+        this.log(
+          transactionHash,
+          `Removing Bounty Context: ${proposalEntity?.id}`,
         );
         await this.bountyContextService.remove(dao.id, args.id);
       }
 
-      this.logger.log(`Removing Proposal: ${args.id} due to transaction`);
+      this.log(transactionHash, `Removing Proposal: ${args.id}`);
       await this.proposalService.remove(dao.id, args.id);
+      this.log(transactionHash, `Successfully removed Proposal: ${args.id}`);
     } else {
-      this.logger.log(`Updating Proposal: ${proposal.id} due to transaction`);
+      this.log(
+        transactionHash,
+        `Updating Proposal: ${JSON.stringify(proposal)}`,
+      );
       await this.proposalService.create(proposal);
-      this.logger.log(`Successfully updated Proposal: ${proposal.id}`);
+      this.log(
+        transactionHash,
+        `Successfully updated Proposal: ${proposal.id}`,
+      );
     }
 
-    this.logger.log(`Updating DAO: ${receiverId} due to transaction`);
+    this.log(transactionHash, `Updating DAO: ${receiverId} due to transaction`);
     await this.daoService.save(
       castActProposalDao({
         dao,
@@ -719,7 +796,7 @@ export class TransactionActionHandlerService {
       { updateProposalsCount: true },
     );
     await this.tokenService.saveNearBalanceToDao(receiverId, state.amount);
-    this.logger.log(`DAO successfully updated: ${receiverId}`);
+    this.log(transactionHash, `DAO successfully updated: ${receiverId}`);
   }
 
   async handleAddBounty(
@@ -741,10 +818,16 @@ export class TransactionActionHandlerService {
       lastBountyId,
       bountyData,
     );
+    this.log(
+      transactionHash,
+      `Received bounty from RPC: ${JSON.stringify(daoBounty)}`,
+    );
 
     if (!daoBounty) {
-      this.logger.warn(
-        `Bounty ${lastBountyId} not found for DAO ${dao.id}. Skip transaction ${transactionHash}`,
+      this.log(
+        transactionHash,
+        `Bounty ${lastBountyId} not found for DAO ${dao.id}. Skip transaction`,
+        'warn',
       );
       return;
     }
@@ -753,20 +836,25 @@ export class TransactionActionHandlerService {
     const bounty = await this.bountyService.findById(dao.id, bountyId);
 
     if (bounty) {
-      this.logger.log('Bounty has already been created');
-    } else {
-      this.logger.log('Storing new Bounty due to transaction');
-      await this.bountyService.create(
-        castAddBounty(
-          dao,
-          proposal,
-          bountyData,
-          bountyId,
-          transactionHash,
-          timestamp,
-        ),
+      this.log(
+        transactionHash,
+        `Bounty has already been created: ${JSON.stringify(bounty)}`,
       );
-      this.logger.log('Successfully stored new Bounty');
+    } else {
+      const newBounty = castAddBounty(
+        dao,
+        proposal,
+        bountyData,
+        bountyId,
+        transactionHash,
+        timestamp,
+      );
+      this.log(
+        transactionHash,
+        `Storing new Bounty: ${JSON.stringify(newBounty)}`,
+      );
+      await this.bountyService.create(newBounty);
+      this.log(transactionHash, 'Successfully stored new Bounty');
     }
 
     const bountyById = await this.bountyService.findOne(
@@ -796,8 +884,10 @@ export class TransactionActionHandlerService {
     });
 
     if (!bounty) {
-      this.logger.warn(
-        `Bounty ${bountyId} not found for DAO ${dao.id}. Skip transaction ${transactionHash}`,
+      this.log(
+        transactionHash,
+        `Bounty ${bountyId} not found for DAO ${dao.id}. Skip transaction`,
+        'warn',
       );
       return;
     }
@@ -808,27 +898,41 @@ export class TransactionActionHandlerService {
     const bountyData = await daoContract.get_bounty({
       id: bountyId,
     });
+    this.log(
+      transactionHash,
+      `Received bounty from RPC: ${JSON.stringify(bountyData)}`,
+    );
     const numberOfClaims = await daoContract.get_bounty_number_of_claims({
       id: bountyId,
     });
+    this.log(
+      transactionHash,
+      `Received numberOfClaims from RPC: ${numberOfClaims}`,
+    );
     const bountyClaims = await daoContract.get_bounty_claims({
       account_id: receiverId,
     });
-
-    this.logger.log(`Updating Bounty: ${bounty.id} due to transaction`);
-    await this.bountyService.create(
-      castDoneBounty(
-        dao,
-        receiverId,
-        bounty,
-        bountyData,
-        numberOfClaims,
-        bountyClaims,
-        transactionHash,
-        timestamp,
-      ),
+    this.log(
+      transactionHash,
+      `Received bountyClaims from RPC: ${JSON.stringify(bountyClaims)}`,
     );
-    this.logger.log(`Bounty successfully updated: ${bounty.id}`);
+
+    const updatedBounty = castDoneBounty(
+      dao,
+      receiverId,
+      bounty,
+      bountyData,
+      numberOfClaims,
+      bountyClaims,
+      transactionHash,
+      timestamp,
+    );
+    this.log(
+      transactionHash,
+      `Updating Bounty: ${JSON.stringify(updatedBounty)}`,
+    );
+    await this.bountyService.create(updatedBounty);
+    this.log(transactionHash, `Bounty successfully updated: ${bounty.id}`);
 
     const bountyById = await this.bountyService.findOne(bounty.id, {
       relations: [
@@ -859,8 +963,10 @@ export class TransactionActionHandlerService {
     });
 
     if (!bounty) {
-      this.logger.warn(
-        `Bounty ${id} not found for DAO ${receiverId}. Skip transaction ${transactionHash}`,
+      this.log(
+        transactionHash,
+        `Bounty ${id} not found for DAO ${receiverId}. Skip transaction`,
+        'warn',
       );
       return;
     }
@@ -871,9 +977,17 @@ export class TransactionActionHandlerService {
     const bountyClaims = await daoContract.get_bounty_claims({
       account_id: signerId,
     });
+    this.log(
+      transactionHash,
+      `Received bountyClaims from RPC: ${JSON.stringify(bountyClaims)}`,
+    );
     const numberOfClaims = await daoContract.get_bounty_number_of_claims({
       id: bounty.bountyId,
     });
+    this.log(
+      transactionHash,
+      `Received numberOfClaims from RPC: ${numberOfClaims}`,
+    );
 
     const removedClaim =
       methodName === 'bounty_giveup'
@@ -883,21 +997,27 @@ export class TransactionActionHandlerService {
             timestamp,
           )
         : undefined;
-
-    this.logger.log(`Updating Bounty: ${bounty.id} due to transaction`);
-    await this.bountyService.create(
-      castClaimBounty(
-        bounty,
-        signerId,
-        receiverId,
-        transactionHash,
-        bountyClaims,
-        numberOfClaims,
-        removedClaim,
-        timestamp,
-      ),
+    this.log(
+      transactionHash,
+      `Received removed claim: ${JSON.stringify(removedClaim)}`,
     );
-    this.logger.log(`Bounty successfully updated: ${bounty.id}`);
+
+    const updatedBounty = castClaimBounty(
+      bounty,
+      signerId,
+      receiverId,
+      transactionHash,
+      bountyClaims,
+      numberOfClaims,
+      removedClaim,
+      timestamp,
+    );
+    this.log(
+      transactionHash,
+      `Updating Bounty: ${JSON.stringify(updatedBounty)}`,
+    );
+    await this.bountyService.create(updatedBounty);
+    this.log(transactionHash, `Bounty successfully updated: ${bounty.id}`);
 
     const bountyById = await this.bountyService.findOne(bounty.id, {
       relations: [
@@ -918,16 +1038,23 @@ export class TransactionActionHandlerService {
     };
   }
 
-  async handleUnknownDaoTransaction({ receiverId }: TransactionAction) {
+  async handleUnknownDaoTransaction({
+    receiverId,
+    transactionHash,
+  }: TransactionAction) {
     const dao = await this.daoService.findById(receiverId);
     const state = await this.nearApiService.getAccountState(receiverId);
+    this.log(
+      transactionHash,
+      `Received ${receiverId} state from RPC: ${JSON.stringify(state)}`,
+    );
 
     dao.amount = state.amount;
 
-    this.logger.log(`Updating DAO: ${receiverId} due to transaction`);
+    this.log(transactionHash, `Updating DAO: ${JSON.stringify(dao)}`);
     await this.daoService.save(dao, { updateTotalDaoFunds: true });
     await this.tokenService.saveNearBalanceToDao(dao.id, dao.amount);
-    this.logger.log(`DAO successfully updated: ${receiverId}`);
+    this.log(transactionHash, `DAO successfully updated: ${receiverId}`);
 
     const daoById = await this.daoService.findOne(dao.id, {
       relations: ['delegations'],
@@ -943,7 +1070,7 @@ export class TransactionActionHandlerService {
   async handleDelegate(
     txAction: TransactionAction,
   ): Promise<ContractHandlerResult> {
-    const { txSignerId, receiverId: daoId, args } = txAction;
+    const { txSignerId, receiverId: daoId, args, transactionHash } = txAction;
     const { account_id: accountId } = args;
 
     const daoContract = this.nearApiService.getContract<SputnikDaoContract>(
@@ -954,7 +1081,6 @@ export class TransactionActionHandlerService {
     const balance = await daoContract.delegation_balance_of({
       account_id: accountId,
     });
-
     await this.daoService.saveDelegation({
       daoId,
       accountId,
@@ -967,8 +1093,10 @@ export class TransactionActionHandlerService {
 
     const dao = await this.daoService.findById(daoId);
     if (!dao.stakingContract) {
-      this.logger.warn(
+      this.log(
+        transactionHash,
         `Inconsistent state - no staking contract registered for DAO ${daoId}.`,
+        'warn',
       );
 
       return;
@@ -1033,40 +1161,44 @@ export class TransactionActionHandlerService {
   async handleTokenMint(
     txAction: TransactionAction,
   ): Promise<ContractHandlerResult> {
-    this.logger.log(
-      `Handling "mint" method of ${txAction.receiverId} due to transaction: ${txAction.transactionHash}`,
-    );
+    const { receiverId, transactionHash } = txAction;
+    this.log(transactionHash, `Handling "mint" method of ${receiverId}`);
 
     try {
-      this.logger.log(`Checking if ${txAction.receiverId} is Fungible Token`);
+      this.log(transactionHash, `Checking if ${receiverId} is Fungible Token`);
       const ftContract = this.nearApiService.getContract<FTokenContract>(
         'fToken',
-        txAction.receiverId,
+        receiverId,
       );
       await ftContract.ft_total_supply();
       await this.handleTokenMethods(txAction);
       return;
     } catch (err) {
-      this.logger.warn(`Contract ${txAction.receiverId} is not Fungible Token`);
+      this.log(
+        transactionHash,
+        `Contract ${receiverId} is not Fungible Token`,
+        'warn',
+      );
     }
 
     try {
       const nftContract = this.nearApiService.getContract<NFTokenContract>(
         'nft',
-        txAction.receiverId,
+        receiverId,
       );
-      this.logger.log(`Checking if ${txAction.receiverId} is NFT`);
+      this.log(transactionHash, `Checking if ${receiverId} is NFT`);
       await nftContract.nft_total_supply();
       await this.handleNftMethods(txAction);
-      return;
+      return { type: ContractHandlerResultType.TokenUpdate };
     } catch (err) {
-      this.logger.warn(`Contract ${txAction.receiverId} is not NFT`);
+      this.log(transactionHash, `Contract ${receiverId} is not NFT`, 'warn');
     }
 
-    this.logger.warn(
-      `Called "mint" method on unknown contract ${txAction.receiverId}. Skip transaction ${txAction.transactionHash}`,
+    this.log(
+      transactionHash,
+      `Called "mint" method on unknown contract ${receiverId}. Skip transaction`,
+      'warn',
     );
-
     return { type: ContractHandlerResultType.TokenUpdate };
   }
 
@@ -1107,65 +1239,91 @@ export class TransactionActionHandlerService {
     return { type: ContractHandlerResultType.NftUpdate };
   }
 
-  async handleTokenUpdate(txAction: TransactionAction, accountIds: string[]) {
+  async handleTokenUpdate(
+    { receiverId, transactionHash, timestamp }: TransactionAction,
+    accountIds: string[],
+  ) {
     try {
-      this.logger.log(
-        `Storing Token: ${txAction.receiverId} due to transaction: ${txAction.transactionHash}`,
+      this.log(transactionHash, `Storing Token: ${receiverId}`);
+      const tokenData = await this.tokenService.loadTokenById(
+        receiverId,
+        timestamp,
       );
-      await this.tokenService.loadTokenById(
-        txAction.receiverId,
-        txAction.timestamp,
+      this.log(
+        transactionHash,
+        `Received token from RPC: ${JSON.stringify(tokenData)}`,
       );
-      this.logger.log(`Token successfully stored: ${txAction.receiverId}`);
+      this.log(transactionHash, `Token successfully stored: ${receiverId}`);
     } catch (err) {
-      this.logger.warn(
-        `Failed to load token: ${txAction.receiverId}. Skip transaction ${txAction.transactionHash}. Error: ${err}`,
+      this.log(
+        transactionHash,
+        `Failed to load token: ${receiverId}. Skip transaction. Error: ${err}`,
+        'warn',
       );
       return;
     }
 
     for (const accountId of accountIds) {
       try {
-        this.logger.log(
-          `Updating Token ${txAction.receiverId} balance for ${accountId} due to transaction: ${txAction.transactionHash}`,
+        this.log(
+          transactionHash,
+          `Updating Token ${receiverId} balance for ${accountId}`,
         );
-        await this.tokenService.loadBalanceById(
-          txAction.receiverId,
+        const balanceData = await this.tokenService.loadBalanceById(
+          receiverId,
           accountId,
-          txAction.timestamp,
+          timestamp,
         );
-        this.logger.log(
-          `Token ${txAction.receiverId} balance for ${accountId} successfully updated`,
+        this.log(
+          transactionHash,
+          `Received token balance from RPC: ${JSON.stringify(balanceData)}`,
+        );
+        this.log(
+          transactionHash,
+          `Token ${receiverId} balance for ${accountId} successfully updated`,
         );
       } catch (err) {
-        this.logger.warn(
-          `Failed to load token  ${txAction.receiverId} balance for ${accountId}. Transaction: ${txAction.transactionHash}. Error: ${err}`,
+        this.log(
+          transactionHash,
+          `Failed to load token  ${receiverId} balance for ${accountId}. Error: ${err}`,
+          'warn',
         );
       }
     }
   }
 
-  async handleNftUpdate(txAction: TransactionAction, accountIds: string[]) {
+  async handleNftUpdate(
+    { transactionHash, receiverId, timestamp }: TransactionAction,
+    accountIds: string[],
+  ) {
     for (const accountId of accountIds) {
       try {
-        this.logger.log(
-          `Updating NFT ${txAction.receiverId} for ${accountId} due to transaction: ${txAction.transactionHash}`,
+        this.log(
+          transactionHash,
+          `Updating NFT ${receiverId} for ${accountId}`,
         );
-        await this.nftTokenService.loadNFT(
-          txAction.receiverId,
+        const nftData = await this.nftTokenService.loadNFT(
+          receiverId,
           accountId,
-          txAction.timestamp,
+          timestamp,
+        );
+        this.log(
+          transactionHash,
+          `Received NFTs from RPC: ${JSON.stringify(nftData)}`,
         );
         await this.daoService.save(
           { id: accountId },
           { updateNftsCount: true },
         );
-        this.logger.log(
-          `NFT ${txAction.receiverId} for ${accountId} successfully updated`,
+        this.log(
+          transactionHash,
+          `NFT ${receiverId} for ${accountId} successfully updated`,
         );
       } catch (err) {
-        this.logger.warn(
-          `Failed to load NFT ${txAction.receiverId} for ${accountId}. Transaction: ${txAction.transactionHash}. Error: ${err}`,
+        this.log(
+          transactionHash,
+          `Failed to load NFT ${receiverId} for ${accountId}. Error: ${err}`,
+          'warn',
         );
       }
     }
@@ -1183,5 +1341,13 @@ export class TransactionActionHandlerService {
   private isDaoContract(receiverId: string): boolean {
     const { contractName } = this.configService.get('near');
     return receiverId.endsWith(contractName);
+  }
+
+  private log(
+    txHash: string,
+    message: string,
+    level: 'log' | 'warn' | 'error' = 'log',
+  ) {
+    this.logger[level](`Handling transaction: ${txHash} - ${message}`);
   }
 }
