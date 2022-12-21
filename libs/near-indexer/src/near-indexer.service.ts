@@ -338,12 +338,20 @@ export class NearIndexerService {
     return this.receiptRepository
       .createQueryBuilder('receipt')
       .leftJoinAndSelect('receipt.receiptActions', 'action_receipt_actions')
+      .leftJoin(
+        'execution_outcomes',
+        'execution_outcomes',
+        'execution_outcomes.receipt_id = receipt.receipt_id',
+      )
       .where(
         'receipt.receiver_account_id = :accountId OR receipt.predecessor_account_id = :accountId',
         {
           accountId,
         },
       )
+      .andWhere('execution_outcomes.status != :failStatus', {
+        failStatus: ExecutionOutcomeStatus.Failure,
+      })
       .getMany();
   }
 
