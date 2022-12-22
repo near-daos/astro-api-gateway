@@ -125,6 +125,7 @@ export class BountyDynamoService {
 
     if (!bounty.bountyDoneProposalIds.includes(proposalId)) {
       bounty.bountyDoneProposalIds.push(proposalId);
+      await this.dynamoDbService.saveItem<BountyModel>(bounty);
     }
   }
 }
