@@ -199,7 +199,7 @@ export class TransactionActionHandlerService {
         `Already handled transaction action: ${actionId}`,
         'warn',
       );
-      return handledReceiptAction.results;
+      // return handledReceiptAction.results;
     }
 
     if (action.status.Failure !== undefined) {

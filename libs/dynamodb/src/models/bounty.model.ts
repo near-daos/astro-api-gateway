@@ -81,7 +81,7 @@ export function mapBountyDtoToBountyModel(
     bountyClaims: bounty.bountyClaims
       ? bounty.bountyClaims.map(mapBountyClaimToBountyClaimModel)
       : [],
-    bountyDoneProposalIds: [],
+    bountyDoneProposalIds: bounty.bountyDoneProposalIds,
   };
 }
 
