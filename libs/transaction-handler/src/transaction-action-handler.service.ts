@@ -561,6 +561,10 @@ export class TransactionActionHandlerService {
     let stakingContract: string;
     let lastBountyId: number;
 
+    this.log(transactionHash, `Updating Proposal: ${JSON.stringify(proposal)}`);
+    await this.proposalService.create(proposal);
+    this.log(transactionHash, `Proposal successfully updated: ${proposal.id}`);
+
     if (proposal.status === ProposalStatus.Approved) {
       const { tokenId, receiverId } = proposal.kind
         .kind as ProposalKindTransfer;
@@ -660,10 +664,6 @@ export class TransactionActionHandlerService {
 
       proposal.failure = status?.Failure;
     }
-
-    this.log(transactionHash, `Updating Proposal: ${JSON.stringify(proposal)}`);
-    await this.proposalService.create(proposal);
-    this.log(transactionHash, `Proposal successfully updated: ${proposal.id}`);
 
     const updatedDao = castActProposalDao({
       dao,
