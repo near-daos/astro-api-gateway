@@ -158,7 +158,7 @@ export function castDoneBounty(
     transactionHash: bounty.transactionHash,
     updateTransactionHash: transactionHash,
     bountyDoneProposalIds: isBounty(bounty)
-      ? bounty.bountyDoneProposals.map((item) => item.id)
+      ? bounty.bountyDoneProposals.map((item) => String(item.proposalId))
       : bounty.bountyDoneProposalIds,
   };
 }
