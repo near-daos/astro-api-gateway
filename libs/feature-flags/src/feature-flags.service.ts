@@ -18,7 +18,7 @@ export class FeatureFlagsService implements OnApplicationShutdown {
 
   public async check(
     key: FeatureFlags,
-    accountId = '',
+    accountId = 'astro-backend',
     defaultValue = false,
   ): Promise<boolean> {
     return await this.ldClient.variation(

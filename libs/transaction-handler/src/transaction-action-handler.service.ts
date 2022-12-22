@@ -142,6 +142,8 @@ export class TransactionActionHandlerService {
         },
       },
     ];
+
+    this.log('test', 'starting service', 'error');
   }
 
   async handleTransactionActions(actions: TransactionAction[]): Promise<{
