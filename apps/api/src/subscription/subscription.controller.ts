@@ -102,10 +102,6 @@ export class SubscriptionsController {
     name: 'accountId',
     type: String,
   })
-  @ApiParam({
-    name: 'subscriptionId',
-    type: String,
-  })
   @ApiResponse({
     status: 200,
     description: 'OK',
@@ -119,11 +115,11 @@ export class SubscriptionsController {
   })
   @ApiBearerAuth()
   @UseGuards(AccountAccessGuard)
-  @Delete('/:daoId/:accountId/:subscriptionId')
+  @Delete('/:daoId/:accountId')
   remove(
     @Param()
-    { daoId, accountId, subscriptionId }: DeleteSubscriptionParams,
+    { daoId, accountId }: DeleteSubscriptionParams,
   ): Promise<void> {
-    return this.subscriptionService.remove(daoId, accountId, subscriptionId);
+    return this.subscriptionService.remove(daoId, accountId);
   }
 }

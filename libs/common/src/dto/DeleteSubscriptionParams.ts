@@ -5,6 +5,4 @@ export class DeleteSubscriptionParams {
   daoId: string;
   @IsNotEmpty()
   accountId: string;
-  @IsNotEmpty()
-  subscriptionId: string;
 }

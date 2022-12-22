@@ -48,11 +48,7 @@ export class SubscriptionService {
     return this.subscriptionRepository.save(subscription);
   }
 
-  async remove(
-    daoId: string,
-    accountId: string,
-    subscriptionId: string,
-  ): Promise<void> {
+  async remove(daoId: string, accountId: string): Promise<void> {
     const daoModel = await this.dynamoDbService.getItemByType<DaoModel>(
       daoId,
       DynamoEntityType.Dao,
@@ -66,12 +62,13 @@ export class SubscriptionService {
     });
 
     const deleteResponse = await this.subscriptionRepository.delete({
-      id: subscriptionId,
+      daoId,
+      accountId,
     });
 
     if (!deleteResponse.affected) {
       throw new NotFoundException(
-        `Subscription with id ${subscriptionId} not found`,
+        `Subscription with daoId ${daoId} and accountId ${accountId} not found`,
       );
     }
   }
