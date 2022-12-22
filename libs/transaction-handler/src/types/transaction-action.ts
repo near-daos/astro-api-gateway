@@ -14,7 +14,6 @@ import {
   ExecutionOutcomeWithIdView,
   ExecutionStatus,
   FinalExecutionStatus,
-  FinalExecutionStatusBasic,
 } from 'near-api-js/lib/providers/provider';
 
 export type TransactionAction = {

@@ -21,6 +21,8 @@ export enum DynamoEntityType {
   TokenBalance = 'TokenBalance',
   TokenPrice = 'TokenPrice',
   HandledReceiptAction = 'HandledReceiptAction',
+  TreasuryReceiptAction = 'TreasuryReceiptAction',
+  TreasuryTokenReceiptAction = 'TreasuryTokenReceiptAction',
   Otp = 'Otp',
   Error = 'Error',
   ErrorIds = 'ERROR_IDS',

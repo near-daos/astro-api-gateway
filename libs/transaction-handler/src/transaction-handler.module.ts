@@ -13,6 +13,7 @@ import { HttpCacheModule } from '@sputnik-v2/cache';
 import { OpenSearchModule } from '@sputnik-v2/opensearch';
 import { DynamodbModule } from '@sputnik-v2/dynamodb';
 import { FeatureFlagsModule } from '@sputnik-v2/feature-flags';
+import { TreasuryModule } from '@sputnik-v2/treasury';
 
 import { HandledReceiptActionDynamoService } from './handled-receipt-action-dynamo.service';
 import { TransactionHandlerService } from './transaction-handler.service';
@@ -35,6 +36,7 @@ import { TransactionHandlerState } from './entities';
     OpenSearchModule,
     DynamodbModule,
     FeatureFlagsModule,
+    TreasuryModule,
   ],
   providers: [
     HandledReceiptActionDynamoService,
