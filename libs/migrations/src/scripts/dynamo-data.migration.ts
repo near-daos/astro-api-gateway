@@ -12,6 +12,7 @@ import {
   AccountModel,
   AccountNotificationModel,
   BaseModel,
+  BountyMappingModel,
   BountyModel,
   CommentModel,
   DaoIdsModel,
@@ -34,6 +35,7 @@ import {
   mapSharedProposalTemplateToSharedProposalTemplateModel,
   mapSubscriptionToSubscriptionModel,
   mapTokenToTokenPriceModel,
+  mapBountyToBountyMappingModel,
   NftModel,
   ProposalModel,
   ProposalTemplateModel,
@@ -247,10 +249,12 @@ export class DynamoDataMigration implements Migration {
         ],
       },
     )) {
-      await this.dynamodbService.batchPut<BountyModel>(
-        bounties
-          .filter((bounty) => bounty.bountyContext)
-          .map((bounty) =>
+      const bountiesWithContext = bounties.filter(
+        (bounty) => bounty.bountyContext,
+      );
+      await Promise.all([
+        this.dynamodbService.batchPut<BountyModel>(
+          bountiesWithContext.map((bounty) =>
             this.populateMigrationFields(
               mapBountyToBountyModel(
                 bounty,
@@ -258,7 +262,18 @@ export class DynamoDataMigration implements Migration {
               ),
             ),
           ),
-      );
+        ),
+        this.dynamodbService.batchPut<BountyMappingModel>(
+          bountiesWithContext.map((bounty) =>
+            this.populateMigrationFields(
+              mapBountyToBountyMappingModel(
+                bounty,
+                bounty.bountyContext.proposal.proposalId,
+              ),
+            ),
+          ),
+        ),
+      ]);
     }
   }
 
