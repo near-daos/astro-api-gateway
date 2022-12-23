@@ -1,6 +1,6 @@
 import { TransactionModel } from '@sputnik-v2/dynamodb';
 
-export class TreasuryTokenReceiptActionModel extends TransactionModel {
+export class DaoFundsTokenReceiptModel extends TransactionModel {
   daoId: string;
   receiptId: string;
   indexInReceipt: number;

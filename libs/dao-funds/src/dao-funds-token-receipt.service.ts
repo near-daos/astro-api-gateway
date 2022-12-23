@@ -1,29 +1,30 @@
 import { Injectable } from '@nestjs/common';
+import { DaoFundsTokenReceiptModel } from '@sputnik-v2/dao-funds/models';
 import {
   DynamodbService,
   DynamoEntityType,
   PartialEntity,
 } from '@sputnik-v2/dynamodb';
-import { TreasuryReceiptActionModel } from '@sputnik-v2/treasury/models';
-import { TreasuryReceiptActionDto } from './dto';
+import { DaoFundsTokenReceiptDto } from './dto';
 
 @Injectable()
-export class TreasuryReceiptActionService {
+export class DaoFundsTokenReceiptService {
   constructor(private readonly dynamoDbService: DynamodbService) {}
 
   async save(
-    dto: TreasuryReceiptActionDto,
-  ): Promise<PartialEntity<TreasuryReceiptActionModel>> {
-    return this.dynamoDbService.saveItemByType<TreasuryReceiptActionModel>(
+    dto: DaoFundsTokenReceiptDto,
+  ): Promise<PartialEntity<DaoFundsTokenReceiptModel>> {
+    return this.dynamoDbService.saveItemByType<DaoFundsTokenReceiptModel>(
       dto.daoId,
-      DynamoEntityType.TreasuryReceiptAction,
-      dto.transactionHash,
+      DynamoEntityType.DaoFundsTokenReceipt,
+      `${dto.tokenId}-${dto.transactionHash}`,
       {
         daoId: dto.daoId,
         receiptId: dto.receiptId,
         indexInReceipt: dto.indexInReceipt,
-        predecessorId: dto.predecessorId,
+        senderId: dto.senderId,
         receiverId: dto.receiverId,
+        tokenId: dto.tokenId,
         amount: dto.amount,
         transactionHash: dto.transactionHash,
         createTimestamp: dto.createTimestamp,

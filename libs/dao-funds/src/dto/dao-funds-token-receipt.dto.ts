@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class TreasuryTokenReceiptActionDto {
+export class DaoFundsTokenReceiptDto {
   @ApiProperty()
   daoId: string;
 
