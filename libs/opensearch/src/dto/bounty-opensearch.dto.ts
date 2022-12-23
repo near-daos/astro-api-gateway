@@ -38,6 +38,7 @@ export class BountyOpensearchDto extends BaseOpensearchDto {
           ...properties,
           daoId: { type: 'keyword' },
           numberOfClaims: { type: 'integer' },
+          times: { type: 'integer' },
           bountyId: { type: 'integer' },
           proposalStatus: { type: 'keyword' },
           tags: { type: 'text' },
