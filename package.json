@@ -157,6 +157,8 @@
       "@sputnik-v2/subscription": "<rootDir>/libs/subscription/src",
       "@sputnik-v2/dao/(.*)": "<rootDir>/libs/dao/src/$1",
       "@sputnik-v2/dao": "<rootDir>/libs/dao/src",
+      "@sputnik-v2/dao-funds/(.*)": "<rootDir>/libs/dao-funds/src/$1",
+      "@sputnik-v2/dao-funds": "<rootDir>/libs/dao-funds/src",
       "@sputnik-v2/dao-settings/(.*)": "<rootDir>/libs/dao-settings/src/$1",
       "@sputnik-v2/dao-settings": "<rootDir>/libs/dao-settings/src",
       "@sputnik-v2/account/(.*)": "<rootDir>/libs/account/src/$1",
