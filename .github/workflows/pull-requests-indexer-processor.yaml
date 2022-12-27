@@ -8,8 +8,8 @@ on:
       - '**'
       - '!apps/aggregator/**'
       - '!apps/api/**'
-      - '!apps/notifier/**'
       - '!apps/draft/**'
+      - '!apps/notifier/**'
 
 jobs:
   build:
@@ -20,7 +20,7 @@ jobs:
     - name: Set Environment
       run: |
          echo APP_NAME=indexer-processor >> $GITHUB_ENV
-         cat ".github/env.common" | grep -E -v '^\ *#' >>$GITHUB_ENV
+         cat ".github/env.common" | grep -E -v '^\ *#' >> $GITHUB_ENV
 
     - name: Build Test
       uses: ./.github/actions/build-test
