@@ -1,12 +1,14 @@
 import { Injectable } from '@nestjs/common';
+import { BlockId } from 'near-api-js/lib/providers/provider';
 import { Bounty } from '@sputnik-v2/bounty/entities';
 
 import {
   NearApiService,
   SputnikDaoBounty,
   SputnikDaoBountyOutput,
-  SputnikDaoContract,
+  SputnikDaoConfig,
   SputnikDaoFactoryContract,
+  SputnikDaoPolicy,
   SputnikDaoProposal,
   SputnikDaoProposalKind,
   SputnikDaoProposalOutput,
@@ -31,17 +33,13 @@ export class SputnikService {
       );
   }
 
-  public async getDaoInfo(daoId: string): Promise<DaoInfo> {
-    const daoContract = this.nearApiService.getContract<SputnikDaoContract>(
-      'sputnikDao',
-      daoId,
-    );
-    const config = await daoContract.get_config();
-    const policy = await daoContract.get_policy();
-    const stakingContract = await daoContract.get_staking_contract();
-    const totalSupply = await daoContract.delegation_total_supply();
-    const lastProposalId = await daoContract.get_last_proposal_id();
-    const lastBountyId = await daoContract.get_last_bounty_id();
+  public async getDaoInfo(daoId: string, blockId?: BlockId): Promise<DaoInfo> {
+    const config = await this.getConfig(daoId, blockId);
+    const policy = await this.getPolicy(daoId, blockId);
+    const stakingContract = await this.getStakingContract(daoId, blockId);
+    const totalSupply = await this.getDelegationTotalSupply(daoId, blockId);
+    const lastProposalId = await this.getLastProposalId(daoId, blockId);
+    const lastBountyId = await this.getLastBountyId(daoId, blockId);
     const amount = await this.nearApiService.getAccountAmount(daoId);
     return {
       config,
@@ -54,11 +52,98 @@ export class SputnikService {
     };
   }
 
-  public async getProposalsByDaoId(daoId: string, lastProposalId: number) {
-    const daoContract = this.nearApiService.getContract<SputnikDaoContract>(
-      'sputnikDao',
+  public async getConfig(
+    daoId: string,
+    blockId?: BlockId,
+  ): Promise<SputnikDaoConfig> {
+    return this.nearApiService.callContractRetry(
       daoId,
+      'get_config',
+      {},
+      blockId,
     );
+  }
+
+  public async getPolicy(
+    daoId: string,
+    blockId?: BlockId,
+  ): Promise<SputnikDaoPolicy> {
+    return this.nearApiService.callContractRetry(
+      daoId,
+      'get_policy',
+      {},
+      blockId,
+    );
+  }
+
+  public async getStakingContract(
+    daoId: string,
+    blockId?: BlockId,
+  ): Promise<string> {
+    return this.nearApiService.callContractRetry(
+      daoId,
+      'get_staking_contract',
+      {},
+      blockId,
+    );
+  }
+
+  public async getDelegationTotalSupply(
+    daoId: string,
+    blockId?: BlockId,
+  ): Promise<string> {
+    return this.nearApiService.callContractRetry(
+      daoId,
+      'delegation_total_supply',
+      {},
+      blockId,
+    );
+  }
+
+  public async getLastProposalId(
+    daoId: string,
+    blockId?: BlockId,
+  ): Promise<number> {
+    return this.nearApiService.callContractRetry(
+      daoId,
+      'get_last_proposal_id',
+      {},
+      blockId,
+    );
+  }
+
+  public async getLastBountyId(
+    daoId: string,
+    blockId?: BlockId,
+  ): Promise<number> {
+    return this.nearApiService.callContractRetry(
+      daoId,
+      'get_last_bounty_id',
+      {},
+      blockId,
+    );
+  }
+
+  public async getDelegationBalance(
+    daoId: string,
+    accountId: string,
+    blockId?: BlockId,
+  ) {
+    return this.nearApiService.callContractRetry(
+      daoId,
+      'get_bounty_number_of_claims',
+      {
+        account_id: accountId,
+      },
+      blockId,
+    );
+  }
+
+  public async getProposalsByDaoId(
+    daoId: string,
+    lastProposalId: number,
+    blockId?: BlockId,
+  ) {
     const chunkSize = PROPOSAL_REQUEST_CHUNK_SIZE;
     const chunkCount =
       (lastProposalId - (lastProposalId % chunkSize)) / chunkSize + 1;
@@ -66,23 +151,33 @@ export class SputnikService {
 
     // Load all proposals by chunks
     for (let i = 0; i < chunkCount; i++) {
-      const proposalsChunk = await daoContract.get_proposals({
-        from_index: chunkSize * i,
-        limit: chunkSize,
-      });
+      const proposalsChunk = await this.nearApiService.callContractRetry(
+        daoId,
+        'get_proposals',
+        {
+          from_index: chunkSize * i,
+          limit: chunkSize,
+        },
+        blockId,
+      );
       proposals = proposals.concat(proposalsChunk);
     }
 
     return proposals;
   }
 
-  public async getProposal(daoId: string, proposalId: number) {
-    const daoContract = this.nearApiService.getContract<SputnikDaoContract>(
-      'sputnikDao',
-      daoId,
-    );
+  public async getProposal(
+    daoId: string,
+    proposalId: number,
+    blockId?: BlockId,
+  ) {
     try {
-      return await daoContract.get_proposal({ id: proposalId });
+      return await this.nearApiService.callContractRetry(
+        daoId,
+        'get_proposal',
+        { id: proposalId },
+        blockId,
+      );
     } catch (err) {
       if (err.message.includes('ERR_NO_PROPOSAL')) {
         return null;
@@ -107,14 +202,20 @@ export class SputnikService {
     return null;
   }
 
+  public async getBounty(daoId: string, bountyId: number, blockId?: BlockId) {
+    return await this.nearApiService.callContractRetry(
+      daoId,
+      'get_bounty',
+      { id: bountyId },
+      blockId,
+    );
+  }
+
   public async getBountiesByDaoId(
     daoId: string,
     lastBountyId: number,
+    blockId?: BlockId,
   ): Promise<(SputnikDaoBountyOutput & { numberOfClaims: number })[]> {
-    const daoContract = this.nearApiService.getContract<SputnikDaoContract>(
-      'sputnikDao',
-      daoId,
-    );
     const chunkSize = BOUNTY_REQUEST_CHUNK_SIZE;
     const chunkCount =
       (lastBountyId - (lastBountyId % chunkSize)) / chunkSize + 1;
@@ -122,10 +223,15 @@ export class SputnikService {
 
     // Load all bounties by chunks
     for (let i = 0; i < chunkCount; i++) {
-      const bountiesChunk = await daoContract.get_bounties({
-        from_index: chunkSize * i,
-        limit: chunkSize,
-      });
+      const bountiesChunk = await this.nearApiService.callContractRetry(
+        daoId,
+        'get_bounties',
+        {
+          from_index: chunkSize * i,
+          limit: chunkSize,
+        },
+        blockId,
+      );
       bounties = bounties.concat(bountiesChunk);
     }
 
@@ -137,45 +243,80 @@ export class SputnikService {
       .process(async (bounty) => {
         return {
           ...bounty,
-          numberOfClaims: await daoContract.get_bounty_number_of_claims({
-            id: bounty.id,
-          }),
+          numberOfClaims: await this.getBountyNumberOfClaims(
+            daoId,
+            bounty.id,
+            blockId,
+          ),
         };
       });
 
     return results;
   }
 
-  public async getBountyClaims(daoId: string, accountIds: string[]) {
-    const daoContract = this.nearApiService.getContract<SputnikDaoContract>(
-      'sputnikDao',
+  public async getBountyNumberOfClaims(
+    daoId: string,
+    bountyId: number,
+    blockId?: BlockId,
+  ) {
+    return this.nearApiService.callContractRetry(
       daoId,
+      'get_bounty_number_of_claims',
+      {
+        id: bountyId,
+      },
+      blockId,
     );
+  }
+
+  public async getBountyClaims(
+    daoId: string,
+    accountIds: string[],
+    blockId?: BlockId,
+  ) {
     const { results: claims } = await PromisePool.withConcurrency(2)
       .for(accountIds)
       .handleError((err) => {
         throw err;
       })
       .process(async (accountId) => {
-        const bountyClaims = await daoContract.get_bounty_claims({
-          account_id: accountId,
-        });
-
-        return bountyClaims.map((claim) => ({
-          ...claim,
-          accountId,
-        }));
+        return this.getAccountBountyClaims(daoId, accountId, blockId);
       });
 
     return claims.flat();
+  }
+
+  public async getAccountBountyClaims(
+    daoId: string,
+    accountId: string,
+    blockId?: BlockId,
+  ) {
+    const bountyClaims = await this.nearApiService.callContractRetry(
+      daoId,
+      'get_bounty_claims',
+      {
+        account_id: accountId,
+      },
+      blockId,
+    );
+
+    return bountyClaims.map((claim) => ({
+      ...claim,
+      accountId,
+    }));
   }
 
   public async findLastBounty(
     daoId: string,
     lastBountyId: number,
     bountyData: Bounty,
+    blockId?: BlockId,
   ) {
-    const bounties = await this.getBountiesByDaoId(daoId, lastBountyId);
+    const bounties = await this.getBountiesByDaoId(
+      daoId,
+      lastBountyId,
+      blockId,
+    );
 
     for (let i = bounties.length - 1; i >= 0; i--) {
       if (this.compareBounties(bounties[i], bountyData)) {

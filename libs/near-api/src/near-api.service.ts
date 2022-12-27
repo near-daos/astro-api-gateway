@@ -4,6 +4,7 @@ import { NEAR_API_PROVIDER } from '@sputnik-v2/common';
 import { NearApiContract, NearApiProvider } from '@sputnik-v2/config/near-api';
 import { BlockId } from 'near-api-js/lib/providers/provider';
 import { Retryable } from 'typescript-retry-decorator';
+import { btoaJSON, objectToBtoaJSON } from '@sputnik-v2/utils';
 
 import { StakingContract } from './contracts';
 import {
@@ -121,9 +122,24 @@ export class NearApiService {
     return response.hash;
   }
 
-  public async getLastBlock(): Promise<any> {
-    return this.provider.block({
-      finality: 'final',
-    });
+  @Retryable({
+    maxAttempts: 3,
+    backOff: 3000,
+  })
+  public async callContractRetry(
+    contractId: string,
+    methodName: string,
+    args?: Record<string, any>,
+    blockId?: BlockId,
+  ) {
+    const { result } = (await this.provider.query({
+      request_type: 'call_function',
+      account_id: contractId,
+      method_name: methodName,
+      args_base64: args ? objectToBtoaJSON(args) : '',
+      blockId: blockId,
+      finality: !blockId ? 'final' : undefined,
+    })) as any;
+    return btoaJSON(result);
   }
 }

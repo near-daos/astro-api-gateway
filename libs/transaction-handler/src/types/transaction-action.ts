@@ -14,7 +14,6 @@ import {
   ExecutionOutcomeWithIdView,
   ExecutionStatus,
   FinalExecutionStatus,
-  FinalExecutionStatusBasic,
 } from 'near-api-js/lib/providers/provider';
 
 export type TransactionAction = {
@@ -24,6 +23,7 @@ export type TransactionAction = {
   txSignerId: string;
   predecessorId: string;
   transactionHash: string;
+  blockHash: string;
   methodName: string;
   args: any;
   deposit: string;
@@ -44,6 +44,7 @@ export function castNearTransactionAction(
 ): TransactionAction {
   return {
     transactionHash: txStatus.transaction.hash,
+    blockHash: outcome.block_hash,
     receiverId: receipt.receiver_id,
     predecessorId: receipt.predecessor_id,
     signerId: receipt.predecessor_id,
@@ -70,6 +71,7 @@ export function castNearIndexerReceiptAction(
     txSignerId: receipt.originatedFromTransaction?.signerAccountId,
     predecessorId: ac.receiptPredecessorAccountId,
     transactionHash: receipt.originatedFromTransaction.transactionHash,
+    blockHash: receipt.originatedFromTransaction.includedInBlockHash,
     methodName: ac?.args?.method_name as string,
     args: ac?.args?.args_json,
     deposit: (ac?.args?.deposit as string) || '0',
