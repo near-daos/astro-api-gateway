@@ -1337,6 +1337,7 @@ export class TransactionActionHandlerService {
   async saveDaoFunds(action: TransactionAction) {
     if (
       action.deposit &&
+      BigInt(action.deposit) > 0n &&
       (this.isDaoContract(action.predecessorId) ||
         this.isDaoContract(action.receiverId))
     ) {
@@ -1353,7 +1354,11 @@ export class TransactionActionHandlerService {
         createTimestamp: action.timestamp,
       });
       this.log(action.transactionHash, `Stored treasury: ${model.entityId}`);
-    } else if (action.methodName?.startsWith('ft_')) {
+    } else if (
+      action.methodName?.startsWith('ft_') &&
+      action.args?.amount &&
+      BigInt(action.args?.amount) > 0n
+    ) {
       const senderId = action.txSignerId ?? action.predecessorId;
       const receiverId = action.args?.receiver_id ?? action.args?.account_id;
 
