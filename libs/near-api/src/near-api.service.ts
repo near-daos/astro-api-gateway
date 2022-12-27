@@ -4,7 +4,7 @@ import { NEAR_API_PROVIDER } from '@sputnik-v2/common';
 import { NearApiContract, NearApiProvider } from '@sputnik-v2/config/near-api';
 import { BlockId } from 'near-api-js/lib/providers/provider';
 import { Retryable } from 'typescript-retry-decorator';
-import { btoaJSON, objectToBtoaJSON } from '@sputnik-v2/utils';
+import { btoaJSON, atobJSON } from '@sputnik-v2/utils';
 
 import { StakingContract } from './contracts';
 import {
@@ -136,7 +136,7 @@ export class NearApiService {
       request_type: 'call_function',
       account_id: contractId,
       method_name: methodName,
-      args_base64: args ? objectToBtoaJSON(args) : '',
+      args_base64: args ? atobJSON(args) : '',
       blockId: blockId,
       finality: !blockId ? 'final' : undefined,
     })) as any;

@@ -145,7 +145,7 @@ export const btoaJSON = (b: string) => {
   } catch (e) {}
 };
 
-export const objectToBtoaJSON = (data: Record<string, any>) => {
+export const atobJSON = (data: Record<string, any>) => {
   return encodeBase64(JSON.stringify(data));
 };
 
