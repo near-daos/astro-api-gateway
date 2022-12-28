@@ -36,7 +36,7 @@ export class ReceiptAction {
     type: 'enum',
     enum: ActionKind,
   })
-  actionKind: string;
+  actionKind: ActionKind;
 
   @ApiProperty()
   @Column({ type: 'simple-json' })

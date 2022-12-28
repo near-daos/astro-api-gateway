@@ -1,14 +1,22 @@
 import { btoaJSON, decodeBase64 } from '@sputnik-v2/utils';
 
 export type NearTransactionAction = {
-  Transfer: { deposit: string };
+  CreateAccount: any;
+  DeployContract: any;
   FunctionCall: {
     methodName: string;
     deposit: string;
     gas: number;
     args: any;
   };
+  Transfer: { deposit: string };
+  Stake: any;
+  AddKey: any;
+  DeleteKey: any;
+  DeleteAccount: any;
 };
+
+export type NearTransactionActionKind = keyof NearTransactionAction;
 
 export function castTransactionAction(action): NearTransactionAction {
   const { FunctionCall } = action;

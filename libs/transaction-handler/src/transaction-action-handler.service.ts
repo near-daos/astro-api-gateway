@@ -1335,6 +1335,7 @@ export class TransactionActionHandlerService {
   }
 
   async saveDaoFunds(action: TransactionAction) {
+    // save receipts with attached deposit
     if (
       action.deposit &&
       BigInt(action.deposit) > 0n &&
@@ -1349,28 +1350,44 @@ export class TransactionActionHandlerService {
         indexInReceipt: action.indexInReceipt,
         predecessorId: action.predecessorId,
         receiverId: action.receiverId,
-        amount: action.deposit,
+        kind: action.kind,
+        deposit: action.deposit,
+        methodName: action.methodName,
+        args: action.args,
         transactionHash: action.transactionHash,
         createTimestamp: action.timestamp,
       });
       this.log(action.transactionHash, `Stored treasury: ${model.entityId}`);
-    } else if (
-      action.methodName?.startsWith('ft_') &&
+    }
+
+    // save receipts with token transfer calls
+    if (
+      ['ft_mint', 'ft_transfer', 'ft_transfer_call'].includes(
+        action.methodName,
+      ) &&
       action.args?.amount &&
-      BigInt(action.args?.amount) > 0n
+      BigInt(action.args.amount) > 0n
     ) {
-      const senderId = action.txSignerId ?? action.predecessorId;
       const receiverId = action.args?.receiver_id ?? action.args?.account_id;
 
-      if (this.isDaoContract(senderId) || this.isDaoContract(receiverId)) {
+      if (
+        this.isDaoContract(action.predecessorId) ||
+        this.isDaoContract(receiverId)
+      ) {
         const model = await this.daoFundsTokenReceiptService.save({
-          daoId: this.isDaoContract(senderId) ? senderId : receiverId,
+          daoId: this.isDaoContract(action.predecessorId)
+            ? action.predecessorId
+            : receiverId,
           receiptId: action.receiptId,
           indexInReceipt: action.indexInReceipt,
-          senderId,
+          senderId: action.predecessorId,
           receiverId,
           tokenId: action.receiverId,
-          amount: action.args?.amount,
+          kind: action.kind,
+          amount: action.args.amount,
+          deposit: action.deposit,
+          methodName: action.methodName,
+          args: action.args,
           transactionHash: action.transactionHash,
           createTimestamp: action.timestamp,
         });
