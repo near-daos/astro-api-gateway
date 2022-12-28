@@ -17,7 +17,7 @@ export class DaoFundsReceiptService {
     return this.dynamoDbService.saveItemByType<DaoFundsReceiptModel>(
       dto.daoId,
       DynamoEntityType.DaoFundsReceipt,
-      dto.transactionHash,
+      `${dto.createTimestamp}-${dto.receiptId}`,
       {
         daoId: dto.daoId,
         receiptId: dto.receiptId,
