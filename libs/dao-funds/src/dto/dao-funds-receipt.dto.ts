@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { NearTransactionActionKind } from '@sputnik-v2/near-api';
 
 export class DaoFundsReceiptDto {
   @ApiProperty()
@@ -17,7 +18,16 @@ export class DaoFundsReceiptDto {
   receiverId: string;
 
   @ApiProperty()
-  amount: string;
+  kind: NearTransactionActionKind;
+
+  @ApiProperty()
+  deposit: string;
+
+  @ApiProperty()
+  methodName?: string;
+
+  @ApiProperty()
+  args?: any;
 
   @ApiProperty()
   transactionHash: string;
