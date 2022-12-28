@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ProposalTemplate } from '@sputnik-v2/proposal-template/entities';
 import { ProposalTemplateDto } from '@sputnik-v2/proposal-template/dto';
-import { buildTemplateId } from '@sputnik-v2/utils';
+import { buildEntityId, buildTemplateId } from '@sputnik-v2/utils';
 import {
   DynamodbService,
   DynamoEntityType,
@@ -42,25 +42,19 @@ export class DynamoProposalTemplateService {
   async update(
     id: string,
     proposalTemplate: ProposalTemplateDto,
-  ): Promise<ProposalTemplate> {
-    const newProposalTemplate: ProposalTemplate = {
+  ): Promise<void> {
+    const newProposalTemplate = {
+      partitionId: proposalTemplate.daoId,
+      entityType: DynamoEntityType.ProposalTemplate,
+      entityId: buildEntityId(DynamoEntityType.ProposalTemplate, id),
       config: proposalTemplate.config,
-      createdAt: new Date(),
-      dao: undefined,
-      daoId: proposalTemplate.daoId,
-      id: id,
-      isArchived: false,
       isEnabled: proposalTemplate.isEnabled,
       name: proposalTemplate.name,
-      updatedAt: new Date(),
+      daoId: proposalTemplate.daoId,
+      updatedAt: new Date().getTime(),
     };
 
-    const proposalTemplateModel =
-      mapProposalTemplateToProposalTemplateModel(newProposalTemplate);
-
-    await this.dynamoDbService.saveItem(proposalTemplateModel);
-
-    return newProposalTemplate;
+    await this.dynamoDbService.saveItem(newProposalTemplate);
   }
 
   async delete(daoId: string, id: string) {

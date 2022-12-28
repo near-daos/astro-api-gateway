@@ -39,7 +39,7 @@ export class DynamoSharedProposalTemplateService {
 
     const existingTemplate =
       await this.dynamoDbService.getItemByType<SharedProposalTemplateModel>(
-        daoId,
+        id,
         DynamoEntityType.SharedProposalTemplate,
         id,
       );

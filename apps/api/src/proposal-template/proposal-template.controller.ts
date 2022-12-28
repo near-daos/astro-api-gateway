@@ -29,6 +29,7 @@ import { SharedProposalTemplateService } from '@sputnik-v2/proposal-template/sha
 import { CouncilMemberGuard } from '../guards/council-member.guard';
 import { ProposalTemplateBodyDto } from './dto/proposal-template-body.dto';
 import { DynamoProposalTemplateService } from '@sputnik-v2/proposal-template/dynamo-proposal-template.service';
+import { DynamoSharedProposalTemplateService } from '@sputnik-v2/proposal-template/dynamo-shared-proposal-template.service';
 
 @Span()
 @ApiTags('DAO')
@@ -38,7 +39,7 @@ export class ProposalTemplateController {
     private readonly proposalTemplateService: ProposalTemplateService,
     private readonly sharedProposalTemplateService: SharedProposalTemplateService,
     private readonly dynamoProposalTemplateService: DynamoProposalTemplateService,
-    private readonly dynamoSharedProposalTemplateService: SharedProposalTemplateService,
+    private readonly dynamoSharedProposalTemplateService: DynamoSharedProposalTemplateService,
   ) {}
 
   @ApiParam({
