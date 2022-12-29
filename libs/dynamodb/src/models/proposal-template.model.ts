@@ -11,6 +11,7 @@ export class ProposalTemplateModel extends BaseModel {
   name: string;
   isEnabled: boolean;
   config: ProposalTemplateConfigDto;
+  sourceTemplateId: string;
 }
 
 export function mapProposalTemplateToProposalTemplateModel(
