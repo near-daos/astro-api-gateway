@@ -300,7 +300,7 @@ export class DynamodbService {
       .catch((err) => (checkIfExists ? Promise.reject(err) : undefined));
   }
 
-  private async getQueryItems<M>(
+  async getQueryItems<M>(
     query: QueryItemsQuery,
     tableName = this.tableName,
   ): Promise<QueryOutput<M>> {
@@ -316,7 +316,7 @@ export class DynamodbService {
       }));
   }
 
-  private async getQueryItemsByType<M>(
+  async getQueryItemsByType<M>(
     partitionId: string,
     entityType: DynamoEntityType,
     query: QueryItemsQuery = {},
