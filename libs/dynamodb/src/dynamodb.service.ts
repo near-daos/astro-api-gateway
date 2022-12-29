@@ -341,7 +341,7 @@ export class DynamodbService {
     query: QueryItemsQuery,
     tableName = this.tableName,
   ): Promise<PartialEntity<M>[]> {
-    return (await this.getQueryItems<M>(query, tableName)).Items;
+    return this.getQueryItems<M>(query, tableName).then(({ Items }) => Items);
   }
 
   async queryItemsByType<M>(
@@ -350,14 +350,12 @@ export class DynamodbService {
     query: QueryItemsQuery = {},
     tableName = this.tableName,
   ): Promise<PartialEntity<M>[]> {
-    return (
-      await this.getQueryItemsByType<M>(
-        partitionId,
-        entityType,
-        query,
-        tableName,
-      )
-    ).Items;
+    return this.getQueryItemsByType<M>(
+      partitionId,
+      entityType,
+      query,
+      tableName,
+    ).then(({ Items }) => Items);
   }
 
   async *paginateItems<M>(
@@ -414,14 +412,13 @@ export class DynamodbService {
     query: CountItemsQuery,
     tableName = this.tableName,
   ): Promise<number> {
-    return this.client
-      .query({
-        TableName: tableName,
+    return this.getQueryItems(
+      {
         Select: 'COUNT',
         ...query,
-      })
-      .promise()
-      .then(({ Count }) => Count);
+      },
+      tableName,
+    ).then(({ Count }) => Count);
   }
 
   async countItemsByType(
@@ -430,19 +427,15 @@ export class DynamodbService {
     query: CountItemsQuery = {},
     tableName = this.tableName,
   ): Promise<number> {
-    return this.countItems(
+    return this.getQueryItemsByType(
+      partitionId,
+      entityType,
       {
-        KeyConditionExpression:
-          'partitionId = :partitionId and begins_with(entityId, :entityType)',
+        Select: 'COUNT',
         ...query,
-        ExpressionAttributeValues: {
-          ':partitionId': partitionId,
-          ':entityType': buildEntityId(entityType, ''),
-          ...query.ExpressionAttributeValues,
-        },
       },
       tableName,
-    );
+    ).then(({ Count }) => Count);
   }
 
   async putItem<M>(
