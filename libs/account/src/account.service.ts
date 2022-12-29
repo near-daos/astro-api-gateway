@@ -115,19 +115,13 @@ export class AccountService {
     let account = await this.accountRepository.findOne(accountId);
 
     if (!account?.notifiUserId) {
-      try {
-        const notifiUserId = await this.notifiClientService.createUser(
-          accountId,
-        );
-        account = await this.create(
-          mapAccountToAccountDto({
-            ...account,
-            notifiUserId,
-          }),
-        );
-      } catch (err) {
-        throw err;
-      }
+      const notifiUserId = await this.notifiClientService.createUser(accountId);
+      account = await this.create(
+        mapAccountToAccountDto({
+          ...account,
+          notifiUserId,
+        }),
+      );
     }
 
     if (account.notifiAlertId) {
