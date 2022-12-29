@@ -335,23 +335,36 @@ export class NearIndexerService {
   }
 
   async receiptsByAccount(accountId: string): Promise<Receipt[]> {
+    const actions = await this.actionReceiptActionRepository
+      .createQueryBuilder('ara')
+      .select('ara.receipt_id')
+      .leftJoin('execution_outcomes', 'eo', 'eo.receipt_id = ara.receipt_id')
+      .andWhere(
+        new Brackets((qb) => {
+          qb.orWhere(`ara.receipt_predecessor_account_id = :accountId`, {
+            accountId,
+          });
+          qb.orWhere(`ara.receipt_receiver_account_id = :accountId`, {
+            accountId,
+          });
+        }),
+      )
+      .andWhere('eo.status != :status', {
+        status: ExecutionOutcomeStatus.Failure,
+      })
+      .getRawMany();
+
+    if (!actions.length) {
+      return [];
+    }
+
     return this.receiptRepository
       .createQueryBuilder('receipt')
       .leftJoinAndSelect('receipt.receiptActions', 'action_receipt_actions')
-      .leftJoin(
-        'execution_outcomes',
-        'execution_outcomes',
-        'execution_outcomes.receipt_id = receipt.receipt_id',
-      )
-      .where(
-        'receipt.receiver_account_id = :accountId OR receipt.predecessor_account_id = :accountId',
-        {
-          accountId,
-        },
-      )
-      .andWhere('execution_outcomes.status != :failStatus', {
-        failStatus: ExecutionOutcomeStatus.Failure,
+      .where('receipt.receipt_id IN (:...ids)', {
+        ids: actions.map(({ receipt_id }) => receipt_id),
       })
+      .orderBy('included_in_block_timestamp', 'ASC')
       .getMany();
   }
 
@@ -361,41 +374,39 @@ export class NearIndexerService {
   ): Promise<Receipt[]> {
     const actions = await this.actionReceiptActionRepository
       .createQueryBuilder('ara')
-      .select('receipt_id')
-      .andWhere(`action_kind = 'FUNCTION_CALL'`)
-      .andWhere(`args->>'args_json' is not null`)
-      .andWhere(`args->>'method_name' like 'ft_%'`)
-      .andWhere('receipt_receiver_account_id = :tokenId', { tokenId })
+      .select('ara.receipt_id')
+      .leftJoin('execution_outcomes', 'eo', 'eo.receipt_id = ara.receipt_id')
+      .andWhere(`ara.action_kind = 'FUNCTION_CALL'`)
+      .andWhere(`ara.args->>'args_json' is not null`)
+      .andWhere(`ara.args->>'method_name' like 'ft_%'`)
+      .andWhere('ara.receipt_receiver_account_id = :tokenId', { tokenId })
       .andWhere(
         new Brackets((qb) => {
-          qb.where(`args->'args_json'->>'receiver_id' = :accountId`, {
+          qb.where(`ara.args->'args_json'->>'receiver_id' = :accountId`, {
             accountId,
           });
-          qb.orWhere(`receipt_predecessor_account_id = :accountId`, {
+          qb.orWhere(`ara.receipt_predecessor_account_id = :accountId`, {
             accountId,
           });
         }),
       )
+      .andWhere('eo.status != :status', {
+        status: ExecutionOutcomeStatus.Failure,
+      })
       .getRawMany();
 
-    return actions.length > 0
-      ? await this.receiptRepository
-          .createQueryBuilder('receipt')
-          .leftJoinAndSelect('receipt.receiptActions', 'action_receipt_actions')
-          .leftJoin(
-            'execution_outcomes',
-            'execution_outcomes',
-            'execution_outcomes.receipt_id = receipt.receipt_id',
-          )
-          .where('receipt.receipt_id IN (:...ids)', {
-            ids: actions.map(({ receipt_id }) => receipt_id),
-          })
-          .andWhere('execution_outcomes.status != :failStatus', {
-            failStatus: ExecutionOutcomeStatus.Failure,
-          })
-          .orderBy('included_in_block_timestamp', 'ASC')
-          .getMany()
-      : [];
+    if (!actions.length) {
+      return [];
+    }
+
+    return this.receiptRepository
+      .createQueryBuilder('receipt')
+      .leftJoinAndSelect('receipt.receiptActions', 'action_receipt_actions')
+      .where('receipt.receipt_id IN (:...ids)', {
+        ids: actions.map(({ receipt_id }) => receipt_id),
+      })
+      .orderBy('included_in_block_timestamp', 'ASC')
+      .getMany();
   }
 
   private buildAggregationTransactionQuery(
