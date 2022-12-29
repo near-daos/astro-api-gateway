@@ -5,6 +5,7 @@ import { DaoCountsMigration } from './dao-counts.migration';
 import { DaoGroupFieldsMigration } from './dao-goup-fields.migration';
 import { DaoMetadataMigration } from './dao-metadata.migration';
 import { DaoVersionsMigration } from './dao-version.migration';
+import { DeleteDaoFundsMigration } from './delete-dao-funds.migration';
 import { DynamoCheckMigration } from './dynamo-check.migration';
 import { DynamoDataMigration } from './dynamo-data.migration';
 import { DynamoTableMigration } from './dynamo-table.migration';
@@ -24,6 +25,7 @@ export default [
   DaoGroupFieldsMigration,
   DaoMetadataMigration,
   DaoVersionsMigration,
+  DeleteDaoFundsMigration,
   DynamoCheckMigration,
   DynamoDataMigration,
   DynamoTableMigration,
