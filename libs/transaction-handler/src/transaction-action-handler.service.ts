@@ -1335,6 +1335,10 @@ export class TransactionActionHandlerService {
   }
 
   async saveDaoFunds(action: TransactionAction) {
+    if (action.kind !== 'Transfer' && action.kind !== 'FunctionCall') {
+      return;
+    }
+
     // save receipts with attached deposit
     if (
       action.deposit &&
@@ -1362,6 +1366,7 @@ export class TransactionActionHandlerService {
 
     // save receipts with token transfer calls
     if (
+      action.kind === 'FunctionCall' &&
       ['ft_mint', 'ft_transfer', 'ft_transfer_call'].includes(
         action.methodName,
       ) &&
