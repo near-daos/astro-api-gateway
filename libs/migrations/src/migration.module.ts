@@ -4,6 +4,7 @@ import { getConnection } from 'typeorm';
 import { forwardRef, Module, OnApplicationShutdown } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+import { DaoFundsModule } from '@sputnik-v2/dao-funds';
 import { Proposal, ProposalAction, ProposalModule } from '@sputnik-v2/proposal';
 import { NearIndexerModule } from '@sputnik-v2/near-indexer';
 import { NearApiModule } from '@sputnik-v2/near-api';
@@ -124,6 +125,7 @@ import migrationScripts from './scripts';
     TokenModule,
     OpenSearchModule,
     DynamodbModule,
+    DaoFundsModule,
   ],
   exports: [MigrationService, ...migrationScripts],
   providers: [MigrationService, ...migrationScripts],
