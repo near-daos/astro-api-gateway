@@ -7,6 +7,8 @@ on:
     paths:
       - '**'
       - '!apps/aggregator/**'
+      - '!apps/draft/**'
+      - '!apps/indexer-processor/**'
       - '!apps/notifier/**'
 
 jobs:
@@ -17,8 +19,8 @@ jobs:
     - uses: actions/checkout@v2
     - name: Set Environment
       run: |
-         echo APP_NAME=aggregator >> $GITHUB_ENV
-         cat ".github/env.common" | grep -E -v '^\ *#' >>$GITHUB_ENV
+         echo APP_NAME=api >> $GITHUB_ENV
+         cat ".github/env.common" | grep -E -v '^\ *#' >> $GITHUB_ENV
 
     - name: Build Test
       uses: ./.github/actions/build-test

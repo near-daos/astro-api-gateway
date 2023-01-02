@@ -1,5 +1,6 @@
 import {
   NearTransactionAction,
+  NearTransactionActionKind,
   NearTransactionReceipt,
   NearTransactionStatus,
 } from '@sputnik-v2/near-api/types';
@@ -24,9 +25,10 @@ export type TransactionAction = {
   predecessorId: string;
   transactionHash: string;
   blockHash: string;
-  methodName: string;
-  args: any;
-  deposit: string;
+  kind: NearTransactionActionKind;
+  methodName?: string;
+  args?: any;
+  deposit?: string;
   timestamp: string; // nanoseconds
   receiptId: string;
   indexInReceipt: number;
@@ -49,6 +51,7 @@ export function castNearTransactionAction(
     predecessorId: receipt.predecessor_id,
     signerId: receipt.predecessor_id,
     txSignerId: txStatus.transaction.signer_id,
+    kind: Object.keys(action)[0] as NearTransactionActionKind,
     methodName: action.FunctionCall?.methodName,
     args: action.FunctionCall?.args,
     deposit: action.Transfer?.deposit || action.FunctionCall?.deposit,
@@ -72,6 +75,7 @@ export function castNearIndexerReceiptAction(
     predecessorId: ac.receiptPredecessorAccountId,
     transactionHash: receipt.originatedFromTransaction.transactionHash,
     blockHash: receipt.originatedFromTransaction.includedInBlockHash,
+    kind: castNearIndexerReceiptActionKind(ac.actionKind),
     methodName: ac?.args?.method_name as string,
     args: ac?.args?.args_json,
     deposit: (ac?.args?.deposit as string) || '0',
@@ -92,4 +96,27 @@ export function castTransactionActionEntity(
     indexInTransaction: actionIndex,
     actionKind: ActionKind[actionKindKey],
   };
+}
+
+export function castNearIndexerReceiptActionKind(
+  actionKind: ActionKind,
+): NearTransactionActionKind {
+  switch (actionKind) {
+    case ActionKind.CreateAccount:
+      return 'CreateAccount';
+    case ActionKind.DeployContract:
+      return 'DeployContract';
+    case ActionKind.FunctionCall:
+      return 'FunctionCall';
+    case ActionKind.Transfer:
+      return 'Transfer';
+    case ActionKind.Stake:
+      return 'Stake';
+    case ActionKind.AddKey:
+      return 'AddKey';
+    case ActionKind.DeleteKey:
+      return 'DeleteKey';
+    case ActionKind.DeleteAccount:
+      return 'DeleteAccount';
+  }
 }

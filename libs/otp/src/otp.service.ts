@@ -53,7 +53,7 @@ export class OtpService {
 
   async getOtp(key: string): Promise<OtpItem> {
     const id = OtpService.buildKey(key);
-    const expireTime = Date.now() - OTP_TTL;
+    const expireTime = Date.now() - OTP_TTL * 1000;
     if (await this.useDynamoDB()) {
       const otp = await this.dynamoDbService.getItemByType<OtpModel>(
         DynamoEntityType.Otp,

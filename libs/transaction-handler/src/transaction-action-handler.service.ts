@@ -29,6 +29,10 @@ import {
 import { EventService } from '@sputnik-v2/event';
 import { NFTTokenService, TokenService } from '@sputnik-v2/token';
 import {
+  DaoFundsReceiptService,
+  DaoFundsTokenReceiptService,
+} from '@sputnik-v2/dao-funds';
+import {
   buildBountyId,
   buildDelegationId,
   buildProposalId,
@@ -80,6 +84,8 @@ export class TransactionActionHandlerService {
     private readonly dynamodbService: DynamodbService,
     private readonly featureFlagsService: FeatureFlagsService,
     private readonly bountyDynamoService: BountyDynamoService,
+    private readonly daoFundsReceiptService: DaoFundsReceiptService,
+    private readonly daoFundsTokenReceiptService: DaoFundsTokenReceiptService,
   ) {
     const { contractName } = this.configService.get('near');
     // TODO: Split on multiple handlers
@@ -226,6 +232,7 @@ export class TransactionActionHandlerService {
         }
       });
 
+    await this.saveDaoFunds(action);
     await this.handledReceiptActionDynamoService.save(action, results);
 
     this.log(
@@ -1396,6 +1403,76 @@ export class TransactionActionHandlerService {
     }
   }
 
+  async saveDaoFunds(action: TransactionAction) {
+    if (action.kind !== 'Transfer' && action.kind !== 'FunctionCall') {
+      return;
+    }
+
+    // save receipts with attached deposit
+    if (
+      action.deposit &&
+      BigInt(action.deposit) > 0n &&
+      (this.isDaoContract(action.predecessorId) ||
+        this.isDaoContract(action.receiverId))
+    ) {
+      const model = await this.daoFundsReceiptService.save({
+        daoId: this.isDaoContract(action.predecessorId)
+          ? action.predecessorId
+          : action.receiverId,
+        receiptId: action.receiptId,
+        indexInReceipt: action.indexInReceipt,
+        predecessorId: action.predecessorId,
+        receiverId: action.receiverId,
+        kind: action.kind,
+        deposit: action.deposit,
+        methodName: action.methodName,
+        args: action.args,
+        transactionHash: action.transactionHash,
+        createTimestamp: action.timestamp,
+      });
+      this.log(action.transactionHash, `Stored treasury: ${model.entityId}`);
+    }
+
+    // save receipts with token transfer calls
+    if (
+      action.kind === 'FunctionCall' &&
+      ['ft_mint', 'ft_transfer', 'ft_transfer_call'].includes(
+        action.methodName,
+      ) &&
+      action.args?.amount &&
+      BigInt(action.args.amount) > 0n
+    ) {
+      const receiverId = action.args?.receiver_id ?? action.args?.account_id;
+
+      if (
+        this.isDaoContract(action.predecessorId) ||
+        this.isDaoContract(receiverId)
+      ) {
+        const model = await this.daoFundsTokenReceiptService.save({
+          daoId: this.isDaoContract(action.predecessorId)
+            ? action.predecessorId
+            : receiverId,
+          receiptId: action.receiptId,
+          indexInReceipt: action.indexInReceipt,
+          senderId: action.predecessorId,
+          receiverId,
+          tokenId: action.receiverId,
+          kind: action.kind,
+          amount: action.args.amount,
+          deposit: action.deposit,
+          methodName: action.methodName,
+          args: action.args,
+          transactionHash: action.transactionHash,
+          createTimestamp: action.timestamp,
+        });
+        this.log(
+          action.transactionHash,
+          `Stored token treasury: ${model.entityId}`,
+        );
+      }
+    }
+  }
+
   private getContractHandlers(receiverId: string): ContractHandler[] {
     return this.contractHandlers.filter((contractHandler) => {
       return (
@@ -1407,7 +1484,7 @@ export class TransactionActionHandlerService {
 
   private isDaoContract(receiverId: string): boolean {
     const { contractName } = this.configService.get('near');
-    return receiverId.endsWith(contractName);
+    return receiverId.endsWith(`.${contractName}`);
   }
 
   private log(

@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { NearApiModule } from '@sputnik-v2/near-api';
 import { SputnikModule } from '@sputnik-v2/sputnikdao';
 import { DaoModule } from '@sputnik-v2/dao/dao.module';
+import { DaoFundsModule } from '@sputnik-v2/dao-funds';
 import { BountyModule } from '@sputnik-v2/bounty';
 import { ProposalModule } from '@sputnik-v2/proposal';
 import { NearIndexerModule } from '@sputnik-v2/near-indexer';
@@ -35,6 +36,7 @@ import { TransactionHandlerState } from './entities';
     OpenSearchModule,
     DynamodbModule,
     FeatureFlagsModule,
+    DaoFundsModule,
   ],
   providers: [
     HandledReceiptActionDynamoService,

@@ -13,7 +13,12 @@ import {
 } from '@sputnik-v2/notifi-client';
 import { OtpService } from '@sputnik-v2/otp';
 
-import { AccountDto, AccountEmailDto, AccountPhoneDto } from './dto';
+import {
+  AccountDto,
+  AccountEmailDto,
+  AccountPhoneDto,
+  mapAccountToAccountDto,
+} from './dto';
 import { Account } from './entities';
 import {
   AccountResponse,
@@ -111,18 +116,22 @@ export class AccountService {
 
     if (!account?.notifiUserId) {
       const notifiUserId = await this.notifiClientService.createUser(accountId);
-      account = await this.create({
-        ...account,
-        notifiUserId,
-      });
+      account = await this.create(
+        mapAccountToAccountDto({
+          ...account,
+          notifiUserId,
+        }),
+      );
     }
 
     if (account.notifiAlertId) {
       await this.notifiClientService.deleteAlert(account.notifiAlertId);
-      await this.create({
-        ...account,
-        notifiAlertId: '',
-      });
+      await this.create(
+        mapAccountToAccountDto({
+          ...account,
+          notifiAlertId: '',
+        }),
+      );
     }
 
     const notifiAlertId = await this.notifiClientService.createAlert(
@@ -131,10 +140,12 @@ export class AccountService {
       account.phoneNumber,
     );
 
-    return this.create({
-      ...account,
-      notifiAlertId,
-    });
+    return this.create(
+      mapAccountToAccountDto({
+        ...account,
+        notifiAlertId,
+      }),
+    );
   }
 
   async sendNotification(
@@ -223,10 +234,12 @@ export class AccountService {
       throw new BadRequestException(`Invalid verification code: ${code}`);
     }
 
-    await this.create({
-      ...account,
-      isEmailVerified: isVerified,
-    });
+    await this.create(
+      mapAccountToAccountDto({
+        ...account,
+        isEmailVerified: isVerified,
+      }),
+    );
   }
 
   async sendPhoneVerification(accountId: string): Promise<VerificationStatus> {
@@ -303,9 +316,11 @@ export class AccountService {
       throw new BadRequestException(`Invalid verification code: ${code}`);
     }
 
-    await this.create({
-      ...account,
-      isPhoneVerified: isVerified,
-    });
+    await this.create(
+      mapAccountToAccountDto({
+        ...account,
+        isPhoneVerified: isVerified,
+      }),
+    );
   }
 }
