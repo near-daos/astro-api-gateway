@@ -290,31 +290,45 @@ export const getChunks = (arr: Array<any>, chunkSize: number) => {
 };
 
 export const deepFilter = (
-  value: Record<string, any> | any,
-  filter: (
-    value: [string, any],
-    index: number,
-    array: [string, any][],
-  ) => boolean,
+  value: any,
+  fn: (value: any, key: number | string) => boolean,
 ) => {
-  if (
-    value !== null &&
-    typeof value === 'object' &&
-    !Array.isArray(value) &&
-    Object.keys(value).length > 0
-  ) {
+  if (value === null || typeof value !== 'object') {
+    return value;
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((value, index) => {
+      return fn(value, index) === true ? deepFilter(value, fn) : false;
+    });
+  } else {
     return Object.fromEntries(
-      Object.entries(value).reduce((acc, [key, value], index, array) => {
-        if (typeof value === 'object') {
-          acc.push([key, deepFilter(value, filter)]);
-        } else if (filter([key, value], index, array) === true) {
+      Object.entries(value).reduce((acc, [key, value]) => {
+        if (fn(value, key) === true) {
           acc.push([key, value]);
         }
         return acc;
       }, []),
     );
-  } else {
+  }
+};
+
+export const deepMap = (
+  value: any,
+  fn: (value: any, key: number | string) => any,
+) => {
+  if (value === null || typeof value !== 'object') {
     return value;
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((value, index) => fn(deepMap(value, fn), index));
+  } else {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, value]) => {
+        return fn([key, deepMap(value, fn)], key);
+      }, []),
+    );
   }
 };
 
