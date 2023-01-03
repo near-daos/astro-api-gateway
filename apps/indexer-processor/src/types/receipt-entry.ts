@@ -70,6 +70,7 @@ export function castTransactionAction(
     txSignerId: receipt.action.signer_account_id,
     predecessorId: action.receipt_predecessor_account_id,
     transactionHash: receipt.originated_from_transaction_hash,
+    blockHash: receipt.included_in_block_hash,
     kind: castNearIndexerReceiptActionKind(action.action_kind),
     methodName: action?.args?.method_name as string,
     args: action?.args?.args_json,

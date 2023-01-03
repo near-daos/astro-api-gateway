@@ -51,18 +51,9 @@ export class TokenService {
   }
 
   async loadTokenById(tokenId: string, timestamp: string, blockId?: BlockId) {
-    const metadata = await this.nearApiService.callContractRetry(
-      tokenId,
-      'ft_metadata',
-      {},
-      blockId,
-    );
-    const totalSupply = await this.nearApiService.callContractRetry(
-      tokenId,
-      'ft_total_supply',
-      {},
-      blockId,
-    );
+    const contract = this.nearApiService.getFTokenContract(tokenId);
+    const metadata = await contract.ft_metadata(blockId);
+    const totalSupply = await contract.ft_total_supply(blockId);
     await this.create(castToken(tokenId, metadata, totalSupply, timestamp));
     return {
       metadata,
@@ -76,21 +67,10 @@ export class TokenService {
     timestamp: string,
     blockId?: BlockId,
   ) {
-    const metadata = await this.nearApiService.callContractRetry(
-      tokenId,
-      'ft_metadata',
-      {},
-      blockId,
-    );
-    const totalSupply = await this.nearApiService.callContractRetry(
-      tokenId,
-      'ft_total_supply',
-      {},
-      blockId,
-    );
-    const balance = await this.nearApiService.callContractRetry(
-      tokenId,
-      'ft_balance_of',
+    const contract = this.nearApiService.getFTokenContract(tokenId);
+    const metadata = await contract.ft_metadata(blockId);
+    const totalSupply = await contract.ft_total_supply(blockId);
+    const balance = await contract.ft_balance_of(
       { account_id: accountId },
       blockId,
     );

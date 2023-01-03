@@ -107,12 +107,8 @@ export class NFTTokenService extends TypeOrmCrudService<NFTToken> {
     timestamp: string,
     blockId?: BlockId,
   ) {
-    const metadata = await this.nearApiService.callContractRetry(
-      nftContractId,
-      'nft_metadata',
-      {},
-      blockId,
-    );
+    const contract = this.nearApiService.getNFTokenContract(nftContractId);
+    const metadata = await contract.nft_metadata(blockId);
     const nfts = await this.getNfts(nftContractId, accountId);
     const tokenDtos = nfts.map((nft) =>
       castNFT(nftContractId, accountId, metadata, nft, timestamp),
@@ -131,6 +127,7 @@ export class NFTTokenService extends TypeOrmCrudService<NFTToken> {
     accountId: string,
     blockId?: BlockId,
   ): Promise<NFTokenOutput[]> {
+    const contract = this.nearApiService.getNFTokenContract(nftContractId);
     const chunkSize = 50;
     let nfts = [];
     let chunk = [];
@@ -138,9 +135,7 @@ export class NFTTokenService extends TypeOrmCrudService<NFTToken> {
 
     do {
       try {
-        chunk = await this.nearApiService.callContractRetry(
-          nftContractId,
-          'nft_tokens_for_owner',
+        chunk = await contract.nft_tokens_for_owner(
           {
             account_id: accountId,
             from_index: fromIndex.toString(),

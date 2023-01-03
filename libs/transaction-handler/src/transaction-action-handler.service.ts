@@ -569,6 +569,7 @@ export class TransactionActionHandlerService {
     status: any;
   }) {
     const state = await this.nearApiService.getAccountState(receiverId);
+    const contract = this.nearApiService.getSputnikDaoContract(receiverId);
     this.log(
       transactionHash,
       `Received ${receiverId} state from RPC: ${state}`,
@@ -611,7 +612,7 @@ export class TransactionActionHandlerService {
       }
 
       if (proposalKindType === ProposalType.ChangeConfig) {
-        config = await this.sputnikService.getConfig(receiverId, blockHash);
+        config = await contract.get_config(blockHash);
         this.log(
           transactionHash,
           `Received DAO config from RPC: ${JSON.stringify(config)}`,
@@ -625,7 +626,7 @@ export class TransactionActionHandlerService {
           ProposalType.RemoveMemberFromRole,
         ].includes(proposalKindType)
       ) {
-        policy = await this.sputnikService.getPolicy(receiverId, blockHash);
+        policy = await contract.get_policy(blockHash);
         this.log(
           transactionHash,
           `Received DAO policy from RPC: ${JSON.stringify(policy)}`,
@@ -636,10 +637,7 @@ export class TransactionActionHandlerService {
       }
 
       if (proposalKindType === ProposalType.SetStakingContract) {
-        stakingContract = await this.sputnikService.getStakingContract(
-          receiverId,
-          blockHash,
-        );
+        stakingContract = await contract.get_staking_contract(blockHash);
         this.log(
           transactionHash,
           `Received DAO stakingContract from RPC: ${stakingContract}`,
@@ -657,10 +655,7 @@ export class TransactionActionHandlerService {
       }
 
       if (proposalKindType === ProposalType.AddBounty) {
-        lastBountyId = await this.sputnikService.getLastBountyId(
-          receiverId,
-          blockHash,
-        );
+        lastBountyId = await contract.get_last_bounty_id(blockHash);
         this.log(
           transactionHash,
           `Received DAO lastBountyId from RPC: ${lastBountyId}`,
@@ -939,6 +934,7 @@ export class TransactionActionHandlerService {
     blockHash: string;
     timestamp: string;
   }) {
+    const contract = this.nearApiService.getSputnikDaoContract(dao.id);
     const { bountyId, receiverId } = proposalKind;
     const bounty = await this.bountyService.findById(dao.id, bountyId, {
       relations: ['bountyClaims', 'bountyContext'],
@@ -956,11 +952,7 @@ export class TransactionActionHandlerService {
     // TODO
     // This method does not work for old transactions because bounty data
     // mutates in contract and contract method could return unexpected values
-    const bountyData = await this.sputnikService.getBounty(
-      dao.id,
-      bountyId,
-      blockHash,
-    );
+    const bountyData = await contract.get_bounty({ id: bountyId }, blockHash);
     this.log(
       transactionHash,
       `Received bounty from RPC: ${JSON.stringify(bountyData)}`,
@@ -1146,10 +1138,10 @@ export class TransactionActionHandlerService {
       blockHash,
     } = txAction;
     const { account_id: accountId } = args;
+    const contract = this.nearApiService.getSputnikDaoContract(daoId);
 
-    const balance = await this.sputnikService.getDelegationBalance(
-      daoId,
-      accountId,
+    const balance = await contract.delegation_balance_of(
+      { account_id: accountId },
       blockHash,
     );
     await this.daoService.saveDelegation({
@@ -1209,9 +1201,8 @@ export class TransactionActionHandlerService {
         continue;
       }
 
-      const accountBalance = await this.sputnikService.getDelegationBalance(
-        daoId,
-        delegationAccountId,
+      const accountBalance = await contract.delegation_balance_of(
+        { account_id: delegationAccountId },
         blockHash,
       );
 
@@ -1239,10 +1230,8 @@ export class TransactionActionHandlerService {
 
     try {
       this.log(transactionHash, `Checking if ${receiverId} is Fungible Token`);
-      await this.nearApiService.callContractRetry(
-        receiverId,
-        'ft_total_supply',
-      );
+      const ftContract = this.nearApiService.getFTokenContract(receiverId);
+      await ftContract.ft_total_supply();
       await this.handleTokenMethods(txAction);
       return;
     } catch (err) {
@@ -1255,10 +1244,8 @@ export class TransactionActionHandlerService {
 
     try {
       this.log(transactionHash, `Checking if ${receiverId} is NFT`);
-      await this.nearApiService.callContractRetry(
-        receiverId,
-        'nft_total_supply',
-      );
+      const nftContract = this.nearApiService.getNFTokenContract(receiverId);
+      await nftContract.nft_total_supply();
       await this.handleNftMethods(txAction);
       return { type: ContractHandlerResultType.TokenUpdate };
     } catch (err) {
