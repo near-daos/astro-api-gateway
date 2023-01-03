@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ILike, IsNull, Not, Repository } from 'typeorm';
-import { NearApiService, FTokenContract } from '@sputnik-v2/near-api';
+import { BlockId } from 'near-api-js/lib/providers/provider';
+import { NearApiService } from '@sputnik-v2/near-api';
 import { BaseResponseDto, Order } from '@sputnik-v2/common';
 import { Dao } from '@sputnik-v2/dao/entities';
 import { FeatureFlags, FeatureFlagsService } from '@sputnik-v2/feature-flags';
@@ -49,13 +50,10 @@ export class TokenService {
     return this.tokenRepository.save(tokenDto);
   }
 
-  async loadTokenById(tokenId: string, timestamp: string) {
-    const contract = this.nearApiService.getContract<FTokenContract>(
-      'fToken',
-      tokenId,
-    );
-    const metadata = await contract.ft_metadata();
-    const totalSupply = await contract.ft_total_supply();
+  async loadTokenById(tokenId: string, timestamp: string, blockId?: BlockId) {
+    const contract = this.nearApiService.getFTokenContract(tokenId);
+    const metadata = await contract.ft_metadata(blockId);
+    const totalSupply = await contract.ft_total_supply(blockId);
     await this.create(castToken(tokenId, metadata, totalSupply, timestamp));
     return {
       metadata,
@@ -63,14 +61,19 @@ export class TokenService {
     };
   }
 
-  async loadBalanceById(tokenId: string, accountId: string, timestamp: string) {
-    const contract = this.nearApiService.getContract<FTokenContract>(
-      'fToken',
-      tokenId,
+  async loadBalanceById(
+    tokenId: string,
+    accountId: string,
+    timestamp: string,
+    blockId?: BlockId,
+  ) {
+    const contract = this.nearApiService.getFTokenContract(tokenId);
+    const metadata = await contract.ft_metadata(blockId);
+    const totalSupply = await contract.ft_total_supply(blockId);
+    const balance = await contract.ft_balance_of(
+      { account_id: accountId },
+      blockId,
     );
-    const metadata = await contract.ft_metadata();
-    const totalSupply = await contract.ft_total_supply();
-    const balance = await contract.ft_balance_of({ account_id: accountId });
     const token = castToken(tokenId, metadata, totalSupply, timestamp);
     const tokenBalance = castTokenBalance(tokenId, accountId, balance);
 

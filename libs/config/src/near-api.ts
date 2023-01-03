@@ -10,10 +10,10 @@ export type NearApiContract = {
 };
 
 export type NearApiProvider = {
-  contracts: Record<string, NearApiContract>;
   provider: Provider;
   near: Near;
   account: Account;
+  sputnikDaoFactoryContractName: string;
 };
 
 export const nearApiProvider = {
@@ -33,47 +33,7 @@ export const nearApiProvider = {
       near,
       account,
       provider,
-      contracts: {
-        sputnikDaoFactory: {
-          contractId: contractName,
-          viewMethods: [
-            'get_dao_list',
-            'get_number_daos',
-            'get_daos',
-            'get_contracts_metadata',
-          ],
-          changeMethods: [],
-        },
-        sputnikDao: {
-          viewMethods: [
-            'get_config',
-            'get_policy',
-            'get_staking_contract',
-            'get_available_amount',
-            'delegation_total_supply',
-            'get_last_proposal_id',
-            'get_proposals',
-            'get_proposal',
-            'get_last_bounty_id',
-            'get_bounties',
-            'get_bounty',
-            'get_bounty_claims',
-            'get_bounty_number_of_claims',
-            'delegation_balance_of',
-          ],
-          changeMethods: ['add_proposal', 'act_proposal'],
-        },
-        fToken: {
-          viewMethods: ['ft_balance_of', 'ft_metadata', 'ft_total_supply'],
-        },
-        nft: {
-          viewMethods: [
-            'nft_tokens_for_owner',
-            'nft_metadata',
-            'nft_total_supply',
-          ],
-        },
-      },
+      sputnikDaoFactoryContractName: contractName,
     };
   },
 };

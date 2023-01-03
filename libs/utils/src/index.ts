@@ -135,6 +135,10 @@ export const decodeBase64 = (b: string) => {
   return Buffer.from(b, 'base64').toString('utf-8');
 };
 
+export const encodeBase64 = (b: string): string => {
+  return new Buffer(b).toString('base64');
+};
+
 export const btoaJSON = (b: string) => {
   try {
     return JSON.parse(decodeBase64(b));

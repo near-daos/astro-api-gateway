@@ -3,7 +3,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { NEAR_INDEXER_DB_CONNECTION } from '@sputnik-v2/common';
 import { TypeOrmConfigService } from '@sputnik-v2/config/aggregator-config';
 import { nearProvider } from '@sputnik-v2/config/near';
-import { nearTokenFactoryProvider } from '@sputnik-v2/config/near-token-factory';
 import { nearApiProvider } from '@sputnik-v2/config/near-api';
 
 import {
@@ -44,17 +43,7 @@ import { NearIndexerService } from './near-indexer.service';
       NEAR_INDEXER_DB_CONNECTION,
     ),
   ],
-  providers: [
-    NearIndexerService,
-    nearProvider,
-    nearApiProvider,
-    nearTokenFactoryProvider,
-  ],
-  exports: [
-    NearIndexerService,
-    nearProvider,
-    nearApiProvider,
-    nearTokenFactoryProvider,
-  ],
+  providers: [NearIndexerService, nearProvider, nearApiProvider],
+  exports: [NearIndexerService, nearProvider, nearApiProvider],
 })
 export class NearIndexerModule {}

@@ -8,11 +8,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 import { In, IsNull, Not, Repository } from 'typeorm';
 import { CrudRequest } from '@nestjsx/crud';
-import {
-  NearApiService,
-  NFTokenContract,
-  NFTokenOutput,
-} from '@sputnik-v2/near-api';
+import { BlockId } from 'near-api-js/lib/providers/provider';
+import { NearApiService, NFTokenOutput } from '@sputnik-v2/near-api';
 import { FeatureFlags, FeatureFlagsService } from '@sputnik-v2/feature-flags';
 import { AssetsNftEvent, NearIndexerService } from '@sputnik-v2/near-indexer';
 
@@ -104,12 +101,14 @@ export class NFTTokenService extends TypeOrmCrudService<NFTToken> {
     );
   }
 
-  async loadNFT(nftContractId: string, accountId: string, timestamp: string) {
-    const contract = this.nearApiService.getContract<NFTokenContract>(
-      'nft',
-      nftContractId,
-    );
-    const metadata = await contract.nft_metadata();
+  async loadNFT(
+    nftContractId: string,
+    accountId: string,
+    timestamp: string,
+    blockId?: BlockId,
+  ) {
+    const contract = this.nearApiService.getNFTokenContract(nftContractId);
+    const metadata = await contract.nft_metadata(blockId);
     const nfts = await this.getNfts(nftContractId, accountId);
     const tokenDtos = nfts.map((nft) =>
       castNFT(nftContractId, accountId, metadata, nft, timestamp),
@@ -126,11 +125,9 @@ export class NFTTokenService extends TypeOrmCrudService<NFTToken> {
   private async getNfts(
     nftContractId: string,
     accountId: string,
+    blockId?: BlockId,
   ): Promise<NFTokenOutput[]> {
-    const contract = this.nearApiService.getContract<NFTokenContract>(
-      'nft',
-      nftContractId,
-    );
+    const contract = this.nearApiService.getNFTokenContract(nftContractId);
     const chunkSize = 50;
     let nfts = [];
     let chunk = [];
@@ -138,11 +135,14 @@ export class NFTTokenService extends TypeOrmCrudService<NFTToken> {
 
     do {
       try {
-        chunk = await contract.nft_tokens_for_owner({
-          account_id: accountId,
-          from_index: fromIndex.toString(),
-          limit: chunkSize,
-        });
+        chunk = await contract.nft_tokens_for_owner(
+          {
+            account_id: accountId,
+            from_index: fromIndex.toString(),
+            limit: chunkSize,
+          },
+          blockId,
+        );
         fromIndex += chunkSize;
         nfts = nfts.concat(chunk);
       } catch (err) {

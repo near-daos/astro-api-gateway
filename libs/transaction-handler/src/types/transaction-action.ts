@@ -24,6 +24,7 @@ export type TransactionAction = {
   txSignerId: string;
   predecessorId: string;
   transactionHash: string;
+  blockHash: string;
   kind: NearTransactionActionKind;
   methodName?: string;
   args?: any;
@@ -45,6 +46,7 @@ export function castNearTransactionAction(
 ): TransactionAction {
   return {
     transactionHash: txStatus.transaction.hash,
+    blockHash: outcome.block_hash,
     receiverId: receipt.receiver_id,
     predecessorId: receipt.predecessor_id,
     signerId: receipt.predecessor_id,
@@ -72,6 +74,7 @@ export function castNearIndexerReceiptAction(
     txSignerId: receipt.originatedFromTransaction?.signerAccountId,
     predecessorId: ac.receiptPredecessorAccountId,
     transactionHash: receipt.originatedFromTransaction.transactionHash,
+    blockHash: receipt.originatedFromTransaction.includedInBlockHash,
     kind: castNearIndexerReceiptActionKind(ac.actionKind),
     methodName: ac?.args?.method_name as string,
     args: ac?.args?.args_json,
