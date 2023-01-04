@@ -2,7 +2,12 @@ import * as AWS from 'aws-sdk';
 import DynamoDB, { DocumentClient } from 'aws-sdk/clients/dynamodb';
 import { ConfigService } from '@nestjs/config';
 import { Injectable, Logger } from '@nestjs/common';
-import { buildEntityId, deepFilter, getChunks } from '@sputnik-v2/utils';
+import {
+  buildEntityId,
+  deepFilter,
+  deepMap,
+  getChunks,
+} from '@sputnik-v2/utils';
 import {
   CountItemsQuery,
   DynamoEntityType,
@@ -15,8 +20,9 @@ import {
 
 @Injectable()
 export class DynamodbService {
-  private readonly BATCH_GET_LIMIT = 100;
-  private readonly BATCH_WRITE_LIMIT = 25;
+  readonly BATCH_GET_LIMIT = 100;
+  readonly BATCH_WRITE_LIMIT = 25;
+  readonly EMPTY_KEY_PLACEHOLDER = '__EMPTY_KEY__';
 
   private readonly logger = new Logger(DynamodbService.name);
 
@@ -50,6 +56,36 @@ export class DynamodbService {
       logger,
     });
     this.tableName = tableName;
+  }
+
+  private normalizeData(data) {
+    return deepFilter(
+      deepMap(data, (value) => {
+        if (Array.isArray(value)) {
+          const [key, val] = value;
+          // replace empty keys in objects
+          return [key !== '' ? key : this.EMPTY_KEY_PLACEHOLDER, val];
+        } else {
+          // replace undefined values in arrays
+          return value !== undefined ? value : null;
+        }
+      }),
+      (value) => {
+        // skip undefined values
+        return value !== undefined;
+      },
+    );
+  }
+
+  private denormalizeData(data) {
+    return deepMap(data, (value) => {
+      if (Array.isArray(value)) {
+        const [key, val] = value;
+        // replace placeholders with empty string
+        return [key !== this.EMPTY_KEY_PLACEHOLDER ? key : '', val];
+      }
+      return value;
+    });
   }
 
   async batchDelete<M>(
@@ -127,7 +163,7 @@ export class DynamodbService {
               Item: {
                 createdAt: timestamp,
                 updatedAt: timestamp,
-                ...item,
+                ...this.normalizeData(item),
               },
             },
           })),
@@ -204,13 +240,10 @@ export class DynamodbService {
   ): Promise<PartialEntity<M> | undefined> {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { partitionId, entityId, entityType, ...rest } = data;
-    const dataToUpdate = deepFilter(
-      {
-        updatedAt: Date.now(),
-        ...rest,
-      },
-      ([, value]) => value !== undefined,
-    );
+    const dataToUpdate = {
+      updatedAt: Date.now(),
+      ...this.normalizeData(rest),
+    };
     const keys = Object.keys(dataToUpdate);
 
     return this.client
@@ -246,7 +279,10 @@ export class DynamodbService {
         ReturnValues: 'ALL_NEW',
       })
       .promise()
-      .then(({ Attributes }) => Attributes as PartialEntity<M>);
+      .then(
+        ({ Attributes }) =>
+          this.denormalizeData(Attributes) as PartialEntity<M>,
+      );
   }
 
   async updateItemByType<M>(
@@ -296,7 +332,7 @@ export class DynamodbService {
         Key: { partitionId, entityId },
       })
       .promise()
-      .then(({ Item }) => Item as PartialEntity<M>)
+      .then(({ Item }) => this.denormalizeData(Item) as PartialEntity<M>)
       .catch((err) => (checkIfExists ? Promise.reject(err) : undefined));
   }
 
@@ -311,7 +347,9 @@ export class DynamodbService {
       })
       .promise()
       .then(({ Items, ...rest }) => ({
-        Items: Items as PartialEntity<M>[],
+        Items: Items.map(
+          (item) => this.denormalizeData(item) as PartialEntity<M>,
+        ),
         ...rest,
       }));
   }
@@ -438,14 +476,11 @@ export class DynamodbService {
     tableName = this.tableName,
   ): Promise<PartialEntity<M>> {
     const timestamp = Date.now();
-    const dataToPut = deepFilter(
-      {
-        createdAt: timestamp,
-        updatedAt: timestamp,
-        ...data,
-      },
-      ([, value]) => value !== undefined,
-    );
+    const dataToPut = {
+      createdAt: timestamp,
+      updatedAt: timestamp,
+      ...this.normalizeData(data),
+    };
     return this.client
       .put({
         TableName: tableName,
@@ -458,7 +493,7 @@ export class DynamodbService {
           : {}),
       })
       .promise()
-      .then(() => dataToPut);
+      .then(() => this.denormalizeData(dataToPut));
   }
 
   async putItemByType<M>(
