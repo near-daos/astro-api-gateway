@@ -1,6 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { DaoFundsTokenReceiptModel } from '@sputnik-v2/dao-funds/models';
-import { DynamodbService, DynamoEntityType } from '@sputnik-v2/dynamodb';
+import {
+  DynamodbService,
+  DynamoEntityType,
+  PartialEntity,
+} from '@sputnik-v2/dynamodb';
+import { DynamoPaginationDto } from '@sputnik-v2/dynamodb/dto';
 import { Retryable } from 'typescript-retry-decorator';
 import { DaoFundsTokenReceiptDto } from './dto';
 
@@ -30,6 +35,27 @@ export class DaoFundsTokenReceiptService {
     };
   }
 
+  castModelToModel(
+    model: PartialEntity<DaoFundsTokenReceiptModel>,
+  ): DaoFundsTokenReceiptDto {
+    return {
+      daoId: model.daoId,
+      receiptId: model.receiptId,
+      indexInReceipt: model.indexInReceipt,
+      senderId: model.senderId,
+      receiverId: model.receiverId,
+      tokenId: model.tokenId,
+      kind: model.kind,
+      amount: model.amount,
+      deposit: model.deposit,
+      methodName: model.methodName,
+      args: model.args,
+      transactionHash: model.transactionHash,
+      createTimestamp: model.createTimestamp,
+      isArchived: model.isArchived,
+    };
+  }
+
   async save(dto: DaoFundsTokenReceiptDto) {
     return this.dynamoDbService.saveItem<DaoFundsTokenReceiptModel>(
       this.castDtoToModel(dto),
@@ -44,5 +70,27 @@ export class DaoFundsTokenReceiptService {
     return this.dynamoDbService.batchPut<DaoFundsTokenReceiptModel>(
       dtos.map((dto) => this.castDtoToModel(dto)),
     );
+  }
+
+  async getByDaoIdAndTokenId(
+    daoId: string,
+    tokenId: string,
+    pagination: DynamoPaginationDto,
+  ) {
+    const { limit = 100, nextToken } = pagination;
+
+    const paginated =
+      await this.dynamoDbService.paginateItemsByType<DaoFundsTokenReceiptModel>(
+        daoId,
+        DynamoEntityType.DaoFundsTokenReceipt,
+        {},
+        limit,
+        nextToken,
+      );
+
+    return {
+      ...paginated,
+      data: paginated.data.map((item) => this.castModelToModel(item)),
+    };
   }
 }

@@ -51,7 +51,7 @@ export class DeleteDaoFundsMigration implements Migration {
   }
 
   private async deleteReceipts(daoId: string) {
-    for await (const receipts of this.dynamoDbService.paginateItemsByType<DaoFundsReceiptModel>(
+    for await (const receipts of this.dynamoDbService.paginateAllItemsByType<DaoFundsReceiptModel>(
       daoId,
       DynamoEntityType.DaoFundsReceipt,
     )) {
@@ -64,7 +64,7 @@ export class DeleteDaoFundsMigration implements Migration {
   }
 
   private async deleteTokenReceipts(daoId: string) {
-    for await (const tokenReceipts of this.dynamoDbService.paginateItemsByType<DaoFundsTokenReceiptModel>(
+    for await (const tokenReceipts of this.dynamoDbService.paginateAllItemsByType<DaoFundsTokenReceiptModel>(
       daoId,
       DynamoEntityType.DaoFundsTokenReceipt,
     )) {

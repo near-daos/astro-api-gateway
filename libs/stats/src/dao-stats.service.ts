@@ -1,7 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DaoDynamoService } from '@sputnik-v2/dao';
-import { DaoStatsModel } from '@sputnik-v2/dynamodb';
 import { Repository } from 'typeorm';
 import { DateTime } from 'luxon';
 

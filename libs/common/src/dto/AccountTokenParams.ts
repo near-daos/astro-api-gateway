@@ -1,9 +1,9 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty } from 'class-validator';
+import { FindAccountParams } from './FindAccountParams';
 
-export class AccountTokenParams {
-  @IsNotEmpty()
-  accountId: string;
-
+export class AccountTokenParams extends FindAccountParams {
+  @ApiProperty()
   @IsNotEmpty()
   tokenId: string;
 }
