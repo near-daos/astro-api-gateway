@@ -40,7 +40,7 @@ export class ExecutionOutcome {
     type: 'enum',
     enum: ExecutionOutcomeStatus,
   })
-  status: string;
+  status: ExecutionOutcomeStatus;
 
   @ApiProperty()
   @Column()

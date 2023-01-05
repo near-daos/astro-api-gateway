@@ -62,7 +62,7 @@ export class Transaction {
     type: 'enum',
     enum: ExecutionOutcomeStatus,
   })
-  status: string;
+  status: ExecutionOutcomeStatus;
 
   @Column()
   convertedIntoReceiptId: string;

@@ -2,6 +2,7 @@ import { BountyClaimEndTimeMigration } from './bounty-claim-end-time';
 import { CommentProposalContextMigration } from './comment-proposal-context.migration';
 import { CommentsCountMigration } from './comments-count.migration';
 import { DaoCountsMigration } from './dao-counts.migration';
+import { DaoFundsMigration } from './dao-funds.migration';
 import { DaoGroupFieldsMigration } from './dao-goup-fields.migration';
 import { DaoMetadataMigration } from './dao-metadata.migration';
 import { DaoVersionsMigration } from './dao-version.migration';
@@ -22,6 +23,7 @@ export default [
   CommentProposalContextMigration,
   CommentsCountMigration,
   DaoCountsMigration,
+  DaoFundsMigration,
   DaoGroupFieldsMigration,
   DaoMetadataMigration,
   DaoVersionsMigration,
