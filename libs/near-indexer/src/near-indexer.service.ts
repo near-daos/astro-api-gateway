@@ -22,7 +22,7 @@ import {
   Block,
 } from './entities';
 import { buildLikeContractName } from '@sputnik-v2/utils';
-import { ExecutionOutcomeStatus } from './types';
+import { ActionKind, ExecutionOutcomeStatus } from './types';
 
 @Injectable()
 export class NearIndexerService {
@@ -406,6 +406,67 @@ export class NearIndexerService {
         ids: actions.map(({ receipt_id }) => receipt_id),
       })
       .orderBy('included_in_block_timestamp', 'ASC')
+      .getMany();
+  }
+
+  async receiptActionsByAccount(
+    accountId: string,
+  ): Promise<ActionReceiptAction[]> {
+    return this.actionReceiptActionRepository
+      .createQueryBuilder('ara')
+      .leftJoinAndSelect('ara.receipt', 'r', 'r.receipt_id = ara.receipt_id')
+      .leftJoin('execution_outcomes', 'eo', 'eo.receipt_id = ara.receipt_id')
+      .where(`ara.action_kind in (:...kinds)`, {
+        kinds: [ActionKind.Transfer, ActionKind.FunctionCall],
+      })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.orWhere(`ara.receipt_predecessor_account_id = :accountId`, {
+            accountId,
+          });
+          qb.orWhere(`ara.receipt_receiver_account_id = :accountId`, {
+            accountId,
+          });
+        }),
+      )
+      .andWhere(`ara.args ->> 'deposit' != '0'`)
+      .andWhere('eo.status != :status', {
+        status: ExecutionOutcomeStatus.Failure,
+      })
+      .getMany();
+  }
+
+  async tokenReceiptActionsByAccount(
+    accountId: string,
+  ): Promise<ActionReceiptAction[]> {
+    return this.actionReceiptActionRepository
+      .createQueryBuilder('ara')
+      .leftJoinAndSelect('ara.receipt', 'r', 'r.receipt_id = ara.receipt_id')
+      .leftJoin('execution_outcomes', 'eo', 'eo.receipt_id = ara.receipt_id')
+      .where(`ara.action_kind = :kind`, {
+        kind: ActionKind.FunctionCall,
+      })
+      .andWhere(`args->>'method_name' in (:...methodNames)`, {
+        methodNames: ['ft_mint', 'ft_transfer', 'ft_transfer_call'],
+      })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.orWhere(`ara.receipt_predecessor_account_id = :accountId`, {
+            accountId,
+          });
+          qb.orWhere(`ara.args->'args_json'->>'receiver_id' = :accountId`, {
+            accountId,
+          });
+          qb.orWhere(`ara.args->'args_json'->>'account_id' = :accountId`, {
+            accountId,
+          });
+        }),
+      )
+      .andWhere(`ara.args->'args_json'->>'amount' is not null`)
+      .andWhere(`ara.args->'args_json'->>'amount' != '0'`)
+      .andWhere('eo.status != :status', {
+        status: ExecutionOutcomeStatus.Failure,
+      })
       .getMany();
   }
 

@@ -22,7 +22,7 @@ export class TransactionAction extends BaseEntity {
     type: 'enum',
     enum: ActionKind,
   })
-  actionKind: string;
+  actionKind: ActionKind;
 
   @ApiProperty()
   @Column({ type: 'jsonb', nullable: true })

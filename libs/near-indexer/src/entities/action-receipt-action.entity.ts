@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
 
+import { Receipt } from './receipt.entity';
 import { Transaction } from './transaction.entity';
 import { ActionKind } from '../types/action-kind';
 
@@ -14,12 +15,19 @@ export class ActionReceiptAction {
   @PrimaryColumn()
   indexInActionReceipt: number;
 
-  @OneToOne(() => Transaction)
+  @ManyToOne(() => Transaction)
   @JoinColumn({
     name: 'receipt_id',
     referencedColumnName: 'convertedIntoReceiptId',
   })
   transaction: Transaction;
+
+  @ManyToOne(() => Receipt)
+  @JoinColumn({
+    name: 'receipt_id',
+    referencedColumnName: 'receiptId',
+  })
+  receipt: Receipt;
 
   @Column()
   receiptPredecessorAccountId: string;
@@ -34,7 +42,7 @@ export class ActionReceiptAction {
     type: 'enum',
     enum: ActionKind,
   })
-  actionKind: string;
+  actionKind: ActionKind;
 
   @ApiProperty()
   @Column({ type: 'simple-json' })

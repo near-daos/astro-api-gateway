@@ -26,7 +26,7 @@ export class DeleteDaoFundsMigration implements Migration {
   }
 
   async migrate(): Promise<void> {
-    this.logger.log(`Starting ${DeleteDaoFundsMigration.name} migration...`);
+    this.logger.log(`Starting migration...`);
 
     const accounts = await this.nearIndexerService.findAccountsByContractName(
       this.contractName,
@@ -35,7 +35,7 @@ export class DeleteDaoFundsMigration implements Migration {
 
     await this.clearReceipts(daoIds);
 
-    this.logger.log(`${DeleteDaoFundsMigration.name} migration finished.`);
+    this.logger.log(`Migration finished.`);
   }
 
   private async clearReceipts(daoIds: string[]) {
