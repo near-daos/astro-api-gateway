@@ -20,10 +20,7 @@ import {
 } from '@sputnik-v2/utils';
 import { NFTTokenService, TokenBalance, TokenService } from '@sputnik-v2/token';
 import { SearchQuery } from '@sputnik-v2/common';
-import {
-  NearApiService,
-  SputnikDaoFactoryContract,
-} from '@sputnik-v2/near-api';
+import { NearApiService } from '@sputnik-v2/near-api';
 import {
   DaoDelegationModel,
   DaoModel,

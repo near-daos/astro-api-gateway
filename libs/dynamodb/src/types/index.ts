@@ -1,5 +1,6 @@
 export * from './base-entity';
 export * from './dynamo-entity-type';
+export * from './dynamo-paginated-response';
 export * from './entity-id';
 export * from './entity-key';
 export * from './partial-entity';

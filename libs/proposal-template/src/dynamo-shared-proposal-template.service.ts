@@ -27,7 +27,7 @@ export class DynamoSharedProposalTemplateService {
   async create(
     createProposalTemplate: CreateSharedProposalTemplateDto,
   ): Promise<Partial<SharedProposalTemplateModel>> {
-    const { daoId, config } = createProposalTemplate;
+    const { config } = createProposalTemplate;
     const { smartContractAddress, methodName } = config;
     const { contractName } = this.configService.get('near');
 

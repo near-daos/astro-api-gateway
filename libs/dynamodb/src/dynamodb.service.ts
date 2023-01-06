@@ -11,6 +11,7 @@ import {
 import {
   CountItemsQuery,
   DynamoEntityType,
+  DynamoPaginatedResponse,
   EntityId,
   EntityKey,
   PartialEntity,
@@ -86,6 +87,14 @@ export class DynamodbService {
       }
       return value;
     });
+  }
+
+  private serializeKey(key: DynamoDB.Key) {
+    return Buffer.from(JSON.stringify(key)).toString('base64');
+  }
+
+  private parseKey(data: string): DynamoDB.Key {
+    return JSON.parse(Buffer.from(data, 'base64').toString());
   }
 
   async batchDelete<M>(
@@ -393,7 +402,59 @@ export class DynamodbService {
     );
   }
 
-  async *paginateItems<M>(
+  async paginateItems<M>(
+    query: QueryItemsQuery,
+    limit = 100,
+    nextToken = null,
+    tableName = this.tableName,
+  ): Promise<DynamoPaginatedResponse<PartialEntity<M>>> {
+    const { Items, LastEvaluatedKey } = await this.query<M>(
+      {
+        Limit: limit,
+        ExclusiveStartKey: nextToken ? this.parseKey(nextToken) : undefined,
+        ...query,
+      },
+      tableName,
+    );
+    return {
+      data: Items,
+      meta: {
+        nextToken: LastEvaluatedKey
+          ? this.serializeKey(LastEvaluatedKey)
+          : null,
+      },
+    };
+  }
+
+  async paginateItemsByType<M>(
+    partitionId: string,
+    entityType: DynamoEntityType,
+    query: QueryItemsQuery = {},
+    limit = 100,
+    nextToken = null,
+    tableName = this.tableName,
+  ): Promise<DynamoPaginatedResponse<PartialEntity<M>>> {
+    const { Items, LastEvaluatedKey } = await this.queryByType<M>(
+      partitionId,
+      entityType,
+      {
+        Limit: limit,
+        ExclusiveStartKey: nextToken ? this.parseKey(nextToken) : undefined,
+        ...query,
+      },
+      tableName,
+    );
+    return {
+      data: Items,
+      meta: {
+        nextToken: LastEvaluatedKey
+          ? this.serializeKey(LastEvaluatedKey)
+          : null,
+      },
+    };
+  }
+
+  async *paginateAllItems<M>(
     query: QueryItemsQuery,
     tableName = this.tableName,
   ): AsyncGenerator<PartialEntity<M>[]> {
@@ -402,7 +463,7 @@ export class DynamodbService {
     yield Items;
 
     if (LastEvaluatedKey) {
-      yield* this.paginateItems<M>(
+      yield* this.paginateAllItems<M>(
         {
           ...query,
           ExclusiveStartKey: LastEvaluatedKey,
@@ -412,7 +473,7 @@ export class DynamodbService {
     }
   }
 
-  async *paginateItemsByType<M>(
+  async *paginateAllItemsByType<M>(
     partitionId: string,
     entityType: DynamoEntityType,
     query: QueryItemsQuery = {},
@@ -428,7 +489,7 @@ export class DynamodbService {
     yield Items;
 
     if (LastEvaluatedKey) {
-      yield* this.paginateItemsByType<M>(
+      yield* this.paginateAllItemsByType<M>(
         partitionId,
         entityType,
         {
