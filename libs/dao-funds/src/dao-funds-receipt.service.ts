@@ -1,13 +1,15 @@
+import { DateTime } from 'luxon';
 import { Injectable } from '@nestjs/common';
-import { DaoFundsReceiptModel } from '@sputnik-v2/dao-funds/models';
 import {
   DynamodbService,
   DynamoEntityType,
   PartialEntity,
 } from '@sputnik-v2/dynamodb';
 import { DynamoPaginationDto } from '@sputnik-v2/dynamodb/dto';
+import { parseBlockTimestamp, patchDailyBalance } from '@sputnik-v2/utils';
 import { Retryable } from 'typescript-retry-decorator';
-import { DaoFundsReceiptDto } from './dto';
+import { DailyBalanceEntryDto, DaoFundsReceiptDto } from './dto';
+import { DaoFundsReceiptModel } from './models';
 
 @Injectable()
 export class DaoFundsReceiptService {
@@ -84,5 +86,41 @@ export class DaoFundsReceiptService {
       ...paginated,
       data: paginated.data.map((item) => this.castModelToDto(item)),
     };
+  }
+
+  async getDailyBalanceByDaoId(daoId: string): Promise<DailyBalanceEntryDto[]> {
+    let receipts: PartialEntity<DaoFundsReceiptModel>[] = [];
+
+    for await (const chunk of this.dynamoDbService.paginateAllItemsByType<DaoFundsReceiptModel>(
+      daoId,
+      DynamoEntityType.DaoFundsReceipt,
+    )) {
+      receipts = receipts.concat(chunk);
+    }
+
+    receipts = receipts.sort(
+      (a, b) =>
+        parseBlockTimestamp(a.createTimestamp) -
+        parseBlockTimestamp(b.createTimestamp),
+    );
+
+    let balance = 0n;
+
+    const dailyBalance = receipts.reduce((values, receipt) => {
+      const timestamp = DateTime.fromMillis(
+        parseBlockTimestamp(receipt.createTimestamp),
+      )
+        .startOf('day')
+        .toMillis();
+      balance = values[timestamp] = balance + BigInt(receipt.deposit);
+      return values;
+    }, {});
+
+    patchDailyBalance(dailyBalance);
+
+    return Object.entries(dailyBalance).map(([timestamp, value]) => ({
+      timestamp: Number(timestamp),
+      value: String(value),
+    }));
   }
 }
