@@ -18,6 +18,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import {
+  DailyBalanceEntryDto,
   DaoFundsReceiptDto,
   DaoFundsReceiptService,
   DaoFundsTokenReceiptDto,
@@ -104,7 +105,7 @@ export class TransactionController {
 
   @Version('2')
   @ApiOperation({
-    summary: 'List of Receipts by Account V2',
+    summary: 'List of Receipts by Account (V2)',
   })
   @ApiOkResponse({
     type: DynamoPaginatedResponseDto(DaoFundsReceiptDto),
@@ -127,7 +128,7 @@ export class TransactionController {
 
   @Version('2')
   @ApiOperation({
-    summary: 'List of Receipts by Account and Fungible Token V2',
+    summary: 'List of Receipts by Account and Fungible Token (V2)',
   })
   @ApiOkResponse({
     type: DynamoPaginatedResponseDto(DaoFundsTokenReceiptDto),
@@ -150,6 +151,45 @@ export class TransactionController {
       accountId,
       tokenId,
       pagination,
+    );
+  }
+
+  @ApiOperation({
+    summary: 'Get daily balance of Account',
+  })
+  @ApiOkResponse({
+    type: [DailyBalanceEntryDto],
+  })
+  @ApiNotFoundResponse({
+    description: 'Account does not exist',
+  })
+  @UseGuards(ValidAccountGuard)
+  @UseInterceptors(HttpCacheInterceptor)
+  @Get('/daily-balance/:accountId')
+  async dailyBalance(
+    @Param() { accountId }: FindAccountParams,
+  ): Promise<DailyBalanceEntryDto[]> {
+    return this.daoFundsReceiptService.getDailyBalanceByDaoId(accountId);
+  }
+
+  @ApiOperation({
+    summary: 'Get daily balance of Account',
+  })
+  @ApiOkResponse({
+    type: [DailyBalanceEntryDto],
+  })
+  @ApiNotFoundResponse({
+    description: 'Account does not exist',
+  })
+  @UseGuards(ValidAccountGuard)
+  @UseInterceptors(HttpCacheInterceptor)
+  @Get('/daily-balance/:accountId/token/:tokenId')
+  async dailyBalanceToken(
+    @Param() { accountId, tokenId }: AccountTokenParams,
+  ): Promise<DailyBalanceEntryDto[]> {
+    return this.daoFundsTokenReceiptService.getDailyTokenBalanceByDaoId(
+      accountId,
+      tokenId,
     );
   }
 

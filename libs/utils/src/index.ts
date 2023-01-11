@@ -1,3 +1,4 @@
+import { DateTime } from 'luxon';
 import { DynamoEntityType, EntityId } from '@sputnik-v2/dynamodb';
 import { Role, RoleKindType } from '@sputnik-v2/dao/entities';
 import {
@@ -34,6 +35,10 @@ export const convertDuration = (duration: number): Date => {
 export const getBlockTimestamp = (date = new Date()): string => {
   // the approximate block timestamp in nanoseconds - the same way as it's done in indexer
   return String(BigInt(date.getTime()) * 1000000n);
+};
+
+export const parseBlockTimestamp = (blockTimestamp: string): number => {
+  return Number(BigInt(blockTimestamp) / 1000000n);
 };
 
 export const buildProposalId = (daoId: string, proposalId: number): string => {
@@ -338,3 +343,30 @@ export function arrayUniqueBy<T>(array: T[], key: keyof T): T[] {
       index === self.findIndex((t) => t[key] === item[key]),
   );
 }
+
+export const getDays = (from: number, to: number): number[] => {
+  const days = [];
+  const start = DateTime.fromMillis(from).startOf('day').toMillis();
+
+  for (let time = start; time <= to; time += 86400000 /* 1 day increment */) {
+    days.push(time);
+  }
+
+  return days;
+};
+
+export const patchDailyBalance = (values: Record<string, bigint>) => {
+  const timestamps = Object.keys(values);
+
+  const from = timestamps[0]
+    ? Number(timestamps[0])
+    : DateTime.now().minus({ year: 1 }).startOf('day').toMillis();
+
+  const to = DateTime.now().startOf('day').toMillis();
+
+  let prev;
+
+  for (const timestamp of getDays(from, to)) {
+    prev = values[timestamp] = values[timestamp] || prev || 0n;
+  }
+};
