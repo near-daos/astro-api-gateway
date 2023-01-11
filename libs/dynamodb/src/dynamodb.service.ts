@@ -367,16 +367,17 @@ export class DynamodbService {
     partitionId: string,
     entityType: DynamoEntityType,
     query: QueryItemsQuery = {},
+    idPrefix = '',
     tableName = this.tableName,
   ): Promise<QueryOutput<M>> {
     return this.query<M>(
       {
         KeyConditionExpression:
-          'partitionId = :partitionId and begins_with(entityId, :entityType)',
+          'partitionId = :partitionId and begins_with(entityId, :entityIdPrefix)',
         ...query,
         ExpressionAttributeValues: {
           ':partitionId': partitionId,
-          ':entityType': buildEntityId(entityType, ''),
+          ':entityIdPrefix': buildEntityId(entityType, idPrefix),
           ...query.ExpressionAttributeValues,
         },
       },
@@ -395,11 +396,16 @@ export class DynamodbService {
     partitionId: string,
     entityType: DynamoEntityType,
     query: QueryItemsQuery = {},
+    idPrefix = '',
     tableName = this.tableName,
   ): Promise<PartialEntity<M>[]> {
-    return this.queryByType<M>(partitionId, entityType, query, tableName).then(
-      ({ Items }) => Items,
-    );
+    return this.queryByType<M>(
+      partitionId,
+      entityType,
+      query,
+      idPrefix,
+      tableName,
+    ).then(({ Items }) => Items);
   }
 
   async paginateItems<M>(
@@ -432,6 +438,7 @@ export class DynamodbService {
     query: QueryItemsQuery = {},
     limit = 100,
     nextToken = null,
+    idPrefix = '',
     tableName = this.tableName,
   ): Promise<DynamoPaginatedResponse<PartialEntity<M>>> {
     const { Items, LastEvaluatedKey } = await this.queryByType<M>(
@@ -442,6 +449,7 @@ export class DynamodbService {
         ExclusiveStartKey: nextToken ? this.parseKey(nextToken) : undefined,
         ...query,
       },
+      idPrefix,
       tableName,
     );
     return {
@@ -477,12 +485,14 @@ export class DynamodbService {
     partitionId: string,
     entityType: DynamoEntityType,
     query: QueryItemsQuery = {},
+    idPrefix = '',
     tableName = this.tableName,
   ): AsyncGenerator<PartialEntity<M>[]> {
     const { Items, LastEvaluatedKey } = await this.queryByType<M>(
       partitionId,
       entityType,
       query,
+      idPrefix,
       tableName,
     );
 
@@ -518,6 +528,7 @@ export class DynamodbService {
     partitionId: string,
     entityType: DynamoEntityType,
     query: CountItemsQuery = {},
+    idPrefix = '',
     tableName = this.tableName,
   ): Promise<number> {
     return this.queryByType(
@@ -527,6 +538,7 @@ export class DynamodbService {
         Select: 'COUNT',
         ...query,
       },
+      idPrefix,
       tableName,
     ).then(({ Count }) => Count);
   }
