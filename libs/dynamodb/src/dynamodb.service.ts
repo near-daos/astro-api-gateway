@@ -248,7 +248,9 @@ export class DynamodbService {
     tableName = this.tableName,
   ): Promise<PartialEntity<M> | undefined> {
     this.logger.debug(
-      `[DynamoDB] Update: ${data.partitionId}:${data.entityId}`,
+      `[DynamoDB] Update: ${data.partitionId}:${
+        data.entityId
+      } (${JSON.stringify(data)})`,
     );
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { partitionId, entityId, entityType, ...rest } = data;
