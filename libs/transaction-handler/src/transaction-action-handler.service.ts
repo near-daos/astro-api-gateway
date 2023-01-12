@@ -1373,7 +1373,11 @@ export class TransactionActionHandlerService {
           `Received NFTs from RPC: ${JSON.stringify(nftData)}`,
         );
         await this.daoService.save(
-          { id: accountId },
+          {
+            id: accountId,
+            updateTransactionHash: transactionHash,
+            updateTimestamp: timestamp,
+          },
           { updateNftsCount: true },
         );
         this.log(

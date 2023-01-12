@@ -247,11 +247,6 @@ export class DynamodbService {
     checkIfExists = true,
     tableName = this.tableName,
   ): Promise<PartialEntity<M> | undefined> {
-    this.logger.debug(
-      `[DynamoDB] Update: ${data.partitionId}:${
-        data.entityId
-      } (${JSON.stringify(data)})`,
-    );
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { partitionId, entityId, entityType, ...rest } = data;
     const dataToUpdate = {
@@ -293,10 +288,14 @@ export class DynamodbService {
         ReturnValues: 'ALL_NEW',
       })
       .promise()
-      .then(
-        ({ Attributes }) =>
-          this.denormalizeData(Attributes) as PartialEntity<M>,
-      );
+      .then(({ Attributes }) => {
+        this.logger.debug(
+          `[DynamoDB] Update: ${data.partitionId}:${
+            data.entityId
+          } (${JSON.stringify(data)})`,
+        );
+        return this.denormalizeData(Attributes) as PartialEntity<M>;
+      });
   }
 
   async updateItemByType<M>(
@@ -553,7 +552,6 @@ export class DynamodbService {
     checkIfExists = true,
     tableName = this.tableName,
   ): Promise<PartialEntity<M>> {
-    this.logger.debug(`[DynamoDB] Put: ${data.partitionId}:${data.entityId}`);
     const timestamp = Date.now();
     const dataToPut = {
       createdAt: timestamp,
@@ -572,7 +570,14 @@ export class DynamodbService {
           : {}),
       })
       .promise()
-      .then(() => this.denormalizeData(dataToPut));
+      .then(() => {
+        this.logger.debug(
+          `[DynamoDB] Put: ${data.partitionId}:${
+            data.entityId
+          } (${JSON.stringify(dataToPut)})`,
+        );
+        return this.denormalizeData(dataToPut) as PartialEntity<M>;
+      });
   }
 
   async putItemByType<M>(
