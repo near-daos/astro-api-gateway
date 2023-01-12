@@ -94,7 +94,7 @@ export class AggregatorService {
 
     try {
       this.logger.log(`Expired Proposals Aggregation...`);
-      await this.proposalAggregatorService.updateExpiredProposals();
+      // await this.proposalAggregatorService.updateExpiredProposals();
     } catch (error) {
       this.logger.error(
         `Expired Proposals Aggregation failed with error: ${error}`,
