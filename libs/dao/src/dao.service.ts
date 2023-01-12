@@ -51,6 +51,7 @@ export interface DaoSaveOptions {
   updateNftsCount?: boolean;
   // TODO: use only for migration
   allowDynamo?: boolean;
+  saveToDynamo?: boolean;
 }
 
 @Injectable()
@@ -309,6 +310,7 @@ export class DaoService extends TypeOrmCrudService<Dao> {
       updateBountiesCount,
       updateNftsCount,
       allowDynamo,
+      saveToDynamo = true,
     } = options;
 
     let data: Partial<DaoDto | DaoModel> = { ...dao };
@@ -348,7 +350,10 @@ export class DaoService extends TypeOrmCrudService<Dao> {
 
     const daoEntity = this.daoRepository.create(data);
 
-    await this.daoDynamoService.saveDao(data);
+    if (saveToDynamo) {
+      await this.daoDynamoService.saveDao(data);
+    }
+
     await this.daoRepository.save(daoEntity);
   }
 
