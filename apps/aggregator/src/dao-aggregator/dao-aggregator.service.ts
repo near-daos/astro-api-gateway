@@ -62,7 +62,10 @@ export class DaoAggregatorService {
         );
       })
       .process((dao) =>
-        this.daoService.save(dao, { updateTotalDaoFunds: true }),
+        this.daoService.save(
+          { id: dao.id },
+          { updateTotalDaoFunds: true, allowDynamo: false },
+        ),
       );
   }
 

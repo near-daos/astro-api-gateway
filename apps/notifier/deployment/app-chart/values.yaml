@@ -89,6 +89,4 @@ version:
   commit: latest
   branch: develop
 
-environment:
-  AGGREGATOR_EXPIRED_PROPOSALS_POLLING_INTERVAL: "60000"
-  AGGREGATOR_TOKEN_PRICES_POLLING_INTERVAL: "100000"
+environment: {}
