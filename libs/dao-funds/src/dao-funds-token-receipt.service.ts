@@ -126,7 +126,17 @@ export class DaoFundsTokenReceiptService {
       )
         .startOf('day')
         .toMillis();
-      balance = values[timestamp] = balance + BigInt(receipt.amount);
+
+      let change;
+
+      if (receipt.receiverId === daoId) {
+        change = BigInt(receipt.amount);
+      } else {
+        change = -BigInt(receipt.amount);
+      }
+
+      balance = values[timestamp] = balance + change;
+
       return values;
     }, {});
 

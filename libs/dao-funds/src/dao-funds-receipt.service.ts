@@ -112,7 +112,17 @@ export class DaoFundsReceiptService {
       )
         .startOf('day')
         .toMillis();
-      balance = values[timestamp] = balance + BigInt(receipt.deposit);
+
+      let change;
+
+      if (receipt.receiverId === daoId) {
+        change = BigInt(receipt.deposit);
+      } else {
+        change = -BigInt(receipt.deposit);
+      }
+
+      balance = values[timestamp] = balance + change;
+
       return values;
     }, {});
 
