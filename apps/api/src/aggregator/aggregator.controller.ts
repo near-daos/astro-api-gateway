@@ -84,7 +84,7 @@ export class AggregatorController {
       ...data,
     });
 
-    this.logger.log(data);
+    this.logger.log(`Last block: ${JSON.stringify(data)}`);
 
     this.statsDService.client.gauge(
       'block.lastBlock.height',

@@ -247,6 +247,9 @@ export class DynamodbService {
     checkIfExists = true,
     tableName = this.tableName,
   ): Promise<PartialEntity<M> | undefined> {
+    this.logger.debug(
+      `[DynamoDB] Update: ${data.partitionId}:${data.entityId}`,
+    );
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { partitionId, entityId, entityType, ...rest } = data;
     const dataToUpdate = {
@@ -548,6 +551,7 @@ export class DynamodbService {
     checkIfExists = true,
     tableName = this.tableName,
   ): Promise<PartialEntity<M>> {
+    this.logger.debug(`[DynamoDB] Put: ${data.partitionId}:${data.entityId}`);
     const timestamp = Date.now();
     const dataToPut = {
       createdAt: timestamp,
