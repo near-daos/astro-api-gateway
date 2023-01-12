@@ -93,14 +93,16 @@ export class ProposalTemplateController {
       config,
     };
 
-    await this.dynamoSharedProposalTemplateService.create({
-      ...proposalTemplate,
-      createdBy: req.accountId,
-    });
+    const sharedTemplateModel =
+      await this.dynamoSharedProposalTemplateService.create({
+        ...proposalTemplate,
+        createdBy: req.accountId,
+      });
 
     await this.dynamoProposalTemplateService.create({
-      ...proposalTemplate,
+      ...sharedTemplateModel,
       isEnabled,
+      daoId,
     });
 
     await this.sharedProposalTemplateService.create({

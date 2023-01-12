@@ -97,13 +97,14 @@ export class DynamoSharedProposalTemplateService {
 
     const newTemplate = {
       ...existingTemplate,
+      id: buildTemplateId(toDao),
+      sourceTemplateId: existingTemplate.id,
       partitionId: toDao,
       entityType: DynamoEntityType.ProposalTemplate,
       entityId: buildEntityId(
         DynamoEntityType.ProposalTemplate,
         buildTemplateId(toDao),
       ),
-      daoCount: existingTemplate.daoCount + 1,
     };
 
     await this.dynamoDbService.saveItem<ProposalTemplateModel>(newTemplate);

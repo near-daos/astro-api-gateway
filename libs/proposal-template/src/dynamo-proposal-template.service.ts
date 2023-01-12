@@ -1,12 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { ProposalTemplate } from '@sputnik-v2/proposal-template/entities';
 import { ProposalTemplateDto } from '@sputnik-v2/proposal-template/dto';
 import { buildEntityId, buildTemplateId } from '@sputnik-v2/utils';
 import {
   DynamodbService,
   DynamoEntityType,
-  mapProposalTemplateToProposalTemplateModel,
   ProposalTemplateModel,
+  SharedProposalTemplateModel,
 } from '@sputnik-v2/dynamodb';
 
 @Injectable()
@@ -14,26 +13,28 @@ export class DynamoProposalTemplateService {
   constructor(private dynamoDbService: DynamodbService) {}
 
   async create(
-    proposalTemplate: ProposalTemplateDto,
-  ): Promise<ProposalTemplate> {
+    proposalTemplate: Partial<SharedProposalTemplateModel> & {
+      isEnabled: boolean;
+      daoId: string;
+    },
+  ): Promise<ProposalTemplateModel> {
     const templateId = buildTemplateId(proposalTemplate.daoId);
-    const newProposalTemplate: ProposalTemplate = {
+    const newProposalTemplate: ProposalTemplateModel = {
+      entityId: buildEntityId(DynamoEntityType.ProposalTemplate, templateId),
+      entityType: DynamoEntityType.ProposalTemplate,
       config: proposalTemplate.config,
-      createdAt: new Date(),
-      dao: undefined,
-      daoId: proposalTemplate.daoId,
+      createdAt: new Date().getTime(),
+      partitionId: proposalTemplate.daoId,
       id: templateId,
+      sourceTemplateId: proposalTemplate.id,
       isArchived: false,
       isEnabled: proposalTemplate.isEnabled,
       name: proposalTemplate.name,
-      updatedAt: new Date(),
+      updatedAt: new Date().getTime(),
     };
 
-    const proposalTemplateModel =
-      mapProposalTemplateToProposalTemplateModel(newProposalTemplate);
-
     await this.dynamoDbService.saveItem<ProposalTemplateModel>(
-      proposalTemplateModel,
+      newProposalTemplate,
     );
 
     return newProposalTemplate;

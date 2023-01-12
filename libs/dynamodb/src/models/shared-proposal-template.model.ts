@@ -12,7 +12,6 @@ export class SharedProposalTemplateModel extends BaseModel {
   name: string;
   description?: string;
   config: ProposalTemplateConfigDto;
-  daoCount: number;
 }
 
 export function mapSharedProposalTemplateToSharedProposalTemplateModel(
@@ -37,6 +36,5 @@ export function mapSharedProposalTemplateToSharedProposalTemplateModel(
     name: sharedProposalTemplate.name,
     description: sharedProposalTemplate.description,
     config: sharedProposalTemplate.config,
-    daoCount: sharedProposalTemplate.daoCount,
   };
 }
