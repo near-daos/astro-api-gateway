@@ -10,6 +10,9 @@ export class DaoStatsStateDto {
   timestamp: number;
 
   @ApiProperty()
+  amount: StatsStateDto;
+
+  @ApiProperty()
   totalDaoFunds: StatsStateDto;
 
   @ApiProperty()
