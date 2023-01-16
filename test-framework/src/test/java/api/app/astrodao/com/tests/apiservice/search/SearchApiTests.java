@@ -141,7 +141,7 @@ public class SearchApiTests extends BaseTest {
         searchApiSteps.assertCollectionElementsHasValue(searchResult.getProposals().getData(), proposal -> proposal.getKind() != null, "proposals/data/kind");
         searchApiSteps.assertCollectionElementsHasValue(searchResult.getProposals().getData(), proposal -> !proposal.getType().toString().isEmpty(), "proposals/data/type");
         searchApiSteps.assertCollectionElementsHasValue(searchResult.getProposals().getData(), proposal -> proposal.getVotes() != null, "proposals/data/votes");
-        searchApiSteps.assertCollectionElementsHasValue(searchResult.getProposals().getData(), proposal -> proposal.getVotePeriodEnd().longValue() > 0, "proposals/data/votePeriodEnd");
+        searchApiSteps.assertCollectionElementsHasValue(searchResult.getProposals().getData(), proposal -> new BigDecimal(proposal.getVotePeriodEnd()).longValue() > 0, "proposals/data/votePeriodEnd");
         searchApiSteps.assertCollectionContainsOnly(searchResult.getProposals().getData(), Proposal::getCommentsCount, BigDecimal.valueOf(0), "proposals/data/commentsCount");
 
         searchApiSteps.assertCollectionElementsHasValue(searchResult.getProposals().getData(), proposal -> !proposal.getDao().getTransactionHash().isEmpty(), "proposals/data/dao/transactionHash");
@@ -153,7 +153,7 @@ public class SearchApiTests extends BaseTest {
         searchApiSteps.assertCollectionElementsHasValue(searchResult.getProposals().getData(), proposal -> proposal.getDao().getNumberOfMembers().intValue() > 0, "proposals/data/dao/numberOfMembers");
         searchApiSteps.assertCollectionContainsOnly(searchResult.getProposals().getData(), proposal -> proposal.getDao().getPolicy().getDaoId(), daoId, "proposals/data/dao/policy/id");
         searchApiSteps.assertCollectionContainsOnly(searchResult.getProposals().getData(), proposal -> proposal.getDao().getPolicy().getDefaultVotePolicy().getWeightKind(), VotePolicy.WeightKindEnum.ROLEWEIGHT, "proposals/data/dao/policy/defaultVotePolicy/weightKind");
-        searchApiSteps.assertCollectionElementsHasValue(searchResult.getProposals().getData(), proposal -> proposal.getDao().getPolicy().getDefaultVotePolicy().getQuorum().intValue() >= 0, "proposals/data/dao/policy/defaultVotePolicy/quorum");
+        searchApiSteps.assertCollectionElementsHasValue(searchResult.getProposals().getData(), proposal -> Integer.parseInt(proposal.getDao().getPolicy().getDefaultVotePolicy().getQuorum()) >= 0, "proposals/data/dao/policy/defaultVotePolicy/quorum");
         searchApiSteps.assertCollectionElementsHasValue(searchResult.getProposals().getData(), proposal -> !proposal.getDao().getPolicy().getDefaultVotePolicy().getKind().toString().isEmpty(), "proposals/data/dao/policy/defaultVotePolicy/kind");
         searchApiSteps.assertCollectionElementsHasValue(searchResult.getProposals().getData(), proposal -> !proposal.getDao().getPolicy().getDefaultVotePolicy().getRatio().isEmpty(), "proposals/data/dao/policy/defaultVotePolicy/ratio");
 

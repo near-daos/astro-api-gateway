@@ -200,7 +200,7 @@ public class NotificationSettingsApiTests extends BaseTest {
 		notificationsApiSteps.assertCollectionContainsExactlyInAnyOrder(notificationSettings.getData(), AccountNotificationSettings::getId, id1, id2);
 		notificationsApiSteps.assertCollectionContainsOnly(notificationSettings.getData(), AccountNotificationSettings::getAccountId, accountId, "accountId");
 		notificationsApiSteps.assertCollectionElementsHasValue(notificationSettings.getData(), response -> !response.getTypes().isEmpty(), "types");
-		notificationsApiSteps.assertCollectionElementsHasValue(notificationSettings.getData(), response -> response.getMutedUntilTimestamp().intValue() >= 0, "mutedUntilTimestamp");
+		notificationsApiSteps.assertCollectionElementsHasValue(notificationSettings.getData(), response -> new BigDecimal(response.getMutedUntilTimestamp()).longValue() >= 0, "mutedUntilTimestamp");
 		notificationsApiSteps.assertCollectionContainsExactlyInAnyOrder(notificationSettings.getData(), AccountNotificationSettings::getIsAllMuted, true, false);
 
 		List<OffsetDateTime> createdAtList = notificationSettings.getData().stream().map(AccountNotificationSettings::getCreatedAt).collect(Collectors.toList());

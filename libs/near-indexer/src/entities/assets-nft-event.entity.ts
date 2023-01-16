@@ -28,7 +28,9 @@ export class AssetsNftEvent {
   @PrimaryColumn()
   tokenId: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    enum: NftEventKind,
+  })
   @PrimaryColumn({
     type: 'enum',
     enum: NftEventKind,

@@ -36,7 +36,7 @@ public class TokensNftsEventsApiTests extends BaseTest {
 		tokenApiSteps.assertCollectionElementsHasValue(eventsResponse, r -> !r.getEmittedForReceiptId().isEmpty(), "emittedForReceiptId");
 		tokenApiSteps.assertCollectionElementsHasValue(eventsResponse, r -> !r.getEmittedByContractAccountId().isEmpty(), "emittedByContractAccountId");
 		tokenApiSteps.assertCollectionElementsHasValue(eventsResponse, r -> !r.getTokenId().isEmpty(), "tokenId");
-		tokenApiSteps.assertCollectionElementsHasValue(eventsResponse, r -> !r.getEventKind().isEmpty(), "eventKind");
+		tokenApiSteps.assertCollectionElementsHasValue(eventsResponse, r -> !r.getEventKind().getValue().isEmpty(), "eventKind");
 		tokenApiSteps.assertCollectionElementsHasValue(eventsResponse, r -> !r.getTokenNewOwnerAccountId().isEmpty(), "tokenNewOwnerAccountId");
 		tokenApiSteps.assertCollectionElementsHasValue(eventsResponse, r -> !r.getEventMemo().isEmpty(), "eventMemo");
 	}

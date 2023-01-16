@@ -98,7 +98,7 @@ public class ProposalsApiTests extends BaseTest {
         proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> r.getDao().getNumberOfMembers().intValue() >= 1, "data/dao/numberOfMembers");
         proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> !r.getDao().getPolicy().getDaoId().isEmpty(), "data/dao/policy/daoId");
         proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> !r.getDao().getPolicy().getDefaultVotePolicy().getWeightKind().toString().isEmpty(), "data/dao/policy/defaultVotePolicy/weightKind");
-        proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> r.getDao().getPolicy().getDefaultVotePolicy().getQuorum().intValue() >= 0, "data/dao/policy/defaultVotePolicy/quorum");
+        proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> Integer.parseInt(r.getDao().getPolicy().getDefaultVotePolicy().getQuorum()) >= 0, "data/dao/policy/defaultVotePolicy/quorum");
         proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> !r.getDao().getPolicy().getDefaultVotePolicy().getKind().toString().isEmpty(), "data/dao/policy/defaultVotePolicy/kind");
         proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> !r.getDao().getPolicy().getDefaultVotePolicy().getRatio().isEmpty(), "data/dao/policy/defaultVotePolicy/ratio");
 
@@ -166,7 +166,7 @@ public class ProposalsApiTests extends BaseTest {
         proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> r.getDao().getNumberOfMembers().intValue() >= 1, "data/dao/numberOfMembers");
         proposalsApiSteps.assertCollectionContainsOnly(proposalsResponse.getData(), r -> r.getDao().getPolicy().getDaoId(), testDao, "data/dao/policy/daoId");
         proposalsApiSteps.assertCollectionContainsOnly(proposalsResponse.getData(), r -> r.getDao().getPolicy().getDefaultVotePolicy().getWeightKind(), VotePolicy.WeightKindEnum.ROLEWEIGHT, "data/dao/policy/defaultVotePolicy/weightKind");
-        proposalsApiSteps.assertCollectionContainsOnly(proposalsResponse.getData(), r -> r.getDao().getPolicy().getDefaultVotePolicy().getQuorum().intValue(), 0, "data/dao/policy/defaultVotePolicy/quorum");
+        proposalsApiSteps.assertCollectionContainsOnly(proposalsResponse.getData(), r -> Integer.parseInt(r.getDao().getPolicy().getDefaultVotePolicy().getQuorum()), 0, "data/dao/policy/defaultVotePolicy/quorum");
         proposalsApiSteps.assertCollectionContainsOnly(proposalsResponse.getData(), r -> r.getDao().getPolicy().getDefaultVotePolicy().getKind(), VotePolicy.KindEnum.RATIO, "data/dao/policy/defaultVotePolicy/kind");
         proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> !r.getDao().getPolicy().getDefaultVotePolicy().getRatio().isEmpty(), "data/dao/policy/defaultVotePolicy/ratio");
 
@@ -233,7 +233,7 @@ public class ProposalsApiTests extends BaseTest {
         proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> r.getDao().getNumberOfMembers().intValue() >= 1, "data/dao/numberOfMembers");
         proposalsApiSteps.assertCollectionContainsOnly(proposalsResponse.getData(), r -> r.getDao().getPolicy().getDaoId(), testDao, "data/dao/policy/daoId");
         proposalsApiSteps.assertCollectionContainsOnly(proposalsResponse.getData(), r -> r.getDao().getPolicy().getDefaultVotePolicy().getWeightKind(), VotePolicy.WeightKindEnum.ROLEWEIGHT, "data/dao/policy/defaultVotePolicy/weightKind");
-        proposalsApiSteps.assertCollectionContainsOnly(proposalsResponse.getData(), r -> r.getDao().getPolicy().getDefaultVotePolicy().getQuorum().intValue(), 0, "data/dao/policy/defaultVotePolicy/quorum");
+        proposalsApiSteps.assertCollectionContainsOnly(proposalsResponse.getData(), r -> Integer.parseInt(r.getDao().getPolicy().getDefaultVotePolicy().getQuorum()), 0, "data/dao/policy/defaultVotePolicy/quorum");
         proposalsApiSteps.assertCollectionContainsOnly(proposalsResponse.getData(), r -> r.getDao().getPolicy().getDefaultVotePolicy().getKind(), VotePolicy.KindEnum.RATIO, "data/dao/policy/defaultVotePolicy/kind");
         proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> !r.getDao().getPolicy().getDefaultVotePolicy().getRatio().isEmpty(), "data/dao/policy/defaultVotePolicy/ratio");
 
@@ -301,7 +301,7 @@ public class ProposalsApiTests extends BaseTest {
         proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> r.getDao().getNumberOfMembers().intValue() >= 1, "data/dao/numberOfMembers");
         proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> !r.getDao().getPolicy().getDaoId().isEmpty(), "data/dao/policy/daoId");
         proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> !r.getDao().getPolicy().getDefaultVotePolicy().getWeightKind().toString().isEmpty(), "data/dao/policy/defaultVotePolicy/weightKind");
-        proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> r.getDao().getPolicy().getDefaultVotePolicy().getQuorum().intValue() >= 0, "data/dao/policy/defaultVotePolicy/quorum");
+        proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> Integer.parseInt(r.getDao().getPolicy().getDefaultVotePolicy().getQuorum()) >= 0, "data/dao/policy/defaultVotePolicy/quorum");
         proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> !r.getDao().getPolicy().getDefaultVotePolicy().getKind().toString().isEmpty(), "data/dao/policy/defaultVotePolicy/kind");
         proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> !r.getDao().getPolicy().getDefaultVotePolicy().getRatio().isEmpty(), "data/dao/policy/defaultVotePolicy/ratio");
 
@@ -371,7 +371,7 @@ public class ProposalsApiTests extends BaseTest {
         proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> r.getDao().getNumberOfMembers().intValue() >= 1, "data/dao/numberOfMembers");
         proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> !r.getDao().getPolicy().getDaoId().isEmpty(), "data/dao/policy/daoId");
         proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> !r.getDao().getPolicy().getDefaultVotePolicy().getWeightKind().toString().isEmpty(), "data/dao/policy/defaultVotePolicy/weightKind");
-        proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> r.getDao().getPolicy().getDefaultVotePolicy().getQuorum().intValue() >= 0, "data/dao/policy/defaultVotePolicy/quorum");
+        proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> Integer.parseInt(r.getDao().getPolicy().getDefaultVotePolicy().getQuorum()) >= 0, "data/dao/policy/defaultVotePolicy/quorum");
         proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> !r.getDao().getPolicy().getDefaultVotePolicy().getKind().toString().isEmpty(), "data/dao/policy/defaultVotePolicy/kind");
         proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> !r.getDao().getPolicy().getDefaultVotePolicy().getRatio().isEmpty(), "data/dao/policy/defaultVotePolicy/ratio");
 
@@ -435,7 +435,7 @@ public class ProposalsApiTests extends BaseTest {
         proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> r.getDao().getNumberOfMembers().intValue() >= 1, "data/dao/numberOfMembers");
         proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> !r.getDao().getPolicy().getDaoId().isEmpty(), "data/dao/policy/daoId");
         proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> !r.getDao().getPolicy().getDefaultVotePolicy().getWeightKind().toString().isEmpty(), "data/dao/policy/defaultVotePolicy/weightKind");
-        proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> r.getDao().getPolicy().getDefaultVotePolicy().getQuorum().intValue() >= 0, "data/dao/policy/defaultVotePolicy/quorum");
+        proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> Integer.parseInt(r.getDao().getPolicy().getDefaultVotePolicy().getQuorum()) >= 0, "data/dao/policy/defaultVotePolicy/quorum");
         proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> !r.getDao().getPolicy().getDefaultVotePolicy().getKind().toString().isEmpty(), "data/dao/policy/defaultVotePolicy/kind");
         proposalsApiSteps.assertCollectionElementsHasValue(proposalsResponse.getData(), r -> !r.getDao().getPolicy().getDefaultVotePolicy().getRatio().isEmpty(), "data/dao/policy/defaultVotePolicy/ratio");
 

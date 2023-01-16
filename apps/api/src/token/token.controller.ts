@@ -10,9 +10,9 @@ import {
 import {
   ApiBadRequestResponse,
   ApiNotFoundResponse,
-  ApiParam,
+  ApiOkResponse,
+  ApiOperation,
   ApiQuery,
-  ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { ParsedRequest, CrudRequest } from '@nestjsx/crud';
@@ -30,7 +30,6 @@ import {
 import {
   TokenService,
   TokenResponse,
-  Token,
   NFTToken,
   NFTTokenResponse,
   NFTTokenService,
@@ -50,8 +49,10 @@ export class TokenController {
     private readonly nftTokenService: NFTTokenService,
   ) {}
 
-  @ApiResponse({
-    status: 200,
+  @ApiOperation({
+    summary: 'Get list of aggregated Fungible Tokens',
+  })
+  @ApiOkResponse({
     description: 'List of aggregated Fungible Tokens',
     type: TokensPageResponseDto,
   })
@@ -67,14 +68,12 @@ export class TokenController {
     return await this.tokenService.getMany(query);
   }
 
-  @ApiParam({
-    name: 'accountId',
-    type: String,
+  @ApiOperation({
+    summary: 'Get list of Fungible Tokens by Account',
   })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'List of Fungible Tokens by Account',
-    type: Token,
+    type: [TokenResponse],
   })
   @ApiNotFoundResponse({
     description: 'Account does not exist',
@@ -87,8 +86,10 @@ export class TokenController {
     return await this.tokenService.tokensByAccount(accountId);
   }
 
-  @ApiResponse({
-    status: 200,
+  @ApiOperation({
+    summary: 'Get list of aggregated Non-Fungible Tokens',
+  })
+  @ApiOkResponse({
     description: 'List of aggregated Non-Fungible Tokens',
     type: NFTTokenResponse,
   })
@@ -105,15 +106,12 @@ export class TokenController {
     return await this.nftTokenService.getMany(query);
   }
 
-  @ApiParam({
-    name: 'id',
-    type: String,
+  @ApiOperation({
+    summary: 'Get list of Non-Fungible Token Events',
   })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'List of Non-Fungible Token Events',
-    type: AssetsNftEvent,
-    isArray: true,
+    type: [AssetsNftEvent],
   })
   @ApiNotFoundResponse({
     description: 'No NFT found',

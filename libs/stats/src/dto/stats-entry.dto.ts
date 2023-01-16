@@ -1,7 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class StatsEntryDto {
-  @ApiProperty()
+  @ApiProperty({
+    type: Number,
+  })
   value: number | string;
 
   @ApiProperty()

@@ -103,7 +103,7 @@ public class BountyContextsTests extends BaseTest {
 				.extract().as(BountyContextResponse.class);
 
 		BigDecimal nearestDate = bountyContextResponse.getData().stream()
-				.map(bountyContext -> bountyContext.getProposal().getCreateTimestamp())
+				.map(bountyContext -> new BigDecimal(bountyContext.getProposal().getCreateTimestamp()))
 				.max(BigDecimal::compareTo).get();
 
 		bountiesApiSteps.assertDtoValue(bountyContextResponse, r -> r.getCount().intValue(), count, "count");

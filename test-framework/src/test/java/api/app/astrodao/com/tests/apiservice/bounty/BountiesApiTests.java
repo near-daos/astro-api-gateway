@@ -168,7 +168,7 @@ public class BountiesApiTests extends BaseTest {
         bountiesApiSteps.assertCollectionElementsHasValue(bountyResponse.getData(), r -> !r.getDescription().isBlank(), "data/description");
         bountiesApiSteps.assertCollectionElementsHasValue(bountyResponse.getData(), r -> r.getToken() != null, "data/token");
         bountiesApiSteps.assertCollectionElementsHasValue(bountyResponse.getData(), r -> !r.getAmount().isBlank(), "data/amount");
-        bountiesApiSteps.assertCollectionElementsHasValue(bountyResponse.getData(), r -> !r.getTimes().isBlank(), "data/times");
+        bountiesApiSteps.assertCollectionElementsHasValue(bountyResponse.getData(), r -> !r.getTimes().equals(BigDecimal.ZERO), "data/times");
         bountiesApiSteps.assertCollectionElementsHasValue(bountyResponse.getData(), r -> !r.getMaxDeadline().isBlank(), "data/maxDeadline");
         bountiesApiSteps.assertCollectionElementsHasValue(bountyResponse.getData(), r -> r.getDao() != null, "data/dao");
         bountiesApiSteps.assertCollectionElementsHasValue(bountyResponse.getData(), r -> r.getBountyClaims() != null, "data/bountyClaims");
@@ -209,7 +209,7 @@ public class BountiesApiTests extends BaseTest {
         bountiesApiSteps.assertCollectionElementsHasValue(bountyResponse.getData(), r -> !r.getDescription().isBlank(), "data/description");
         bountiesApiSteps.assertCollectionElementsHasValue(bountyResponse.getData(), r -> r.getToken() != null, "data/token");
         bountiesApiSteps.assertCollectionElementsHasValue(bountyResponse.getData(), r -> !r.getAmount().isBlank(), "data/amount");
-        bountiesApiSteps.assertCollectionElementsHasValue(bountyResponse.getData(), r -> !r.getTimes().isBlank(), "data/times");
+        bountiesApiSteps.assertCollectionElementsHasValue(bountyResponse.getData(), r -> !r.getTimes().equals(BigDecimal.ZERO), "data/times");
         bountiesApiSteps.assertCollectionElementsHasValue(bountyResponse.getData(), r -> !r.getMaxDeadline().isBlank(), "data/maxDeadline");
         bountiesApiSteps.assertCollectionElementsHasValue(bountyResponse.getData(), r -> r.getNumberOfClaims() != null, "data/numberOfClaims");
         bountiesApiSteps.assertCollectionElementsHasValue(bountyResponse.getData(), r -> r.getDao() != null, "data/dao");
