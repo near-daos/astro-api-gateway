@@ -15,9 +15,9 @@ import {
   ApiBadRequestResponse,
   ApiBearerAuth,
   ApiForbiddenResponse,
-  ApiParam,
+  ApiOkResponse,
+  ApiOperation,
   ApiQuery,
-  ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { CrudRequest, ParsedRequest } from '@nestjsx/crud';
@@ -60,9 +60,11 @@ export class NotificationController {
     private readonly accountNotificationSettingsService: AccountNotificationSettingsService,
   ) {}
 
-  @ApiResponse({
-    status: 200,
-    description: 'List of Account Notifications',
+  @ApiOperation({
+    summary: 'Get list of Notifications',
+  })
+  @ApiOkResponse({
+    description: 'List of Notifications',
     type: NotificationResponse,
   })
   @ApiQuery({ type: EntityQuery })
@@ -78,12 +80,10 @@ export class NotificationController {
     return await this.notificationService.getMany(query);
   }
 
-  @ApiParam({
-    name: 'id',
-    type: String,
+  @ApiOperation({
+    summary: 'Get notification by ID',
   })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Notification',
     type: Notification,
   })
@@ -103,8 +103,10 @@ export class NotificationController {
     return notification;
   }
 
-  @ApiResponse({
-    status: 200,
+  @ApiOperation({
+    summary: 'Get list of Account Notifications',
+  })
+  @ApiOkResponse({
     description: 'List of Account Notifications',
     type: AccountNotificationResponse,
   })
@@ -121,8 +123,10 @@ export class NotificationController {
     return this.accountNotificationService.getMany(query);
   }
 
-  @ApiResponse({
-    status: 200,
+  @ApiOperation({
+    summary: 'Read all Account Notifications',
+  })
+  @ApiOkResponse({
     description: 'OK',
   })
   @ApiForbiddenResponse({
@@ -138,8 +142,10 @@ export class NotificationController {
     );
   }
 
-  @ApiResponse({
-    status: 200,
+  @ApiOperation({
+    summary: 'Archive all Account Notifications',
+  })
+  @ApiOkResponse({
     description: 'OK',
   })
   @ApiForbiddenResponse({
@@ -157,12 +163,10 @@ export class NotificationController {
     );
   }
 
-  @ApiParam({
-    name: 'id',
-    type: String,
+  @ApiOperation({
+    summary: 'Update Account Notification',
   })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'OK',
     type: AccountNotification,
   })
@@ -188,8 +192,10 @@ export class NotificationController {
     );
   }
 
-  @ApiResponse({
-    status: 200,
+  @ApiOperation({
+    summary: 'Get Account Notification Settings',
+  })
+  @ApiOkResponse({
     description: 'List of Account Notifications',
     type: AccountNotificationSettingsResponse,
   })
@@ -208,8 +214,10 @@ export class NotificationController {
     return this.accountNotificationSettingsService.getMany(query);
   }
 
-  @ApiResponse({
-    status: 201,
+  @ApiOperation({
+    summary: 'Update Account Notification Settings',
+  })
+  @ApiOkResponse({
     description: 'Created',
     type: AccountNotificationSettings,
   })
@@ -230,12 +238,10 @@ export class NotificationController {
     return this.accountNotificationSettingsService.create(req.accountId, body);
   }
 
-  @ApiParam({
-    name: 'accountId',
-    type: String,
+  @ApiOperation({
+    summary: 'Get Notification status by Account',
   })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Notification status by Account',
     type: NotificationStatusResponse,
   })

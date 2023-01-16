@@ -69,7 +69,7 @@ public class AccountNotificationsReadAllApiTests extends BaseTest {
 
 		//unread notification
 		String notificationId = "automation-01.testnet-4svi8zsqwzk5kan68mc8gvpaueqjgshn8zg7et9mu41a-vote";
-		AccountNotification accountNotification = notificationsApiSteps.patchAccountNotificationsById(account2token, notificationId, false, false, false).then()
+		AccountNotification accountNotification = notificationsApiSteps.patchAccountNotificationsById(account2token, account2Id, notificationId, false, false, false).then()
 				.statusCode(HTTP_OK)
 				.extract().as(AccountNotification.class);
 

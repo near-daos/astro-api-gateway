@@ -82,7 +82,7 @@ public class NotificationsApi {
 				.patch(ACCOUNT_NOTIFICATIONS_READ_ALL);
 	}
 
-	public Response patchAccountNotificationsById(String authToken, String notificationId,
+	public Response patchAccountNotificationsById(String authToken, String accountId, String notificationId,
 	                                              boolean isMuted, boolean isRead, boolean isArchived) {
 		UpdateAccountNotificationDto updateAccountNotificationDto = new UpdateAccountNotificationDto();
 		updateAccountNotificationDto.setIsMuted(isMuted);
@@ -94,7 +94,7 @@ public class NotificationsApi {
 				.header("Authorization", "Bearer " + authToken)
 				.contentType(ContentType.JSON)
 				.body(JsonUtils.writeValueAsString(updateAccountNotificationDto))
-				.patch(ACCOUNT_NOTIFICATIONS_ID, notificationId);
+				.patch(ACCOUNT_NOTIFICATIONS_ID, accountId, notificationId);
 	}
 
 	public Response getAccountNotifications(Map<String, Object> queryParams) {

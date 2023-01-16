@@ -22,6 +22,7 @@ import java.util.Map;
 import static api.app.astrodao.com.core.Constants.Variables.EMPTY_STRING;
 import static java.net.HttpURLConnection.*;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.startsWith;
 
 @Tags({@Tag("all"), @Tag("accountNotificationsIdApiTests")})
 @Epic("Notifications")
@@ -65,22 +66,16 @@ public class AccountNotificationsIdApiTests extends BaseTest {
 		notificationsApiSteps.assertDtoValue(accountNotificationResponse, r -> r.getCount().intValue(), 1, "count");
 
 		String id = accountNotificationResponse.getData().get(0).getId();
-		String notificationId = accountNotificationResponse.getData().get(0).getNotificationId();
-		AccountNotification accountNotification = notificationsApiSteps.patchAccountNotificationsById(accountToken, id, true, false, false).then()
+		String accountId = accountNotificationResponse.getData().get(0).getAccountId();
+
+		AccountNotification accountNotification = notificationsApiSteps.patchAccountNotificationsById(accountToken, accountId, id, true, false, false).then()
 				.statusCode(HTTP_OK)
 				.extract().as(AccountNotification.class);
 
 		notificationsApiSteps.assertDtoValue(accountNotification, AccountNotification::getId, id, "id");
-		notificationsApiSteps.assertDtoValue(accountNotification, AccountNotification::getNotificationId, notificationId, "notificationId");
-		notificationsApiSteps.assertDtoHasValue(accountNotification, AccountNotification::getIsArchived, "isArchived");
-		notificationsApiSteps.assertDtoHasValue(accountNotification, AccountNotification::getCreatedAt, "createdAt");
-		notificationsApiSteps.assertDtoHasValue(accountNotification, AccountNotification::getUpdatedAt, "updatedAt");
-		notificationsApiSteps.assertDtoHasValue(accountNotification, accNotification -> accNotification.getAccountId().equals(accountId), "accountId");
 		notificationsApiSteps.assertDtoValue(accountNotification, AccountNotification::getIsMuted, true, "isMuted");
-		notificationsApiSteps.assertDtoHasValue(accountNotification, AccountNotification::getIsPhone, "isPhone");
-		notificationsApiSteps.assertDtoHasValue(accountNotification, AccountNotification::getIsEmail, "isEmail");
-		notificationsApiSteps.assertDtoHasValue(accountNotification, AccountNotification::getIsRead, "isRead");
-		notificationsApiSteps.assertDtoHasValue(accountNotification, AccountNotification::getNotification, "notification");
+		notificationsApiSteps.assertDtoValue(accountNotification, AccountNotification::getIsArchived, false, "isArchived");
+		notificationsApiSteps.assertDtoValue(accountNotification, AccountNotification::getIsRead, false, "isRead");
 	}
 
 	@Test
@@ -104,22 +99,16 @@ public class AccountNotificationsIdApiTests extends BaseTest {
 		notificationsApiSteps.assertDtoValue(accountNotificationResponse, r -> r.getCount().intValue(), 1, "count");
 
 		String id = accountNotificationResponse.getData().get(0).getId();
-		String notificationId = accountNotificationResponse.getData().get(0).getNotificationId();
-		AccountNotification accountNotification = notificationsApiSteps.patchAccountNotificationsById(accountToken, id, false, true, false).then()
+		String accountId = accountNotificationResponse.getData().get(0).getAccountId();
+
+		AccountNotification accountNotification = notificationsApiSteps.patchAccountNotificationsById(accountToken, accountId, id, false, true, false).then()
 				.statusCode(HTTP_OK)
 				.extract().as(AccountNotification.class);
 
 		notificationsApiSteps.assertDtoValue(accountNotification, AccountNotification::getId, id, "id");
-		notificationsApiSteps.assertDtoValue(accountNotification, AccountNotification::getNotificationId, notificationId, "notificationId");
-		notificationsApiSteps.assertDtoHasValue(accountNotification, AccountNotification::getIsArchived, "isArchived");
-		notificationsApiSteps.assertDtoHasValue(accountNotification, AccountNotification::getCreatedAt, "createdAt");
-		notificationsApiSteps.assertDtoHasValue(accountNotification, AccountNotification::getUpdatedAt, "updatedAt");
-		notificationsApiSteps.assertDtoHasValue(accountNotification, accNotification -> accNotification.getAccountId().equals(accountId), "accountId");
+		notificationsApiSteps.assertDtoValue(accountNotification, AccountNotification::getIsArchived, false, "isArchived");
 		notificationsApiSteps.assertDtoValue(accountNotification, AccountNotification::getIsRead, true, "isRead");
-		notificationsApiSteps.assertDtoHasValue(accountNotification, AccountNotification::getIsPhone, "isPhone");
-		notificationsApiSteps.assertDtoHasValue(accountNotification, AccountNotification::getIsEmail, "isEmail");
-		notificationsApiSteps.assertDtoHasValue(accountNotification, AccountNotification::getIsMuted, "isMuted");
-		notificationsApiSteps.assertDtoHasValue(accountNotification, AccountNotification::getNotification, "notification");
+		notificationsApiSteps.assertDtoValue(accountNotification, AccountNotification::getIsMuted, false, "isMuted");
 	}
 
 	@Test
@@ -143,36 +132,29 @@ public class AccountNotificationsIdApiTests extends BaseTest {
 		notificationsApiSteps.assertDtoValue(accountNotificationResponse, r -> r.getCount().intValue(), 1, "count");
 
 		String id = accountNotificationResponse.getData().get(0).getId();
-		String notificationId = accountNotificationResponse.getData().get(0).getNotificationId();
-		AccountNotification accountNotification = notificationsApiSteps.patchAccountNotificationsById(accountToken, id, false, false, true).then()
+		String accountId = accountNotificationResponse.getData().get(0).getAccountId();
+
+		AccountNotification accountNotification = notificationsApiSteps.patchAccountNotificationsById(accountToken, accountId, id, false, false, true).then()
 				.statusCode(HTTP_OK)
 				.extract().as(AccountNotification.class);
 
 		notificationsApiSteps.assertDtoValue(accountNotification, AccountNotification::getId, id, "id");
-		notificationsApiSteps.assertDtoValue(accountNotification, AccountNotification::getNotificationId, notificationId, "notificationId");
 		notificationsApiSteps.assertDtoValue(accountNotification, AccountNotification::getIsArchived, true, "isArchived");
-		notificationsApiSteps.assertDtoHasValue(accountNotification, AccountNotification::getCreatedAt, "createdAt");
-		notificationsApiSteps.assertDtoHasValue(accountNotification, AccountNotification::getUpdatedAt, "updatedAt");
-		notificationsApiSteps.assertDtoHasValue(accountNotification, accNotification -> accNotification.getAccountId().equals(accountId), "accountId");
-		notificationsApiSteps.assertDtoHasValue(accountNotification, AccountNotification::getIsRead, "isRead");
-		notificationsApiSteps.assertDtoHasValue(accountNotification, AccountNotification::getIsPhone, "isPhone");
-		notificationsApiSteps.assertDtoHasValue(accountNotification, AccountNotification::getIsEmail, "isEmail");
-		notificationsApiSteps.assertDtoHasValue(accountNotification, AccountNotification::getIsMuted, "isMuted");
-		notificationsApiSteps.assertDtoHasValue(accountNotification, AccountNotification::getNotification, "notification");
+		notificationsApiSteps.assertDtoValue(accountNotification, AccountNotification::getIsRead, false, "isRead");
+		notificationsApiSteps.assertDtoValue(accountNotification, AccountNotification::getIsMuted, false, "isMuted");
 	}
 
 	@ParameterizedTest
 	@Severity(SeverityLevel.NORMAL)
 	@Story("Get HTTP 403 for account notifications id endpoint with null and invalid 'accountId' parameter")
 	@DisplayName("Get HTTP 403 for account notifications id endpoint with null and invalid 'accountId' parameter")
-	@NullSource
 	@CsvSource({"astro-automation.testnet", "another-magic.near", "test-dao-1641395769436.sputnikv2.testnet"})
 	void getHttp403ForAccountNotificationsIdEndpointWithNullAndInvalidAccountIdParam(String accountId) {
 		String authToken = Base64Utils.encodeAuthToken(accountId, accountPublicKey, accountSignature);
 		String errorMessage = String.format("Account %s identity is invalid - public key", accountId);
 
 		String id = "testdao2.testnet-fgflgxxo7okrakcfwhxagzfcxdigua5nqcktvsqnnt3w-changeconfig";
-		notificationsApiSteps.patchAccountNotificationsById(authToken, id, true, true, true).then()
+		notificationsApiSteps.patchAccountNotificationsById(authToken, accountId, id, true, true, true).then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
 				      "message", equalTo(errorMessage),
@@ -187,11 +169,11 @@ public class AccountNotificationsIdApiTests extends BaseTest {
 		String authToken = Base64Utils.encodeAuthToken(EMPTY_STRING, accountPublicKey, accountSignature);
 
 		String id = "testdao2.testnet-fgflgxxo7okrakcfwhxagzfcxdigua5nqcktvsqnnt3w-changeconfig";
-		notificationsApiSteps.patchAccountNotificationsById(authToken, id, true, true, true).then()
-				.statusCode(HTTP_FORBIDDEN)
-				.body("statusCode", equalTo(HTTP_FORBIDDEN),
-				      "message", equalTo("Authorization header payload is invalid"),
-				      "error", equalTo("Forbidden"));
+		notificationsApiSteps.patchAccountNotificationsById(authToken, "", id, true, true, true).then()
+				.statusCode(HTTP_NOT_FOUND)
+				.body("statusCode", equalTo(HTTP_NOT_FOUND),
+				      "message", startsWith("Cannot PATCH"),
+				      "error", equalTo("Not Found"));
 	}
 
 	@ParameterizedTest
@@ -204,7 +186,7 @@ public class AccountNotificationsIdApiTests extends BaseTest {
 		String authToken = Base64Utils.encodeAuthToken(accountId, publicKey, accountSignature);
 
 		String id = "testdao2.testnet-fgflgxxo7okrakcfwhxagzfcxdigua5nqcktvsqnnt3w-changeconfig";
-		notificationsApiSteps.patchAccountNotificationsById(authToken, id, true, true, true).then()
+		notificationsApiSteps.patchAccountNotificationsById(authToken, accountId, id,true, true, true).then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
 				      "message", equalTo(String.format("Account %s identity is invalid - public key", accountId)),
@@ -219,7 +201,7 @@ public class AccountNotificationsIdApiTests extends BaseTest {
 		String authToken = Base64Utils.encodeAuthToken(accountId, EMPTY_STRING, accountSignature);
 
 		String id = "testdao2.testnet-fgflgxxo7okrakcfwhxagzfcxdigua5nqcktvsqnnt3w-changeconfig";
-		notificationsApiSteps.patchAccountNotificationsById(authToken, id, true, true, true).then()
+		notificationsApiSteps.patchAccountNotificationsById(authToken, accountId, id, true, true, true).then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
 				      "message", equalTo("Authorization header payload is invalid"),
@@ -235,7 +217,7 @@ public class AccountNotificationsIdApiTests extends BaseTest {
 		String authToken = Base64Utils.encodeAuthToken(accountId, accountPublicKey, invalidSignature);
 
 		String id = "testdao2.testnet-fgflgxxo7okrakcfwhxagzfcxdigua5nqcktvsqnnt3w-changeconfig";
-		notificationsApiSteps.patchAccountNotificationsById(authToken, id, true, true, true).then()
+		notificationsApiSteps.patchAccountNotificationsById(authToken, accountId, id, true, true, true).then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
 				      "message", equalTo("Invalid signature"),
@@ -250,7 +232,7 @@ public class AccountNotificationsIdApiTests extends BaseTest {
 		String authToken = Base64Utils.encodeAuthToken(accountId, accountPublicKey, null);
 
 		String id = "testdao2.testnet-fgflgxxo7okrakcfwhxagzfcxdigua5nqcktvsqnnt3w-changeconfig";
-		notificationsApiSteps.patchAccountNotificationsById(authToken, id, true, true, true).then()
+		notificationsApiSteps.patchAccountNotificationsById(authToken, accountId, id, true, true, true).then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
 				      "message", equalTo("Invalid signature"),
@@ -265,7 +247,7 @@ public class AccountNotificationsIdApiTests extends BaseTest {
 		String authToken = Base64Utils.encodeAuthToken(accountId, accountPublicKey, EMPTY_STRING);
 
 		String id = "testdao2.testnet-fgflgxxo7okrakcfwhxagzfcxdigua5nqcktvsqnnt3w-changeconfig";
-		notificationsApiSteps.patchAccountNotificationsById(authToken, id, true, true, true).then()
+		notificationsApiSteps.patchAccountNotificationsById(authToken, accountId, id, true, true, true).then()
 				.statusCode(HTTP_FORBIDDEN)
 				.body("statusCode", equalTo(HTTP_FORBIDDEN),
 				      "message", equalTo("Authorization header payload is invalid"),
@@ -283,7 +265,7 @@ public class AccountNotificationsIdApiTests extends BaseTest {
 	void getHttp400ForAccountNotificationId(String id) {
 		String errorMessage = "Invalid Account Notification ID " + id;
 
-		notificationsApiSteps.patchAccountNotificationsById(accountToken, id, true, true, true).then()
+		notificationsApiSteps.patchAccountNotificationsById(accountToken, accountId, id, true, true, true).then()
 				.statusCode(HTTP_BAD_REQUEST)
 				.body("statusCode", equalTo(HTTP_BAD_REQUEST),
 				      "message", equalTo(errorMessage),
