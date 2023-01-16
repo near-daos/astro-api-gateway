@@ -18,6 +18,10 @@ export class DaoStats extends BaseEntity {
   timestamp: number; // milliseconds
 
   @ApiProperty()
+  @Column({ type: 'numeric', nullable: true })
+  amount: string | null;
+
+  @ApiProperty()
   @Column({ type: 'float', nullable: true })
   totalDaoFunds: number;
 

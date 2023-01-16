@@ -1,3 +1,4 @@
+import Decimal from 'decimal.js';
 import { DateTime } from 'luxon';
 import { DynamoEntityType, EntityId } from '@sputnik-v2/dynamodb';
 import { Role, RoleKindType } from '@sputnik-v2/dao/entities';
@@ -199,10 +200,16 @@ export const calculateFunds = (
   return value > 0 && priceNum > 0 ? value * priceNum : 0;
 };
 
-export const getGrowth = (current: number, prev?: number) => {
-  return typeof prev === 'number'
-    ? Math.round(((current - prev) / (current || 1)) * 10000) / 100
-    : 0;
+export const getGrowth = (
+  current?: number | string | Decimal,
+  prev?: number | string | Decimal,
+): number => {
+  return new Decimal(current || 0)
+    .sub(prev || 0)
+    .div(current || 1)
+    .mul(100)
+    .toDecimalPlaces(2)
+    .toNumber();
 };
 
 export const buildLikeContractName = (contractName: string) => {
