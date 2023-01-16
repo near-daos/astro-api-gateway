@@ -48,7 +48,15 @@ WORKDIR /usr/src/app
 # copy from build image
 COPY --from=development /usr/src/app/dist ./dist
 COPY --from=development /usr/src/app/node_modules ./node_modules
-COPY --from=development /usr/src/app/entrypoints ./
+
+# required for migrations
+COPY libs/orm-migrations/ libs/orm-migrations/
+COPY ormconfig.js ./
+
+# required for run
+COPY entrypoints/ ./
+COPY package.json ./
+COPY tsconfig.json ./
 
 EXPOSE 3000
 

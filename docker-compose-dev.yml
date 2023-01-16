@@ -69,6 +69,25 @@ services:
       - 8000:8000
     command: "-jar DynamoDBLocal.jar -sharedDb -dbPath /home/dynamodblocal/data/"
 
+#  api:
+#    networks:
+#      - postgres
+#      - redis
+#    env_file:
+#      - .env.local
+#    environment:
+#      - NEST_APP_TYPE=api
+#      - DATABASE_HOST=postgres
+#      - DATABASE_PORT=5432
+#      - REDIS_CACHE_URL=redis://@redis:6379/0
+#      - REDIS_SOCKET_URL=redis://@redis:6379/1
+#      - REDIS_EVENT_URL=redis://@redis:6379/2
+#      - REDIS_CONNECTION_STRING=redis://@redis:6379/4
+#    build:
+#      context: .
+#      args:
+#        - APP_NAME=api
+
 # TODO: Add opensearch docker containers (current containers are not working)
 #  opensearch-node1:
 #    image: opensearchproject/opensearch:latest
