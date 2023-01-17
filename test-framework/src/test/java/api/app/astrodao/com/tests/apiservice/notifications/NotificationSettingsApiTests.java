@@ -251,7 +251,7 @@ public class NotificationSettingsApiTests extends BaseTest {
 		notificationsApiSteps.assertDtoValue(accountNotificationSettings, AccountNotificationSettings::getAccountId, accountId, "accountId");
 		notificationsApiSteps.assertDtoValue(accountNotificationSettings, AccountNotificationSettings::getDaoId, daoId, "daoId");
 		notificationsApiSteps.assertCollectionsAreEqual(accountNotificationSettings.getTypes(), types);
-		notificationsApiSteps.assertDtoValue(accountNotificationSettings, AccountNotificationSettings::getMutedUntilTimestamp, BigDecimal.valueOf(0), "mutedUntilTimestamp");
+		notificationsApiSteps.assertDtoValue(accountNotificationSettings, AccountNotificationSettings::getMutedUntilTimestamp, "0", "mutedUntilTimestamp");
 		notificationsApiSteps.assertDtoValue(accountNotificationSettings, AccountNotificationSettings::getIsAllMuted, false, "isAllMuted");
 		notificationsApiSteps.assertDtoValue(accountNotificationSettings, AccountNotificationSettings::getEnableSms, false, "enableSms");
 		notificationsApiSteps.assertDtoValue(accountNotificationSettings, AccountNotificationSettings::getEnableEmail, false, "enableEmail");
@@ -399,7 +399,7 @@ public class NotificationSettingsApiTests extends BaseTest {
 		notificationsApiSteps.assertDtoValue(accountNotificationSettings, AccountNotificationSettings::getAccountId, accountId, "accountId");
 		notificationsApiSteps.assertDtoValue(accountNotificationSettings, AccountNotificationSettings::getDaoId, daoId, "daoId");
 		notificationsApiSteps.assertCollectionHasCorrectSize(accountNotificationSettings.getTypes(), 0);
-		notificationsApiSteps.assertDtoValue(accountNotificationSettings, AccountNotificationSettings::getMutedUntilTimestamp, BigDecimal.valueOf(0), "mutedUntilTimestamp");
+		notificationsApiSteps.assertDtoValue(accountNotificationSettings, AccountNotificationSettings::getMutedUntilTimestamp, "0", "mutedUntilTimestamp");
 		notificationsApiSteps.assertDtoValue(accountNotificationSettings, AccountNotificationSettings::getIsAllMuted, false, "isAllMuted");
 		notificationsApiSteps.assertDtoValue(accountNotificationSettings, AccountNotificationSettings::getEnableSms, false, "enableSms");
 		notificationsApiSteps.assertDtoValue(accountNotificationSettings, AccountNotificationSettings::getEnableEmail, false, "enableEmail");
