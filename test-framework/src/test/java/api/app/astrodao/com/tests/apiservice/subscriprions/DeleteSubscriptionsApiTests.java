@@ -57,7 +57,7 @@ public class DeleteSubscriptionsApiTests extends BaseTest {
 
 		subscriptionsApiSteps.assertDtoValue(subscription, Subscription::getId, subscriptionId, "id");
 
-		subscriptionsApiSteps.deleteSubscription(account1AuthToken, subscriptionId).then()
+		subscriptionsApiSteps.deleteSubscription(account1AuthToken, accountId, dao).then()
 						.statusCode(HTTP_OK);
 
 		Subscriptions subscriptions = subscriptionsApiSteps.accountSubscriptions(accountId).then()
@@ -76,7 +76,7 @@ public class DeleteSubscriptionsApiTests extends BaseTest {
 		String subscriptionId = String.format("%s-%s", dao, accountId);
 		String expectedResponse = String.format("Subscription with id %s not found", subscriptionId);
 
-		Response response = subscriptionsApiSteps.deleteSubscription(account1AuthToken, subscriptionId);
+		Response response = subscriptionsApiSteps.deleteSubscription(account1AuthToken, accountId, subscriptionId);
 		subscriptionsApiSteps.assertResponseStatusCode(response, HTTP_NOT_FOUND);
 		subscriptionsApiSteps.assertStringContainsValue(response.body().asString(), expectedResponse);
 	}
@@ -92,7 +92,7 @@ public class DeleteSubscriptionsApiTests extends BaseTest {
 		String invalidSignature = faker.lorem().characters(12, 24);
 		String authToken = Base64Utils.encodeAuthToken(accountId, accountPublicKey, invalidSignature);
 
-		Response response = subscriptionsApiSteps.deleteSubscription(authToken, subscriptionId);
+		Response response = subscriptionsApiSteps.deleteSubscription(authToken, accountId, dao);
 		subscriptionsApiSteps.assertResponseStatusCode(response, HTTP_FORBIDDEN);
 		subscriptionsApiSteps.assertStringContainsValue(response.body().asString(), expectedResponse);
 	}

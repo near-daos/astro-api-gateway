@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Dao } from '@sputnik-v2/dao';
@@ -38,6 +42,13 @@ export class SubscriptionService {
       DynamoEntityType.Dao,
       daoId,
     );
+
+    if (!daoModel) {
+      throw new BadRequestException(
+        `No DAO '${daoId}' and/or Account '${accountId}' found.`,
+      );
+    }
+
     const followers = daoModel.followers || [];
 
     await this.dynamoDbService.saveItem<DaoModel>({

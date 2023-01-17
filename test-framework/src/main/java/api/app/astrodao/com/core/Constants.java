@@ -81,7 +81,7 @@ public class Constants {
 		public static final String DAO_STATS_BOUNTIES = "/api/v1/stats/dao/{id}/bounties";
 
 		public static final String SUBSCRIPTIONS = "/api/v1/subscriptions";
-		public static final String SUBSCRIPTIONS_ID = "/api/v1/subscriptions/{id}";
+		public static final String SUBSCRIPTIONS_ID = "/api/v1/subscriptions/{daoId}/{accountId}";
 		public static final String ACCOUNT_SUBSCRIPTIONS = "/api/v1/subscriptions/account-subscriptions/{accountId}";
 
 		public static final String TRANSACTIONS_CALLBACK = "/api/v1/transactions/wallet/callback/{accountId}";

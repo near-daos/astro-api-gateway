@@ -25,7 +25,7 @@ public class SubscriptionsApiSteps extends BaseSteps {
         assertResponseStatusCode(response, HTTP_OK);
         Subscriptions subscriptions = getResponseDto(response, Subscriptions.class);
         subscriptions.forEach(p -> {
-            Response resp = subscriptionsApi.deleteSubscription(authToken, p.getId());
+            Response resp = subscriptionsApi.deleteSubscription(authToken, accountId, p.getDaoId());
             assertResponseStatusCode(resp, HTTP_OK);
         });
     }
@@ -41,8 +41,8 @@ public class SubscriptionsApiSteps extends BaseSteps {
     }
 
     @Step("User deletes subscription")
-    public Response deleteSubscription(String authToken, String daoId) {
-        return subscriptionsApi.deleteSubscription(authToken, daoId);
+    public Response deleteSubscription(String authToken, String accountId, String daoId) {
+        return subscriptionsApi.deleteSubscription(authToken, accountId, daoId);
     }
 
     public Subscription getCreatedSubscription(Subscriptions subscriptions, String subscriptionId) {

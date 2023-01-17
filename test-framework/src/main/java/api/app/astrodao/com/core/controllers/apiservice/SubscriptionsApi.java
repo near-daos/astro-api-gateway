@@ -36,11 +36,11 @@ public class SubscriptionsApi {
                 .get(ACCOUNT_SUBSCRIPTIONS, accountId);
     }
 
-    public Response deleteSubscription(String token, String daoId) {
+    public Response deleteSubscription(String token, String accountId, String daoId) {
         return given().spec(requestSpecForApiService)
                 .accept(ANY)
                 .header("Authorization", "Bearer " + token)
                 .contentType(JSON)
-                .delete(SUBSCRIPTIONS_ID, daoId);
+                .delete(SUBSCRIPTIONS_ID, daoId, accountId);
     }
 }
