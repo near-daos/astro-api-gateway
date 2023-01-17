@@ -22,14 +22,19 @@ export default class Api {
     const app = await NestFactory.create(AppModule, {
       bufferLogs: true,
     });
+
+    if (process.env.NODE_ENV === 'production') {
+      app.useLogger(app.get(PinoLogger));
+    } else {
+      (app as any).httpAdapter.instance.set('json spaces', 2);
+    }
+
     app.enableCors();
     app.enableVersioning({
       defaultVersion: '1',
       type: VersioningType.URI,
     });
     app.setGlobalPrefix('/api');
-
-    app.useLogger(app.get(PinoLogger));
 
     initAdapters(app);
 
@@ -43,10 +48,6 @@ export default class Api {
         },
       },
     });
-
-    if (process.env.NODE_ENV === 'development') {
-      (app as any).httpAdapter.instance.set('json spaces', 2);
-    }
 
     const config = new DocumentBuilder()
       .setTitle('Sputnik v2 API')

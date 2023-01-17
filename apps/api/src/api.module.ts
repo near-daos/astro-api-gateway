@@ -43,6 +43,7 @@ import { MigrationsModule } from './migrations/migrations.module';
         return {
           pinoHttp: {
             level: configService.get('logLevel'),
+            autoLogging: process.env.NODE_ENV === 'production',
           },
         };
       },

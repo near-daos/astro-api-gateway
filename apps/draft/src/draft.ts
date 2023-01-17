@@ -21,10 +21,15 @@ export default class Draft {
     const app = await NestFactory.create(DraftModule, {
       bufferLogs: true,
     });
+
+    if (process.env.NODE_ENV === 'production') {
+      app.useLogger(app.get(PinoLogger));
+    } else {
+      (app as any).httpAdapter.instance.set('json spaces', 2);
+    }
+
     app.enableCors();
     app.setGlobalPrefix('/api/v1');
-
-    app.useLogger(app.get(PinoLogger));
 
     initAdapters(app);
 
@@ -38,10 +43,6 @@ export default class Draft {
         },
       },
     });
-
-    if (process.env.NODE_ENV === 'development') {
-      (app as any).httpAdapter.instance.set('json spaces', 2);
-    }
 
     const config = new DocumentBuilder()
       .setTitle('Astro Draft API')
