@@ -83,7 +83,7 @@ allure {
 tasks.named('test') {
     useJUnitPlatform {
         includeTags System.getProperty("includeTags", "all")
-        excludeTags System.getProperty("excludeTags")
+        excludeTags System.getProperty("excludeTags", "none")
     }
 
     testLogging {
