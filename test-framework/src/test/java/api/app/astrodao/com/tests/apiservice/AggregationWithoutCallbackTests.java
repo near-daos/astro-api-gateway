@@ -73,7 +73,6 @@ public class AggregationWithoutCallbackTests extends BaseTest {
         String daoPurpose = faker.lorem().characters(20, 30);
         String bond = "100000000000000000000000";
         String period = "604800000000000";
-        BigDecimal decimalPeriod = new BigDecimal(period);
         String gracePeriod = "86400000000000";
 
         Role<KindWithGroup> role = Role.<KindWithGroup>of()
@@ -131,8 +130,8 @@ public class AggregationWithoutCallbackTests extends BaseTest {
         daoApiSteps.assertDtoValue(daoDto, Dao::getNumberOfMembers, BigDecimal.valueOf(1), "numberOfMembers");
         daoApiSteps.assertDtoValue(daoDto, d -> d.getPolicy().getProposalBond(), bond, "policy/proposalBond");
         daoApiSteps.assertDtoValue(daoDto, d -> d.getPolicy().getBountyBond(), bond, "policy/bountyBond");
-        daoApiSteps.assertDtoValue(daoDto, d -> d.getPolicy().getBountyForgivenessPeriod(), decimalPeriod, "policy/bountyForgivenessPeriod");
-        daoApiSteps.assertDtoValue(daoDto, d -> d.getPolicy().getProposalPeriod(), decimalPeriod, "policy/proposalPeriod");
+        daoApiSteps.assertDtoValue(daoDto, d -> d.getPolicy().getBountyForgivenessPeriod(), period, "policy/bountyForgivenessPeriod");
+        daoApiSteps.assertDtoValue(daoDto, d -> d.getPolicy().getProposalPeriod(), period, "policy/proposalPeriod");
         daoApiSteps.assertCollectionHasCorrectSize(daoDto.getPolicy().getRoles(), 1);
         daoApiSteps.assertCollectionsAreEqual(daoDto.getPolicy().getRoles().get(0).getPermissions(), role.getPermissions());
         daoApiSteps.assertDtoValue(daoDto, d -> d.getPolicy().getRoles().get(0).getName(), role.getName(), "policy/roles[1]/name");
