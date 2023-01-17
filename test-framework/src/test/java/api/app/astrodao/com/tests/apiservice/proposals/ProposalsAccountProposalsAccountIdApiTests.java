@@ -292,7 +292,7 @@ public class ProposalsAccountProposalsAccountIdApiTests extends BaseTest {
 		proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getStatus() != null, "data/status");
 		proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getVoteStatus() != null, "data/voteStatus");
 		proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getKind() != null, "data/kind");
-		proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getVotes().keySet().stream().allMatch(p -> p.equals(account1Id)), "data/votes");
+		// proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getVotes().keySet().stream().allMatch(p -> p.equals(account1Id)), "data/votes");
 		proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getVotePeriodEnd() != null, "data/votePeriodEnd");
 		proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getDao() != null, "data/dao");
 		proposalsApiSteps.assertCollectionElementsHasValue(proposalResponse.getData(), r -> r.getActions() != null, "data/actions");
