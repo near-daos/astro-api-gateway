@@ -133,6 +133,13 @@ export function castDoneBounty(
   const bountyClaimDtos = (bounty.bountyClaims || [])
     .map((claim) => castBountyClaim(bounty.id, claim))
     .concat(claims);
+
+  function isBounty(
+    _bounty: Bounty | PartialEntity<BountyModel>,
+  ): _bounty is Bounty {
+    return (_bounty as Bounty).bountyDoneProposals !== undefined;
+  }
+
   return {
     id: bounty.id,
     daoId: bounty.daoId || dao.id,
@@ -150,6 +157,9 @@ export function castDoneBounty(
     updateTimestamp: timestamp,
     transactionHash: bounty.transactionHash,
     updateTransactionHash: transactionHash,
+    bountyDoneProposalIds: isBounty(bounty)
+      ? bounty.bountyDoneProposals.map((item) => String(item.proposalId))
+      : bounty.bountyDoneProposalIds,
   };
 }
 

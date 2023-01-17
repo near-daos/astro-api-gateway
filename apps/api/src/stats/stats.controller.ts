@@ -1,8 +1,8 @@
 import { Controller, Get, Param } from '@nestjs/common';
 import {
   ApiNotFoundResponse,
-  ApiParam,
-  ApiResponse,
+  ApiOkResponse,
+  ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
 import { Span } from 'nestjs-ddtrace';
@@ -23,12 +23,10 @@ import { FindOneParams } from '@sputnik-v2/common';
 export class StatsController {
   constructor(private readonly daoStatsService: DaoStatsService) {}
 
-  @ApiParam({
-    name: 'id',
-    type: String,
+  @ApiOperation({
+    summary: 'Get DAO Stats State',
   })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'DAO Stats State',
     type: DaoStatsStateDto,
   })
@@ -44,15 +42,32 @@ export class StatsController {
     return this.daoStatsService.getDaoStatsState(daoStats, previousDaoStats);
   }
 
-  @ApiParam({
-    name: 'id',
-    type: String,
+  @ApiOperation({
+    summary: 'Get DAO balance stats',
   })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
+    description: 'List of DAO balance stats',
+    type: [StatsEntryDto],
+  })
+  @ApiNotFoundResponse({
+    description: 'DAO <id> not found',
+  })
+  @Get('/dao/:id/balance')
+  async getDaoStatsBalance(
+    @Param() { id }: FindOneParams,
+  ): Promise<StatsEntryDto[]> {
+    return this.daoStatsService.getDaoStatsEntries(
+      id,
+      DaoStatsEntryFields.Balance,
+    );
+  }
+
+  @ApiOperation({
+    summary: 'Get DAO funds stats',
+  })
+  @ApiOkResponse({
     description: 'List of DAO funds stats',
-    type: StatsEntryDto,
-    isArray: true,
+    type: [StatsEntryDto],
   })
   @ApiNotFoundResponse({
     description: 'DAO <id> not found',
@@ -67,15 +82,12 @@ export class StatsController {
     );
   }
 
-  @ApiParam({
-    name: 'id',
-    type: String,
+  @ApiOperation({
+    summary: 'Get DAO bounties stats',
   })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'List of DAO bounties count stats',
-    type: StatsEntryDto,
-    isArray: true,
+    type: [StatsEntryDto],
   })
   @ApiNotFoundResponse({
     description: 'DAO <id> not found',
@@ -90,15 +102,12 @@ export class StatsController {
     );
   }
 
-  @ApiParam({
-    name: 'id',
-    type: String,
+  @ApiOperation({
+    summary: 'Get DAO NFTs count stats',
   })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'List of DAO NFTs count stats',
-    type: StatsEntryDto,
-    isArray: true,
+    type: [StatsEntryDto],
   })
   @ApiNotFoundResponse({
     description: 'DAO <id> not found',
@@ -113,15 +122,12 @@ export class StatsController {
     );
   }
 
-  @ApiParam({
-    name: 'id',
-    type: String,
+  @ApiOperation({
+    summary: 'Get DAO proposals count stats',
   })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'List of DAO proposals count stats',
-    type: ProposalStatsEntryDto,
-    isArray: true,
+    type: [ProposalStatsEntryDto],
   })
   @ApiNotFoundResponse({
     description: 'DAO <id> not found',

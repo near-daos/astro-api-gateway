@@ -6,6 +6,7 @@ import { DynamoEntityType, PartialEntity } from '../types';
 export class DaoStatsModel extends BaseModel {
   id: string;
   timestamp: number; // milliseconds
+  amount: string;
   totalDaoFunds: number;
   transactionsCount: number;
   bountyCount: number;
@@ -26,6 +27,7 @@ export function mapDaoStatsToDaoStatsModel(
     updatedAt: stats.updatedAt ? stats.updatedAt.getTime() : undefined,
     id: stats.id,
     timestamp: stats.timestamp,
+    amount: stats.amount,
     totalDaoFunds: stats.totalDaoFunds,
     transactionsCount: stats.transactionsCount,
     bountyCount: stats.bountyCount,
@@ -42,6 +44,7 @@ export function mapDaoStatsModelToDaoStats(
     id: stats.id,
     daoId: stats.partitionId,
     timestamp: stats.timestamp,
+    amount: stats.amount,
     totalDaoFunds: stats.totalDaoFunds,
     transactionsCount: stats.transactionsCount,
     bountyCount: stats.bountyCount,

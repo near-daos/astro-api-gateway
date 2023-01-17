@@ -1,4 +1,8 @@
+import { Retryable } from 'typescript-retry-decorator';
 import { Contract } from 'near-api-js/lib/contract';
+import { Account } from 'near-api-js/lib/account';
+import { BlockId } from 'near-api-js/lib/providers/provider';
+import { BaseContract, BlockQuery } from './base.contract';
 
 export interface NFTokenContractMetadata {
   spec: string;
@@ -42,12 +46,58 @@ export interface NFTokenOutput {
   origin_key?: null;
 }
 
-export declare class NFTokenContract extends Contract {
-  nft_tokens_for_owner(params: {
-    account_id: string;
-    from_index: string;
-    limit: number;
-  }): Promise<NFTokenOutput[]>;
-  nft_metadata(): Promise<NFTokenContractMetadata>;
-  nft_total_supply(): Promise<string>;
+interface INFTokenContract extends Contract {
+  nft_tokens_for_owner(
+    params: {
+      account_id: string;
+      from_index: string;
+      limit: number;
+    },
+    blockQuery: BlockQuery,
+  ): Promise<NFTokenOutput[]>;
+  nft_metadata(blockQuery: BlockQuery): Promise<NFTokenContractMetadata>;
+  nft_total_supply(blockQuery: BlockQuery): Promise<string>;
+}
+
+export class NFTokenContract extends BaseContract<INFTokenContract> {
+  constructor(account: Account, accountId: string) {
+    super(account, accountId, {
+      changeMethods: [],
+      viewMethods: ['nft_tokens_for_owner', 'nft_metadata', 'nft_total_supply'],
+    });
+  }
+
+  @Retryable({
+    maxAttempts: 3,
+    backOff: 3000,
+  })
+  nft_tokens_for_owner(
+    params: {
+      account_id: string;
+      from_index: string;
+      limit: number;
+    },
+    blockId?: BlockId,
+  ): Promise<NFTokenOutput[]> {
+    return this.contract.nft_tokens_for_owner(
+      params,
+      this.getBlockQuery(blockId),
+    );
+  }
+
+  @Retryable({
+    maxAttempts: 3,
+    backOff: 3000,
+  })
+  nft_metadata(blockId?: BlockId): Promise<NFTokenContractMetadata> {
+    return this.contract.nft_metadata(this.getBlockQuery(blockId));
+  }
+
+  @Retryable({
+    maxAttempts: 3,
+    backOff: 3000,
+  })
+  nft_total_supply(blockId?: BlockId): Promise<string> {
+    return this.contract.nft_total_supply(this.getBlockQuery(blockId));
+  }
 }

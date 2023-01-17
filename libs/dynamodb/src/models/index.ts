@@ -6,6 +6,7 @@ export * from './account-notification.model';
 export * from './dao.model';
 export * from './proposal.model';
 export * from './bounty.model';
+export * from './bounty-mapping.model';
 export * from './comment.model';
 export * from './draft-proposal.model';
 export * from './proposal-template.model';

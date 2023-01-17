@@ -33,7 +33,7 @@ export class AssetsNftEvent {
     type: 'enum',
     enum: NftEventKind,
   })
-  eventKind: string;
+  eventKind: NftEventKind;
 
   @ApiProperty()
   @PrimaryColumn()

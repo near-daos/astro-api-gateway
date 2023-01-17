@@ -11,7 +11,7 @@ export default class MigrationRunner {
       ',',
     );
     const targetOptions = parseJSON(
-      process.env.DATABASE_MIGRATIONS_OPTIONS || '',
+      process.env.DATABASE_MIGRATIONS_OPTIONS || '{}',
     );
 
     for (const migrationName of targetMigrations) {

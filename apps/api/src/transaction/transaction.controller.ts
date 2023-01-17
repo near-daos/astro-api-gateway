@@ -8,14 +8,27 @@ import {
   UseFilters,
   UseGuards,
   UseInterceptors,
+  Version,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiNotFoundResponse,
-  ApiParam,
-  ApiResponse,
+  ApiOkResponse,
+  ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
+import {
+  DailyBalanceEntryDto,
+  DaoFundsReceiptDto,
+  DaoFundsReceiptService,
+  DaoFundsTokenReceiptDto,
+  DaoFundsTokenReceiptService,
+} from '@sputnik-v2/dao-funds';
+import { DynamoPaginatedResponse } from '@sputnik-v2/dynamodb';
+import {
+  DynamoPaginatedResponseDto,
+  DynamoPaginationDto,
+} from '@sputnik-v2/dynamodb/dto';
 import { Response } from 'express';
 import querystring, { ParsedUrlQueryInput } from 'querystring';
 import { ConfigService } from '@nestjs/config';
@@ -42,16 +55,15 @@ export class TransactionController {
     private readonly configService: ConfigService,
     private readonly transactionService: TransactionService,
     private readonly nearIndexerService: NearIndexerService,
+    private readonly daoFundsReceiptService: DaoFundsReceiptService,
+    private readonly daoFundsTokenReceiptService: DaoFundsTokenReceiptService,
   ) {}
 
-  @ApiResponse({
-    status: 200,
-    description: 'List of Receipts by Account',
-    type: Receipt,
+  @ApiOperation({
+    summary: 'List of Receipts by Account V1',
   })
-  @ApiParam({
-    name: 'accountId',
-    type: String,
+  @ApiOkResponse({
+    type: [Receipt],
   })
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
@@ -66,21 +78,14 @@ export class TransactionController {
   async receiptsByAccount(
     @Param() { accountId }: FindAccountParams,
   ): Promise<Receipt[]> {
-    return await this.nearIndexerService.receiptsByAccount(accountId);
+    return this.nearIndexerService.receiptsByAccount(accountId);
   }
 
-  @ApiResponse({
-    status: 200,
-    description: 'List of Receipts by Account and FT Token',
-    type: Receipt,
+  @ApiOperation({
+    summary: 'List of Receipts by Account and Fungible Token V1',
   })
-  @ApiParam({
-    name: 'accountId',
-    type: String,
-  })
-  @ApiParam({
-    name: 'tokenId',
-    type: String,
+  @ApiOkResponse({
+    type: [Receipt],
   })
   @ApiBadRequestResponse({
     description: 'Bad Request Response based on the query params set',
@@ -95,18 +100,103 @@ export class TransactionController {
   async receiptsByAccountToken(
     @Param() { accountId, tokenId }: AccountTokenParams,
   ): Promise<Receipt[]> {
-    return await this.nearIndexerService.receiptsByAccountToken(
+    return this.nearIndexerService.receiptsByAccountToken(accountId, tokenId);
+  }
+
+  @Version('2')
+  @ApiOperation({
+    summary: 'List of Receipts by Account (V2)',
+  })
+  @ApiOkResponse({
+    type: DynamoPaginatedResponseDto(DaoFundsReceiptDto),
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
+  @ApiNotFoundResponse({
+    description: 'Account does not exist',
+  })
+  @UseGuards(ValidAccountGuard)
+  @UseInterceptors(HttpCacheInterceptor)
+  @Get('/receipts/account-receipts/:accountId')
+  async receiptsByAccountV2(
+    @Param() { accountId }: FindAccountParams,
+    @Query() pagination: DynamoPaginationDto,
+  ): Promise<DynamoPaginatedResponse<DaoFundsReceiptDto>> {
+    return this.daoFundsReceiptService.getByDaoId(accountId, pagination);
+  }
+
+  @Version('2')
+  @ApiOperation({
+    summary: 'List of Receipts by Account and Fungible Token (V2)',
+  })
+  @ApiOkResponse({
+    type: DynamoPaginatedResponseDto(DaoFundsTokenReceiptDto),
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Response based on the query params set',
+  })
+  @ApiNotFoundResponse({
+    description: 'Account does not exist',
+  })
+  @UseGuards(ValidAccountGuard)
+  @UseInterceptors(HttpCacheInterceptor)
+  @UseFilters(new NearDBConnectionErrorFilter())
+  @Get('/receipts/account-receipts/:accountId/tokens/:tokenId')
+  async receiptsByAccountTokenV2(
+    @Param() { accountId, tokenId }: AccountTokenParams,
+    @Query() pagination: DynamoPaginationDto,
+  ): Promise<DynamoPaginatedResponse<DaoFundsTokenReceiptDto>> {
+    return this.daoFundsTokenReceiptService.getByDaoIdAndTokenId(
+      accountId,
+      tokenId,
+      pagination,
+    );
+  }
+
+  @ApiOperation({
+    summary: 'Get daily balance of Account',
+  })
+  @ApiOkResponse({
+    type: [DailyBalanceEntryDto],
+  })
+  @ApiNotFoundResponse({
+    description: 'Account does not exist',
+  })
+  @UseGuards(ValidAccountGuard)
+  @UseInterceptors(HttpCacheInterceptor)
+  @Get('/daily-balance/:accountId')
+  async dailyBalance(
+    @Param() { accountId }: FindAccountParams,
+  ): Promise<DailyBalanceEntryDto[]> {
+    return this.daoFundsReceiptService.getDailyBalanceByDaoId(accountId);
+  }
+
+  @ApiOperation({
+    summary: 'Get daily balance of Account',
+  })
+  @ApiOkResponse({
+    type: [DailyBalanceEntryDto],
+  })
+  @ApiNotFoundResponse({
+    description: 'Account does not exist',
+  })
+  @UseGuards(ValidAccountGuard)
+  @UseInterceptors(HttpCacheInterceptor)
+  @Get('/daily-balance/:accountId/token/:tokenId')
+  async dailyBalanceToken(
+    @Param() { accountId, tokenId }: AccountTokenParams,
+  ): Promise<DailyBalanceEntryDto[]> {
+    return this.daoFundsTokenReceiptService.getDailyTokenBalanceByDaoId(
       accountId,
       tokenId,
     );
   }
 
-  @ApiParam({
-    name: 'accountId',
-    type: String,
+  @ApiOperation({
+    summary: 'Wallet transaction callback',
   })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'OK',
   })
   @ApiNotFoundResponse({

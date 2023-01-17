@@ -1,7 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DaoDynamoService } from '@sputnik-v2/dao';
-import { DaoStatsModel } from '@sputnik-v2/dynamodb';
 import { Repository } from 'typeorm';
 import { DateTime } from 'luxon';
 
@@ -56,6 +55,7 @@ export class DaoStatsService {
       id: buildDaoStatsId(dao.id, timestamp),
       daoId,
       timestamp,
+      amount: dao.amount,
       totalDaoFunds: dao.totalDaoFunds,
       totalProposalCount: dao.totalProposalCount,
       activeProposalCount: dao.activeProposalCount,
@@ -84,11 +84,12 @@ export class DaoStatsService {
 
   async getDaoStatsState(
     daoStats: DaoStatsDto,
-    previousDaoStats: Partial<DaoStats>,
+    previousDaoStats: Partial<DaoStatsDto>,
   ): Promise<DaoStatsStateDto> {
     return {
       daoId: daoStats.daoId,
       timestamp: daoStats.timestamp,
+      amount: this.getStatsState(daoStats.amount, previousDaoStats?.amount),
       totalDaoFunds: this.getStatsState(
         daoStats.totalDaoFunds,
         previousDaoStats?.totalDaoFunds,
@@ -179,7 +180,10 @@ export class DaoStatsService {
     }));
   }
 
-  getStatsState(currentValue?: number, previousValue?: number): StatsStateDto {
+  getStatsState(
+    currentValue?: number | string,
+    previousValue?: number | string,
+  ): StatsStateDto {
     return {
       value: currentValue || 0,
       growth: getGrowth(currentValue, previousValue),

@@ -1,3 +1,5 @@
+import Decimal from 'decimal.js';
+import { DateTime } from 'luxon';
 import { DynamoEntityType, EntityId } from '@sputnik-v2/dynamodb';
 import { Role, RoleKindType } from '@sputnik-v2/dao/entities';
 import {
@@ -34,6 +36,10 @@ export const convertDuration = (duration: number): Date => {
 export const getBlockTimestamp = (date = new Date()): string => {
   // the approximate block timestamp in nanoseconds - the same way as it's done in indexer
   return String(BigInt(date.getTime()) * 1000000n);
+};
+
+export const parseBlockTimestamp = (blockTimestamp: string): number => {
+  return Number(BigInt(blockTimestamp) / 1000000n);
 };
 
 export const buildProposalId = (daoId: string, proposalId: number): string => {
@@ -135,6 +141,10 @@ export const decodeBase64 = (b: string) => {
   return Buffer.from(b, 'base64').toString('utf-8');
 };
 
+export const encodeBase64 = (b: string): string => {
+  return new Buffer(b).toString('base64');
+};
+
 export const btoaJSON = (b: string) => {
   try {
     return JSON.parse(decodeBase64(b));
@@ -190,10 +200,16 @@ export const calculateFunds = (
   return value > 0 && priceNum > 0 ? value * priceNum : 0;
 };
 
-export const getGrowth = (current: number, prev?: number) => {
-  return typeof prev === 'number'
-    ? Math.round(((current - prev) / (current || 1)) * 10000) / 100
-    : 0;
+export const getGrowth = (
+  current?: number | string | Decimal,
+  prev?: number | string | Decimal,
+): number => {
+  return new Decimal(current || 0)
+    .sub(prev || 0)
+    .div(current || 1)
+    .mul(100)
+    .toDecimalPlaces(2)
+    .toNumber();
 };
 
 export const buildLikeContractName = (contractName: string) => {
@@ -286,31 +302,45 @@ export const getChunks = (arr: Array<any>, chunkSize: number) => {
 };
 
 export const deepFilter = (
-  value: Record<string, any> | any,
-  filter: (
-    value: [string, any],
-    index: number,
-    array: [string, any][],
-  ) => boolean,
+  value: any,
+  fn: (value: any, key: number | string) => boolean,
 ) => {
-  if (
-    value !== null &&
-    typeof value === 'object' &&
-    !Array.isArray(value) &&
-    Object.keys(value).length > 0
-  ) {
+  if (value === null || typeof value !== 'object') {
+    return value;
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((value, index) => {
+      return fn(value, index) === true ? deepFilter(value, fn) : false;
+    });
+  } else {
     return Object.fromEntries(
-      Object.entries(value).reduce((acc, [key, value], index, array) => {
-        if (typeof value === 'object') {
-          acc.push([key, deepFilter(value, filter)]);
-        } else if (filter([key, value], index, array) === true) {
+      Object.entries(value).reduce((acc, [key, value]) => {
+        if (fn(value, key) === true) {
           acc.push([key, value]);
         }
         return acc;
       }, []),
     );
-  } else {
+  }
+};
+
+export const deepMap = (
+  value: any,
+  fn: (value: any, key: number | string) => any,
+) => {
+  if (value === null || typeof value !== 'object') {
     return value;
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((value, index) => fn(deepMap(value, fn), index));
+  } else {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, value]) => {
+        return fn([key, deepMap(value, fn)], key);
+      }, []),
+    );
   }
 };
 
@@ -320,3 +350,30 @@ export function arrayUniqueBy<T>(array: T[], key: keyof T): T[] {
       index === self.findIndex((t) => t[key] === item[key]),
   );
 }
+
+export const getDays = (from: number, to: number): number[] => {
+  const days = [];
+  const start = DateTime.fromMillis(from).startOf('day').toMillis();
+
+  for (let time = start; time <= to; time += 86400000 /* 1 day increment */) {
+    days.push(time);
+  }
+
+  return days;
+};
+
+export const patchDailyBalance = (values: Record<string, bigint>) => {
+  const timestamps = Object.keys(values);
+
+  const from = timestamps[0]
+    ? Number(timestamps[0])
+    : DateTime.now().minus({ year: 1 }).startOf('day').toMillis();
+
+  const to = DateTime.now().startOf('day').toMillis();
+
+  let prev;
+
+  for (const timestamp of getDays(from, to)) {
+    prev = values[timestamp] = values[timestamp] || prev || 0n;
+  }
+};

@@ -20,10 +20,7 @@ import {
 } from '@sputnik-v2/utils';
 import { NFTTokenService, TokenBalance, TokenService } from '@sputnik-v2/token';
 import { SearchQuery } from '@sputnik-v2/common';
-import {
-  NearApiService,
-  SputnikDaoFactoryContract,
-} from '@sputnik-v2/near-api';
+import { NearApiService } from '@sputnik-v2/near-api';
 import {
   DaoDelegationModel,
   DaoModel,
@@ -54,6 +51,7 @@ export interface DaoSaveOptions {
   updateNftsCount?: boolean;
   // TODO: use only for migration
   allowDynamo?: boolean;
+  saveToDynamo?: boolean;
 }
 
 @Injectable()
@@ -312,6 +310,7 @@ export class DaoService extends TypeOrmCrudService<Dao> {
       updateBountiesCount,
       updateNftsCount,
       allowDynamo,
+      saveToDynamo = true,
     } = options;
 
     let data: Partial<DaoDto | DaoModel> = { ...dao };
@@ -351,8 +350,10 @@ export class DaoService extends TypeOrmCrudService<Dao> {
 
     const daoEntity = this.daoRepository.create(data);
 
-    // TODO: cast daoModel from DTO not from entity
-    await this.daoDynamoService.saveDao(daoEntity);
+    if (saveToDynamo) {
+      await this.daoDynamoService.saveDao(data);
+    }
+
     await this.daoRepository.save(daoEntity);
   }
 
@@ -442,9 +443,7 @@ export class DaoService extends TypeOrmCrudService<Dao> {
 
   async loadDaoVersions(): Promise<DaoVersion[]> {
     const sputnikDaoFactory =
-      this.nearApiService.getContract<SputnikDaoFactoryContract>(
-        'sputnikDaoFactory',
-      );
+      this.nearApiService.getSputnikDaoFactoryContract();
     const daoVersions = await sputnikDaoFactory.get_contracts_metadata();
     return this.daoVersionRepository.save(
       daoVersions.map(([hash, { version, commit_id, changelog_url }]) => ({
@@ -459,9 +458,7 @@ export class DaoService extends TypeOrmCrudService<Dao> {
   async getDaoVersionById(id: string): Promise<DaoVersionDto> {
     if (await this.useDynamoDB()) {
       const sputnikDaoFactory =
-        this.nearApiService.getContract<SputnikDaoFactoryContract>(
-          'sputnikDaoFactory',
-        );
+        this.nearApiService.getSputnikDaoFactoryContract();
       const daoVersions = await sputnikDaoFactory.get_contracts_metadata();
       const daoVersionHash = await this.nearApiService.getContractVersionHash(
         id,

@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { NearApiService, NearTransactionStatus } from '@sputnik-v2/near-api';
 import { Receipt, Transaction } from '@sputnik-v2/near-indexer';
-import { Retryable } from 'typescript-retry-decorator';
 
 import {
   castNearIndexerReceiptAction,
@@ -21,7 +20,10 @@ export class TransactionActionMapperService {
     transactionHash: string,
     accountId: string,
   ): Promise<TransactionAction[]> {
-    const txStatus = await this.getTxStatusRetry(transactionHash, accountId);
+    const txStatus = await this.nearApiService.getTxStatusRetry(
+      transactionHash,
+      accountId,
+    );
     return this.getActionsByTxStatus(txStatus);
   }
 
@@ -59,7 +61,7 @@ export class TransactionActionMapperService {
       !receipt.receiptActions ||
       this.isActFunctionCall(originatedFromTransaction)
     ) {
-      const txStatus = await this.getTxStatusRetry(
+      const txStatus = await this.nearApiService.getTxStatusRetry(
         originatedFromTransaction.transactionHash,
         originatedFromTransaction.signerAccountId,
       );
@@ -81,25 +83,6 @@ export class TransactionActionMapperService {
     };
   }
 
-  @Retryable({
-    maxAttempts: 5,
-    backOff: 1000,
-  })
-  private async getBlockRetry(blockHash: string) {
-    return this.nearApiService.getBlock(blockHash);
-  }
-
-  @Retryable({
-    maxAttempts: 5,
-    backOff: 1000,
-  })
-  private async getTxStatusRetry(
-    transactionHash: string,
-    accountId: string,
-  ): Promise<NearTransactionStatus> {
-    return this.nearApiService.getTxStatus(transactionHash, accountId);
-  }
-
   private async getActionsByTxStatus(
     txStatus: NearTransactionStatus,
   ): Promise<TransactionAction[]> {
@@ -110,7 +93,7 @@ export class TransactionActionMapperService {
     ];
 
     const blocks = await Promise.all(
-      blockHashes.map((hash) => this.getBlockRetry(hash)),
+      blockHashes.map((hash) => this.nearApiService.getBlockRetry(hash)),
     );
 
     return txStatus.receipts

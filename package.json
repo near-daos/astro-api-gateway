@@ -33,7 +33,7 @@
     "test-api:e2e": "jest --config ./apps/api/test/jest-e2e.json",
     "test-aggregator:e2e": "jest --config ./apps/aggregator/test/jest-e2e.json",
     "test-notifier:e2e": "jest --config ./apps/notifier/test/jest-e2e.json",
-    "typeorm": "node -r ts-node/register -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
+    "typeorm": "npx ts-node --transpile-only ./node_modules/typeorm/cli.js",
     "migration:show": "npm run typeorm migration:show",
     "migration:run": "npm run typeorm migration:run",
     "migration:generate": "npm run typeorm migration:generate -- -n SchemaRefactoring",
@@ -54,7 +54,7 @@
     "@nestjs/schedule": "^2.0.1",
     "@nestjs/swagger": "^5.2.1",
     "@nestjs/throttler": "^2.0.0",
-    "@nestjs/typeorm": "^8.1.4",
+    "@nestjs/typeorm": "^8.0.4",
     "@nestjs/websockets": "^8.4.7",
     "@nestjsx/crud": "^5.0.0-alpha.3",
     "@nestjsx/crud-request": "^5.0.0-alpha.3",
@@ -95,9 +95,13 @@
     "socket.io": "^4.2.0",
     "swagger-ui-express": "^4.1.6",
     "twilio": "^3.75.0",
-    "typeorm": "^0.2.34",
+    "ts-loader": "^8.0.18",
+    "ts-node": "^9.1.1",
+    "tsconfig-paths": "^3.12.0",
+    "typeorm": "^0.2.45",
     "typeorm-naming-strategies": "^2.0.0",
     "typescript-retry-decorator": "^2.0.6",
+    "typescript": "^4.2.3",
     "uuid": "^9.0.0"
   },
   "devDependencies": {
@@ -122,11 +126,7 @@
     "pino-pretty": "^9.1.1",
     "prettier": "^2.2.1",
     "supertest": "^6.1.3",
-    "ts-jest": "^26.5.4",
-    "ts-loader": "^8.0.18",
-    "ts-node": "^9.1.1",
-    "tsconfig-paths": "^3.12.0",
-    "typescript": "^4.2.3"
+    "ts-jest": "^26.5.4"
   },
   "jest": {
     "moduleFileExtensions": [
@@ -157,6 +157,8 @@
       "@sputnik-v2/subscription": "<rootDir>/libs/subscription/src",
       "@sputnik-v2/dao/(.*)": "<rootDir>/libs/dao/src/$1",
       "@sputnik-v2/dao": "<rootDir>/libs/dao/src",
+      "@sputnik-v2/dao-funds/(.*)": "<rootDir>/libs/dao-funds/src/$1",
+      "@sputnik-v2/dao-funds": "<rootDir>/libs/dao-funds/src",
       "@sputnik-v2/dao-settings/(.*)": "<rootDir>/libs/dao-settings/src/$1",
       "@sputnik-v2/dao-settings": "<rootDir>/libs/dao-settings/src",
       "@sputnik-v2/account/(.*)": "<rootDir>/libs/account/src/$1",

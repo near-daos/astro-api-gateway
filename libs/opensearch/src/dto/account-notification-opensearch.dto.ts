@@ -12,6 +12,7 @@ export class AccountNotificationOpensearchDto extends BaseOpensearchDto {
           ...properties,
           daoId: { type: 'keyword' },
           accountId: { type: 'keyword' },
+          isRead: { type: 'boolean' },
           isArchived: { type: 'boolean' },
         },
       },

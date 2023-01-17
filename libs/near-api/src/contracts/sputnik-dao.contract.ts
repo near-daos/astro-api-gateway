@@ -1,4 +1,8 @@
+import { Retryable } from 'typescript-retry-decorator';
 import { Contract } from 'near-api-js/lib/contract';
+import { Account } from 'near-api-js/lib/account';
+import { BlockId } from 'near-api-js/lib/providers/provider';
+import { BaseContract, BlockQuery } from './base.contract';
 
 export interface SputnikDaoConfig {
   name: string;
@@ -222,48 +226,229 @@ export type SputnikDaoProposalAction =
   | 'Finalize'
   | 'MoveToHub';
 
-export declare class SputnikDaoContract extends Contract {
-  get_config(): Promise<SputnikDaoConfig>;
+interface ISputnikDaoContract extends Contract {
+  get_config(blockQuery: BlockQuery): Promise<SputnikDaoConfig>;
 
-  get_policy(): Promise<SputnikDaoPolicy>;
+  get_policy(blockQuery: BlockQuery): Promise<SputnikDaoPolicy>;
 
-  get_staking_contract(): Promise<string>;
+  get_staking_contract(blockQuery: BlockQuery): Promise<string>;
 
-  get_available_amount(): Promise<string>;
+  get_available_amount(blockQuery: BlockQuery): Promise<string>;
 
-  delegation_total_supply(): Promise<string>;
+  delegation_total_supply(blockQuery: BlockQuery): Promise<string>;
 
-  get_last_proposal_id(): Promise<number>;
+  get_last_proposal_id(blockQuery: BlockQuery): Promise<number>;
 
-  get_proposals(params: {
-    from_index: number;
-    limit: number;
-  }): Promise<SputnikDaoProposalOutput[]>;
+  get_proposals(
+    params: {
+      from_index: number;
+      limit: number;
+    },
+    blockQuery: BlockQuery,
+  ): Promise<SputnikDaoProposalOutput[]>;
 
-  get_proposal(params: { id: number }): Promise<SputnikDaoProposalOutput>;
+  get_proposal(
+    params: { id: number },
+    blockQuery: BlockQuery,
+  ): Promise<SputnikDaoProposalOutput>;
 
-  get_last_bounty_id(): Promise<number>;
+  get_last_bounty_id(blockQuery: BlockQuery): Promise<number>;
 
-  get_bounties(params: {
-    from_index: number;
-    limit: number;
-  }): Promise<SputnikDaoBountyOutput[]>;
+  get_bounties(
+    params: {
+      from_index: number;
+      limit: number;
+    },
+    blockQuery: BlockQuery,
+  ): Promise<SputnikDaoBountyOutput[]>;
 
-  get_bounty(params: { id: number }): Promise<SputnikDaoBountyOutput>;
+  get_bounty(
+    params: { id: number },
+    blockQuery: BlockQuery,
+  ): Promise<SputnikDaoBountyOutput>;
 
-  get_bounty_claims(params: {
-    account_id: string;
-  }): Promise<SputnikDaoBountyClaim[]>;
+  get_bounty_claims(
+    params: {
+      account_id: string;
+    },
+    blockQuery: BlockQuery,
+  ): Promise<SputnikDaoBountyClaim[]>;
 
-  get_bounty_number_of_claims(params: any): Promise<number>;
+  get_bounty_number_of_claims(
+    params: any,
+    blockQuery: BlockQuery,
+  ): Promise<number>;
 
-  delegation_balance_of(params: { account_id: string }): Promise<string>;
+  delegation_balance_of(
+    params: { account_id: string },
+    blockQuery: BlockQuery,
+  ): Promise<string>;
+}
 
-  add_proposal(params: { proposal: SputnikDaoProposalInput }): Promise<number>;
+export class SputnikDaoContract extends BaseContract<ISputnikDaoContract> {
+  constructor(account: Account, accountId: string) {
+    super(account, accountId, {
+      changeMethods: [],
+      viewMethods: [
+        'get_config',
+        'get_policy',
+        'get_staking_contract',
+        'get_available_amount',
+        'delegation_total_supply',
+        'get_last_proposal_id',
+        'get_proposals',
+        'get_proposal',
+        'get_last_bounty_id',
+        'get_bounties',
+        'get_bounty',
+        'get_bounty_claims',
+        'get_bounty_number_of_claims',
+        'delegation_balance_of',
+      ],
+    });
+  }
 
-  act_proposal(params: {
-    id: number;
-    action: SputnikDaoProposalAction;
-    memo?: string;
-  }): Promise<boolean | undefined>;
+  @Retryable({
+    maxAttempts: 3,
+    backOff: 3000,
+  })
+  get_config(blockId?: BlockId): Promise<SputnikDaoConfig> {
+    return this.contract.get_config(this.getBlockQuery(blockId));
+  }
+
+  @Retryable({
+    maxAttempts: 3,
+    backOff: 3000,
+  })
+  get_policy(blockId?: BlockId): Promise<SputnikDaoPolicy> {
+    return this.contract.get_policy(this.getBlockQuery(blockId));
+  }
+
+  @Retryable({
+    maxAttempts: 3,
+    backOff: 3000,
+  })
+  get_staking_contract(blockId?: BlockId): Promise<string> {
+    return this.contract.get_staking_contract(this.getBlockQuery(blockId));
+  }
+
+  @Retryable({
+    maxAttempts: 3,
+    backOff: 3000,
+  })
+  get_available_amount(blockId?: BlockId): Promise<string> {
+    return this.contract.get_available_amount(this.getBlockQuery(blockId));
+  }
+
+  @Retryable({
+    maxAttempts: 3,
+    backOff: 3000,
+  })
+  delegation_total_supply(blockId?: BlockId): Promise<string> {
+    return this.contract.delegation_total_supply(this.getBlockQuery(blockId));
+  }
+
+  @Retryable({
+    maxAttempts: 3,
+    backOff: 3000,
+  })
+  get_last_proposal_id(blockId?: BlockId): Promise<number> {
+    return this.contract.get_last_proposal_id(this.getBlockQuery(blockId));
+  }
+
+  @Retryable({
+    maxAttempts: 3,
+    backOff: 3000,
+  })
+  get_proposals(
+    params: {
+      from_index: number;
+      limit: number;
+    },
+    blockId?: BlockId,
+  ): Promise<SputnikDaoProposalOutput[]> {
+    return this.contract.get_proposals(params, this.getBlockQuery(blockId));
+  }
+
+  @Retryable({
+    maxAttempts: 3,
+    backOff: 3000,
+  })
+  get_proposal(
+    params: { id: number },
+    blockId?: BlockId,
+  ): Promise<SputnikDaoProposalOutput> {
+    return this.contract.get_proposal(params, this.getBlockQuery(blockId));
+  }
+
+  @Retryable({
+    maxAttempts: 3,
+    backOff: 3000,
+  })
+  get_last_bounty_id(blockId?: BlockId): Promise<number> {
+    return this.contract.get_last_bounty_id(this.getBlockQuery(blockId));
+  }
+
+  @Retryable({
+    maxAttempts: 3,
+    backOff: 3000,
+  })
+  get_bounties(
+    params: {
+      from_index: number;
+      limit: number;
+    },
+    blockId?: BlockId,
+  ): Promise<SputnikDaoBountyOutput[]> {
+    return this.contract.get_bounties(params, this.getBlockQuery(blockId));
+  }
+
+  @Retryable({
+    maxAttempts: 3,
+    backOff: 3000,
+  })
+  get_bounty(
+    params: { id: number },
+    blockId?: BlockId,
+  ): Promise<SputnikDaoBountyOutput> {
+    return this.contract.get_bounty(params, this.getBlockQuery(blockId));
+  }
+
+  @Retryable({
+    maxAttempts: 3,
+    backOff: 3000,
+  })
+  get_bounty_claims(
+    params: {
+      account_id: string;
+    },
+    blockId?: BlockId,
+  ): Promise<SputnikDaoBountyClaim[]> {
+    return this.contract.get_bounty_claims(params, this.getBlockQuery(blockId));
+  }
+
+  @Retryable({
+    maxAttempts: 3,
+    backOff: 3000,
+  })
+  get_bounty_number_of_claims(params: any, blockId?: BlockId): Promise<number> {
+    return this.contract.get_bounty_number_of_claims(
+      params,
+      this.getBlockQuery(blockId),
+    );
+  }
+
+  @Retryable({
+    maxAttempts: 3,
+    backOff: 3000,
+  })
+  delegation_balance_of(
+    params: { account_id: string },
+    blockId?: BlockId,
+  ): Promise<string> {
+    return this.contract.delegation_balance_of(
+      params,
+      this.getBlockQuery(blockId),
+    );
+  }
 }

@@ -2,18 +2,29 @@ import * as AWS from 'aws-sdk';
 import DynamoDB, { DocumentClient } from 'aws-sdk/clients/dynamodb';
 import { ConfigService } from '@nestjs/config';
 import { Injectable, Logger } from '@nestjs/common';
-import { buildEntityId, deepFilter, getChunks } from '@sputnik-v2/utils';
+import {
+  buildEntityId,
+  deepFilter,
+  deepMap,
+  getChunks,
+} from '@sputnik-v2/utils';
 import {
   CountItemsQuery,
   DynamoEntityType,
+  DynamoPaginatedResponse,
   EntityId,
   EntityKey,
   PartialEntity,
   QueryItemsQuery,
+  QueryOutput,
 } from './types';
 
 @Injectable()
 export class DynamodbService {
+  readonly BATCH_GET_LIMIT = 100;
+  readonly BATCH_WRITE_LIMIT = 25;
+  readonly EMPTY_KEY_PLACEHOLDER = '__EMPTY_KEY__';
+
   private readonly logger = new Logger(DynamodbService.name);
 
   private client: AWS.DynamoDB.DocumentClient;
@@ -48,15 +59,66 @@ export class DynamodbService {
     this.tableName = tableName;
   }
 
+  private normalizeData(data) {
+    return deepFilter(
+      deepMap(data, (value) => {
+        if (Array.isArray(value)) {
+          const [key, val] = value;
+          // replace empty keys in objects
+          return [key !== '' ? key : this.EMPTY_KEY_PLACEHOLDER, val];
+        } else {
+          // replace undefined values in arrays
+          return value !== undefined ? value : null;
+        }
+      }),
+      (value) => {
+        // skip undefined values
+        return value !== undefined;
+      },
+    );
+  }
+
+  private denormalizeData(data) {
+    return deepMap(data, (value) => {
+      if (Array.isArray(value)) {
+        const [key, val] = value;
+        // replace placeholders with empty string
+        return [key !== this.EMPTY_KEY_PLACEHOLDER ? key : '', val];
+      }
+      return value;
+    });
+  }
+
+  private serializeKey(key: DynamoDB.Key) {
+    return Buffer.from(JSON.stringify(key)).toString('base64');
+  }
+
+  private parseKey(data: string): DynamoDB.Key {
+    return JSON.parse(Buffer.from(data, 'base64').toString());
+  }
+
   async batchDelete<M>(
     items: PartialEntity<M>[],
     tableName = this.tableName,
-  ): Promise<DocumentClient.BatchWriteItemOutput> {
+  ): Promise<number> {
     if (!items.length) {
-      return;
+      return 0;
     }
+    const chunks = getChunks(items, this.BATCH_WRITE_LIMIT);
+    const results = await Promise.all(
+      chunks.map((chunk) => this._batchDelete<M>(chunk, tableName)),
+    );
+    return results.reduce((total, count) => total + count, 0);
+  }
 
-    return this.client
+  private async _batchDelete<M>(
+    items: PartialEntity<M>[],
+    tableName = this.tableName,
+  ): Promise<number> {
+    if (!items.length) {
+      return 0;
+    }
+    const { UnprocessedItems } = await this.client
       .batchWrite({
         RequestItems: {
           [tableName]: items.map(({ partitionId, entityId }) => ({
@@ -67,30 +129,42 @@ export class DynamodbService {
         },
       })
       .promise();
+
+    // handle unprocessed
+    if (UnprocessedItems?.[tableName]?.length) {
+      const unprocessedKeys = UnprocessedItems[tableName].map(
+        ({ DeleteRequest }) => DeleteRequest.Key as PartialEntity<M>,
+      );
+      const deleted = items.length - unprocessedKeys.length;
+      return deleted + (await this._batchDelete(unprocessedKeys, tableName));
+    }
+
+    return items.length;
   }
 
   async batchPut<M>(
     items: PartialEntity<M>[],
     tableName = this.tableName,
-  ): Promise<DocumentClient.BatchWriteItemOutput[]> {
+  ): Promise<number> {
     if (!items.length) {
-      return;
+      return 0;
     }
-    const chunks = getChunks(items, 25);
-    return Promise.all(
+    const chunks = getChunks(items, this.BATCH_WRITE_LIMIT);
+    const results = await Promise.all(
       chunks.map((chunk) => this._batchPut<M>(chunk, tableName)),
     );
+    return results.reduce((total, count) => total + count, 0);
   }
 
   private async _batchPut<M>(
     items: PartialEntity<M>[],
     tableName = this.tableName,
-  ): Promise<DocumentClient.BatchWriteItemOutput> {
+  ): Promise<number> {
     if (!items.length) {
-      return;
+      return 0;
     }
     const timestamp = Date.now();
-    return this.client
+    const { UnprocessedItems } = await this.client
       .batchWrite({
         RequestItems: {
           [tableName]: items.map((item) => ({
@@ -98,13 +172,24 @@ export class DynamodbService {
               Item: {
                 createdAt: timestamp,
                 updatedAt: timestamp,
-                ...item,
+                ...this.normalizeData(item),
               },
             },
           })),
         },
       })
       .promise();
+
+    // handle unprocessed
+    if (UnprocessedItems?.[tableName]?.length) {
+      const unprocessedItems = UnprocessedItems[tableName].map(
+        ({ PutRequest }) => PutRequest.Item as PartialEntity<M>,
+      );
+      const put = items.length - unprocessedItems.length;
+      return put + (await this._batchPut(unprocessedItems, tableName));
+    }
+
+    return items.length;
   }
 
   async batchGet<M>(
@@ -114,7 +199,22 @@ export class DynamodbService {
     if (!keys.length) {
       return [];
     }
-    return this.client
+    const chunks = getChunks(keys, this.BATCH_GET_LIMIT);
+    const results = await Promise.all(
+      chunks.map((chunk) => this._batchGet<M>(chunk, tableName)),
+    );
+    return results.flat();
+  }
+
+  private async _batchGet<M>(
+    keys: EntityKey[],
+    tableName = this.tableName,
+  ): Promise<PartialEntity<M>[]> {
+    if (!keys.length) {
+      return [];
+    }
+
+    const { Responses, UnprocessedKeys } = await this.client
       .batchGet({
         RequestItems: {
           [tableName]: {
@@ -125,8 +225,21 @@ export class DynamodbService {
           },
         },
       })
-      .promise()
-      .then(({ Responses }) => Responses[tableName] as PartialEntity<M>[]);
+      .promise();
+
+    const results = (Responses?.[tableName] || []) as PartialEntity<M>[];
+
+    // handle 16MB limit
+    if (UnprocessedKeys?.[tableName]?.Keys?.length) {
+      results.concat(
+        await this._batchGet(
+          UnprocessedKeys[tableName].Keys as EntityKey[],
+          tableName,
+        ),
+      );
+    }
+
+    return results;
   }
 
   async updateItem<M>(
@@ -136,13 +249,10 @@ export class DynamodbService {
   ): Promise<PartialEntity<M> | undefined> {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { partitionId, entityId, entityType, ...rest } = data;
-    const dataToUpdate = deepFilter(
-      {
-        updatedAt: Date.now(),
-        ...rest,
-      },
-      ([, value]) => value !== undefined,
-    );
+    const dataToUpdate = {
+      updatedAt: Date.now(),
+      ...this.normalizeData(rest),
+    };
     const keys = Object.keys(dataToUpdate);
 
     return this.client
@@ -178,7 +288,14 @@ export class DynamodbService {
         ReturnValues: 'ALL_NEW',
       })
       .promise()
-      .then(({ Attributes }) => Attributes as PartialEntity<M>);
+      .then(({ Attributes }) => {
+        this.logger.debug(
+          `[DynamoDB] Update: ${data.partitionId}:${
+            data.entityId
+          } (${JSON.stringify(data)})`,
+        );
+        return this.denormalizeData(Attributes) as PartialEntity<M>;
+      });
   }
 
   async updateItemByType<M>(
@@ -228,77 +345,206 @@ export class DynamodbService {
         Key: { partitionId, entityId },
       })
       .promise()
-      .then(({ Item }) => Item as PartialEntity<M>)
+      .then(({ Item }) => this.denormalizeData(Item) as PartialEntity<M>)
       .catch((err) => (checkIfExists ? Promise.reject(err) : undefined));
+  }
+
+  async query<M>(
+    query: QueryItemsQuery,
+    tableName = this.tableName,
+  ): Promise<QueryOutput<M>> {
+    return this.client
+      .query({
+        TableName: tableName,
+        ...query,
+      })
+      .promise()
+      .then(({ Items, ...rest }) => ({
+        Items: Items.map(
+          (item) => this.denormalizeData(item) as PartialEntity<M>,
+        ),
+        ...rest,
+      }));
+  }
+
+  async queryByType<M>(
+    partitionId: string,
+    entityType: DynamoEntityType,
+    query: QueryItemsQuery = {},
+    idPrefix = '',
+    tableName = this.tableName,
+  ): Promise<QueryOutput<M>> {
+    return this.query<M>(
+      {
+        KeyConditionExpression:
+          'partitionId = :partitionId and begins_with(entityId, :entityIdPrefix)',
+        ...query,
+        ExpressionAttributeValues: {
+          ':partitionId': partitionId,
+          ':entityIdPrefix': buildEntityId(entityType, idPrefix),
+          ...query.ExpressionAttributeValues,
+        },
+      },
+      tableName,
+    );
   }
 
   async queryItems<M>(
     query: QueryItemsQuery,
     tableName = this.tableName,
   ): Promise<PartialEntity<M>[]> {
-    return this.client
-      .query({
-        TableName: tableName,
+    return this.query<M>(query, tableName).then(({ Items }) => Items);
+  }
+
+  async queryItemsByType<M>(
+    partitionId: string,
+    entityType: DynamoEntityType,
+    query: QueryItemsQuery = {},
+    idPrefix = '',
+    tableName = this.tableName,
+  ): Promise<PartialEntity<M>[]> {
+    return this.queryByType<M>(
+      partitionId,
+      entityType,
+      query,
+      idPrefix,
+      tableName,
+    ).then(({ Items }) => Items);
+  }
+
+  async paginateItems<M>(
+    query: QueryItemsQuery,
+    limit = 100,
+    nextToken = null,
+    tableName = this.tableName,
+  ): Promise<DynamoPaginatedResponse<PartialEntity<M>>> {
+    const { Items, LastEvaluatedKey } = await this.query<M>(
+      {
+        Limit: limit,
+        ExclusiveStartKey: nextToken ? this.parseKey(nextToken) : undefined,
         ...query,
-      })
-      .promise()
-      .then(({ Items }) => Items as PartialEntity<M>[]);
+      },
+      tableName,
+    );
+    return {
+      data: Items,
+      meta: {
+        nextToken: LastEvaluatedKey
+          ? this.serializeKey(LastEvaluatedKey)
+          : null,
+      },
+    };
+  }
+
+  async paginateItemsByType<M>(
+    partitionId: string,
+    entityType: DynamoEntityType,
+    query: QueryItemsQuery = {},
+    limit = 100,
+    nextToken = null,
+    idPrefix = '',
+    tableName = this.tableName,
+  ): Promise<DynamoPaginatedResponse<PartialEntity<M>>> {
+    const { Items, LastEvaluatedKey } = await this.queryByType<M>(
+      partitionId,
+      entityType,
+      {
+        Limit: limit,
+        ExclusiveStartKey: nextToken ? this.parseKey(nextToken) : undefined,
+        ...query,
+      },
+      idPrefix,
+      tableName,
+    );
+    return {
+      data: Items,
+      meta: {
+        nextToken: LastEvaluatedKey
+          ? this.serializeKey(LastEvaluatedKey)
+          : null,
+      },
+    };
+  }
+
+  async *paginateAllItems<M>(
+    query: QueryItemsQuery,
+    tableName = this.tableName,
+  ): AsyncGenerator<PartialEntity<M>[]> {
+    const { Items, LastEvaluatedKey } = await this.query<M>(query, tableName);
+
+    yield Items;
+
+    if (LastEvaluatedKey) {
+      yield* this.paginateAllItems<M>(
+        {
+          ...query,
+          ExclusiveStartKey: LastEvaluatedKey,
+        },
+        tableName,
+      );
+    }
+  }
+
+  async *paginateAllItemsByType<M>(
+    partitionId: string,
+    entityType: DynamoEntityType,
+    query: QueryItemsQuery = {},
+    idPrefix = '',
+    tableName = this.tableName,
+  ): AsyncGenerator<PartialEntity<M>[]> {
+    const { Items, LastEvaluatedKey } = await this.queryByType<M>(
+      partitionId,
+      entityType,
+      query,
+      idPrefix,
+      tableName,
+    );
+
+    yield Items;
+
+    if (LastEvaluatedKey) {
+      yield* this.paginateAllItemsByType<M>(
+        partitionId,
+        entityType,
+        {
+          ...query,
+          ExclusiveStartKey: LastEvaluatedKey,
+        },
+        tableName,
+      );
+    }
   }
 
   async countItems(
     query: CountItemsQuery,
     tableName = this.tableName,
   ): Promise<number> {
-    return this.client
-      .query({
-        TableName: tableName,
+    return this.query(
+      {
         Select: 'COUNT',
         ...query,
-      })
-      .promise()
-      .then(({ Count }) => Count);
-  }
-
-  async queryItemsByType<M>(
-    partitionId: string,
-    entityType: DynamoEntityType,
-    query: CountItemsQuery = {},
-    tableName = this.tableName,
-  ): Promise<PartialEntity<M>[]> {
-    return this.queryItems<M>(
-      {
-        KeyConditionExpression:
-          'partitionId = :partitionId and begins_with(entityId, :entityType)',
-        ...query,
-        ExpressionAttributeValues: {
-          ':partitionId': partitionId,
-          ':entityType': buildEntityId(entityType, ''),
-          ...query.ExpressionAttributeValues,
-        },
       },
       tableName,
-    );
+    ).then(({ Count }) => Count);
   }
 
   async countItemsByType(
     partitionId: string,
     entityType: DynamoEntityType,
     query: CountItemsQuery = {},
+    idPrefix = '',
     tableName = this.tableName,
   ): Promise<number> {
-    return this.countItems(
+    return this.queryByType(
+      partitionId,
+      entityType,
       {
-        KeyConditionExpression:
-          'partitionId = :partitionId and begins_with(entityId, :entityType)',
+        Select: 'COUNT',
         ...query,
-        ExpressionAttributeValues: {
-          ':partitionId': partitionId,
-          ':entityType': buildEntityId(entityType, ''),
-          ...query.ExpressionAttributeValues,
-        },
       },
+      idPrefix,
       tableName,
-    );
+    ).then(({ Count }) => Count);
   }
 
   async putItem<M>(
@@ -307,14 +553,11 @@ export class DynamodbService {
     tableName = this.tableName,
   ): Promise<PartialEntity<M>> {
     const timestamp = Date.now();
-    const dataToPut = deepFilter(
-      {
-        createdAt: timestamp,
-        updatedAt: timestamp,
-        ...data,
-      },
-      ([, value]) => value !== undefined,
-    );
+    const dataToPut = {
+      createdAt: timestamp,
+      updatedAt: timestamp,
+      ...this.normalizeData(data),
+    };
     return this.client
       .put({
         TableName: tableName,
@@ -327,7 +570,14 @@ export class DynamodbService {
           : {}),
       })
       .promise()
-      .then(() => dataToPut);
+      .then(() => {
+        this.logger.debug(
+          `[DynamoDB] Put: ${data.partitionId}:${
+            data.entityId
+          } (${JSON.stringify(dataToPut)})`,
+        );
+        return this.denormalizeData(dataToPut) as PartialEntity<M>;
+      });
   }
 
   async putItemByType<M>(
