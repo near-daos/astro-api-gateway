@@ -40,11 +40,17 @@ This framework is intended to be used for testing of Sputnik v2 API
 3. Execute desired Gradle task from CLI (see examples below)
 
 ### Examples of CLI Commands
+Run all tests:
  ```bash
  $ ./gradlew clean test -DincludeTags=all
  ```
+Run specific test:
  ```bash
  $ ./gradlew clean test -DincludeTags=daoApiTests
+ ```
+Exclude NEAR cli tests:
+ ```bash
+ $ ./gradlew clean test -DincludeTags=all -DexcludeTags=nearCli
  ```
 
 ## Test Reports

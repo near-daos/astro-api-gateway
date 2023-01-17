@@ -41,7 +41,7 @@ import static java.net.HttpURLConnection.HTTP_OK;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @Epic("Aggregation")
-@Tags({@Tag("all"), @Tag("aggregationWithoutCallback")})
+@Tags({@Tag("all"), @Tag("aggregationWithoutCallback"), @Tag("nearCli")})
 @Feature("Aggregation with time-out tests")
 @DisplayName("Aggregation with time-out tests")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))

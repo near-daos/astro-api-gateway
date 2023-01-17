@@ -187,6 +187,7 @@ public class NewSearchApiTests extends BaseTest {
 
 	@Test
 	@Severity(SeverityLevel.CRITICAL)
+	@Tag("nearCli")
 	@Story("Create proposal by NEAR CLI and search for it by a new search[total match]")
 	@DisplayName("Create proposal by NEAR CLI and search for it by a new search[total match]")
 	void createProposalByNearCliAndSearchForItByANewSearchTotalMatch() {

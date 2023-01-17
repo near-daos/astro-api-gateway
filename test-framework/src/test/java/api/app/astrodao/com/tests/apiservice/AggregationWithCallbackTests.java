@@ -25,6 +25,7 @@ import io.restassured.response.Response;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,7 +37,7 @@ import static java.net.HttpURLConnection.HTTP_OK;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @Epic("Aggregation")
-@Tag("all")
+@Tags({@Tag("all"), @Tag("aggregationWithCallback"), @Tag("nearCli")})
 @Feature("Aggregation with callback tests")
 @DisplayName("Aggregation with callback tests")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
