@@ -23,7 +23,8 @@ public class Source {
 	private Object bountyDoneId;
 	private String policyLabel;
 	private String partitionId;
-	private BigDecimal processingTimeStamp;
+	private BigDecimal createdAt;
+	private BigDecimal updatedAt;
 	private String entityType;
 	private Kind kind;
 	private String proposer;
